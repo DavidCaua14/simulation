@@ -1,0 +1,98 @@
+.step-dots {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.step-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--border);
+}
+.step-dot.is-active {
+  width: 16px;
+  border-radius: 4px;
+  background: var(--primary);
+}
+.step-dot.is-done {
+  background: var(--primary);
+  opacity: 0.5;
+}
+
+.back-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  display: grid;
+  place-items: center;
+}
+
+/* Cada etapa ocupa 100% da área de conteúdo, sem rolagem: o corpo cresce e
+   centraliza; o rodapé com os botões fica sempre fixo embaixo. */
+.step-screen {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 18px 18px 16px;
+  gap: 8px;
+  overflow: hidden;
+}
+
+.step-heading h1 {
+  font-size: 0.95rem;
+  margin: 0 0 6px;
+}
+.step-heading p {
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.step-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 14px;
+  min-height: 0;
+}
+
+.step-footer {
+  flex-shrink: 0;
+  display: flex;
+  gap: 10px;
+  padding-top: 10px;
+}
+
+.btn-secondary {
+  flex: 0 0 auto;
+  background: var(--surface-alt);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 14px 18px;
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.step-footer .btn-primary {
+  flex: 1;
+}
+
+.field-error {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--danger);
+  font-size: 0.78rem;
+  margin: 2px 0 0;
+}
+.field-hint {
+  color: var(--text-secondary);
+  font-size: 0.72rem;
+  margin: 2px 0 0;
+}

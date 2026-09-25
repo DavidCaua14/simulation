@@ -1,0 +1,63 @@
+.pitch {
+  position: relative;
+  width: 100%;
+  max-width: 260px;
+  aspect-ratio: 2 / 3;
+  margin: 0 auto;
+  border-radius: var(--radius-md);
+  background: repeating-linear-gradient(
+    to bottom,
+    #2f8f4e 0,
+    #2f8f4e 14%,
+    #2c8548 14%,
+    #2c8548 28%
+  );
+  overflow: visible;
+}
+
+.pitch-lines {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  color: rgba(255, 255, 255, 0.75);
+  border-radius: var(--radius-md);
+}
+
+.pitch-spot {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.85);
+  background: rgba(20, 30, 24, 0.55);
+  color: #fff;
+  font-size: 0.55rem;
+  font-weight: 700;
+  display: grid;
+  place-items: center;
+  transition: transform 0.1s ease, background 0.15s ease;
+}
+
+.pitch-spot:active {
+  transform: translate(-50%, -50%) scale(0.94);
+}
+
+.pitch-spot.is-selected {
+  background: var(--primary);
+  border-color: var(--primary-contrast);
+}
+
+.pitch-selected-label {
+  position: absolute;
+  left: 50%;
+  bottom: -30px;
+  transform: translateX(-50%);
+  width: max-content;
+  max-width: 220px;
+  text-align: center;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}

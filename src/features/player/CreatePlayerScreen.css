@@ -1,0 +1,134 @@
+.create-player {
+  position: relative;
+  padding: 20px 18px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.create-player-intro h1 {
+  font-size: 1rem;
+  margin: 0 0 10px;
+}
+.create-player-intro p {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.create-player-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.form-section {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.form-row {
+  flex-direction: row;
+  gap: 18px;
+  align-items: flex-start;
+}
+.form-row > div {
+  flex: 1;
+}
+
+.avatar-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+.avatar-option {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  background: var(--surface-alt);
+  padding: 4px;
+  overflow: hidden;
+}
+.avatar-option.is-selected {
+  border-color: var(--primary);
+}
+.avatar-check {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  width: 18px;
+  height: 18px;
+  background: var(--primary);
+  color: var(--primary-contrast);
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+}
+
+.position-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.position-chip {
+  border: 1px solid var(--border);
+  background: var(--surface-alt);
+  color: var(--text-primary);
+  padding: 8px 12px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+.position-chip.is-selected {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: var(--primary-contrast);
+}
+
+.jersey-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0 10px;
+  color: var(--text-secondary);
+}
+.jersey-input {
+  border: none;
+  background: transparent;
+  padding: 12px 0;
+}
+.jersey-input:focus {
+  outline: none;
+}
+
+.age-badge {
+  display: inline-block;
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+
+.field-error {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--danger);
+  font-size: 0.78rem;
+  margin: 2px 0 0;
+}
+.field-hint {
+  color: var(--text-secondary);
+  font-size: 0.72rem;
+  margin: 2px 0 0;
+}
+.form-error {
+  margin-top: -4px;
+}
