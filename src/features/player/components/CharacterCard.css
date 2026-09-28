@@ -1,0 +1,178 @@
+.character-card {
+  --portrait: clamp(84px, 16vh, 150px);
+  --pad: 14px;
+  --pitch-line: color-mix(in srgb, var(--text-primary) 9%, transparent);
+
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: var(--pad) var(--pad) 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: linear-gradient(180deg, var(--surface-strong), var(--surface));
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+/* Marcações de campo (círculo central + linha do meio) atrás do retrato:
+   a "essência de futebol" dentro da ficha RPG. */
+.character-card::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: calc(var(--pad) - 28px);
+  width: calc(var(--portrait) + 56px);
+  aspect-ratio: 1;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  border: 2px solid var(--pitch-line);
+  pointer-events: none;
+}
+.character-card::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(var(--pad) + var(--portrait) / 2);
+  height: 2px;
+  background: var(--pitch-line);
+  pointer-events: none;
+}
+
+.portrait-stage {
+  position: relative;
+  width: var(--portrait);
+  height: var(--portrait);
+  z-index: 1;
+}
+
+.portrait-ring {
+  width: 100%;
+  height: 100%;
+  padding: 4px;
+  border-radius: 50%;
+  background: conic-gradient(from 200deg, var(--gold), #fff6d6, var(--primary), var(--gold));
+  box-shadow: 0 0 26px color-mix(in srgb, var(--primary) 50%, transparent);
+}
+
+.portrait-img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid var(--surface);
+  background: var(--surface-alt);
+}
+.portrait-empty {
+  display: grid;
+  place-items: center;
+  color: var(--text-secondary);
+}
+
+.level-badge {
+  position: absolute;
+  left: 50%;
+  bottom: -8px;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 11px;
+  border-radius: 999px;
+  border: 2px solid var(--surface);
+  background: linear-gradient(180deg, #ffd964, var(--gold));
+  color: #2a1c00;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 0.95rem;
+  letter-spacing: 1px;
+  white-space: nowrap;
+}
+
+/* Placa de nome escura, como nos menus de jogador do PES */
+.nameplate {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  margin-top: 8px;
+  padding: 7px 12px 8px;
+  text-align: center;
+  border-radius: var(--radius-sm);
+  border: 1px solid #2b3245;
+  border-left: 4px solid var(--primary);
+  background: linear-gradient(180deg, #1c2236, #0d111d);
+}
+.nameplate-name {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #ffffff;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 1.4rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  line-height: 1.15;
+}
+.nameplate-name span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+.nameplate-name.is-placeholder span {
+  opacity: 0.5;
+}
+.nameplate-name svg {
+  flex-shrink: 0;
+  border-radius: 2px;
+}
+.nameplate-sub {
+  margin-top: 1px;
+  color: #aab3c8;
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.4px;
+}
+
+.xp-row {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-secondary);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+}
+.xp-bar {
+  flex: 1;
+  height: 8px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface-alt);
+  overflow: hidden;
+}
+.xp-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--gold), var(--primary));
+  transition: width 0.4s ease;
+}
+
+@media (max-height: 760px) {
+  .character-card {
+    --pad: 10px;
+    gap: 6px;
+  }
+  .nameplate-name {
+    font-size: 1.2rem;
+  }
+}

@@ -1,14 +1,14 @@
 import { ThemeProvider } from './context/ThemeContext'
-import CreatePlayerWizard from './features/player/CreatePlayerWizard'
+import CreateCharacterScreen from './features/player/CreateCharacterScreen'
 import './styles/theme.css'
 
 function App() {
   return (
     <ThemeProvider>
-      <CreatePlayerWizard
+      <CreateCharacterScreen
         onCreated={(career) => {
-          // Próxima etapa: navegar para a Home/tela de carreira.
-          console.log('Carreira criada:', career)
+          // Próxima etapa: navegar para a tela inicial (Home) do personagem.
+          console.log('Personagem criado:', career)
         }}
       />
     </ThemeProvider>

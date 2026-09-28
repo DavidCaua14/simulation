@@ -1,9 +1,9 @@
 import { useMemo } from 'react'
-import { ShirtIcon, HashIcon, AlertIcon, UserIcon } from '../../../components/ui/icons'
-import { AVATAR_PRESETS } from '../data/avatarPresets'
+import { ShirtIcon, HashIcon, AlertIcon } from '../../../components/ui/icons'
 import { POSITIONS } from '../data/positions'
-
-const FIXED_AGE = 16
+import { getCountryById } from '../data/countries'
+import { STARTING_LEVEL } from '../data/gameConstants'
+import PlayerCard from '../components/PlayerCard'
 
 export default function SummaryStep({ value, onChange, onBack, onSubmit, submitting, submitError }) {
   const jerseyError = useMemo(() => {
@@ -15,7 +15,7 @@ export default function SummaryStep({ value, onChange, onBack, onSubmit, submitt
 
   const canSubmit = !jerseyError && !submitting
   const positionLabel = POSITIONS.find((p) => p.id === value.position)?.label
-  const avatarColor = AVATAR_PRESETS.find((p) => p.id === value.avatarId)?.color
+  const countryName = getCountryById(value.country)?.name
 
   return (
     <div className="step-screen">
@@ -25,19 +25,12 @@ export default function SummaryStep({ value, onChange, onBack, onSubmit, submitt
       </div>
 
       <div className="step-body">
-        <div className="summary-card card">
-          <div className="summary-avatar" style={{ background: value.avatarPhoto ? 'transparent' : avatarColor }}>
-            {value.avatarPhoto ? (
-              <img src={value.avatarPhoto} alt="Avatar" />
-            ) : (
-              <UserIcon width="22" height="22" stroke="#fff" />
-            )}
-          </div>
-          <div className="summary-info">
-            <strong>{value.nickname}</strong>
-            <span>{positionLabel} · {FIXED_AGE} anos</span>
-          </div>
-        </div>
+        <PlayerCard
+          appearance={value.appearance}
+          nickname={value.nickname}
+          countryId={value.country}
+          positionLabel={`${positionLabel} · ${countryName} · Nível ${STARTING_LEVEL}`}
+        />
 
         <div>
           <label className="field-label" htmlFor="jersey">

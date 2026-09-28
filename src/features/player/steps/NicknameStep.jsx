@@ -1,6 +1,9 @@
 import { useMemo } from 'react'
 import { UserIcon, AlertIcon, CheckIcon } from '../../../components/ui/icons'
 import { isNicknameTaken } from '../playerService'
+import { COUNTRIES } from '../data/countries'
+import { CountryFlag } from '../components/flags'
+import PlayerCard from '../components/PlayerCard'
 
 export default function NicknameStep({ value, onChange, onNext, onBack }) {
   const nickname = value.nickname
@@ -14,39 +17,61 @@ export default function NicknameStep({ value, onChange, onNext, onBack }) {
     return ''
   }, [nickname])
 
-  const isValid = nickname.length >= 3 && !nicknameError
+  const isValid = nickname.length >= 3 && !nicknameError && Boolean(value.country)
 
   return (
     <div className="step-screen">
       <div className="step-heading">
-        <h1 className="heading">Nickname</h1>
-        <p>Esse será o nome público do seu jogador — único no jogo, usado nos duelos 1x1.</p>
+        <h1 className="heading">Nickname e país</h1>
+        <p>O nickname é único no jogo e usado nos duelos 1x1. O país define os times disponíveis na carreira.</p>
       </div>
 
       <div className="step-body">
-        <label className="field-label" htmlFor="nickname">
-          <UserIcon /> Nickname
-        </label>
-        <input
-          id="nickname"
-          className="input"
-          value={nickname}
-          onChange={(e) => onChange({ nickname: e.target.value })}
-          placeholder="Ex: crack_10"
-          maxLength={16}
-          autoComplete="off"
-          autoFocus
-        />
-        {nicknameError && (
-          <p className="field-error">
-            <AlertIcon /> {nicknameError}
-          </p>
-        )}
-        {isValid && (
-          <p className="field-hint field-hint-ok">
-            <CheckIcon /> Nickname disponível.
-          </p>
-        )}
+        <PlayerCard appearance={value.appearance} nickname={nickname} countryId={value.country} />
+
+        <div>
+          <label className="field-label" htmlFor="nickname">
+            <UserIcon /> Nickname
+          </label>
+          <input
+            id="nickname"
+            className="input"
+            value={nickname}
+            onChange={(e) => onChange({ nickname: e.target.value })}
+            placeholder="Ex: crack_10"
+            maxLength={16}
+            autoComplete="off"
+            autoFocus
+          />
+          {nicknameError && (
+            <p className="field-error">
+              <AlertIcon /> {nicknameError}
+            </p>
+          )}
+          {isValid && !nicknameError && (
+            <p className="field-hint field-hint-ok">
+              <CheckIcon /> Nickname disponível.
+            </p>
+          )}
+        </div>
+
+        <div>
+          <span className="field-label">País</span>
+          <div className="country-grid">
+            {COUNTRIES.map((country) => (
+              <button
+                type="button"
+                key={country.id}
+                className={`country-chip ${value.country === country.id ? 'is-selected' : ''}`}
+                onClick={() => onChange({ country: country.id })}
+              >
+                <CountryFlag countryId={country.id} />
+                <span>{country.name}</span>
+              </button>
+            ))}
+          </div>
+          <p className="field-hint">Define as opções iniciais de times da carreira.</p>
+        </div>
       </div>
 
       <div className="step-footer">

@@ -18,17 +18,17 @@ export default function Pitch({ positions, selected, onSelect }) {
       </svg>
 
       {PITCH_LAYOUT.map((spot) => {
-        const isSelected = selected === spot.id
+        const isSelected = selected === spot.positionId
         return (
           <button
             type="button"
-            key={spot.id}
+            key={spot.spotId}
             className={`pitch-spot ${isSelected ? 'is-selected' : ''}`}
             style={{ left: `${spot.x}%`, top: `${spot.y}%` }}
-            onClick={() => onSelect(spot.id)}
+            onClick={() => onSelect(spot.positionId)}
             aria-pressed={isSelected}
           >
-            {spot.id}
+            {spot.positionId}
           </button>
         )
       })}

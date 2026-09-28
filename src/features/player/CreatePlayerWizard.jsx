@@ -3,20 +3,21 @@ import AppShell from '../../components/layout/AppShell'
 import LoadingOverlay from '../../components/ui/LoadingOverlay'
 import StepDots from './components/StepDots'
 import { ArrowLeftIcon } from '../../components/ui/icons'
-import AvatarStep from './steps/AvatarStep'
+import CharacterStep from './steps/CharacterStep'
 import NicknameStep from './steps/NicknameStep'
 import PositionStep from './steps/PositionStep'
 import SummaryStep from './steps/SummaryStep'
 import { createPlayer } from './playerService'
+import { DEFAULT_APPEARANCE } from './data/characterOptions'
 import './wizard.css'
 import './player-visuals.css'
 
-const STEPS = ['avatar', 'nickname', 'position', 'summary']
+const STEPS = ['character', 'nickname', 'position', 'summary']
 
 const INITIAL_FORM = {
-  avatarId: null,
-  avatarPhoto: null,
+  appearance: DEFAULT_APPEARANCE,
   nickname: '',
+  country: 'BR',
   position: null,
   jerseyNumber: '10',
 }
@@ -67,7 +68,7 @@ export default function CreatePlayerWizard({ onCreated }) {
     >
       <LoadingOverlay show={submitting} label="Criando jogador..." />
 
-      {step === 'avatar' && <AvatarStep value={form} onChange={updateForm} onNext={goNext} />}
+      {step === 'character' && <CharacterStep value={form} onChange={updateForm} onNext={goNext} />}
       {step === 'nickname' && (
         <NicknameStep value={form} onChange={updateForm} onNext={goNext} onBack={goBack} />
       )}

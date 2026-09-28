@@ -1,0 +1,247 @@
+.cc-screen {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Sem barra de rolagem visível: se a janela for muito baixa, o conteúdo
+   ainda rola por toque/roda do mouse, mas o botão fica sempre fixo embaixo. */
+.cc-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-width: none;
+  padding: 14px 16px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.cc-body::-webkit-scrollbar {
+  display: none;
+}
+
+.cc-footer {
+  flex-shrink: 0;
+  padding: 10px 16px 14px;
+  border-top: 1px solid var(--border);
+  background: var(--surface);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.cc-footer-error {
+  margin: 0;
+}
+
+/* Cabeçalho de seção, no estilo das barras "MA / MC" do PES */
+.section-bar {
+  margin: 0;
+  padding: 6px 10px;
+  text-align: center;
+  font-size: 0.95rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-primary);
+  background: var(--surface-strong);
+  border: 1px solid var(--border);
+  border-bottom: 3px solid var(--primary);
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+}
+
+/* Ficha em linhas listradas: rótulo à esquerda, valor à direita */
+.sheet {
+  border: 1px solid var(--border);
+  border-top: none;
+  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+  overflow: hidden;
+}
+.sheet-row {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  align-items: center;
+  gap: 5px 10px;
+  padding: 9px 12px;
+}
+.sheet-row:nth-child(odd) {
+  background: var(--surface);
+}
+.sheet-row:nth-child(even) {
+  background: var(--surface-alt);
+}
+.sheet-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+.sheet-label svg {
+  flex-shrink: 0;
+  color: var(--gold);
+}
+
+.sheet-msg {
+  grid-column: 2;
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin: 0;
+  font-size: 0.74rem;
+  line-height: 1.3;
+}
+.sheet-msg svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.sheet-msg.is-error {
+  color: var(--danger);
+}
+.sheet-msg.is-ok {
+  color: var(--success);
+}
+
+/* Foto de perfil (sempre redonda) */
+.photo-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.photo-option {
+  position: relative;
+  width: 56px;
+  height: 56px;
+  padding: 0;
+  border: 3px solid var(--border);
+  border-radius: 50%;
+  background: var(--surface-alt);
+  opacity: 0.7;
+  transition: opacity 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+.photo-option img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  border-radius: 50%;
+  object-fit: cover;
+}
+.photo-option:hover {
+  opacity: 1;
+}
+.photo-option.is-selected {
+  opacity: 1;
+  border-color: var(--ring);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ring) 25%, transparent),
+    0 0 16px color-mix(in srgb, var(--ring) 55%, transparent);
+}
+.photo-check {
+  position: absolute;
+  right: -6px;
+  bottom: -4px;
+  width: 20px;
+  height: 20px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--primary);
+  color: var(--primary-contrast);
+  border: 2px solid var(--surface);
+}
+
+/* Idade com botões − / + (bom de tocar no celular) */
+.stepper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.stepper-btn {
+  width: 40px;
+  height: 42px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--surface-strong);
+  color: var(--text-primary);
+}
+.stepper-btn:active {
+  transform: translateY(1px);
+}
+.stepper-input {
+  width: 76px;
+  text-align: center;
+  font-family: var(--font-heading);
+  font-size: 1.25rem;
+  font-weight: 700;
+  padding: 7px 8px;
+}
+
+.country-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.country-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 9px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--surface-strong);
+  color: var(--text-primary);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+.country-chip.is-selected {
+  border-color: var(--ring);
+  background: color-mix(in srgb, var(--primary) 18%, var(--surface-strong));
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--ring) 22%, transparent);
+}
+
+/* Estado de sucesso (depois de criar) */
+.cc-success {
+  justify-content: center;
+}
+.cc-success-msg {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 0;
+  color: var(--success);
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+@media (max-height: 760px) {
+  .cc-body {
+    gap: 10px;
+    padding-top: 10px;
+  }
+  .sheet-row {
+    padding: 7px 12px;
+  }
+  .cc-footer {
+    padding: 8px 16px 10px;
+  }
+  .btn-primary {
+    padding: 11px 16px;
+  }
+}
+
+/* Telas altas: mais respiro e retrato maior, sem sobrar vazio no meio */
+@media (min-height: 840px) {
+  .cc-body {
+    gap: 16px;
+    padding-top: 18px;
+  }
+  .sheet-row {
+    padding: 13px 12px;
+  }
+}
