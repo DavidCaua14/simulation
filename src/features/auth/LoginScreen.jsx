@@ -34,7 +34,7 @@ export default function LoginScreen() {
             </h1>
             <div className="brand-tagline">
               <span className="tagline-rule" />
-              <span>RPG + FUTEBOL</span>
+              <span>FUTEBOL</span>
               <span className="tagline-rule" />
             </div>
           </div>
