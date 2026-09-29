@@ -1,4 +1,5 @@
 import Pitch from '../components/Pitch'
+import PlayerCard from '../components/PlayerCard'
 import { POSITIONS } from '../data/positions'
 
 export default function PositionStep({ value, onChange, onNext, onBack }) {
@@ -10,6 +11,7 @@ export default function PositionStep({ value, onChange, onNext, onBack }) {
       </div>
 
       <div className="step-body position-step-body">
+        <PlayerCard appearance={value.appearance} nickname={value.nickname} countryId={value.country} />
         <Pitch
           positions={POSITIONS}
           selected={value.position}

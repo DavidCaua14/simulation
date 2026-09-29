@@ -1,6 +1,6 @@
-/* Full-bleed: em qualquer tela, o app ocupa 100% da altura, sem margens,
+/* Full-bleed: em qualquer tela o app ocupa 100% da altura, sem margens,
    sem padding e sem cantos arredondados — como um celular de verdade,
-   apenas com a largura limitada para não esticar em monitores largos. */
+   só com a largura limitada para não esticar em monitores largos. */
 
 .app-viewport {
   height: 100dvh;
@@ -24,13 +24,15 @@
   border-right: 1px solid var(--border);
 }
 
+/* Barra superior "brilhante", no espírito dos menus do PES/Bomba Patch */
 .app-topbar {
   display: grid;
   grid-template-columns: 44px 1fr 44px;
   align-items: center;
-  padding: 14px 14px;
-  border-bottom: 1px solid var(--border);
-  background: var(--surface);
+  padding: 12px 14px;
+  background: var(--header-bg);
+  border-bottom: 2px solid var(--primary);
+  box-shadow: inset 0 1px 0 var(--header-line);
   flex-shrink: 0;
 }
 
@@ -40,6 +42,7 @@
 }
 .app-topbar-left {
   justify-content: flex-start;
+  color: var(--gold);
 }
 .app-topbar-center {
   justify-content: center;
@@ -50,14 +53,19 @@
 
 .app-topbar-title {
   font-family: var(--font-heading);
-  font-size: 0.8rem;
+  font-size: 1.2rem;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
   color: var(--text-primary);
 }
 
 .app-content {
   flex: 1;
-  overflow: hidden;
-  background: var(--bg);
+  min-height: 0;
+  background:
+    radial-gradient(ellipse 90% 45% at 50% 0%, var(--bg-glow), transparent 70%),
+    var(--bg);
   position: relative;
   display: flex;
   flex-direction: column;

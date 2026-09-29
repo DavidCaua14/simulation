@@ -1,6 +1,7 @@
 // Camada de dados do jogador/carreira.
 // Hoje tudo roda em localStorage. Quando o Supabase entrar em produção,
 // só o "miolo" destas funções muda — quem usa (a tela) não muda nada.
+import { MIN_AGE, MAX_AGE, STARTING_LEVEL } from './data/gameConstants'
 
 const CAREERS_KEY = 'simulation:careers'
 const ACTIVE_CAREER_KEY = 'simulation:activeCareerId'
@@ -28,17 +29,23 @@ export function hasActiveCareer() {
 
 export function isNicknameTaken(nickname) {
   const normalized = nickname.trim().toLowerCase()
-  return readCareers().some((c) => c.player.nickname.toLowerCase() === normalized)
+  return readCareers().some((c) => c.player?.nickname?.toLowerCase() === normalized)
   // Em produção, trocar por uma consulta ao Supabase, ex:
   // const { data } = await supabase.from('players').select('id').ilike('nickname', normalized)
   // return data.length > 0
 }
 
-export async function createPlayer({ nickname, avatarId, avatarPhoto, position, jerseyNumber }) {
+export async function createPlayer({ nickname, photoId, country, age }) {
   await delay(700) // simula latência de rede, já preparado para chamada assíncrona real
 
+  // As regras também valem aqui (e não só na tela), porque no Supabase
+  // essa é a camada que não pode ser burlada pelo navegador.
+  const ageNumber = Number(age)
+  if (!Number.isInteger(ageNumber) || ageNumber < MIN_AGE || ageNumber > MAX_AGE) {
+    throw new Error(`A idade deve ser entre ${MIN_AGE} e ${MAX_AGE} anos.`)
+  }
   if (isNicknameTaken(nickname)) {
-    throw new Error('Esse nickname já está em uso. Escolha outro.')
+    throw new Error('Esse username já está em uso. Escolha outro.')
   }
 
   const career = {
@@ -47,15 +54,14 @@ export async function createPlayer({ nickname, avatarId, avatarPhoto, position, 
     status: 'active',
     player: {
       nickname: nickname.trim(),
-      avatarId: avatarPhoto ? null : avatarId,
-      // Hoje a foto vai em base64 direto no localStorage. Em produção,
-      // trocar por upload no Supabase Storage e guardar aqui só a URL:
-      // avatarPhotoUrl: await uploadToSupabaseStorage(avatarPhoto)
-      avatarPhoto: avatarPhoto || null,
-      position,
-      jerseyNumber: Number(jerseyNumber),
-      age: 16,
-      level: 1,
+      photoId, // só o id da foto de perfil, nunca a imagem em si
+      country, // vai definir as opções iniciais de times da carreira
+      age: ageNumber,
+      // Posição e número da camisa ainda não são definidos na criação.
+      position: null,
+      jerseyNumber: null,
+      // Progressão RPG: o personagem evolui com tempo, tarefas e partidas.
+      level: STARTING_LEVEL,
       xp: 0,
       skills: {
         finalizacao: 20,
@@ -65,6 +71,7 @@ export async function createPlayer({ nickname, avatarId, avatarPhoto, position, 
         fisico: 20,
         velocidade: 20,
       },
+      accessories: [], // reservado para a futura loja
     },
   }
 

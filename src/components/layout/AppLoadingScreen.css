@@ -1,0 +1,34 @@
+.boot-frame {
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  background: radial-gradient(ellipse 80% 50% at 50% 40%, var(--bg-glow), transparent 70%), var(--bg);
+}
+
+.boot-spinner {
+  width: 56px;
+  height: 56px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 3px solid var(--border);
+  border-top-color: var(--primary);
+  color: var(--primary);
+  animation: boot-spin 0.9s linear infinite;
+}
+
+.boot-label {
+  margin: 0;
+  color: var(--text-secondary);
+  font-family: var(--font-heading);
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+}
+
+@keyframes boot-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
