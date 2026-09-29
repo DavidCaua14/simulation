@@ -1,5 +1,6 @@
-import { CrownIcon, EvolveIcon, TeamIcon, RankIcon, LockIcon } from '../../components/ui/icons'
+import { CrownIcon, EvolveIcon, TeamIcon, RankIcon, LockIcon, AlertIcon } from '../../components/ui/icons'
 import SoccerBallIcon from './components/SoccerBallIcon'
+import { useAuth } from '../../context/AuthContext'
 import loginBg from './assets/login-bg.webp'
 import './login-screen.css'
 
@@ -10,7 +11,9 @@ const FEATURES = [
   { Icon: SoccerBallIcon, top: 'VIVA ESSA', bottom: 'JORNADA' },
 ]
 
-export default function LoginScreen({ onLogin }) {
+export default function LoginScreen() {
+  const { signInWithGoogle, authError } = useAuth()
+
   return (
     <div className="app-viewport">
       <div className="app-frame login-frame">
@@ -57,7 +60,13 @@ export default function LoginScreen({ onLogin }) {
               ))}
             </div>
 
-            <button type="button" className="google-btn" onClick={onLogin}>
+            {authError && (
+              <p className="login-error">
+                <AlertIcon /> {authError}
+              </p>
+            )}
+
+            <button type="button" className="google-btn" onClick={signInWithGoogle}>
               <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true">
                 <path
                   fill="#4285F4"

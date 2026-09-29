@@ -26,7 +26,7 @@ import {
 import { createPlayer, isNicknameTaken } from './playerService'
 import './create-character.css'
 
-export default function CreateCharacterScreen({ onCreated }) {
+export default function CreateCharacterScreen({ userId, onCreated }) {
   const [photoId, setPhotoId] = useState(PROFILE_PHOTOS[0].id)
   const [username, setUsername] = useState('')
   const [age, setAge] = useState('')
@@ -71,7 +71,7 @@ export default function CreateCharacterScreen({ onCreated }) {
     setSubmitError('')
     setSubmitting(true)
     try {
-      const career = await createPlayer({ nickname: username, photoId, country, age: ageNumber })
+      const career = await createPlayer({ userId, nickname: username, photoId, country, age: ageNumber })
       setCreated(career)
       onCreated?.(career)
     } catch (err) {

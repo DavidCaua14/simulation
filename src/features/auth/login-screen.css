@@ -222,6 +222,22 @@
   transform: translateY(1px);
 }
 
+.login-error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin: 0;
+  padding: 8px 14px;
+  border-radius: var(--radius-sm);
+  background: rgba(217, 45, 67, 0.16);
+  border: 1px solid var(--danger);
+  color: #ffd7dc;
+  font-size: 0.72rem;
+  font-weight: 600;
+  max-width: 320px;
+}
+
 .login-disclaimer {
   margin: 8px 0 0;
   color: #9aa1b4;
