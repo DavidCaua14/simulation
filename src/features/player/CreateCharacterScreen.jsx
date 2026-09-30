@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import AppShell from '../../components/layout/AppShell'
 import LoadingOverlay from '../../components/ui/LoadingOverlay'
 import {
@@ -35,14 +35,36 @@ export default function CreateCharacterScreen({ userId, onCreated }) {
   const [submitError, setSubmitError] = useState('')
   const [created, setCreated] = useState(null)
 
-  const usernameError = useMemo(() => {
+  // 'idle' | 'checking' | 'available' | 'taken'
+  const [nicknameStatus, setNicknameStatus] = useState('idle')
+  const checkSeq = useRef(0)
+
+  const usernameFormatError = useMemo(() => {
     if (!username) return ''
     if (username.length < 3) return 'Mínimo de 3 caracteres.'
     if (!/^[a-zA-Z0-9_]+$/.test(username)) return 'Use apenas letras, números e "_".'
-    if (isNicknameTaken(username)) return 'Esse username já está em uso.'
     return ''
   }, [username])
-  const usernameValid = username.length >= 3 && !usernameError
+
+  // Só consulta o Supabase quando o formato já está certo, com debounce
+  // pra não disparar uma chamada de rede a cada tecla digitada.
+  useEffect(() => {
+    if (!username || usernameFormatError) {
+      setNicknameStatus('idle')
+      return
+    }
+    setNicknameStatus('checking')
+    const mySeq = ++checkSeq.current
+    const timer = setTimeout(async () => {
+      const taken = await isNicknameTaken(username)
+      if (checkSeq.current !== mySeq) return // usuário já digitou outra coisa
+      setNicknameStatus(taken ? 'taken' : 'available')
+    }, 450)
+    return () => clearTimeout(timer)
+  }, [username, usernameFormatError])
+
+  const usernameError = usernameFormatError || (nicknameStatus === 'taken' ? 'Esse username já está em uso.' : '')
+  const usernameValid = username.length >= 3 && !usernameFormatError && nicknameStatus === 'available'
 
   const ageNumber = Number(age)
   const ageError = useMemo(() => {
@@ -164,6 +186,9 @@ export default function CreateCharacterScreen({ userId, onCreated }) {
                     <p className="sheet-msg is-error">
                       <AlertIcon /> {usernameError}
                     </p>
+                  )}
+                  {!usernameError && nicknameStatus === 'checking' && (
+                    <p className="sheet-msg is-checking">Verificando disponibilidade...</p>
                   )}
                   {usernameValid && (
                     <p className="sheet-msg is-ok">

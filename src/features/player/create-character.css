@@ -103,6 +103,9 @@
 .sheet-msg.is-ok {
   color: var(--success);
 }
+.sheet-msg.is-checking {
+  color: var(--text-secondary);
+}
 
 /* Foto de perfil (sempre redonda) */
 .photo-picker {

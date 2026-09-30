@@ -186,3 +186,75 @@ real — os dois sistemas precisam saber o endereço final. E quando o app
 estiver pronto para todo mundo, mude a tela de consentimento OAuth do
 Google de "Testing" para "In production" (o Google pode pedir uma revisão
 se usar escopos sensíveis, mas `email`/`profile` são considerados básicos).
+
+## 10. Corrigindo o redirecionamento do login (volta pra tela de login em vez de criar personagem)
+
+Isso é configuração, não código. O motivo quase certo: o **Site URL** foi
+configurado, mas a **Redirect URLs** (é uma lista separada, na mesma
+página) não tem a URL do seu app da Vercel. Sem isso, o Supabase, por
+segurança, redireciona de volta sem anexar a sessão — daí o app não vê
+ninguém logado e mostra o login de novo.
+
+**Como corrigir:**
+1. Vá em **Authentication → URL Configuration**
+   (`https://supabase.com/dashboard/project/nkdbixmfsochlprcvkxl/auth/url-configuration`).
+2. No campo **Redirect URLs** (abaixo do Site URL), adicione, cada uma em
+   uma linha:
+   - `https://simulation-teal-gamma.vercel.app/**`
+   - `http://localhost:5173/**` (pra continuar testando local)
+3. Salve.
+4. Teste de novo numa aba anônima (evita sessão/cache antigos atrapalharem).
+
+O resto da sua configuração (Site URL, Origens JavaScript no Google, URI de
+redirecionamento apontando pro callback do Supabase) já está certo — só
+faltou esse item.
+
+## 11. Onde ficam guardados os dados (e como conferir)
+
+**Importante:** até esta atualização, só o **login** passava pelo Supabase.
+Nickname, idade, foto, nível, XP etc. ainda estavam só no `localStorage` do
+seu navegador — nunca saíam dali. A partir de agora isso mudou: o
+personagem é salvo de verdade no banco do Supabase.
+
+### 1. Rodar a criação da tabela (só uma vez)
+Abra **SQL Editor** no painel do Supabase
+(`https://supabase.com/dashboard/project/nkdbixmfsochlprcvkxl/sql/new`),
+cole o conteúdo do arquivo `supabase/schema.sql` (está no zip) e clique em
+**Run**. Isso cria:
+- a tabela `careers` (nickname, foto, país, idade, nível, xp, skills,
+  acessórios...);
+- a regra "1 carreira ativa por usuário" e "nickname único", garantidas
+  pelo próprio banco (não só pela tela);
+- **Row Level Security**: cada usuário só enxerga e só edita as próprias
+  carreiras — mesmo alguém mexendo direto na API, não consegue ver dados de
+  outro jogador;
+- uma função (`is_nickname_taken`) que permite checar se um nickname já
+  existe sem violar essa proteção.
+
+### 2. Conferir se está gravando
+- **Usuários que logaram**: **Authentication → Users**
+  (`.../auth/users`) — aparece cada conta Google que já entrou.
+- **Personagens criados**: **Table Editor → careers**
+  (`.../editor`) — cada linha é uma carreira, já com `nickname`, `level`,
+  `xp`, `skills` etc. Dá pra ver em tempo real: crie um personagem no app e
+  atualize essa tabela.
+- Repare que o `user_id` de cada linha bate com o `id` de um usuário lá em
+  Authentication → Users — é esse vínculo que faz a regra "1 carreira ativa
+  por usuário" funcionar.
+
+### 3. O que muda no código
+`playerService.js` trocou de `localStorage` para consultas reais
+(`supabase.from('careers')...`). A checagem de username disponível virou
+assíncrona de verdade (chama o banco com um pequeno atraso de 450ms depois
+que você para de digitar, pra não disparar uma consulta a cada tecla) —
+`CreateCharacterScreen.jsx` mostra "Verificando disponibilidade..." nesse
+intervalo.
+
+Já testei esse fluxo simulando as respostas do Supabase (nickname
+indisponível, disponível, e até o caso de dois usuários tentarem o mesmo
+nickname ao mesmo tempo) — os três casos tratam o erro corretamente sem
+travar a tela.
+
+### 4. Dependência
+Nenhuma nova — já usa o `@supabase/supabase-js` que você instalou no passo
+anterior.
