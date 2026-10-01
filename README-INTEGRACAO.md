@@ -258,3 +258,43 @@ travar a tela.
 ### 4. Dependência
 Nenhuma nova — já usa o `@supabase/supabase-js` que você instalou no passo
 anterior.
+
+## 12. Login volta pra tela de login mesmo com o token na URL
+
+Se depois de corrigir as Redirect URLs (seção 10) o comportamento virou
+"a URL volta com `#access_token=...`, mas o app mostra a tela de login de
+novo" — eu reproduzi exatamente esse cenário aqui (mesmo formato de token,
+mesma sequência) contra o código deste projeto, e funcionou: a sessão foi
+reconhecida e a tela trocou para a criação de personagem. Ou seja, o
+código em si funciona; o problema está em um destes três pontos, nesta
+ordem de probabilidade:
+
+### 1. A Vercel pode não estar com a versão mais nova do código
+Confira em **Vercel → seu projeto → Deployments**: o deployment mais
+recente precisa ser DEPOIS de você ter colocado os arquivos
+`AuthContext.jsx` / `App.jsx` / `LoginScreen.jsx` no seu repositório do
+GitHub (commit + push) — a Vercel não pega os arquivos de um zip sozinha,
+só redeploya quando detecta um novo commit na branch conectada (`main`,
+pelo que vi no seu print). Clique no deployment mais recente e confira a
+mensagem/hash do commit.
+
+### 2. Sessão antiga travada no navegador
+Como você testou várias vezes enquanto ainda estava quebrado, pode ter
+ficado uma sessão corrompida guardada no navegador. Teste de novo numa
+**aba anônima/privada** (ou DevTools → Application → Storage →
+**Clear site data** no seu domínio da Vercel) antes de clicar em
+"Entrar com o Google" de novo.
+
+### 3. Erro específico que só aparece no seu ambiente
+Com a atualização desta rodada, o `AuthContext.jsx` agora imprime no
+console do navegador exatamente o que está acontecendo. Teste de novo
+com o **DevTools aberto (F12) → aba Console**, e procure linhas
+começando com `[auth]`. Eu deveria ver algo assim quando funciona:
+```
+[auth] evento: INITIAL_SESSION usuário seu@email.com
+[auth] sessão inicial: logado como seu@email.com
+[auth] evento: SIGNED_IN usuário seu@email.com
+```
+Se aparecer algo diferente (um erro em vermelho, ou nenhuma linha
+`[auth]` nenhuma), me manda o print do console — isso aponta direto pra
+causa.

@@ -16,13 +16,26 @@ export function AuthProvider({ children }) {
 
     // Ao voltar do Google, o Supabase lê o token da própria URL e resolve a
     // sessão aqui — sem precisarmos fazer nada manual com a URL.
+    // Os console.log ficam de propósito: se algo travar em produção, é o
+    // primeiro lugar pra olhar (DevTools → Console).
     supabase.auth.getSession().then(({ data, error }) => {
-      if (error) setAuthError(error.message)
+      if (error) {
+        console.error('[auth] erro ao checar sessão:', error.message)
+        setAuthError(error.message)
+      }
+      console.log('[auth] sessão inicial:', data.session ? `logado como ${data.session.user.email}` : 'nenhuma sessão encontrada')
       setUser(data.session?.user ?? null)
       setStatus(data.session?.user ? 'signed-in' : 'signed-out')
+
+      // Limpa o #access_token=... da barra de endereço depois de lido —
+      // só estética/segurança, não é necessário pra sessão funcionar.
+      if (window.location.hash.includes('access_token')) {
+        window.history.replaceState(null, '', window.location.pathname + window.location.search)
+      }
     })
 
-    const { data: subscription } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: subscription } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('[auth] evento:', event, session ? `usuário ${session.user.email}` : '(sem sessão)')
       setUser(session?.user ?? null)
       setStatus(session?.user ? 'signed-in' : 'signed-out')
     })
