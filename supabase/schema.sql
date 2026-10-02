@@ -20,8 +20,14 @@ create table if not exists public.careers (
     "defesa": 20, "fisico": 20, "velocidade": 20
   }'::jsonb,
   accessories jsonb not null default '[]'::jsonb,
+  club_id text,
   created_at timestamptz not null default now()
 );
+
+-- Se a tabela "careers" já existia antes desta coluna (seu caso, se você
+-- rodou este arquivo antes da etapa de escolha de clube), rode só esta
+-- linha — é segura mesmo se a coluna já existir:
+alter table public.careers add column if not exists club_id text;
 
 -- Nickname único (sem diferenciar maiúsculas/minúsculas), em toda a tabela.
 create unique index if not exists careers_nickname_unique_idx

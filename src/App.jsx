@@ -1,12 +1,18 @@
+import { useState } from 'react'
 import { ThemeProvider } from './context/ThemeContext'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import AppLoadingScreen from './components/layout/AppLoadingScreen'
 import LoginScreen from './features/auth/LoginScreen'
 import CreateCharacterScreen from './features/player/CreateCharacterScreen'
+import ClubOfferScreen from './features/club/ClubOfferScreen'
+import HomeScreen from './features/home/HomeScreen'
 import './styles/theme.css'
 
 function Gate() {
   const { status, user } = useAuth()
+  // Carreira recém-criada vive aqui enquanto o jogador passa pelas etapas
+  // seguintes (escolher clube) — tudo sem reload, trocando de componente.
+  const [career, setCareer] = useState(null)
 
   // 'loading': checando se já existe sessão (ex.: acabou de voltar do Google)
   if (status === 'loading') {
@@ -17,15 +23,15 @@ function Gate() {
     return <LoginScreen />
   }
 
-  return (
-    <CreateCharacterScreen
-      userId={user.id}
-      onCreated={(career) => {
-        // Próxima etapa: navegar para a tela inicial (Home) do personagem.
-        console.log('Personagem criado:', career)
-      }}
-    />
-  )
+  if (!career) {
+    return <CreateCharacterScreen userId={user.id} onCreated={setCareer} />
+  }
+
+  if (!career.player.clubId) {
+    return <ClubOfferScreen career={career} onClubChosen={setCareer} />
+  }
+
+  return <HomeScreen career={career} />
 }
 
 function App() {

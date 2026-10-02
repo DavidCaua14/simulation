@@ -298,3 +298,55 @@ começando com `[auth]`. Eu deveria ver algo assim quando funciona:
 Se aparecer algo diferente (um erro em vermelho, ou nenhuma linha
 `[auth]` nenhuma), me manda o print do console — isso aponta direto pra
 causa.
+
+## 13. Tela de propostas de clube (entre criar personagem e a Home)
+
+Depois de criar o personagem, antes da tela inicial, o jogador passa pela
+tela de propostas (`features/club/ClubOfferScreen.jsx`):
+
+- O **empresário** (retrato gerado a partir da imagem que você mandou,
+  recortado em `features/club/assets/agent-photo.webp`) manda uma sequência
+  de mensagens em formato de chat, aparecendo uma a uma — **sem nenhum
+  loading** nessa parte, é só o ritmo da conversa (`ChatBubble.jsx`).
+- Depois das mensagens, aparecem as **3 propostas** (Botafogo, Fluminense,
+  Flamengo — escudos em `features/club/assets/`, recortados e centralizados
+  a partir dos arquivos que você enviou). Tocar numa card seleciona; o botão
+  "Fechar com [clube]" só libera depois de escolher.
+- Ao confirmar: o empresário manda uma última mensagem, e **só então**
+  aparece o loading personalizado (o mesmo componente usado em outras
+  partes do app) enquanto o clube é salvo de verdade no Supabase.
+
+### Vínculo com o clube
+`features/club/clubService.js` grava o clube escolhido direto na carreira
+(`careers.club_id`, nova coluna — veja a seção 13.1 abaixo). Esse é o campo
+que vai alimentar o futuro modo de simular partidas e a troca de clube:
+trocar de time, mais pra frente, é só chamar essa mesma função de novo com
+outro `clubId`.
+
+Os clubes disponíveis (nome, escudo, texto da proposta) ficam em
+`features/club/data/clubs.js` — adicionar um 4º clube é só incluir uma
+entrada ali e colocar o escudo em `assets/`.
+
+### 13.1 Atualizar o banco (rodar uma vez)
+Como você já tinha criado a tabela `careers` antes dessa tela existir,
+precisa adicionar a coluna nova. Abra o **SQL Editor** no Supabase e rode:
+```sql
+alter table public.careers add column if not exists club_id text;
+```
+(Esse comando já está incluído no `supabase/schema.sql` atualizado, caso
+prefira rodar o arquivo inteiro de novo — é seguro, não duplica nada.)
+
+### Fluxo completo (já testado)
+`App.jsx` guarda a carreira em memória enquanto o jogador avança: cria o
+personagem → (sem clube ainda) mostra as propostas → (clube escolhido)
+mostra a Home. Tudo sem reload, trocando de componente React.
+
+Testei esse fluxo inteiro simulando as respostas do Supabase: criação do
+personagem, as 4 mensagens aparecendo em sequência sem loading, as 3
+propostas, seleção, e o salvamento do `club_id` — a "Home" (ainda
+provisória, ver seção 14) mostra o clube certo depois.
+
+## 14. Tela inicial (Home) — provisória
+`features/home/HomeScreen.jsx` é só um placeholder pra fechar o fluXO por
+enquanto: mostra o cartão do personagem e o clube atual. Treinos, partidas,
+elenco e troca de clube ficam para a próxima etapa.

@@ -3,27 +3,7 @@
 // localStorage. Todas as funções são assíncronas por causa disso.
 import { supabase } from '../../lib/supabaseClient'
 import { MIN_AGE, MAX_AGE } from './data/gameConstants'
-
-function mapRowToCareer(row) {
-  return {
-    id: row.id,
-    userId: row.user_id,
-    status: row.status,
-    createdAt: row.created_at,
-    player: {
-      nickname: row.nickname,
-      photoId: row.photo_id,
-      country: row.country,
-      age: row.age,
-      position: row.position,
-      jerseyNumber: row.jersey_number,
-      level: row.level,
-      xp: row.xp,
-      skills: row.skills,
-      accessories: row.accessories,
-    },
-  }
-}
+import { mapRowToCareer } from './mapCareerRow'
 
 // Regra de negócio: 1 carreira ativa por vez por usuário (também reforçada
 // no banco por um índice único — ver schema.sql).
