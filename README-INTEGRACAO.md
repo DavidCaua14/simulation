@@ -350,3 +350,38 @@ provisória, ver seção 14) mostra o clube certo depois.
 `features/home/HomeScreen.jsx` é só um placeholder pra fechar o fluXO por
 enquanto: mostra o cartão do personagem e o clube atual. Treinos, partidas,
 elenco e troca de clube ficam para a próxima etapa.
+
+## 15. Retomar de onde parou (reload) e trocar de conta Google
+
+Dois problemas resolvidos nesta rodada:
+
+### "Recarreguei e voltou pra tela de criar personagem"
+A carreira só existia na memória do React (`useState` em `App.jsx`) — um
+F5 zera essa memória, mas o personagem já estava salvo no Supabase. Agora
+o `Gate` (em `App.jsx`) **sempre confere no banco** qual é a carreira ativa
+do usuário logado (`playerService.getActiveCareer`) antes de decidir a
+tela, toda vez que a página carrega:
+- sem carreira → Criar personagem
+- carreira sem `club_id` → Propostas (retoma exatamente aí)
+- carreira com `club_id` → Início
+
+Isso também resolve o seu outro pedido: fazer login numa conta que já tem
+personagem agora vai **direto pra tela certa** (inclusive a Início), nunca
+mais pra criação. Testei os três casos simulando o banco — inclusive dando
+reload no meio do fluxo de propostas, e ele continuou lá.
+
+### "Outro e-mail também trava dizendo que já existe carreira"
+Isso acontecia porque o Google, se você já estava logado nele no navegador,
+reaproveitava a conta em silêncio — então o "usuário" no Supabase continuava
+sendo o mesmo de antes, mesmo clicando em "Entrar com o Google" de novo.
+Duas mudanças:
+- O login agora sempre força o Google a mostrar a **lista de contas**
+  (`prompt: select_account` em `AuthContext.jsx`) — testei e confirmei que
+  esse parâmetro vai em toda tentativa de login.
+- Adicionei um **botão de sair** (ícone no canto superior esquerdo das
+  telas de criar personagem, propostas e início —
+  `components/ui/SignOutButton.jsx`), pra você encerrar a sessão atual
+  antes de entrar com outra conta, sem depender só do seletor do Google.
+
+Com essas duas coisas juntas, testar com contas diferentes fica confiável:
+ou você clica em Sair antes, ou o próprio Google pergunta qual conta usar.

@@ -8,18 +8,29 @@ import { mapRowToCareer } from './mapCareerRow'
 // Regra de negócio: 1 carreira ativa por vez por usuário (também reforçada
 // no banco por um índice único — ver schema.sql).
 export async function hasActiveCareer(userId) {
+  const career = await getActiveCareer(userId)
+  return Boolean(career)
+}
+
+// Busca a carreira ativa do usuário logado — é com isso que o app sabe em
+// qual tela retomar (criar personagem / escolher clube / início) toda vez
+// que carrega, inclusive depois de um F5. A "memória" de verdade é o banco,
+// nunca o estado do React.
+export async function getActiveCareer(userId) {
+  if (!userId) return null
+
   const { data, error } = await supabase
     .from('careers')
-    .select('id')
+    .select('*')
     .eq('user_id', userId)
     .eq('status', 'active')
-    .limit(1)
+    .maybeSingle()
 
   if (error) {
-    console.error('[hasActiveCareer]', error)
-    return false
+    console.error('[getActiveCareer]', error)
+    return null
   }
-  return data.length > 0
+  return data ? mapRowToCareer(data) : null
 }
 
 export async function isNicknameTaken(nickname) {

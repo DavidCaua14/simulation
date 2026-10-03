@@ -51,9 +51,15 @@ export function AuthProvider({ children }) {
     setAuthError('')
     // Isso navega o navegador para o Google e volta — é assim que o OAuth
     // por redirecionamento funciona, não tem como evitar essa ida e volta.
+    // "prompt: select_account" força o Google a sempre mostrar a lista de
+    // contas, em vez de reaproveitar em silêncio a última conta logada —
+    // sem isso, não dá pra trocar de conta de propósito.
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: window.location.origin },
+      options: {
+        redirectTo: window.location.origin,
+        queryParams: { prompt: 'select_account' },
+      },
     })
     if (error) setAuthError(error.message)
   }

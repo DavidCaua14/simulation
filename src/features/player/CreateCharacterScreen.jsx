@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import AppShell from '../../components/layout/AppShell'
+import SignOutButton from '../../components/ui/SignOutButton'
 import LoadingOverlay from '../../components/ui/LoadingOverlay'
 import {
   UsernameIcon,
@@ -10,7 +11,6 @@ import {
   MinusIcon,
   PlusIcon,
   PlayIcon,
-  ShieldIcon,
   StarIcon,
 } from '../../components/ui/icons'
 import CharacterCard from './components/CharacterCard'
@@ -106,7 +106,7 @@ export default function CreateCharacterScreen({ userId, onCreated }) {
   const photo = getProfilePhotoById(created ? created.player.photoId : photoId)
 
   return (
-    <AppShell left={<ShieldIcon />} title={created ? 'Personagem criado' : 'Novo personagem'}>
+    <AppShell left={<SignOutButton />} title={created ? 'Personagem criado' : 'Novo personagem'}>
       <LoadingOverlay show={submitting} label="Criando personagem..." />
 
       {created ? (

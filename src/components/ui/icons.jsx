@@ -17,6 +17,7 @@ import {
   User,
   TrendingUp,
   Lock,
+  LogOut,
 } from 'lucide-react'
 
 export const UsernameIcon = (props) => <AtSign size={15} {...props} />
@@ -36,3 +37,4 @@ export const EvolveIcon = (props) => <User size={22} {...props} />
 export const TeamIcon = (props) => <Shield size={22} {...props} />
 export const RankIcon = (props) => <TrendingUp size={22} {...props} />
 export const LockIcon = (props) => <Lock size={12} {...props} />
+export const LogOutIcon = (props) => <LogOut size={17} {...props} />

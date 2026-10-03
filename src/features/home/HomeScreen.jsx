@@ -1,9 +1,9 @@
 import AppShell from '../../components/layout/AppShell'
+import SignOutButton from '../../components/ui/SignOutButton'
 import CharacterCard from '../player/components/CharacterCard'
 import { getProfilePhotoById } from '../player/data/profilePhotos'
 import { getClubById } from '../club/data/clubs'
 import { PLACEHOLDER_XP_TO_NEXT_LEVEL } from '../player/data/gameConstants'
-import { ShieldIcon } from '../../components/ui/icons'
 import './home-screen.css'
 
 export default function HomeScreen({ career }) {
@@ -12,7 +12,7 @@ export default function HomeScreen({ career }) {
   const club = getClubById(player.clubId)
 
   return (
-    <AppShell left={<ShieldIcon />} title="Início">
+    <AppShell left={<SignOutButton />} title="Início">
       <div className="home-body">
         <CharacterCard
           photo={photo}
