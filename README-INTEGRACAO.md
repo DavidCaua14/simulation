@@ -385,3 +385,40 @@ Duas mudanças:
 
 Com essas duas coisas juntas, testar com contas diferentes fica confiável:
 ou você clica em Sair antes, ou o próprio Google pergunta qual conta usar.
+
+## 16. Tela inicial (Home) de verdade
+
+Substituí o placeholder da seção 14 por uma Home completa, baseada no
+modelo que você mandou:
+
+- **Cabeçalho do jogador**: reaproveita o `CharacterCard` já usado na
+  criação (retrato, nível, XP, bandeira) + uma faixa de moedas (Energia,
+  Moedas, Gemas) — os valores são decorativos por enquanto, os botões "+"
+  ficam desabilitados (sem loja ainda).
+- **Banner principal**: fundo do estádio (reaproveitei a mesma imagem da
+  tela de login, pra manter a identidade visual) com a frase de efeito e um
+  selo **"Seu time"** com o escudo e o nome do clube — isso aqui é real,
+  puxa direto o `clubId` salvo na carreira.
+- **8 modos de jogo**, todos com a marca **"Em breve"** (bloqueados de
+  propósito, como você pediu, pra ir destravando aos poucos): Palpites
+  Esportivos e Partida Online usam as imagens que você mandou (recortei o
+  clássico Real Madrid x Barcelona e o confronto entre jogadores da
+  colagem); os outros 6 (Temporadas, Ranking, Eventos, Loja, Mensagens,
+  Convites) seguem o estilo ícone + texto, igual ao resto do app.
+- **Configurações** (bloqueada) e **Tema** (essa já funciona de verdade —
+  alterna claro/escuro, igual ao botão do topo).
+- **Menu fixo embaixo**, com os mesmos modos como atalho — só "Início"
+  funciona por enquanto, os outros ficam com uma dica "em breve" ao passar
+  o mouse. Testei rolando a tela até o fim: o menu nunca se move, fica
+  sempre visível, em qualquer altura de tela (testei até em 680px).
+
+### Arquivos novos
+- `features/home/HomeScreen.jsx` (tela), `components/` (CurrencyRow,
+  HeroBanner, ModeCard, BottomTabBar), `data/gameModes.js` e `data/tabs.js`
+  (fáceis de editar — destravar um modo é só trocar `locked: true` pra
+  `false` e ele deixa de aparecer desabilitado).
+- `assets/classico.webp` e `assets/confronto.webp`: recortes da colagem que
+  você enviou. `assets/hero-bg.webp`: cópia do fundo da tela de login.
+
+### Nenhuma dependência nova
+Só ícones novos do `lucide-react`, que já estava instalado.

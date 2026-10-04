@@ -18,6 +18,20 @@ import {
   TrendingUp,
   Lock,
   LogOut,
+  Zap,
+  Coins,
+  Gem,
+  Swords,
+  Calendar,
+  Trophy,
+  PartyPopper,
+  ShoppingCart,
+  Mail,
+  UserPlus,
+  Settings,
+  ChevronRight,
+  MoreHorizontal,
+  House,
 } from 'lucide-react'
 
 export const UsernameIcon = (props) => <AtSign size={15} {...props} />
@@ -38,3 +52,20 @@ export const TeamIcon = (props) => <Shield size={22} {...props} />
 export const RankIcon = (props) => <TrendingUp size={22} {...props} />
 export const LockIcon = (props) => <Lock size={12} {...props} />
 export const LogOutIcon = (props) => <LogOut size={17} {...props} />
+
+// Tela inicial
+export const EnergyIcon = (props) => <Zap size={15} {...props} />
+export const CoinsIcon = (props) => <Coins size={15} {...props} />
+export const GemIcon = (props) => <Gem size={15} {...props} />
+export const TipsIcon = (props) => <TrendingUp size={20} {...props} />
+export const OnlineMatchIcon = (props) => <Swords size={20} {...props} />
+export const SeasonsIcon = (props) => <Calendar size={20} {...props} />
+export const RankingIcon = (props) => <Trophy size={20} {...props} />
+export const EventsIcon = (props) => <PartyPopper size={20} {...props} />
+export const StoreIcon = (props) => <ShoppingCart size={20} {...props} />
+export const MessagesIcon = (props) => <Mail size={20} {...props} />
+export const InvitesIcon = (props) => <UserPlus size={20} {...props} />
+export const SettingsIcon = (props) => <Settings size={20} {...props} />
+export const ChevronRightIcon = (props) => <ChevronRight size={18} {...props} />
+export const MoreIcon = (props) => <MoreHorizontal size={20} {...props} />
+export const HomeIcon = (props) => <House size={20} {...props} />
