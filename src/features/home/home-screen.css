@@ -311,33 +311,74 @@
   color: var(--text-secondary);
 }
 
-.theme-switch {
-  width: 36px;
-  height: 20px;
-  border-radius: 999px;
-  background: var(--surface-alt);
-  border: 1px solid var(--border);
+/* Carrossel do ranking, fixo no topo (não rola com o conteúdo) */
+.ranking-ticker {
   flex-shrink: 0;
-  position: relative;
+  display: flex;
+  align-items: center;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  overflow: hidden;
 }
-.theme-switch::after {
-  content: '';
-  position: absolute;
-  top: 2px;
-  left: 2px;
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  background: var(--text-secondary);
-  transition: transform 0.15s ease, background 0.15s ease;
+.ranking-ticker-label {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 10px;
+  border-right: 1px solid var(--border);
+  background: var(--surface-strong);
+  color: var(--gold);
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
 }
-.theme-switch.is-on {
-  background: color-mix(in srgb, var(--primary) 35%, var(--surface-alt));
-  border-color: var(--primary);
+.ranking-ticker-track {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
 }
-.theme-switch.is-on::after {
-  transform: translateX(16px);
-  background: var(--primary);
+.ranking-ticker-inner {
+  display: flex;
+  width: max-content;
+  animation: ranking-ticker-ltr 26s linear infinite;
+}
+@keyframes ranking-ticker-ltr {
+  from {
+    transform: translateX(-50%);
+  }
+  to {
+    transform: translateX(0%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ranking-ticker-inner {
+    animation: none;
+  }
+}
+.ranking-ticker-list {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+.ranking-entry {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 16px;
+  white-space: nowrap;
+  font-size: 0.72rem;
+  color: var(--text-primary);
+  border-right: 1px dashed var(--border);
+}
+.ranking-entry-pos {
+  color: var(--primary);
+  font-weight: 800;
+}
+.ranking-entry-pts {
+  color: var(--text-secondary);
+  font-weight: 500;
 }
 
 /* Menu fixo embaixo */

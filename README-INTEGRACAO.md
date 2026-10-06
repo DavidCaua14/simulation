@@ -422,3 +422,34 @@ modelo que você mandou:
 
 ### Nenhuma dependência nova
 Só ícones novos do `lucide-react`, que já estava instalado.
+
+## 17. Imagens de fundo em todos os modos + carrossel do ranking
+
+### Imagens
+As 7 imagens que você mandou agora são o fundo de cada modo (Partida Online
+continua com a imagem de antes, como pedido). Duas delas eu troquei de
+lugar em relação ao nome do arquivo, porque o conteúdo batia melhor com
+outro modo: `temporadas.png` (a foto de show/confete) foi pro card de
+**Eventos**, e `eventos.png` (o estádio vazio) foi pro card de
+**Temporadas** — o conteúdo visual de cada uma combinava mais com o modo
+trocado. Se preferir do jeito original, é só trocar os arquivos em
+`data/gameModes.js`. Na imagem de Mensagens, recortei só a parte do celular
+(a original tinha uma faixa branca grande do lado esquerdo).
+
+Com isso, os 8 cards agora têm imagem de fundo (antes só 2 tinham) — o
+componente já estava pronto pra isso, foi só trocar os dados.
+
+### Botão de tema duplicado
+Removido o toggle "Tema" que estava embaixo, na Home — o do canto superior
+direito (que já existia em todas as telas) continua sendo o único.
+
+### Carrossel do ranking (topo, fixo)
+`components/RankingTicker.jsx`: uma faixa fixa entre o topo e o conteúdo
+(não rola — fica sempre visível, do mesmo jeito que o menu de baixo),
+mostrando os melhores colocados passando **da esquerda para a direita**,
+em loop contínuo e suave (confirmei isso medindo o movimento de verdade,
+não só visualmente). Hoje os nomes são de exemplo
+(`data/rankingPreview.js`) — quando o Ranking de verdade existir, essa
+lista passa a vir do Supabase, ordenada por pontuação, sem mudar o
+componente em si. Não é clicável ainda, já que a tela de Ranking também
+está bloqueada.

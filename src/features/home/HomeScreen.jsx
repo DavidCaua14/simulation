@@ -1,7 +1,6 @@
 import AppShell from '../../components/layout/AppShell'
 import SignOutButton from '../../components/ui/SignOutButton'
-import { SettingsIcon, ChevronRightIcon, SunIcon, MoonIcon } from '../../components/ui/icons'
-import { useTheme } from '../../context/ThemeContext'
+import { SettingsIcon, ChevronRightIcon } from '../../components/ui/icons'
 import CharacterCard from '../player/components/CharacterCard'
 import { getProfilePhotoById } from '../player/data/profilePhotos'
 import { getClubById } from '../club/data/clubs'
@@ -10,6 +9,7 @@ import CurrencyRow from './components/CurrencyRow'
 import HeroBanner from './components/HeroBanner'
 import ModeCard from './components/ModeCard'
 import BottomTabBar from './components/BottomTabBar'
+import RankingTicker from './components/RankingTicker'
 import { GAME_MODES } from './data/gameModes'
 import './home-screen.css'
 
@@ -17,11 +17,12 @@ export default function HomeScreen({ career }) {
   const { player } = career
   const photo = getProfilePhotoById(player.photoId)
   const club = getClubById(player.clubId)
-  const { theme, toggleTheme } = useTheme()
 
   return (
     <AppShell left={<SignOutButton />} title="Início">
       <div className="home-shell">
+        <RankingTicker />
+
         <div className="home-scroll">
           <div className="home-top">
             <CharacterCard
@@ -52,15 +53,6 @@ export default function HomeScreen({ career }) {
                 <span>Ajuste o jogo do seu jeito.</span>
               </span>
               <ChevronRightIcon className="mode-card-chevron" />
-            </button>
-
-            <button type="button" className="settings-item" onClick={toggleTheme}>
-              {theme === 'light' ? <MoonIcon /> : <SunIcon />}
-              <span>
-                <strong>Tema</strong>
-                <span>{theme === 'light' ? 'Claro' : 'Escuro'}</span>
-              </span>
-              <span className={`theme-switch ${theme === 'dark' ? 'is-on' : ''}`} />
             </button>
           </div>
         </div>
