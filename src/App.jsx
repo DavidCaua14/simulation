@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { ThemeProvider } from './context/ThemeContext'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import AppLoadingScreen from './components/layout/AppLoadingScreen'
@@ -11,8 +11,6 @@ import './styles/theme.css'
 
 function Gate() {
   const { status, user } = useAuth()
-  // Carreira recém-criada vive aqui enquanto o jogador passa pelas etapas
-  // seguintes (escolher clube) — tudo sem reload, trocando de componente.
   const [career, setCareer] = useState(null)
   // Navegação simples entre as telas do jogo depois do onboarding.
   const [screen, setScreen] = useState('home')
@@ -24,6 +22,12 @@ function Gate() {
 
   if (status === 'signed-out') {
     return <LoginScreen />
+  }
+
+  // Carrega a carreira do banco antes de decidir a tela — é isso que faz
+  // reload, login de novo e troca de conta sempre caírem no lugar certo.
+  if (checkingCareer) {
+    return <AppLoadingScreen label="Carregando sua carreira..." />
   }
 
   if (!career) {

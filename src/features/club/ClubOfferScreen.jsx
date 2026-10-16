@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import AppShell from '../../components/layout/AppShell'
+import SignOutButton from '../../components/ui/SignOutButton'
 import LoadingOverlay from '../../components/ui/LoadingOverlay'
-import { ShieldIcon, AlertIcon } from '../../components/ui/icons'
+import { AlertIcon } from '../../components/ui/icons'
 import ChatBubble from './components/ChatBubble'
 import ClubProposalCard from './components/ClubProposalCard'
 import { CLUBS, getClubById } from './data/clubs'
@@ -63,7 +64,7 @@ export default function ClubOfferScreen({ career, onClubChosen }) {
   const club = selectedClub ? getClubById(selectedClub) : null
 
   return (
-    <AppShell left={<ShieldIcon />} title="Propostas">
+    <AppShell left={<SignOutButton />} title="Propostas">
       <LoadingOverlay show={saving} label={`Fechando com o ${club?.name}...`} />
 
       <div className="offer-screen">

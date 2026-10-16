@@ -350,3 +350,106 @@ provisória, ver seção 14) mostra o clube certo depois.
 `features/home/HomeScreen.jsx` é só um placeholder pra fechar o fluXO por
 enquanto: mostra o cartão do personagem e o clube atual. Treinos, partidas,
 elenco e troca de clube ficam para a próxima etapa.
+
+## 15. Retomar de onde parou (reload) e trocar de conta Google
+
+Dois problemas resolvidos nesta rodada:
+
+### "Recarreguei e voltou pra tela de criar personagem"
+A carreira só existia na memória do React (`useState` em `App.jsx`) — um
+F5 zera essa memória, mas o personagem já estava salvo no Supabase. Agora
+o `Gate` (em `App.jsx`) **sempre confere no banco** qual é a carreira ativa
+do usuário logado (`playerService.getActiveCareer`) antes de decidir a
+tela, toda vez que a página carrega:
+- sem carreira → Criar personagem
+- carreira sem `club_id` → Propostas (retoma exatamente aí)
+- carreira com `club_id` → Início
+
+Isso também resolve o seu outro pedido: fazer login numa conta que já tem
+personagem agora vai **direto pra tela certa** (inclusive a Início), nunca
+mais pra criação. Testei os três casos simulando o banco — inclusive dando
+reload no meio do fluxo de propostas, e ele continuou lá.
+
+### "Outro e-mail também trava dizendo que já existe carreira"
+Isso acontecia porque o Google, se você já estava logado nele no navegador,
+reaproveitava a conta em silêncio — então o "usuário" no Supabase continuava
+sendo o mesmo de antes, mesmo clicando em "Entrar com o Google" de novo.
+Duas mudanças:
+- O login agora sempre força o Google a mostrar a **lista de contas**
+  (`prompt: select_account` em `AuthContext.jsx`) — testei e confirmei que
+  esse parâmetro vai em toda tentativa de login.
+- Adicionei um **botão de sair** (ícone no canto superior esquerdo das
+  telas de criar personagem, propostas e início —
+  `components/ui/SignOutButton.jsx`), pra você encerrar a sessão atual
+  antes de entrar com outra conta, sem depender só do seletor do Google.
+
+Com essas duas coisas juntas, testar com contas diferentes fica confiável:
+ou você clica em Sair antes, ou o próprio Google pergunta qual conta usar.
+
+## 16. Tela inicial (Home) de verdade
+
+Substituí o placeholder da seção 14 por uma Home completa, baseada no
+modelo que você mandou:
+
+- **Cabeçalho do jogador**: reaproveita o `CharacterCard` já usado na
+  criação (retrato, nível, XP, bandeira) + uma faixa de moedas (Energia,
+  Moedas, Gemas) — os valores são decorativos por enquanto, os botões "+"
+  ficam desabilitados (sem loja ainda).
+- **Banner principal**: fundo do estádio (reaproveitei a mesma imagem da
+  tela de login, pra manter a identidade visual) com a frase de efeito e um
+  selo **"Seu time"** com o escudo e o nome do clube — isso aqui é real,
+  puxa direto o `clubId` salvo na carreira.
+- **8 modos de jogo**, todos com a marca **"Em breve"** (bloqueados de
+  propósito, como você pediu, pra ir destravando aos poucos): Palpites
+  Esportivos e Partida Online usam as imagens que você mandou (recortei o
+  clássico Real Madrid x Barcelona e o confronto entre jogadores da
+  colagem); os outros 6 (Temporadas, Ranking, Eventos, Loja, Mensagens,
+  Convites) seguem o estilo ícone + texto, igual ao resto do app.
+- **Configurações** (bloqueada) e **Tema** (essa já funciona de verdade —
+  alterna claro/escuro, igual ao botão do topo).
+- **Menu fixo embaixo**, com os mesmos modos como atalho — só "Início"
+  funciona por enquanto, os outros ficam com uma dica "em breve" ao passar
+  o mouse. Testei rolando a tela até o fim: o menu nunca se move, fica
+  sempre visível, em qualquer altura de tela (testei até em 680px).
+
+### Arquivos novos
+- `features/home/HomeScreen.jsx` (tela), `components/` (CurrencyRow,
+  HeroBanner, ModeCard, BottomTabBar), `data/gameModes.js` e `data/tabs.js`
+  (fáceis de editar — destravar um modo é só trocar `locked: true` pra
+  `false` e ele deixa de aparecer desabilitado).
+- `assets/classico.webp` e `assets/confronto.webp`: recortes da colagem que
+  você enviou. `assets/hero-bg.webp`: cópia do fundo da tela de login.
+
+### Nenhuma dependência nova
+Só ícones novos do `lucide-react`, que já estava instalado.
+
+## 17. Imagens de fundo em todos os modos + carrossel do ranking
+
+### Imagens
+As 7 imagens que você mandou agora são o fundo de cada modo (Partida Online
+continua com a imagem de antes, como pedido). Duas delas eu troquei de
+lugar em relação ao nome do arquivo, porque o conteúdo batia melhor com
+outro modo: `temporadas.png` (a foto de show/confete) foi pro card de
+**Eventos**, e `eventos.png` (o estádio vazio) foi pro card de
+**Temporadas** — o conteúdo visual de cada uma combinava mais com o modo
+trocado. Se preferir do jeito original, é só trocar os arquivos em
+`data/gameModes.js`. Na imagem de Mensagens, recortei só a parte do celular
+(a original tinha uma faixa branca grande do lado esquerdo).
+
+Com isso, os 8 cards agora têm imagem de fundo (antes só 2 tinham) — o
+componente já estava pronto pra isso, foi só trocar os dados.
+
+### Botão de tema duplicado
+Removido o toggle "Tema" que estava embaixo, na Home — o do canto superior
+direito (que já existia em todas as telas) continua sendo o único.
+
+### Carrossel do ranking (topo, fixo)
+`components/RankingTicker.jsx`: uma faixa fixa entre o topo e o conteúdo
+(não rola — fica sempre visível, do mesmo jeito que o menu de baixo),
+mostrando os melhores colocados passando **da esquerda para a direita**,
+em loop contínuo e suave (confirmei isso medindo o movimento de verdade,
+não só visualmente). Hoje os nomes são de exemplo
+(`data/rankingPreview.js`) — quando o Ranking de verdade existir, essa
+lista passa a vir do Supabase, ordenada por pontuação, sem mudar o
+componente em si. Não é clicável ainda, já que a tela de Ranking também
+está bloqueada.
