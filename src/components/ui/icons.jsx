@@ -17,6 +17,9 @@ import {
   User,
   TrendingUp,
   Lock,
+  ArrowLeft,
+  Ticket,
+  ChevronRight,
 } from 'lucide-react'
 
 export const UsernameIcon = (props) => <AtSign size={15} {...props} />
@@ -36,3 +39,6 @@ export const EvolveIcon = (props) => <User size={22} {...props} />
 export const TeamIcon = (props) => <Shield size={22} {...props} />
 export const RankIcon = (props) => <TrendingUp size={22} {...props} />
 export const LockIcon = (props) => <Lock size={12} {...props} />
+export const BackIcon = (props) => <ArrowLeft size={18} {...props} />
+export const TicketIcon = (props) => <Ticket size={22} {...props} />
+export const ChevronRightIcon = (props) => <ChevronRight size={18} {...props} />

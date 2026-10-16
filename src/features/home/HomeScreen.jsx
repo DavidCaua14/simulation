@@ -3,10 +3,10 @@ import CharacterCard from '../player/components/CharacterCard'
 import { getProfilePhotoById } from '../player/data/profilePhotos'
 import { getClubById } from '../club/data/clubs'
 import { PLACEHOLDER_XP_TO_NEXT_LEVEL } from '../player/data/gameConstants'
-import { ShieldIcon } from '../../components/ui/icons'
+import { ShieldIcon, TicketIcon, ChevronRightIcon } from '../../components/ui/icons'
 import './home-screen.css'
 
-export default function HomeScreen({ career }) {
+export default function HomeScreen({ career, onOpenPredictions }) {
   const { player } = career
   const photo = getProfilePhotoById(player.photoId)
   const club = getClubById(player.clubId)
@@ -34,6 +34,19 @@ export default function HomeScreen({ career }) {
               <strong>{club.name}</strong>
             </div>
           </div>
+        )}
+
+        {onOpenPredictions && (
+          <button type="button" className="home-action card" onClick={onOpenPredictions}>
+            <span className="home-action-icon">
+              <TicketIcon />
+            </span>
+            <span className="home-action-text">
+              <strong>Palpites esportivos</strong>
+              <small>Brasileirão A, B e C · ganhe XP, moedas e energia</small>
+            </span>
+            <ChevronRightIcon />
+          </button>
         )}
 
         <div className="home-placeholder card">
