@@ -43,7 +43,7 @@ export default function HomeScreen({ career, onOpenPredictions }) {
             </span>
             <span className="home-action-text">
               <strong>Palpites esportivos</strong>
-              <small>Brasileirão A, B e C · ganhe XP, moedas e energia</small>
+              <small>Brasileirão A, B e C</small>
             </span>
             <ChevronRightIcon />
           </button>
