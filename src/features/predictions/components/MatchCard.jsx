@@ -11,7 +11,7 @@ export function StatusBadge({ match }) {
   if (match.status === 'live') {
     return (
       <span className="pred-badge pred-badge-live">
-        <i className="pred-dot" /> AO VIVO{match.minute ? ` · ${match.minute}'` : ''}
+        <i className="pred-dot" /> {match.minute ? `AO VIVO · ${match.minute}'` : 'EM ANDAMENTO'}
       </span>
     )
   }
@@ -25,7 +25,7 @@ function TeamRow({ name, logo, score, showScore }) {
     <div className="pred-team">
       <span className="pred-team-logo">{logo && <img src={logo} alt="" loading="lazy" />}</span>
       <span className="pred-team-name">{name}</span>
-      {showScore && <strong className="pred-team-score">{score ?? 0}</strong>}
+      {showScore && score != null && <strong className="pred-team-score">{score}</strong>}
     </div>
   )
 }

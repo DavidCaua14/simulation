@@ -38,7 +38,9 @@ function Ticket({ t }) {
               <em>
                 {m.status === 'scheduled'
                   ? formatDateTime(m.kickoff_at)
-                  : `${m.home_score ?? 0}–${m.away_score ?? 0}${live ? ` · ${m.minute ?? ''}'` : ''}`}
+                  : m.home_score == null
+                    ? live ? 'Em andamento' : '—'
+                    : `${m.home_score}–${m.away_score}${live && m.minute ? ` · ${m.minute}'` : ''}`}
               </em>
             </li>
           )

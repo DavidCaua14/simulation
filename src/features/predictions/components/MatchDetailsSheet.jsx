@@ -30,7 +30,7 @@ export default function MatchDetailsSheet({ match, competitionName, pick, locked
             <strong>{match.home_team}</strong>
           </div>
           <div className="pred-versus-score">
-            {showScore ? `${match.home_score ?? 0} x ${match.away_score ?? 0}` : 'x'}
+            {showScore && match.home_score != null ? `${match.home_score} x ${match.away_score}` : 'x'}
             <small>{formatDateTime(match.kickoff_at)}</small>
           </div>
           <div>

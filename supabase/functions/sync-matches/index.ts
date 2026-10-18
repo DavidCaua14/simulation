@@ -1,19 +1,28 @@
-// Edge Function: sincroniza jogos do Brasileirão (A, B, C) da API-Football
-// com a tabela public.matches e liquida os bilhetes quando jogos terminam.
+// Edge Function: sincroniza jogos (Brasileirão Série A, Champions League, La Liga...)
+// da football-data.org (plano GRATUITO) com a tabela public.matches e liquida os bilhetes.
 // O app NUNCA chama a API: ele só escuta a tabela via Supabase Realtime.
 //
+// Como funciona com o plano gratuito (placar atrasado, sem ao vivo):
+//   pré-jogo  : agenda diária traz os jogos (modo "schedule")
+//   começou   : quando o horário passa, o jogo vira "em andamento" SEM chamar a API
+//   terminou  : ~105 min depois do início, consulta a API a cada 3 min até sair o resultado;
+//               então grava o placar e liquida os bilhetes (modo "live")
+//
 // Modos (corpo JSON): { "mode": "live" | "schedule" | "settle" | "leagues" }
-//   live      – chamado a cada minuto pelo pg_cron; só gasta API se houver jogo na janela
-//   schedule  – chamado 1x por dia; traz a agenda dos próximos dias (ontem → +14 dias).
-//               Aceita também "season", "from" e "to" (YYYY-MM-DD) para testes.
+//   live      – chamado a cada minuto pelo pg_cron (quase sempre sem custo de API)
+//   schedule  – 1x por dia; aceita também "from" e "to" (YYYY-MM-DD, UTC)
 //   settle    – força a liquidação dos bilhetes
-//   leagues   – lista as ligas do Brasil na API (para conferir os IDs 71/72/75)
+//   leagues   – lista as competições liberadas no seu plano (confere BSA, CL, PD)
 import { createClient } from 'npm:@supabase/supabase-js@2'
-import { brtDate, fixtureToRow, hasChanged, isFinalStatus, type ApiFixture, type MatchRow } from './mapping.ts'
+import { fixtureToRow, hasTeams, isFinalStatus, utcDate, type FdMatch, type MatchRow } from './mapping.ts'
 
-const API_BASE = 'https://v3.football.api-sports.io'
-const API_KEY = Deno.env.get('API_FOOTBALL_KEY') ?? ''
+const API_BASE = 'https://api.football-data.org/v4'
+const API_KEY = Deno.env.get('FOOTBALL_DATA_KEY') ?? ''
 const CRON_SECRET = Deno.env.get('CRON_SECRET') ?? ''
+
+const EXPECTED_END_MIN = 105 // minutos após o início em que o jogo costuma acabar
+const POLL_EVERY_MIN = 3 // intervalo entre consultas à API enquanto espera o resultado
+const LOOKBACK_MS = 3 * 86400_000 // ignora jogos "presos" há mais de 3 dias
 
 const db = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!, {
   auth: { persistSession: false },
@@ -22,21 +31,15 @@ const db = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SE
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } })
 
-const currentSeason = () => Number(brtDate(0).slice(0, 4)) // Brasileirão é ano-calendário
-
-async function apiGet(path: string, params: Record<string, string | number>) {
+async function apiGet(path: string, params: Record<string, string | number> = {}) {
   const url = new URL(API_BASE + path)
   for (const [k, v] of Object.entries(params)) url.searchParams.set(k, String(v))
-  const res = await fetch(url, { headers: { 'x-apisports-key': API_KEY } })
+  const res = await fetch(url, { headers: { 'X-Auth-Token': API_KEY } })
   if (!res.ok) {
     const detail = (await res.text().catch(() => '')).slice(0, 300)
-    throw new Error(`API-Football HTTP ${res.status}: ${detail}`)
+    throw new Error(`football-data.org HTTP ${res.status}: ${detail}`)
   }
-  const body = await res.json()
-  const errors = body.errors
-  const hasErrors = Array.isArray(errors) ? errors.length > 0 : errors && Object.keys(errors).length > 0
-  if (hasErrors) throw new Error(`API-Football: ${JSON.stringify(errors)}`)
-  return (body.response ?? []) as any[]
+  return await res.json()
 }
 
 async function upsertMatches(rows: MatchRow[]) {
@@ -51,92 +54,122 @@ async function settle() {
   return data as number
 }
 
-// ---- Agenda: 1 chamada por liga ----------------------------------------
-async function syncSchedule(season: number, fromDate?: string, toDate?: string) {
-  const { data: comps, error } = await db.from('competitions').select('id, api_league_id')
+// ---- Agenda: 1 chamada por competição ativa ------------------------------
+async function syncSchedule(fromDate?: string, toDate?: string) {
+  const { data: comps, error } = await db.from('competitions').select('id, api_league_id').eq('active', true)
   if (error) throw new Error(error.message)
 
-  const from = fromDate ?? brtDate(-1)
-  const to = toDate ?? brtDate(14)
+  const dateFrom = fromDate ?? utcDate(-1)
+  const dateTo = toDate ?? utcDate(7)
+  const now = Date.now()
   let upserted = 0
+
   for (const c of comps ?? []) {
-    const fixtures = (await apiGet('/fixtures', { league: c.api_league_id, season, from, to })) as ApiFixture[]
-    const rows = fixtures.map((f) => fixtureToRow(f, c.id))
+    const body = await apiGet(`/competitions/${c.api_league_id}/matches`, { dateFrom, dateTo })
+    const matches = ((body.matches ?? []) as FdMatch[]).filter(hasTeams)
+    let rows = matches.map((m) => fixtureToRow(m, c.id, now))
+
+    // Nunca desfaz um jogo que já foi encerrado (a API gratuita pode estar atrasada).
+    const ids = rows.map((r) => r.api_fixture_id)
+    if (ids.length) {
+      const { data: done } = await db.from('matches').select('api_fixture_id').in('api_fixture_id', ids).eq('status', 'finished')
+      const doneIds = new Set((done ?? []).map((d) => d.api_fixture_id))
+      rows = rows.filter((r) => !doneIds.has(r.api_fixture_id))
+    }
     await upsertMatches(rows)
     upserted += rows.length
   }
-  // Rede de segurança: liquida qualquer bilhete que tenha ficado pendente.
-  const settled = await settle()
-  return { season, from, to, upserted, settled }
+  const settled = await settle() // rede de segurança
+  return { dateFrom, dateTo, upserted, settled }
 }
 
-// ---- Ao vivo: 1 chamada (até 20 jogos por chamada) ----------------------
+// ---- Começou / terminou ---------------------------------------------------
 async function syncLive() {
   const now = Date.now()
-  const { data: open, error } = await db
+  const nowIso = new Date(now).toISOString()
+
+  // 1) COMEÇOU: horário passou -> "em andamento". Só banco, sem API.
+  const { data: started, error: e1 } = await db
     .from('matches')
-    .select('api_fixture_id, competition_id, status, minute, home_score, away_score, kickoff_at')
-    .in('status', ['scheduled', 'live'])
-    .gte('kickoff_at', new Date(now - 5 * 3600_000).toISOString()) // jogos que começaram há até 5h
-    .lte('kickoff_at', new Date(now + 5 * 60_000).toISOString()) // ou começam em até 5 min
-  if (error) throw new Error(error.message)
-  if (!open?.length) return { skipped: 'nenhum jogo na janela, sem custo de API' }
+    .update({ status: 'live', updated_at: nowIso })
+    .eq('status', 'scheduled')
+    .lte('kickoff_at', nowIso)
+    .gte('kickoff_at', new Date(now - LOOKBACK_MS).toISOString())
+    .select('id')
+  if (e1) throw new Error(e1.message)
 
-  const byFixture = new Map(open.map((m) => [m.api_fixture_id as number, m]))
-  const ids = [...byFixture.keys()]
+  // 2) TERMINOU: jogos "em andamento" que já passaram do tempo esperado de duração.
+  const { data: pending, error: e2 } = await db
+    .from('matches')
+    .select('api_fixture_id, competition_id, kickoff_at')
+    .eq('status', 'live')
+    .lte('kickoff_at', new Date(now - EXPECTED_END_MIN * 60_000).toISOString())
+    .gte('kickoff_at', new Date(now - LOOKBACK_MS).toISOString())
+  if (e2) throw new Error(e2.message)
+
+  const base = { started: started?.length ?? 0, pending: pending?.length ?? 0 }
+  if (!pending?.length) return base
+
+  // Evita muitas requisições: só consulta a API a cada POLL_EVERY_MIN minutos.
+  if (new Date(now).getUTCMinutes() % POLL_EVERY_MIN !== 0) return { ...base, api: 'aguardando próxima janela' }
+
+  const { data: comps, error: e3 } = await db.from('competitions').select('id, api_league_id')
+  if (e3) throw new Error(e3.message)
+  const apiIdByComp = new Map((comps ?? []).map((c) => [c.id as number, c.api_league_id as number]))
+
+  const byComp = new Map<number, typeof pending>()
+  for (const p of pending) byComp.set(p.competition_id, [...(byComp.get(p.competition_id) ?? []), p])
+
   let apiCalls = 0
-  let changed = 0
-  let finished = 0
-
-  for (let i = 0; i < ids.length; i += 20) {
-    const fixtures = (await apiGet('/fixtures', { ids: ids.slice(i, i + 20).join('-') })) as ApiFixture[]
+  const finals: MatchRow[] = []
+  for (const [compId, list] of byComp) {
+    const apiId = apiIdByComp.get(compId)
+    if (!apiId) continue
+    const times = list.map((p) => Date.parse(p.kickoff_at))
+    const dateFrom = utcDate(0, Math.min(...times))
+    const dateTo = utcDate(1, Math.max(...times))
+    const body = await apiGet(`/competitions/${apiId}/matches`, { dateFrom, dateTo })
     apiCalls++
-    const rows: MatchRow[] = []
-    for (const f of fixtures) {
-      const current = byFixture.get(f.fixture.id)
-      if (!current) continue
-      const row = fixtureToRow(f, current.competition_id)
-      if (!hasChanged(current, row)) continue
-      rows.push(row)
-      if (isFinalStatus(row.status)) finished++
+    const wanted = new Set(list.map((p) => p.api_fixture_id as number))
+    for (const m of (body.matches ?? []) as FdMatch[]) {
+      if (!wanted.has(m.id) || !hasTeams(m)) continue
+      const row = fixtureToRow(m, compId, now)
+      if (isFinalStatus(row.status)) finals.push(row) // só grava quando terminou (ou foi anulado)
     }
-    await upsertMatches(rows)
-    changed += rows.length
   }
 
-  const settled = finished > 0 ? await settle() : null
-  return { watching: ids.length, apiCalls, changed, finished, settled }
+  await upsertMatches(finals)
+  const settled = finals.length ? await settle() : null
+  return { ...base, apiCalls, finished: finals.length, settled }
 }
 
-async function listLeagues(season: number) {
-  const leagues = await apiGet('/leagues', { country: 'Brazil', season })
-  return leagues.map((l) => ({ id: l.league.id, name: l.league.name, type: l.league.type }))
+async function listCompetitions() {
+  const body = await apiGet('/competitions')
+  return (body.competitions ?? []).map((c: any) => ({ id: c.id, code: c.code, name: c.name }))
 }
 
 Deno.serve(async (req) => {
   if (!CRON_SECRET || req.headers.get('x-cron-secret') !== CRON_SECRET) {
     return json({ error: 'unauthorized' }, 401)
   }
-  if (!API_KEY) return json({ error: 'API_FOOTBALL_KEY não configurada' }, 500)
+  if (!API_KEY) return json({ error: 'FOOTBALL_DATA_KEY não configurada' }, 500)
 
-  let body: { mode?: string; season?: number; from?: string; to?: string } = {}
+  let body: { mode?: string; from?: string; to?: string } = {}
   try {
     body = await req.json()
   } catch {
     /* corpo vazio = modo live */
   }
   const mode = body.mode ?? 'live'
-  const season = Number(body.season) || currentSeason()
 
   try {
     if (mode === 'live') return json(await syncLive())
     if (mode === 'schedule') {
-      // from/to opcionais (YYYY-MM-DD): úteis para testar com temporadas antigas
       const isDate = (d?: string) => !!d && /^\d{4}-\d{2}-\d{2}$/.test(d)
-      return json(await syncSchedule(season, isDate(body.from) ? body.from : undefined, isDate(body.to) ? body.to : undefined))
+      return json(await syncSchedule(isDate(body.from) ? body.from : undefined, isDate(body.to) ? body.to : undefined))
     }
     if (mode === 'settle') return json({ settled: await settle() })
-    if (mode === 'leagues') return json(await listLeagues(season))
+    if (mode === 'leagues') return json(await listCompetitions())
     return json({ error: `modo inválido: ${mode}` }, 400)
   } catch (e) {
     console.error(e)
