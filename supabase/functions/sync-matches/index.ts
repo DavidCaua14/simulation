@@ -4,7 +4,8 @@
 //
 // Modos (corpo JSON): { "mode": "live" | "schedule" | "settle" | "leagues" }
 //   live      – chamado a cada minuto pelo pg_cron; só gasta API se houver jogo na janela
-//   schedule  – chamado 1x por dia; traz a agenda dos próximos dias (ontem → +14 dias)
+//   schedule  – chamado 1x por dia; traz a agenda dos próximos dias (ontem → +14 dias).
+//               Aceita também "season", "from" e "to" (YYYY-MM-DD) para testes.
 //   settle    – força a liquidação dos bilhetes
 //   leagues   – lista as ligas do Brasil na API (para conferir os IDs 71/72/75)
 import { createClient } from 'npm:@supabase/supabase-js@2'
@@ -27,7 +28,10 @@ async function apiGet(path: string, params: Record<string, string | number>) {
   const url = new URL(API_BASE + path)
   for (const [k, v] of Object.entries(params)) url.searchParams.set(k, String(v))
   const res = await fetch(url, { headers: { 'x-apisports-key': API_KEY } })
-  if (!res.ok) throw new Error(`API-Football HTTP ${res.status}`)
+  if (!res.ok) {
+    const detail = (await res.text().catch(() => '')).slice(0, 300)
+    throw new Error(`API-Football HTTP ${res.status}: ${detail}`)
+  }
   const body = await res.json()
   const errors = body.errors
   const hasErrors = Array.isArray(errors) ? errors.length > 0 : errors && Object.keys(errors).length > 0
@@ -48,12 +52,12 @@ async function settle() {
 }
 
 // ---- Agenda: 1 chamada por liga ----------------------------------------
-async function syncSchedule(season: number) {
+async function syncSchedule(season: number, fromDate?: string, toDate?: string) {
   const { data: comps, error } = await db.from('competitions').select('id, api_league_id')
   if (error) throw new Error(error.message)
 
-  const from = brtDate(-1)
-  const to = brtDate(14)
+  const from = fromDate ?? brtDate(-1)
+  const to = toDate ?? brtDate(14)
   let upserted = 0
   for (const c of comps ?? []) {
     const fixtures = (await apiGet('/fixtures', { league: c.api_league_id, season, from, to })) as ApiFixture[]
@@ -115,7 +119,7 @@ Deno.serve(async (req) => {
   }
   if (!API_KEY) return json({ error: 'API_FOOTBALL_KEY não configurada' }, 500)
 
-  let body: { mode?: string; season?: number } = {}
+  let body: { mode?: string; season?: number; from?: string; to?: string } = {}
   try {
     body = await req.json()
   } catch {
@@ -126,7 +130,11 @@ Deno.serve(async (req) => {
 
   try {
     if (mode === 'live') return json(await syncLive())
-    if (mode === 'schedule') return json(await syncSchedule(season))
+    if (mode === 'schedule') {
+      // from/to opcionais (YYYY-MM-DD): úteis para testar com temporadas antigas
+      const isDate = (d?: string) => !!d && /^\d{4}-\d{2}-\d{2}$/.test(d)
+      return json(await syncSchedule(season, isDate(body.from) ? body.from : undefined, isDate(body.to) ? body.to : undefined))
+    }
     if (mode === 'settle') return json({ settled: await settle() })
     if (mode === 'leagues') return json(await listLeagues(season))
     return json({ error: `modo inválido: ${mode}` }, 400)
