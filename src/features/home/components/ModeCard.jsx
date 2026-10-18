@@ -1,10 +1,15 @@
 import { ChevronRightIcon } from '../../../components/ui/icons'
 
-export default function ModeCard({ mode }) {
+export default function ModeCard({ mode, onSelect }) {
   const { title, desc, Icon, image, locked } = mode
 
   return (
-    <button type="button" className={`mode-card ${image ? 'has-image' : ''}`} disabled={locked}>
+    <button
+      type="button"
+      className={`mode-card ${image ? 'has-image' : ''}`}
+      disabled={locked}
+      onClick={() => onSelect?.(mode.id)}
+    >
       {image && (
         <>
           <img className="mode-card-bg" src={image} alt="" />

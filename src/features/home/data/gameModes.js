@@ -18,8 +18,8 @@ import mensagens from '../assets/mensagens.webp'
 import convites from '../assets/convites.webp'
 
 // Todos os modos aparecem na tela (pra já mostrar a cara final do jogo),
-// mas só ficam clicáveis conforme forem sendo construídos — por enquanto,
-// `locked: true` em todos.
+// mas só ficam clicáveis conforme forem sendo construídos.
+// `locked: false` libera o card; o clique é tratado em HomeScreen (onSelectMode).
 export const GAME_MODES = [
   {
     id: 'tips',
@@ -27,7 +27,7 @@ export const GAME_MODES = [
     desc: 'Aposte nos resultados dos jogos reais e ganhe recompensas!',
     Icon: TipsIcon,
     image: palpites,
-    locked: true,
+    locked: false,
   },
   {
     id: 'online-match',
