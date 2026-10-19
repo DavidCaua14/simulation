@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { useAuth } from '../../../context/AuthContext'
-import { LogOutIcon } from '../../../components/ui/icons'
+import { useAuth } from '../context/AuthContext'
+import { LogOutIcon } from '../components/ui/icons'
 import CurrencyRow from './CurrencyRow'
 
 // avatar: nó React com a foto (você resolve o photo_id); sem ele, mostra a inicial do nome.

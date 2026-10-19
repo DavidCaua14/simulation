@@ -1,4 +1,4 @@
-import { EnergyIcon, CoinsIcon, PlusIcon } from '../../../components/ui/icons'
+import { EnergyIcon, CoinsIcon, PlusIcon } from '../components/ui/icons'
 
 // Só moedas e energia: não existe coluna de gemas no banco.
 // Energia sem "/máx": o banco não define um teto.

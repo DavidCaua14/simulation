@@ -1,13 +1,12 @@
 import AppShell from '../../components/layout/AppShell'
 import { getClubById } from '../club/data/clubs'
-import PlayerHeader from './components/PlayerHeader'
+import PlayerHeader from '../../components/PlayerHeader'
 import RankingTicker from './components/RankingTicker'
 import HeroBanner from './components/HeroBanner'
 import ModeCard from './components/ModeCard'
 import BottomTabBar from './components/BottomTabBar'
 import { GAME_MODES } from './data/gameModes'
 import './home-screen.css'
-import './home-screen.additions.css'
 
 export default function HomeScreen({ career, onNavigate }) {
   const { player } = career
