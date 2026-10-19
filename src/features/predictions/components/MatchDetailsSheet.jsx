@@ -85,6 +85,9 @@ export default function MatchDetailsSheet({ match, competitionName, now, pick, l
 
             <p className="pred-hint">
               A odd é o quanto sua entrada multiplica se você acertar. Favoritos pagam menos, azarões pagam mais.
+              {match.odds_source === 'api'
+                ? ' Odds de mercado (média de casas de apostas), fixadas na abertura do jogo.'
+                : ' Odds estimadas pelo jogo a partir da campanha dos times.'}
               Se marcar resultado <b>e</b> "ambas marcam", precisa acertar os dois. Toque de novo numa opção para
               desmarcar.
             </p>

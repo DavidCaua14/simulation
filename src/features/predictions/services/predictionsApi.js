@@ -2,7 +2,7 @@ import { supabase } from '../../../lib/supabaseClient' // ← ajuste para o cami
 import { dayRange, LIVE_LOOKBACK_MS } from '../utils/matchUtils'
 
 const MATCH_COLS =
-  'id, competition_id, round, home_team, away_team, home_logo, away_logo, kickoff_at, status, minute, home_score, away_score, odds_home, odds_draw, odds_away, odds_btts_yes, odds_btts_no'
+  'id, competition_id, round, home_team, away_team, home_logo, away_logo, kickoff_at, status, minute, home_score, away_score, odds_home, odds_draw, odds_away, odds_btts_yes, odds_btts_no, odds_source'
 
 async function unwrap(promise) {
   const { data, error } = await promise
