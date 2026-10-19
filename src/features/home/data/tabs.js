@@ -5,7 +5,7 @@ import {
   SeasonsIcon,
   StoreIcon,
   EventsIcon,
-  MoreIcon,
+  UserIcon
 } from '../../../components/ui/icons'
 
 // Igual aos modos: todos os atalhos aparecem no menu fixo, só o Início
@@ -17,5 +17,5 @@ export const TAB_ITEMS = [
   { id: 'seasons', label: 'Temporadas', Icon: SeasonsIcon, locked: true },
   { id: 'store', label: 'Loja', Icon: StoreIcon, locked: true },
   { id: 'events', label: 'Eventos', Icon: EventsIcon, locked: true },
-  { id: 'more', label: 'Mais', Icon: MoreIcon, locked: true },
+  { id: 'more', label: 'profile', Icon: UserIcon, locked: false },
 ]
