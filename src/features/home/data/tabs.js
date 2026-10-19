@@ -17,5 +17,5 @@ export const TAB_ITEMS = [
   { id: 'seasons', label: 'Temporadas', Icon: SeasonsIcon, locked: true },
   { id: 'store', label: 'Loja', Icon: StoreIcon, locked: true },
   { id: 'events', label: 'Eventos', Icon: EventsIcon, locked: true },
-  { id: 'more', label: 'profile', Icon: UserIcon, locked: false },
+  { id: 'profile', label: 'Perfil', Icon: UserIcon, locked: false },
 ]
