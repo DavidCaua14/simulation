@@ -2,7 +2,7 @@ import { supabase } from '../../../lib/supabaseClient' // ← ajuste para o cami
 import { dayRange } from '../utils/matchUtils'
 
 const MATCH_COLS =
-  'id, competition_id, round, home_team, away_team, home_logo, away_logo, kickoff_at, status, minute, home_score, away_score'
+  'id, competition_id, round, home_team, away_team, home_logo, away_logo, kickoff_at, status, minute, home_score, away_score, odds_home, odds_draw, odds_away, odds_btts_yes, odds_btts_no'
 
 async function unwrap(promise) {
   const { data, error } = await promise
@@ -11,7 +11,7 @@ async function unwrap(promise) {
 }
 
 export const fetchCompetitions = () =>
-  unwrap(supabase.from('competitions').select('id, name, tier').order('id'))
+  unwrap(supabase.from('competitions').select('id, name, tier, emblem, sort_order').order('sort_order').order('id'))
 
 export const fetchLiveMatches = () =>
   unwrap(supabase.from('matches').select(MATCH_COLS).eq('status', 'live').order('kickoff_at'))
@@ -49,3 +49,11 @@ export const fetchTickets = () =>
   )
 
 export const fetchLeaderboard = () => unwrap(supabase.rpc('get_prediction_leaderboard', { p_limit: 50 }))
+
+export const fetchMyStats = () =>
+  unwrap(supabase.from('prediction_stats').select('points, tickets_won, tickets_lost, best_multiplier').maybeSingle())
+
+export async function fetchMyRank() {
+  const rows = await unwrap(supabase.rpc('get_my_prediction_rank'))
+  return rows?.[0] ?? null
+}

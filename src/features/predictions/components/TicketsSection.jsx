@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useState } from 'react'
-import { fetchTickets } from '../services/predictionsApi'
+import { fetchMyStats, fetchTickets } from '../services/predictionsApi'
 import { formatMult } from '../data/predictionRules'
 import { formatDateTime, resultLabel } from '../utils/matchUtils'
+import { Amount, PickStatusIcon } from './PredIcons'
 
 const STATUS = {
   pending: { label: 'Em andamento', cls: 'pending' },
@@ -9,7 +10,6 @@ const STATUS = {
   lost: { label: 'Perdeu', cls: 'lost' },
   void: { label: 'Anulado', cls: 'void' },
 }
-const PICK_ICON = { pending: '⏳', won: '✅', lost: '❌', void: '↩️' }
 
 function Ticket({ t }) {
   const st = STATUS[t.status]
@@ -23,24 +23,24 @@ function Ticket({ t }) {
       <ul className="pred-ticket-picks">
         {t.ticket_picks.map((p) => {
           const m = p.matches
-          const live = m.status === 'live'
           return (
             <li key={p.id}>
-              <span>{PICK_ICON[p.status]}</span>
+              <PickStatusIcon status={p.status} />
               <div>
                 <strong>{m.home_team} x {m.away_team}</strong>
                 <small>
                   {p.pick_result && resultLabel(p.pick_result, m)}
                   {p.pick_result && p.pick_btts != null && ' · '}
                   {p.pick_btts != null && `Ambas marcam: ${p.pick_btts ? 'Sim' : 'Não'}`}
+                  {' · odd '}{formatMult(Number(p.multiplier))}
                 </small>
               </div>
               <em>
                 {m.status === 'scheduled'
                   ? formatDateTime(m.kickoff_at)
                   : m.home_score == null
-                    ? live ? 'Em andamento' : '—'
-                    : `${m.home_score}–${m.away_score}${live && m.minute ? ` · ${m.minute}'` : ''}`}
+                    ? m.status === 'live' ? 'Em andamento' : '—'
+                    : `${m.home_score}–${m.away_score}`}
               </em>
             </li>
           )
@@ -48,12 +48,14 @@ function Ticket({ t }) {
       </ul>
 
       <div className="pred-ticket-foot">
-        <span>Apostou <b>🪙 {t.stake}</b> · {formatMult(Number(t.multiplier))}</span>
-        {t.status === 'pending' && <span>Pode ganhar <b>🪙 {t.potential_coins}</b></span>}
+        <span>Entrada <Amount kind="coin" value={t.stake} /> · odd {formatMult(Number(t.multiplier))}</span>
+        {t.status === 'pending' && <span>Retorno possível <Amount kind="coin" value={t.potential_coins} /></span>}
         {t.status === 'won' && (
-          <span className="won">+🪙 {t.reward_coins} · +{t.reward_xp} XP · ⚡+{t.reward_energy}</span>
+          <span className="won">
+            <Amount kind="coin" value={t.reward_coins} sign="+" /> · +{t.reward_xp} XP · <Amount kind="energy" value={t.reward_energy} sign="+" />
+          </span>
         )}
-        {t.status === 'lost' && <span className="lost">−🪙 {t.stake}</span>}
+        {t.status === 'lost' && <span className="lost"><Amount kind="coin" value={t.stake} sign="-" /></span>}
         {t.status === 'void' && <span>Moedas devolvidas</span>}
       </div>
     </article>
@@ -62,13 +64,16 @@ function Ticket({ t }) {
 
 export default function TicketsSection({ onWalletChange }) {
   const [tickets, setTickets] = useState([])
+  const [stats, setStats] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [tab, setTab] = useState('open')
 
   const load = useCallback(async () => {
     try {
-      setTickets(await fetchTickets())
+      const [list, mine] = await Promise.all([fetchTickets(), fetchMyStats().catch(() => null)])
+      setTickets(list)
+      setStats(mine)
       setError('')
       onWalletChange()
     } catch {
@@ -85,9 +90,18 @@ export default function TicketsSection({ onWalletChange }) {
   }, [load])
 
   const list = tickets.filter((t) => (tab === 'open' ? t.status === 'pending' : t.status !== 'pending'))
+  const settled = (stats?.tickets_won ?? 0) + (stats?.tickets_lost ?? 0)
 
   return (
     <>
+      {stats && settled > 0 && (
+        <div className="pred-stats">
+          <div><b>{stats.tickets_won}</b><small>ganhos</small></div>
+          <div><b>{stats.tickets_lost}</b><small>perdidos</small></div>
+          <div><b>{Math.round((stats.tickets_won / settled) * 100)}%</b><small>acerto</small></div>
+          <div><b>{formatMult(Number(stats.best_multiplier))}</b><small>maior odd</small></div>
+        </div>
+      )}
       <div className="pred-seg small">
         <button type="button" className={tab === 'open' ? 'is-on' : ''} onClick={() => setTab('open')}>Abertos</button>
         <button type="button" className={tab === 'done' ? 'is-on' : ''} onClick={() => setTab('done')}>Finalizados</button>
@@ -97,7 +111,7 @@ export default function TicketsSection({ onWalletChange }) {
         {!loading && error && <p className="pred-empty">{error}</p>}
         {!loading && !error && list.length === 0 && (
           <p className="pred-empty">
-            {tab === 'open' ? 'Você não tem bilhetes em andamento.' : 'Nenhum bilhete finalizado ainda.'}
+            {tab === 'open' ? 'Você não tem bilhetes em andamento. Escolha seus palpites na aba Jogos.' : 'Nenhum bilhete finalizado ainda.'}
           </p>
         )}
         {list.map((t) => <Ticket key={t.id} t={t} />)}

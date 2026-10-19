@@ -1,11 +1,35 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { MAX_PICKS, slipMultiplier } from '../data/predictionRules'
+
+const STORAGE_KEY = 'predictions_slip_v1'
+
+// O bilhete em montagem sobrevive a sair da tela e a recarregar a página.
+function load() {
+  try {
+    const raw = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}')
+    const out = {}
+    for (const [id, p] of Object.entries(raw)) {
+      if (p?.match?.id && p.match.kickoff_at && (p.result != null || p.btts != null)) out[id] = p
+    }
+    return out
+  } catch {
+    return {}
+  }
+}
 
 // picks: { [matchId]: { match, result: 'home'|'draw'|'away'|null, btts: true|false|null } }
 export default function useBetSlip() {
-  const [picks, setPicks] = useState({})
+  const [picks, setPicks] = useState(load)
   const pickList = useMemo(() => Object.values(picks), [picks])
   const multiplier = useMemo(() => slipMultiplier(pickList), [pickList])
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(picks))
+    } catch {
+      /* armazenamento indisponível: segue sem persistir */
+    }
+  }, [picks])
 
   // retorna false se o bilhete já está cheio
   function update(match, patch) {

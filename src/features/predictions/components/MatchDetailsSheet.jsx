@@ -1,10 +1,12 @@
-import { BTTS_MULTIPLIER, RESULT_MULTIPLIERS, formatMult, pickMultiplier } from '../data/predictionRules'
+import { bttsOdd, favoriteOf, formatMult, formatOdd, pickMultiplier, resultOdd } from '../data/predictionRules'
 import { formatDateTime, formatRound } from '../utils/matchUtils'
 import { StatusBadge } from './MatchCard'
+import { FavoriteIcon } from './PredIcons'
 
-export default function MatchDetailsSheet({ match, competitionName, pick, locked, onResult, onBtts, onClose }) {
-  const showScore = match.status === 'live' || match.status === 'finished'
-  const mult = pick ? pickMultiplier(pick) : null
+export default function MatchDetailsSheet({ match, competitionName, now, pick, locked, onResult, onBtts, onClose }) {
+  const showScore = (match.status === 'live' || match.status === 'finished') && match.home_score != null
+  const mult = pick ? pickMultiplier({ ...pick, match }) : null
+  const fav = favoriteOf(match)
 
   const results = [
     { id: 'home', label: match.home_team },
@@ -21,7 +23,7 @@ export default function MatchDetailsSheet({ match, competitionName, pick, locked
             {competitionName}
             {match.round ? ` · ${formatRound(match.round)}` : ''}
           </span>
-          <StatusBadge match={match} />
+          <StatusBadge match={match} now={now} />
         </div>
 
         <div className="pred-versus">
@@ -30,7 +32,7 @@ export default function MatchDetailsSheet({ match, competitionName, pick, locked
             <strong>{match.home_team}</strong>
           </div>
           <div className="pred-versus-score">
-            {showScore && match.home_score != null ? `${match.home_score} x ${match.away_score}` : 'x'}
+            {showScore ? `${match.home_score} x ${match.away_score}` : 'x'}
             <small>{formatDateTime(match.kickoff_at)}</small>
           </div>
           <div>
@@ -51,9 +53,13 @@ export default function MatchDetailsSheet({ match, competitionName, pick, locked
                   type="button"
                   className={`pred-pick ${pick?.result === o.id ? 'is-on' : ''}`}
                   onClick={() => onResult(match, o.id)}
+                  aria-pressed={pick?.result === o.id}
                 >
-                  <span>{o.label}</span>
-                  <small>{formatMult(RESULT_MULTIPLIERS[o.id])}</small>
+                  <span>
+                    {o.label}
+                    {fav === o.id && <FavoriteIcon className="pred-fav" aria-label="Favorito" />}
+                  </span>
+                  <b>{formatOdd(resultOdd(match, o.id))}</b>
                 </button>
               ))}
             </div>
@@ -69,18 +75,20 @@ export default function MatchDetailsSheet({ match, competitionName, pick, locked
                   type="button"
                   className={`pred-pick ${pick?.btts === o.v ? 'is-on' : ''}`}
                   onClick={() => onBtts(match, o.v)}
+                  aria-pressed={pick?.btts === o.v}
                 >
                   <span>{o.label}</span>
-                  <small>{formatMult(BTTS_MULTIPLIER)}</small>
+                  <b>{formatOdd(bttsOdd(match, o.v))}</b>
                 </button>
               ))}
             </div>
 
             <p className="pred-hint">
-              Se você marcar resultado <b>e</b> "ambas marcam", precisa acertar os dois. Toque de novo
-              numa opção para desmarcar.
+              A odd é o quanto sua entrada multiplica se você acertar. Favoritos pagam menos, azarões pagam mais.
+              Se marcar resultado <b>e</b> "ambas marcam", precisa acertar os dois. Toque de novo numa opção para
+              desmarcar.
             </p>
-            {mult && <p className="pred-total">Multiplicador deste jogo: <b>{formatMult(mult)}</b></p>}
+            {mult && mult !== 1 && <p className="pred-total">Odd deste jogo no seu bilhete: <b>{formatMult(mult)}</b></p>}
           </>
         )}
 

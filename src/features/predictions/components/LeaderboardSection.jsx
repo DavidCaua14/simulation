@@ -1,36 +1,52 @@
 import { useEffect, useState } from 'react'
-import { fetchLeaderboard } from '../services/predictionsApi'
-
-const MEDALS = ['🥇', '🥈', '🥉']
+import { fetchLeaderboard, fetchMyRank } from '../services/predictionsApi'
+import { formatMult } from '../data/predictionRules'
+import { MedalIcon } from './PredIcons'
 
 export default function LeaderboardSection({ nickname }) {
   const [rows, setRows] = useState([])
+  const [mine, setMine] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
   useEffect(() => {
-    fetchLeaderboard()
-      .then(setRows)
+    Promise.all([fetchLeaderboard(), fetchMyRank().catch(() => null)])
+      .then(([list, rank]) => {
+        setRows(list)
+        setMine(rank)
+      })
       .catch(() => setError('Não foi possível carregar o ranking.'))
       .finally(() => setLoading(false))
   }, [])
 
   return (
     <div className="pred-list">
+      {!loading && !error && (
+        <div className="pred-mine card">
+          {mine ? (
+            <>
+              <span className="pred-mine-pos">{mine.position}º</span>
+              <div>
+                <strong>Sua posição</strong>
+                <small>{mine.points} pts · maior odd {formatMult(Number(mine.best_multiplier))}</small>
+              </div>
+            </>
+          ) : (
+            <p>Ganhe seu primeiro bilhete para entrar no ranking.</p>
+          )}
+        </div>
+      )}
       <p className="pred-hint">
-        Ranking por pontos de palpites. Só aparece quem já ganhou algum bilhete — e bilhetes com mais
-        jogos e multiplicador maior valem mais pontos.
+        Ranking por pontos de palpites. Só aparece quem já ganhou algum bilhete, e odds maiores valem mais pontos.
       </p>
       {loading && <p className="pred-empty">Carregando…</p>}
       {!loading && error && <p className="pred-empty">{error}</p>}
-      {!loading && !error && rows.length === 0 && (
-        <p className="pred-empty">Ninguém pontuou ainda. Seja o primeiro! 🏆</p>
-      )}
+      {!loading && !error && rows.length === 0 && <p className="pred-empty">Ninguém pontuou ainda. Seja o primeiro!</p>}
       {rows.map((r) => {
         const me = nickname && r.nickname.toLowerCase() === nickname.toLowerCase()
         return (
           <div key={r.career_id} className={`pred-rank card ${me ? 'is-me' : ''}`}>
-            <span className="pred-rank-pos">{MEDALS[r.position - 1] || `${r.position}º`}</span>
+            <span className="pred-rank-pos">{r.position <= 3 ? <MedalIcon position={r.position} /> : `${r.position}º`}</span>
             <div>
               <strong>{r.nickname}{me ? ' (você)' : ''}</strong>
               <small>Nível {r.level} · {r.tickets_won} bilhete(s) ganho(s)</small>

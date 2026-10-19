@@ -135,3 +135,91 @@
   background: var(--surface-strong); color: var(--text-primary); border: 1px solid var(--border); font-size: .8rem; font-weight: 700; box-shadow: 0 6px 20px rgba(0,0,0,.4);
   animation: pred-in .25s ease-out; }
 @keyframes pred-in { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: none; } }
+
+/* ===================== v3 ===================== */
+.pred-amt { display: inline-flex; align-items: center; gap: 4px; color: var(--text-primary); }
+.pred-amt svg { flex-shrink: 0; }
+.pred-amt.coin svg { color: var(--gold); }
+.pred-amt.energy svg { color: var(--primary); }
+.pred-wallet .pred-amt { font-size: .95rem; }
+
+/* Botões de palpite: rótulo em cima, odd em destaque embaixo */
+.pred-pick span { display: inline-flex; align-items: center; justify-content: center; gap: 4px; font-size: .7rem;
+  font-weight: 700; color: var(--text-secondary); max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pred-pick b { font-size: 1rem; font-weight: 800; color: var(--text-primary); font-variant-numeric: tabular-nums; }
+.pred-pick.is-on span, .pred-pick.is-on b { color: var(--primary-contrast); }
+.pred-fav { color: var(--gold); flex-shrink: 0; }
+.pred-pick.is-on .pred-fav { color: var(--primary-contrast); }
+
+/* Campeonatos */
+.pred-group { display: flex; flex-direction: column; gap: 10px; }
+.pred-group + .pred-group { margin-top: 6px; }
+.pred-group-head { display: flex; align-items: center; gap: 8px; padding: 6px 2px 0; }
+.pred-group-head h4 { margin: 0; font-size: .85rem; flex: 1; color: var(--text-primary); }
+.pred-group-head small { font-size: .68rem; color: var(--text-secondary); }
+.pred-group-logo { width: 22px; height: 22px; display: grid; place-items: center; color: var(--gold); flex-shrink: 0; }
+.pred-group-logo img { width: 100%; height: 100%; object-fit: contain; }
+
+.pred-countdown { display: inline-flex; align-items: center; gap: 5px; font-size: .7rem; color: var(--text-secondary); }
+
+.pred-balance { display: inline-flex; align-items: center; gap: 4px; }
+.pred-slip-odd { font-size: .9rem; color: var(--text-primary); font-variant-numeric: tabular-nums; }
+.pred-slip-list li { gap: 10px; }
+.pred-slip-list li > div { flex: 1; min-width: 0; }
+.pred-slip-bar span { display: inline-flex; align-items: center; gap: 6px; }
+.pred-summary-big { font-size: .95rem; padding-bottom: 4px; border-bottom: 1px solid var(--border); }
+.pred-summary .pred-amt { color: var(--text-primary); }
+
+/* Ícones de status dos palpites */
+.pred-status-ic.pending { color: var(--text-secondary); }
+.pred-status-ic.won { color: var(--success); }
+.pred-status-ic.lost { color: var(--danger); }
+.pred-status-ic.void { color: var(--gold); }
+.pred-ticket-picks li { grid-template-columns: 20px 1fr auto; }
+.pred-ticket-foot .pred-amt { color: inherit; }
+.pred-ticket-foot > span { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+
+/* Estatísticas dos bilhetes */
+.pred-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; padding: 0 16px 8px; }
+.pred-stats div { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 8px 4px;
+  border-radius: 12px; background: var(--surface-alt); }
+.pred-stats b { font-size: .95rem; color: var(--text-primary); }
+.pred-stats small { font-size: .62rem; color: var(--text-secondary); }
+
+/* Ranking */
+.pred-medal.gold { color: var(--gold); }
+.pred-medal.silver { color: #aab4c0; }
+.pred-medal.bronze { color: #c98a52; }
+.pred-rank-pos { display: grid; place-items: center; }
+.pred-mine { display: flex; align-items: center; gap: 12px; padding: 12px 14px; box-shadow: 0 0 0 1.5px var(--primary) inset; }
+.pred-mine p { margin: 0; font-size: .8rem; color: var(--text-secondary); }
+.pred-mine-pos { font-size: 1.4rem; font-weight: 800; color: var(--primary); min-width: 44px; text-align: center; }
+.pred-mine div { display: flex; flex-direction: column; gap: 2px; }
+.pred-mine small { color: var(--text-secondary); font-size: .7rem; }
+
+/* Aviso rápido com ícone */
+.pred-toast { display: flex; align-items: center; gap: 10px; }
+.pred-toast svg { flex-shrink: 0; }
+.pred-toast.start svg { color: var(--success); }
+.pred-toast.finish svg { color: var(--gold); }
+.pred-toast.ticket svg { color: var(--primary); }
+.pred-toast.alert svg { color: var(--danger); }
+
+/* Resultado do bilhete (modal central) */
+.pred-overlay.center { align-items: center; justify-content: center; padding: 24px; }
+.pred-modal { width: 100%; max-width: 320px; background: var(--surface); border: 1px solid var(--border); border-radius: 20px;
+  padding: 22px 18px 18px; display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center;
+  color: var(--text-primary); animation: pred-pop .28s ease-out; }
+.pred-modal h3 { margin: 0; font-size: 1.2rem; }
+.pred-modal-icon { width: 68px; height: 68px; border-radius: 50%; display: grid; place-items: center;
+  background: var(--surface-alt); color: var(--text-secondary); }
+.pred-modal.won .pred-modal-icon { background: color-mix(in srgb, var(--success) 20%, transparent); color: var(--success); }
+.pred-modal.lost .pred-modal-icon { background: color-mix(in srgb, var(--danger) 20%, transparent); color: var(--danger); }
+.pred-modal.void .pred-modal-icon { background: color-mix(in srgb, var(--gold) 20%, transparent); color: var(--gold); }
+.pred-modal-rewards { display: flex; gap: 14px; align-items: center; justify-content: center; flex-wrap: wrap; font-size: 1rem; }
+.pred-modal .pred-btn { width: 100%; margin-top: 4px; }
+@keyframes pred-pop { from { opacity: 0; transform: scale(.92); } to { opacity: 1; transform: none; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .pred-dot, .pred-toast, .pred-modal { animation: none; }
+}
