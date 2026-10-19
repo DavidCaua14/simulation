@@ -1,5 +1,5 @@
 import { supabase } from '../../../lib/supabaseClient' // ← ajuste para o caminho do seu client
-import { dayRange } from '../utils/matchUtils'
+import { dayRange, LIVE_LOOKBACK_MS } from '../utils/matchUtils'
 
 const MATCH_COLS =
   'id, competition_id, round, home_team, away_team, home_logo, away_logo, kickoff_at, status, minute, home_score, away_score, odds_home, odds_draw, odds_away, odds_btts_yes, odds_btts_no'
@@ -13,8 +13,18 @@ async function unwrap(promise) {
 export const fetchCompetitions = () =>
   unwrap(supabase.from('competitions').select('id, name, tier, emblem, sort_order').order('sort_order').order('id'))
 
-export const fetchLiveMatches = () =>
-  unwrap(supabase.from('matches').select(MATCH_COLS).eq('status', 'live').order('kickoff_at'))
+// Jogos 'live' + jogos ainda 'scheduled' no banco cujo horário já passou (a sincronização pode atrasar).
+export function fetchLiveMatches() {
+  const now = new Date()
+  const since = new Date(now.getTime() - LIVE_LOOKBACK_MS).toISOString()
+  return unwrap(
+    supabase
+      .from('matches')
+      .select(MATCH_COLS)
+      .or(`status.eq.live,and(status.eq.scheduled,kickoff_at.lte.${now.toISOString()},kickoff_at.gte.${since})`)
+      .order('kickoff_at'),
+  )
+}
 
 export function fetchMatchesForDay(dayKey) {
   const { start, end } = dayRange(dayKey)

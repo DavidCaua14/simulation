@@ -42,6 +42,21 @@ export function isLocked(match, nowMs) {
   return match.status !== 'scheduled' || new Date(match.kickoff_at).getTime() <= nowMs
 }
 
+// ---- Status EFETIVO ----
+// O banco só vira 'live' quando a sincronização roda (e o plano gratuito da API atrasa).
+// Para o app nunca ficar "parado", um jogo 'scheduled' cujo horário já passou é tratado
+// como 'live' na tela, com o cronômetro estimado. O banco continua sendo a fonte da verdade
+// para placar e resultado final: quando ele atualizar, o dado real substitui este.
+export const LIVE_LOOKBACK_MS = 6 * 3600000 // aba "Ao vivo": ignora jogos "agendados" há mais de 6h
+
+export function isOverdue(match, nowMs) {
+  return match.status === 'scheduled' && new Date(match.kickoff_at).getTime() <= nowMs
+}
+
+export function withLiveStatus(match, nowMs) {
+  return isOverdue(match, nowMs) ? { ...match, status: 'live', derivedLive: true } : match
+}
+
 const ORDER = { live: 0, scheduled: 1, finished: 2, void: 3 }
 export function sortMatches(list) {
   return [...list].sort(
@@ -49,6 +64,11 @@ export function sortMatches(list) {
       (ORDER[a.status] ?? 9) - (ORDER[b.status] ?? 9) ||
       new Date(a.kickoff_at) - new Date(b.kickoff_at),
   )
+}
+
+// Aplica o status efetivo em uma lista e reordena (ao vivo primeiro)
+export function applyLiveStatus(list, nowMs) {
+  return sortMatches(list.map((m) => withLiveStatus(m, nowMs)))
 }
 
 export function resultLabel(result, match) {

@@ -58,6 +58,9 @@ export default function MatchCard({ match, now, pick, locked, onPickResult, onOp
         {countdown && (
           <span className="pred-countdown"><TimerIcon /> {countdown}</span>
         )}
+        {match.status === 'live' && match.home_score == null && (
+          <span className="pred-countdown"><TimerIcon /> Em andamento · placar na hora do apito final</span>
+        )}
       </div>
 
       {locked ? (

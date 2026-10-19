@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import useMatches from '../hooks/useMatches'
 import { fetchCompetitions } from '../services/predictionsApi'
-import { addDays, dayKeyOf, formatDayChip, isLocked } from '../utils/matchUtils'
+import { addDays, applyLiveStatus, dayKeyOf, formatDayChip, isLocked } from '../utils/matchUtils'
 import MatchCard from './MatchCard'
 import MatchDetailsSheet from './MatchDetailsSheet'
 import { BetSlipBar, BetSlipSheet } from './BetSlip'
@@ -23,7 +23,10 @@ export default function MatchesSection({ slip, now, balance, notify, onWalletCha
   const handleEvent = useCallback(
     ({ type, match }) => {
       const name = `${match.home_team} x ${match.away_team}`
-      if (type === 'started') notify(`Começou: ${name}`, 'start')
+      if (type === 'started') {
+        // se o banco só marcou 'live' depois do atraso, o jogo já aparecia ao vivo: não avisa de novo
+        if (Date.now() - new Date(match.kickoff_at).getTime() < 3 * 60000) notify(`Começou: ${name}`, 'start')
+      }
       else {
         const score = match.home_score != null ? ` ${match.home_score} x ${match.away_score}` : ''
         notify(`Fim de jogo: ${name}${score}`, 'finish')
@@ -33,7 +36,9 @@ export default function MatchesSection({ slip, now, balance, notify, onWalletCha
     [notify, onWalletChange],
   )
 
-  const { matches, loading, error, reload } = useMatches(view, handleEvent)
+  const { matches: rawMatches, loading, error, reload } = useMatches(view, handleEvent)
+  // Status efetivo: jogo cujo horário passou aparece AO VIVO com cronômetro, mesmo que o banco ainda diga 'scheduled'
+  const matches = useMemo(() => applyLiveStatus(rawMatches, now), [rawMatches, now])
 
   const chips = useMemo(
     () => [

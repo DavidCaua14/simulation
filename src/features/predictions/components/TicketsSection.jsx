@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useState } from 'react'
 import { fetchMyStats, fetchTickets } from '../services/predictionsApi'
 import { formatMult } from '../data/predictionRules'
-import { formatDateTime, resultLabel } from '../utils/matchUtils'
+import { formatDateTime, resultLabel, withLiveStatus } from '../utils/matchUtils'
+import { useNow } from '../hooks/useMatches'
 import { Amount, PickStatusIcon } from './PredIcons'
 
 const STATUS = {
@@ -11,7 +12,7 @@ const STATUS = {
   void: { label: 'Anulado', cls: 'void' },
 }
 
-function Ticket({ t }) {
+function Ticket({ t, now }) {
   const st = STATUS[t.status]
   return (
     <article className="pred-ticket card">
@@ -22,7 +23,7 @@ function Ticket({ t }) {
 
       <ul className="pred-ticket-picks">
         {t.ticket_picks.map((p) => {
-          const m = p.matches
+          const m = withLiveStatus(p.matches, now)
           return (
             <li key={p.id}>
               <PickStatusIcon status={p.status} />
@@ -63,6 +64,7 @@ function Ticket({ t }) {
 }
 
 export default function TicketsSection({ onWalletChange }) {
+  const now = useNow(15000)
   const [tickets, setTickets] = useState([])
   const [stats, setStats] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -114,7 +116,7 @@ export default function TicketsSection({ onWalletChange }) {
             {tab === 'open' ? 'Você não tem bilhetes em andamento. Escolha seus palpites na aba Jogos.' : 'Nenhum bilhete finalizado ainda.'}
           </p>
         )}
-        {list.map((t) => <Ticket key={t.id} t={t} />)}
+        {list.map((t) => <Ticket key={t.id} t={t} now={now} />)}
       </div>
     </>
   )

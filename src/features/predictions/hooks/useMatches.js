@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { supabase } from '../../../lib/supabaseClient' // ← ajuste o caminho
 import { fetchLiveMatches, fetchMatchesForDay } from '../services/predictionsApi'
-import { dayRange, sortMatches } from '../utils/matchUtils'
+import { dayRange, isOverdue, sortMatches } from '../utils/matchUtils'
 
 export function useNow(intervalMs = 15000) {
   const [now, setNow] = useState(() => Date.now())
@@ -13,7 +13,7 @@ export function useNow(intervalMs = 15000) {
 }
 
 function belongsToView(match, view) {
-  if (view === 'live') return match.status === 'live'
+  if (view === 'live') return match.status === 'live' || isOverdue(match, Date.now())
   const { start, end } = dayRange(view)
   const t = new Date(match.kickoff_at).getTime()
   return t >= new Date(start).getTime() && t < new Date(end).getTime()

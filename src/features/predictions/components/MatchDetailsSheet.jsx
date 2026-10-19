@@ -33,7 +33,7 @@ export default function MatchDetailsSheet({ match, competitionName, now, pick, l
           </div>
           <div className="pred-versus-score">
             {showScore ? `${match.home_score} x ${match.away_score}` : 'x'}
-            <small>{formatDateTime(match.kickoff_at)}</small>
+            <small>{match.status === 'live' ? 'Em andamento' : formatDateTime(match.kickoff_at)}</small>
           </div>
           <div>
             <span className="pred-team-logo big">{match.away_logo && <img src={match.away_logo} alt="" />}</span>
