@@ -1,30 +1,26 @@
 import AppShell from '../../components/layout/AppShell'
-import SignOutButton from '../../components/ui/SignOutButton'
 import { getClubById } from '../club/data/clubs'
+import PlayerHeader from './components/PlayerHeader'
 import RankingTicker from './components/RankingTicker'
-import CurrencyRow from './components/CurrencyRow'
 import HeroBanner from './components/HeroBanner'
 import ModeCard from './components/ModeCard'
 import BottomTabBar from './components/BottomTabBar'
 import { GAME_MODES } from './data/gameModes'
 import './home-screen.css'
+import './home-screen.additions.css'
 
-// `onNavigate(destino)` é fornecido pelo App.jsx. Os ids dos modos/abas
-// ('tips', 'store', ...) são os mesmos usados em gameModes.js e tabs.js.
 export default function HomeScreen({ career, onNavigate }) {
   const { player } = career
   const club = getClubById(player.clubId)
 
   return (
-    <AppShell left={<SignOutButton />} title="Início">
+    // AppShell precisa aceitar `header` (ou renderizar sem título/botão à esquerda)
+    <AppShell header={<PlayerHeader player={player} />}>
       <div className="home-shell">
         <RankingTicker />
 
         <div className="home-scroll">
-          <div className="home-top">
-            <CurrencyRow />
-            <HeroBanner club={club} countryId={player.country} />
-          </div>
+          <HeroBanner club={club} countryId={player.country} />
 
           <div className="mode-grid">
             {GAME_MODES.map((mode) => (

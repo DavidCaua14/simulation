@@ -1,15 +1,16 @@
-import { EnergyIcon, CoinsIcon, GemIcon, PlusIcon } from '../../../components/ui/icons'
+import { EnergyIcon, CoinsIcon, PlusIcon } from '../../../components/ui/icons'
 
-const CURRENCIES = [
-  { id: 'energy', Icon: EnergyIcon, value: '50/50' },
-  { id: 'coins', Icon: CoinsIcon, value: '0' },
-  { id: 'gems', Icon: GemIcon, value: '0' },
-]
+// Só moedas e energia: não existe coluna de gemas no banco.
+// Energia sem "/máx": o banco não define um teto.
+export default function CurrencyRow({ coins, energy }) {
+  const items = [
+    { id: 'energy', Icon: EnergyIcon, value: energy },
+    { id: 'coins', Icon: CoinsIcon, value: coins.toLocaleString('pt-BR') },
+  ]
 
-export default function CurrencyRow() {
   return (
     <div className="currency-row">
-      {CURRENCIES.map(({ id, Icon, value }) => (
+      {items.map(({ id, Icon, value }) => (
         <div className="currency-pill" key={id}>
           <Icon />
           <span>{value}</span>
