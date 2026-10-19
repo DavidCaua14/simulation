@@ -1,24 +1,20 @@
-import { EnergyIcon, CoinsIcon, PlusIcon } from '../components/ui/icons'
+import { EnergyIcon, CoinsIcon } from './ui/icons'
+
+const fmt = (n) => (n == null ? '—' : Number(n).toLocaleString('pt-BR'))
 
 // Só moedas e energia: não existe coluna de gemas no banco.
-// Energia sem "/máx": o banco não define um teto.
+// Versão compacta do topo (HUD): sem botão de compra, que ainda não existe.
 export default function CurrencyRow({ coins, energy }) {
-  const items = [
-    { id: 'energy', Icon: EnergyIcon, value: energy },
-    { id: 'coins', Icon: CoinsIcon, value: coins.toLocaleString('pt-BR') },
-  ]
-
   return (
-    <div className="currency-row">
-      {items.map(({ id, Icon, value }) => (
-        <div className="currency-pill" key={id}>
-          <Icon />
-          <span>{value}</span>
-          <button type="button" className="currency-add" disabled aria-label="Comprar (em breve)">
-            <PlusIcon size={12} />
-          </button>
-        </div>
-      ))}
+    <div className="hud-currencies">
+      <div className="hud-pill energy" title="Energia" aria-label={`Energia: ${fmt(energy)}`}>
+        <EnergyIcon />
+        <span>{fmt(energy)}</span>
+      </div>
+      <div className="hud-pill coins" title="Moedas" aria-label={`Moedas: ${fmt(coins)}`}>
+        <CoinsIcon />
+        <span>{fmt(coins)}</span>
+      </div>
     </div>
   )
 }

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { ThemeProvider } from './context/ThemeContext'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import AppLoadingScreen from './components/layout/AppLoadingScreen'
+import ErrorBoundary from './components/ErrorBoundary'
 import LoginScreen from './features/auth/LoginScreen'
 import CreateCharacterScreen from './features/player/CreateCharacterScreen'
 import ClubOfferScreen from './features/club/ClubOfferScreen'
@@ -73,9 +74,11 @@ function Gate() {
 function App() {
   return (
     <ThemeProvider>
-      <AuthProvider>
-        <Gate />
-      </AuthProvider>
+      <ErrorBoundary>
+        <AuthProvider>
+          <Gate />
+        </AuthProvider>
+      </ErrorBoundary>
     </ThemeProvider>
   )
 }

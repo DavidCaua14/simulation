@@ -26,7 +26,7 @@ export default function PredictionsScreen({ career, onBack }) {
   const [results, setResults] = useState([])
   const now = useNow(15000)
   const slip = useBetSlip()
-  const wallet = useWallet()
+  const wallet = useWallet({ coins: player.coins, energy: player.energy })
   const refreshWallet = wallet.refresh
 
   // kind: 'start' | 'finish' | 'ticket' | 'alert' | 'info'

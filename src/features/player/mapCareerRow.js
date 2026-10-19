@@ -16,6 +16,9 @@ export function mapRowToCareer(row) {
       skills: row.skills,
       accessories: row.accessories,
       clubId: row.club_id,
+      // Carteira do jogo (colunas criadas pela migração de palpites).
+      coins: row.coins ?? 0,
+      energy: row.energy ?? 0,
     },
   }
 }
