@@ -6,18 +6,14 @@ export const MAX_STAKE = 1000
 export const MAX_PICKS = 10
 export const STAKE_CHIPS = [10, 50, 100, 500]
 
-// Mesmos valores usados pelo banco quando um jogo ainda não tem odds calculadas.
-export const DEFAULT_ODDS = { home: 2.0, draw: 3.2, away: 3.5, bttsYes: 1.85, bttsNo: 1.95 }
+// ODDS FIXAS para todos os jogos (nenhuma API de odds é usada).
+// IMPORTANTE: precisam ser iguais às constantes da função place_ticket no banco
+// (supabase/fix_palpites.sql). O banco é quem vale; aqui é só para exibir.
+export const FIXED_ODDS = { home: 1.5, draw: 2.0, away: 1.5, bttsYes: 1.85, bttsNo: 1.95 }
 
-export function matchOdds(match) {
-  return {
-    home: Number(match.odds_home) || DEFAULT_ODDS.home,
-    draw: Number(match.odds_draw) || DEFAULT_ODDS.draw,
-    away: Number(match.odds_away) || DEFAULT_ODDS.away,
-    bttsYes: Number(match.odds_btts_yes) || DEFAULT_ODDS.bttsYes,
-    bttsNo: Number(match.odds_btts_no) || DEFAULT_ODDS.bttsNo,
-  }
-}
+// Mantém a assinatura antiga (recebe o jogo), mas ignora as colunas odds_* da tabela.
+// eslint-disable-next-line no-unused-vars
+export const matchOdds = (_match) => FIXED_ODDS
 
 export const resultOdd = (match, result) => matchOdds(match)[result]
 export const bttsOdd = (match, value) => (value ? matchOdds(match).bttsYes : matchOdds(match).bttsNo)

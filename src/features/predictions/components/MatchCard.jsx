@@ -1,5 +1,5 @@
 import { favoriteOf, formatOdd, resultOdd } from '../data/predictionRules'
-import { estimateClock, formatCountdown, formatTime } from '../utils/matchUtils'
+import { formatCountdown, formatTime } from '../utils/matchUtils'
 import { FavoriteIcon, TimerIcon } from './PredIcons'
 
 const OPTIONS = [
@@ -8,17 +8,11 @@ const OPTIONS = [
   { id: 'away', label: 'Fora' },
 ]
 
+// eslint-disable-next-line no-unused-vars
 export function StatusBadge({ match, now }) {
+  // Sem cronômetro: do apito inicial até o resultado sair, o jogo fica só "Em andamento".
   if (match.status === 'live') {
-    // O plano gratuito da API não traz minuto: o relógio abaixo é uma ESTIMATIVA pelo horário de início.
-    const clock = match.minute ? { phase: 'play', label: `${match.minute}'` } : estimateClock(match, now)
-    if (clock?.phase === 'break') return <span className="pred-badge pred-badge-live" title="Tempo estimado"><i className="pred-dot" /> Intervalo</span>
-    if (clock?.phase === 'wait') return <span className="pred-badge pred-badge-warn">Aguardando resultado</span>
-    return (
-      <span className="pred-badge pred-badge-live" title={match.minute ? undefined : 'Tempo estimado pelo horário de início'}>
-        <i className="pred-dot" /> AO VIVO{clock ? ` · ${match.minute ? '' : '~'}${clock.label}` : ''}
-      </span>
-    )
+    return <span className="pred-badge pred-badge-live"><i className="pred-dot" /> Em andamento</span>
   }
   if (match.status === 'finished') return <span className="pred-badge">Encerrado</span>
   if (match.status === 'void') return <span className="pred-badge pred-badge-warn">Adiado / anulado</span>
@@ -59,7 +53,7 @@ export default function MatchCard({ match, now, pick, locked, onPickResult, onOp
           <span className="pred-countdown"><TimerIcon /> {countdown}</span>
         )}
         {match.status === 'live' && match.home_score == null && (
-          <span className="pred-countdown"><TimerIcon /> Em andamento · placar na hora do apito final</span>
+          <span className="pred-countdown"><TimerIcon /> O resultado aparece aqui quando o jogo terminar</span>
         )}
       </div>
 

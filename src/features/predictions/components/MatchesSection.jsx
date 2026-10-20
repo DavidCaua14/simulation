@@ -37,12 +37,12 @@ export default function MatchesSection({ slip, now, balance, notify, onWalletCha
   )
 
   const { matches: rawMatches, loading, error, reload } = useMatches(view, handleEvent)
-  // Status efetivo: jogo cujo horário passou aparece AO VIVO com cronômetro, mesmo que o banco ainda diga 'scheduled'
+  // Status efetivo: jogo cujo horário passou aparece como "Em andamento" mesmo que o banco ainda diga 'scheduled'
   const matches = useMemo(() => applyLiveStatus(rawMatches, now), [rawMatches, now])
 
   const chips = useMemo(
     () => [
-      { key: 'live', label: 'Ao vivo', sub: '' },
+      { key: 'live', label: 'Em andamento', sub: '' },
       { key: today, label: 'Hoje', sub: formatDayChip(today).date },
       ...[1, 2, 3, 4, 5, 6].map((n) => {
         const key = addDays(today, n)
@@ -98,7 +98,7 @@ export default function MatchesSection({ slip, now, balance, notify, onWalletCha
         )}
         {!loading && !error && matches.length === 0 && (
           <div className="pred-empty">
-            <p>{view === 'live' ? 'Nenhum jogo acontecendo agora.' : 'Nenhum jogo neste dia.'}</p>
+            <p>{view === 'live' ? 'Nenhum jogo em andamento agora.' : 'Nenhum jogo neste dia.'}</p>
             {view === 'live' && (
               <button type="button" className="pred-btn" onClick={() => setView(today)}>Ver jogos de hoje</button>
             )}

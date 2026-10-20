@@ -1,7 +1,7 @@
 // Funções puras (sem Deno, sem rede): traduzem o formato da football-data.org (v4)
 // para a linha da tabela public.matches e decidem se algo mudou.
 
-export type FdTeam = { name: string | null; shortName: string | null; crest: string | null }
+export type FdTeam = { id?: number | null; name: string | null; shortName: string | null; crest: string | null }
 export type FdScore = { home: number | null; away: number | null }
 
 export type FdMatch = {
@@ -11,6 +11,7 @@ export type FdMatch = {
   matchday: number | null
   stage?: string | null
   season?: { startDate?: string | null } | null
+  competition?: { id: number; emblem?: string | null } | null
   homeTeam: FdTeam
   awayTeam: FdTeam
   score: { duration?: string | null; fullTime: FdScore; regularTime?: FdScore | null }
@@ -27,6 +28,8 @@ export type MatchRow = {
   away_team: string
   home_logo: string | null
   away_logo: string | null
+  home_team_id: number | null
+  away_team_id: number | null
   kickoff_at: string
   status: MatchStatus
   minute: number | null
@@ -87,6 +90,8 @@ export function fixtureToRow(m: FdMatch, competitionId: number, nowMs = Date.now
     away_team: (m.awayTeam.shortName || m.awayTeam.name) as string,
     home_logo: m.homeTeam.crest,
     away_logo: m.awayTeam.crest,
+    home_team_id: m.homeTeam.id ?? null,
+    away_team_id: m.awayTeam.id ?? null,
     kickoff_at: m.utcDate,
     status,
     minute: null, // sem minuto/placar ao vivo no plano gratuito: só o resultado final
@@ -127,4 +132,15 @@ export function brtDate(offsetDays = 0, now = Date.now()): string {
     month: '2-digit',
     day: '2-digit',
   }).format(new Date(now + offsetDays * 86400000))
+}
+
+// Frequência de consulta à API enquanto espera o resultado de um campeonato:
+//  - até 6h depois do início de algum jogo pendente: a cada 3 min (o resultado costuma sair logo)
+//  - depois disso (API atrasada / jogo estranho): a cada 30 min, para não gastar a cota gratuita
+export const FAST_POLL_MIN = 3
+export const SLOW_POLL_MIN = 30
+export const FAST_WINDOW_MS = 6 * 3600_000
+
+export function pollIntervalMin(youngestPendingKickoffMs: number, nowMs: number): number {
+  return nowMs - youngestPendingKickoffMs <= FAST_WINDOW_MS ? FAST_POLL_MIN : SLOW_POLL_MIN
 }
