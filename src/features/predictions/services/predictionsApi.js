@@ -33,8 +33,12 @@ export function fetchMatchesForDay(dayKey) {
   )
 }
 
-export const fetchWallet = () =>
-  unwrap(supabase.from('careers').select('coins, energy').eq('status', 'active').maybeSingle())
+// Função do banco: aplica a recarga de energia (a cada 5h) e devolve o saldo atual.
+// energy = energia livre + energia bônus (comprada).
+export async function fetchWallet() {
+  const w = await unwrap(supabase.rpc('refresh_wallet'))
+  return { coins: w.coins, energy: (w.energy ?? 0) + (w.bonus_energy ?? 0) }
+}
 
 export function placeTicket(stake, picks) {
   return unwrap(

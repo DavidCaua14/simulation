@@ -43,7 +43,7 @@ export const GAME_MODES = [
     desc: 'Jogue partidas offline e evolua com seu time!',
     Icon: SeasonsIcon,
     image: temporadas,
-    locked: true,
+    locked: false,
   },
   {
     id: 'ranking',

@@ -10,16 +10,18 @@ export async function chooseClub({ careerId, clubId }) {
     throw new Error('Carreira ou clube inválido.')
   }
 
-  const { data, error } = await supabase
-    .from('careers')
-    .update({ club_id: clubId })
-    .eq('id', careerId)
-    .select()
-    .single()
+  // A escolha passa por uma função do banco (choose_initial_club): o app não
+  // pode mais trocar de clube por conta própria — só pelas propostas do modo Temporadas.
+  const { error: rpcError } = await supabase.rpc('choose_initial_club', { p_club: clubId })
+  if (rpcError) {
+    console.error('[chooseClub]', rpcError)
+    throw new Error('Não foi possível salvar o clube escolhido. Tente novamente.')
+  }
 
+  const { data, error } = await supabase.from('careers').select('*').eq('id', careerId).single()
   if (error) {
     console.error('[chooseClub]', error)
-    throw new Error('Não foi possível salvar o clube escolhido. Tente novamente.')
+    throw new Error('Clube salvo, mas não foi possível recarregar sua carreira. Atualize a página.')
   }
 
   return mapRowToCareer(data)

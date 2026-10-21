@@ -1,5 +1,6 @@
 import { RankingIcon } from '../../../components/ui/icons'
 import { CountryFlag } from '../../player/components/flags'
+import ClubCrest from '../../club/components/ClubCrest'
 import heroBg from '../assets/hero-bg.webp'
 
 function PitchLines() {
@@ -45,7 +46,7 @@ export default function HeroBanner({ club, countryId }) {
       {club && (
         <div className="hero-scoreboard">
           <span className="hero-club-shield">
-            <img src={club.shield} alt="" />
+            {club.shield ? <img src={club.shield} alt="" /> : <ClubCrest clubId={club.id} size={30} />}
           </span>
           <span className="hero-scoreboard-text">
             <small>Seu time</small>

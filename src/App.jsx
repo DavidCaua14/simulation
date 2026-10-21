@@ -8,6 +8,7 @@ import CreateCharacterScreen from './features/player/CreateCharacterScreen'
 import ClubOfferScreen from './features/club/ClubOfferScreen'
 import HomeScreen from './features/home/HomeScreen'
 import PredictionsScreen from './features/predictions/PredictionsScreen'
+import SeasonsScreen from './features/seasons/SeasonsScreen'
 import ProfileScreen from './features/profile/ProfileScreen'
 import { AudioProvider } from './features/audio/AudioContext'
 import { getActiveCareer } from './features/player/playerService'
@@ -67,11 +68,21 @@ function Gate() {
 
   // Só estas telas estão construídas; os demais ids da barra/menu ainda não fazem nada.
   const navigate = (id) => {
-    if (id === 'home' || id === 'tips' || id === 'profile') setScreen(id)
+    if (id === 'home' || id === 'tips' || id === 'profile' || id === 'seasons') setScreen(id)
+  }
+
+  // Nível, XP, moedas e clube mudam no banco enquanto se joga: ao voltar, recarrega a carreira.
+  const backHome = () => {
+    getActiveCareer(user.id).then((fresh) => fresh && setCareer(fresh))
+    setScreen('home')
   }
 
   if (screen === 'tips') {
-    return <PredictionsScreen career={career} onBack={() => setScreen('home')} />
+    return <PredictionsScreen career={career} onBack={backHome} />
+  }
+
+  if (screen === 'seasons') {
+    return <SeasonsScreen career={career} onBack={backHome} />
   }
 
   if (screen === 'profile') {
