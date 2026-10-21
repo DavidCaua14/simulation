@@ -62,3 +62,19 @@ export function formatRemaining(ms) {
   if (h <= 0) return `${m}min`
   return `${h}h ${String(m).padStart(2, '0')}min`
 }
+
+export function ordinal(value) {
+  const number = Number(value);
+
+  if (!Number.isFinite(number)) {
+    return String(value);
+  }
+
+  const remainder100 = number % 100;
+
+  if (remainder100 >= 11 && remainder100 <= 13) {
+    return `${number}º`;
+  }
+
+  return `${number}º`;
+}
