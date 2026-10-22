@@ -23,7 +23,7 @@ export const fetchStandings = (seasonId, competitionId, group = null) =>
   unwrap(supabase.rpc('season_standings', { p_season: seasonId, p_comp: competitionId, p_group: group }))
 
 const FIXTURE_COLS =
-  'id, stage, round_no, group_label, tie_no, leg, home_club, away_club, home_goals, away_goals, home_pens, away_pens, tie_winner, status, player_match, player_goals, player_assists, player_rating'
+  'id, stage, round_no, group_label, tie_no, leg, home_club, away_club, home_goals, away_goals, home_pens, away_pens, tie_winner, status, player_match, player_goals, player_assists, player_rating, played_at'
 
 export const fetchFixtures = (seasonId, competitionId) =>
   unwrap(

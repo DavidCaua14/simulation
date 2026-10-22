@@ -63,18 +63,25 @@ export function formatRemaining(ms) {
   return `${h}h ${String(m).padStart(2, '0')}min`
 }
 
-export function ordinal(value) {
-  const number = Number(value);
+export const ordinal = (n) => `${n}º`
 
-  if (!Number.isFinite(number)) {
-    return String(value);
-  }
+export const COMP_NAME = { brasileirao: 'Brasileirão Série A', copa_brasil: 'Copa do Brasil', libertadores: 'Copa Libertadores' }
+export const COMP_SHORT = { brasileirao: 'Brasileirão', copa_brasil: 'Copa do Brasil', libertadores: 'Libertadores' }
+export const COMP_ORDER = ['brasileirao', 'copa_brasil', 'libertadores']
+export const STAGE_RANK = { league: 0, group: 1, r16: 2, qf: 3, sf: 4, final: 5 }
 
-  const remainder100 = number % 100;
+// Título de uma rodada: "Rodada 12", "Fase de grupos · Rodada 3", "Oitavas de final · Ida", "Final"
+export function roundTitle(stage, round) {
+  if (stage === 'league') return `Rodada ${round}`
+  if (stage === 'group') return `Fase de grupos · Rodada ${round}`
+  if (stage === 'final') return 'Final'
+  return `${STAGE_LABEL[stage]} · ${round === 1 ? 'Ida' : 'Volta'}`
+}
 
-  if (remainder100 >= 11 && remainder100 <= 13) {
-    return `${number}º`;
-  }
-
-  return `${number}º`;
+// Rótulo curto de um jogo cru (linha da tabela season_fixtures)
+export function fixtureLabel(f) {
+  if (f.stage === 'league') return `Rodada ${f.round_no}`
+  if (f.stage === 'group') return `Grupo ${f.group_label} · Rodada ${f.round_no}`
+  if (f.stage === 'final') return 'Final'
+  return `${STAGE_LABEL[f.stage]} · ${f.leg === 1 ? 'Ida' : 'Volta'}`
 }

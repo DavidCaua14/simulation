@@ -1,33 +1,34 @@
-import { useCallback, useEffect, useState } from 'react'
-import { ChevronLeft } from 'lucide-react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import AppShell from '../../components/layout/AppShell'
 import { BackIcon } from '../../components/ui/icons'
-import useSeasonHub from './hooks/useSeasonHub'
-import { playMatch, respondOffer, startNextSeason } from './services/seasonsApi'
-import PlayerCard from './components/PlayerCard'
-import CompetitionCard from './components/CompetitionCard'
-import CompetitionDetail from './components/CompetitionDetail'
-import MatchResultModal from './components/MatchResultModal'
-import OffersPanel from './components/OffersPanel'
-import CareerPanel from './components/CareerPanel'
-import SeasonSummary from './components/SeasonSummary'
 import { getClubById } from '../club/data/clubs'
-import { formatRemaining } from './utils/seasonUtils'
+import useSeasonData from './hooks/useSeasonData'
 import useCountdown from './hooks/useCountdown'
+import { playMatch, respondOffer, startNextSeason } from './services/seasonsApi'
+import { flattenFixtures, pickNextMatch, playerHistory, projectUpcoming } from './utils/seasonSelectors'
+import { formatRemaining } from './utils/seasonUtils'
+import StatusBar from './components/StatusBar'
+import BottomNav from './components/BottomNav'
+import PostMatch from './components/PostMatch'
+import RoundSheet from './components/RoundSheet'
+import HomeTab from './tabs/HomeTab'
+import MatchesTab from './tabs/MatchesTab'
+import CompetitionsTab from './tabs/CompetitionsTab'
+import MarketTab from './tabs/MarketTab'
+import CareerTab from './tabs/CareerTab'
 import './seasons.css'
 
-const TABS = [
-  { id: 'comps', label: 'Campeonatos' },
-  { id: 'offers', label: 'Propostas' },
-  { id: 'career', label: 'Carreira' },
-]
+const TITLES = { home: 'Início', matches: 'Jogos', comps: 'Torneios', market: 'Mercado', career: 'Carreira' }
 
+// Modo Temporadas = "modo carreira" em abas. Os dados são carregados UMA vez (useSeasonData);
+// as abas só leem a memória. Só existe uma partida para jogar por vez: a do seu clube.
 export default function SeasonsScreen({ onBack }) {
-  const { hub, loading, error, reload } = useSeasonHub()
-  const [tab, setTab] = useState('comps')
-  const [openComp, setOpenComp] = useState(null) // id do campeonato aberto em detalhe
-  const [playing, setPlaying] = useState(null)
+  const { hub, byComp, loading, error, refresh } = useSeasonData()
+  const [tab, setTab] = useState('home')
+  const [compSel, setCompSel] = useState(null)
+  const [playing, setPlaying] = useState(false)
   const [result, setResult] = useState(null)
+  const [sheet, setSheet] = useState(null)
   const [busyOffer, setBusyOffer] = useState(null)
   const [starting, setStarting] = useState(false)
   const [toast, setToast] = useState(null)
@@ -39,19 +40,39 @@ export default function SeasonsScreen({ onBack }) {
     return () => clearTimeout(t)
   }, [toast])
 
-  const remaining = useCountdown(hub?.career.next_reset_at, () => reload({ silent: true }))
+  const remaining = useCountdown(hub?.career.next_reset_at, () => refresh({ silent: true }))
 
-  async function handlePlay(competitionId) {
-    setPlaying(competitionId)
+  // ---- dados derivados (tudo em memória) ----------------------------------
+  const derived = useMemo(() => {
+    if (!hub) return null
+    const myClub = hub.career.club_id
+    const flat = flattenFixtures(byComp)
+    const upcoming = projectUpcoming(byComp, hub.competitions, myClub, 12)
+    return { myClub, flat, upcoming, history: playerHistory(flat), nextComp: pickNextMatch(hub.competitions) }
+  }, [hub, byComp])
+
+  const finished = hub?.season.status === 'finished'
+  const hasEnergy = hub ? hub.career.energy + hub.career.bonus_energy > 0 : false
+  const canPlay = hasEnergy && !finished && !playing
+  const blockedText = finished
+    ? 'Temporada encerrada'
+    : remaining != null
+      ? `Sem energia · recarga em ${formatRemaining(remaining)}`
+      : 'Sem energia'
+
+  // ---- ações ----------------------------------------------------------------
+  async function handlePlay() {
+    if (!derived?.nextComp || playing) return
+    setPlaying(true)
     try {
-      const r = await playMatch(competitionId)
+      const r = await playMatch(derived.nextComp.id) // sempre a próxima partida do SEU clube
       setResult(r)
-      reload({ silent: true }) // atualiza energia, XP, tabela... enquanto o resultado é revelado
+      refresh({ silent: true }) // energia, XP, tabelas... atualizam enquanto o placar é revelado
     } catch (e) {
       notify(e.message, 'alert')
-      reload({ silent: true })
+      refresh({ silent: true })
     } finally {
-      setPlaying(null)
+      setPlaying(false)
     }
   }
 
@@ -59,10 +80,10 @@ export default function SeasonsScreen({ onBack }) {
     setBusyOffer(offerId)
     try {
       const r = await respondOffer(offerId, accept)
-      await reload({ silent: true })
+      await refresh({ silent: true })
       if (r.accepted) {
         notify(`Transferência concluída! Você agora joga pelo ${getClubById(r.club_id)?.name}.`, 'ok')
-        setTab('comps')
+        setTab('home')
       } else {
         notify('Proposta recusada.', 'info')
       }
@@ -77,8 +98,8 @@ export default function SeasonsScreen({ onBack }) {
     setStarting(true)
     try {
       await startNextSeason()
-      await reload({ silent: true })
-      setTab('comps')
+      await refresh({ silent: true })
+      setTab('home')
       notify('Nova temporada! Bola rolando.', 'ok')
     } catch (e) {
       notify(e.message, 'alert')
@@ -89,117 +110,66 @@ export default function SeasonsScreen({ onBack }) {
 
   const closeResult = () => {
     setResult(null)
-    reload({ silent: true })
+    setTab('home')
+    refresh({ silent: true })
   }
 
-  const detailComp = hub?.competitions.find((c) => c.id === openComp)
-  const finished = hub?.season.status === 'finished'
+  const openComp = (id) => {
+    setCompSel(id)
+    setTab('comps')
+  }
+  const openRound = (f) => setSheet({ comp: f.comp, stage: f.stage, round_no: f.round_no })
 
-  // Texto do botão quando não dá para simular
-  const canPlay = hub ? hub.career.energy + hub.career.bonus_energy > 0 && !finished : false
-  const blockedText = finished
-    ? 'Temporada encerrada'
-    : remaining != null
-      ? `Sem energia · recarga em ${formatRemaining(remaining)}`
-      : 'Sem energia'
+  const ctx = hub && derived ? { hub, byComp, ...derived, canPlay, blockedText, playing, starting } : null
 
   return (
     <AppShell
       left={
-        <button
-          type="button"
-          className="icon-btn"
-          onClick={detailComp ? () => setOpenComp(null) : onBack}
-          aria-label="Voltar"
-        >
-          {detailComp ? <ChevronLeft size={20} /> : <BackIcon />}
+        <button type="button" className="icon-btn" onClick={onBack} aria-label="Voltar ao menu">
+          <BackIcon />
         </button>
       }
-      title={detailComp ? detailComp.name : 'Temporadas'}
+      title={`Temporadas · ${TITLES[tab]}`}
     >
       <div className="sn-screen">
         {toast && <div className={`sn-toast ${toast.kind}`}>{toast.text}</div>}
 
-        <div className="sn-scroll">
+        {ctx && <StatusBar career={hub.career} season={hub.season} remaining={remaining} />}
+
+        <div className="sn-scroll" key={tab}>
           {loading && !hub && <p className="sn-muted sn-center">Carregando sua temporada…</p>}
 
           {error && !hub && (
             <div className="sn-empty card">
               <p>{error}</p>
-              <button type="button" className="sn-ghost" onClick={() => reload()}>
+              <button type="button" className="sn-ghost" onClick={() => refresh()}>
                 Tentar de novo
               </button>
             </div>
           )}
 
-          {hub && !detailComp && (
-            <>
-              <PlayerCard
-                career={hub.career}
-                stats={hub.stats}
-                season={hub.season}
-                onRecharged={() => reload({ silent: true })}
-              />
-
-              <div className="sn-seg" role="tablist">
-                {TABS.map((t) => (
-                  <button key={t.id} type="button" role="tab" aria-selected={tab === t.id} className={tab === t.id ? 'is-on' : ''} onClick={() => setTab(t.id)}>
-                    {t.label}
-                    {t.id === 'offers' && hub.offers.length > 0 && <em>{hub.offers.length}</em>}
-                  </button>
-                ))}
-              </div>
-
-              {tab === 'comps' && (
-                <div className="sn-list">
-                  {finished && <SeasonSummary season={hub.season} starting={starting} onStartNext={handleStartNext} />}
-                  {hub.competitions.map((c) => (
-                    <CompetitionCard
-                      key={c.id}
-                      comp={c}
-                      myClub={hub.career.club_id}
-                      playing={playing === c.id}
-                      canPlay={canPlay && !playing}
-                      blockedText={blockedText}
-                      onPlay={handlePlay}
-                      onOpen={setOpenComp}
-                    />
-                  ))}
-                </div>
-              )}
-
-              {tab === 'offers' && (
-                <OffersPanel
-                  offers={hub.offers}
-                  currentClub={hub.career.club_id}
-                  popularity={hub.stats.popularity}
-                  busyId={busyOffer}
-                  onRespond={handleOffer}
-                />
-              )}
-
-              {tab === 'career' && <CareerPanel stats={hub.stats} />}
-            </>
+          {ctx && tab === 'home' && (
+            <HomeTab ctx={ctx} onGoTab={setTab} onOpenComp={openComp} onOpenRound={openRound} onPlay={handlePlay} onStartNext={handleStartNext} />
           )}
-
-          {hub && detailComp && (
-            <CompetitionDetail
-              seasonId={hub.season.id}
-              comp={detailComp}
-              myClub={hub.career.club_id}
-              version={`${hub.season.matches}-${detailComp.stage}-${detailComp.status}`}
-            />
-          )}
+          {ctx && tab === 'matches' && <MatchesTab ctx={ctx} onOpenRound={openRound} />}
+          {ctx && tab === 'comps' && <CompetitionsTab ctx={ctx} selected={compSel || ctx.nextComp?.id || 'brasileirao'} onSelect={setCompSel} />}
+          {ctx && tab === 'market' && <MarketTab ctx={ctx} busyId={busyOffer} onRespond={handleOffer} />}
+          {ctx && tab === 'career' && <CareerTab ctx={ctx} onRecharged={() => refresh({ silent: true })} />}
         </div>
 
+        {ctx && <BottomNav active={tab} onChange={setTab} badges={{ market: hub.offers.length }} />}
+
+        {sheet && ctx && <RoundSheet target={sheet} byComp={byComp} myClub={ctx.myClub} onClose={() => setSheet(null)} />}
+
         {result && (
-          <MatchResultModal
+          <PostMatch
             result={result}
+            byComp={byComp}
             onClose={closeResult}
             onOpenOffers={() => {
-              closeResult()
-              setOpenComp(null)
-              setTab('offers')
+              setResult(null)
+              setTab('market')
+              refresh({ silent: true })
             }}
           />
         )}
