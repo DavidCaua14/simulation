@@ -33,10 +33,8 @@ const UA = 'SimulationFootballGame/1.0 (projeto pessoal; baixa escudos uma vez)'
 // Para forçar um escudo: URL direta de uma imagem OU nome de arquivo do Wikimedia Commons.
 //   ex.:  'vasco': 'https://exemplo.com/vasco.png'   |   'cusco': 'File:Cusco FC logo.svg'
 export const OVERRIDES = {
-  'bragantino': 'https://thumb.wikimedia.org/wikipedia/pt/thumb/9/9e/RedBullBragantino.png/330px-RedBullBragantino.png?utm_source=pt.wikipedia.org&utm_campaign=index&utm_content=thumbnail',
-  'flamengo': 'https://images.seeklogo.com/logo-png/5/2/flamengo-logo-png_seeklogo-55627.png',
-  'botafogo': 'https://thumb.wikimedia.org/wikipedia/commons/thumb/5/52/Botafogo_de_Futebol_e_Regatas_logo.svg/330px-Botafogo_de_Futebol_e_Regatas_logo.svg.png?utm_source=pt.wikipedia.org&utm_campaign=index&utm_content=thumbnail',
-  'fluminense': 'https://thumb.wikimedia.org/wikipedia/commons/thumb/a/ad/Fluminense_FC_escudo.png/250px-Fluminense_FC_escudo.png?utm_source=pt.wikipedia.org&utm_campaign=index&utm_content=thumbnail'
+  'fluminense': 'https://thumb.wikimedia.org/wikipedia/commons/thumb/a/ad/Fluminense_FC_escudo.png/250px-Fluminense_FC_escudo.png?utm_source=pt.wikipedia.org&utm_campaign=index&utm_content=thumbnail',
+  'corinthians': 'https://images.seeklogo.com/logo-png/12/2/s-c-corinthians-paulista-logo-png_seeklogo-121083.png'
 }
 
 export const CLUBS = [
