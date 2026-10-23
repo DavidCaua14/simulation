@@ -9,8 +9,8 @@ function readableOn(hex) {
   return lum > 0.62 ? '#111111' : '#ffffff'
 }
 
-// Escudo do clube. Ordem: imagem própria do clube (os 3 originais) -> escudo REAL baixado pelo
-// script (public/crests) -> escudo desenhado com as cores e a sigla (reserva; também usado se a imagem falhar).
+// Escudo do clube. Ordem: escudo baixado pelo script (public/crests) -> imagem embutida dos 3 clubes originais
+// -> escudo desenhado com as cores e a sigla. Se a imagem de uma etapa falhar, cai para a próxima.
 export default function ClubCrest({ clubId, size = 40, className = '' }) {
   const club = getClubById(clubId)
   const [failedId, setFailedId] = useState(null)
@@ -18,7 +18,7 @@ export default function ClubCrest({ clubId, size = 40, className = '' }) {
   if (!club) return <span className={`crest ${className}`} style={style} aria-hidden="true" />
 
   const file = CREST_FILES[club.id]
-  const src = club.shield || (file && failedId !== club.id ? `${import.meta.env.BASE_URL}crests/${file}` : null)
+  const src = file && failedId !== club.id ? `${import.meta.env.BASE_URL}crests/${file}` : club.shield || null
 
   if (src) {
     return (
