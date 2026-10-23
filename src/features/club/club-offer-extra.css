@@ -1,0 +1,5 @@
+.club-card-info .club-card-bonus {
+  margin-top: 2px;
+  font-weight: 700;
+  color: var(--gold, #f5b301);
+}

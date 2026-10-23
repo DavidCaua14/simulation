@@ -11,8 +11,12 @@ async function unwrap(promise) {
 // Tela principal: carreira, temporada, campeonatos, propostas e estatísticas.
 export const fetchHub = () => unwrap(supabase.rpc('season_hub'))
 
-// Simula a próxima partida do seu clube no campeonato (gasta 1 de energia).
-export const playMatch = (competitionId) => unwrap(supabase.rpc('season_play', { p_competition: competitionId }))
+// Simula a próxima partida do SEU clube (gasta 1 de energia). Quem decide qual é o campeonato é o calendário do banco.
+export const playMatch = () => unwrap(supabase.rpc('season_play'))
+
+// "Próximo": simula as rodadas dos campeonatos em que seu clube não joga, sem gastar energia,
+// até chegar a uma partida do seu clube.
+export const advanceCalendar = () => unwrap(supabase.rpc('season_advance'))
 
 export const startNextSeason = () => unwrap(supabase.rpc('season_start_next'))
 

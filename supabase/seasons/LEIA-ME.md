@@ -31,3 +31,19 @@
 - Cada temporada repete os mesmos participantes (sem classificação/rebaixamento entre temporadas).
 - Quartas/semis são sorteadas a cada fase; a final é em campo neutro.
 - Os 20 da Série A e os grupos refletem o sorteio real; as "forças" são estimativas editáveis.
+
+---
+
+# Novidades (versão 3)
+
+## Instalar
+1. **SQL Editor**: rode `04_features.sql` (depois do 01, 02 e 03). Rode ANTES de subir o `src/`: a função `season_play` mudou de assinatura.
+2. **Escudos reais** (uma vez, na raiz do projeto, com Node 18+):  `node scripts/fetch-crests.mjs`
+   Ele baixa os 48 escudos para `public/crests/` e gera `src/features/club/data/crests.js`. Leia o relatório no final: o que não for achado continua com o escudo desenhado. Para corrigir um clube, preencha `OVERRIDES` no script e rode de novo (`--force` baixa tudo outra vez).
+3. Copie o `src/` do zip.
+
+## O que mudou
+- **Cadastro**: 2 propostas aleatórias, sorteadas entre os 6 clubes mais fracos da Série A e gravadas no banco (recarregar não re-sorteia). Cada uma paga "luvas" de 200 a 500 moedas. Para mudar: `v_n` e `v_pool` em `get_initial_offers`.
+- **Calendário único**: cada "dia" acontece a próxima rodada do campeonato mais atrasado. Se seu clube joga nela, você simula a SUA partida (1 energia). Se não, o botão **Próximo** simula a rodada (**sem energia**) e para na sua próxima partida (até 15 rodadas por toque). A temporada só termina quando todos os campeonatos acabam.
+- **Propostas com prazo**: 48h (72h na janela de fim de temporada; as iniciais não expiram). Vencida, a proposta some. Um clube que você recusou ou deixou vencer pesa **0,25** no sorteio (e às vezes nem tenta); se você trocar de time depois disso, o peso sobe para **0,60**, ainda abaixo do normal (1,0). Ajuste em `sim_club_weight`.
+- **Extras**: resumo "Enquanto isso…" dos outros campeonatos, calendário com as rodadas dos outros torneios, histórico de propostas e alerta de prazo urgente (menos de 12h).

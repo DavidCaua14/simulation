@@ -1,4 +1,6 @@
+import { useState } from 'react'
 import { getClubById } from '../data/clubs'
+import { CREST_FILES } from '../data/crests'
 
 // Escolhe preto/branco para o texto da sigla conforme o brilho da cor de fundo.
 function readableOn(hex) {
@@ -7,15 +9,29 @@ function readableOn(hex) {
   return lum > 0.62 ? '#111111' : '#ffffff'
 }
 
-// Escudo do clube: usa a imagem quando existe (os 3 clubes iniciais);
-// para os outros desenha um escudo com as cores e a sigla do clube.
+// Escudo do clube. Ordem: imagem própria do clube (os 3 originais) -> escudo REAL baixado pelo
+// script (public/crests) -> escudo desenhado com as cores e a sigla (reserva; também usado se a imagem falhar).
 export default function ClubCrest({ clubId, size = 40, className = '' }) {
   const club = getClubById(clubId)
+  const [failedId, setFailedId] = useState(null)
   const style = { width: size, height: size }
   if (!club) return <span className={`crest ${className}`} style={style} aria-hidden="true" />
 
-  if (club.shield) {
-    return <img className={`crest ${className}`} style={style} src={club.shield} alt={club.name} />
+  const file = CREST_FILES[club.id]
+  const src = club.shield || (file && failedId !== club.id ? `${import.meta.env.BASE_URL}crests/${file}` : null)
+
+  if (src) {
+    return (
+      <img
+        className={`crest ${className}`}
+        style={{ ...style, objectFit: 'contain' }}
+        src={src}
+        alt={club.name}
+        loading="lazy"
+        decoding="async"
+        onError={() => setFailedId(club.id)}
+      />
+    )
   }
 
   const [c1, c2] = club.colors || ['#444444', '#bbbbbb']

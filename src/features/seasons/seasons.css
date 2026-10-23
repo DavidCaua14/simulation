@@ -328,3 +328,22 @@ button.sn-mr { cursor: pointer; } button.sn-mr:active { background: var(--surfac
 /* O modal do pós-jogo agora tem abas internas */
 .sn-reveal .sn-seg { margin: 2px 0; }
 @media (prefers-reduced-motion: reduce) { .sn-page, .sn-sheet, .sn-sheet-wrap { animation: none; } }
+
+/* ===== V3: "Próximo" (campeonatos paralelos) e prazo das propostas ===== */
+.sn-free .sn-free-text { margin: 0; text-align: center; color: var(--text-secondary); font-size: .86rem; line-height: 1.45; }
+.sn-free .sn-free-text b { color: var(--text-primary); }
+.sn-free-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.sn-free-list li { display: flex; justify-content: space-between; gap: 8px; padding: 8px 10px; border-radius: 10px; background: var(--surface-alt); font-size: .78rem; }
+.sn-free-list li span { color: var(--text-secondary); text-align: right; }
+.sn-next-btn { background: linear-gradient(180deg, #38bdf8, #0ea5e9); box-shadow: 0 4px 0 #0369a1, 0 8px 18px rgba(14,165,233,.25); color: #04141f; }
+.sn-next-btn:active:not(:disabled) { box-shadow: 0 1px 0 #0369a1; }
+.sn-next-btn:disabled { background: var(--surface-strong); box-shadow: none; }
+.sn-cost.free { font-size: .68rem; font-weight: 800; letter-spacing: .03em; }
+.sn-free-row { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 14px; border: 1px dashed var(--border); background: color-mix(in srgb, #38bdf8 6%, var(--surface)); }
+.sn-free-row > div { flex: 1; display: flex; flex-direction: column; min-width: 0; } .sn-free-row small { color: var(--text-secondary); font-size: .72rem; }
+.sn-free-ico { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 9px; background: color-mix(in srgb, #38bdf8 22%, transparent); color: #38bdf8; flex-shrink: 0; }
+.sn-free-row em { font-style: normal; font-weight: 900; font-size: .64rem; letter-spacing: .08em; color: #38bdf8; }
+.sn-free-row.is-next { border-style: solid; border-color: #38bdf8; }
+.sn-digest-round { display: flex; flex-direction: column; gap: 8px; }
+.sn-deadline { display: inline-flex; align-items: center; gap: 5px; align-self: flex-start; font-size: .74rem; font-weight: 800; color: var(--text-secondary); padding: 4px 9px; border-radius: 999px; background: var(--surface-alt); }
+.sn-deadline.urgent { color: var(--danger); background: color-mix(in srgb, var(--danger) 14%, transparent); animation: sn-glow 1.2s ease-in-out infinite alternate; }

@@ -4,12 +4,13 @@ import { BackIcon } from '../../components/ui/icons'
 import { getClubById } from '../club/data/clubs'
 import useSeasonData from './hooks/useSeasonData'
 import useCountdown from './hooks/useCountdown'
-import { playMatch, respondOffer, startNextSeason } from './services/seasonsApi'
-import { flattenFixtures, pickNextMatch, playerHistory, projectUpcoming } from './utils/seasonSelectors'
+import { advanceCalendar, playMatch, respondOffer, startNextSeason } from './services/seasonsApi'
+import { flattenFixtures, playerHistory, projectCalendar } from './utils/seasonSelectors'
 import { formatRemaining } from './utils/seasonUtils'
 import StatusBar from './components/StatusBar'
 import BottomNav from './components/BottomNav'
 import PostMatch from './components/PostMatch'
+import ParallelDigest from './components/ParallelDigest'
 import RoundSheet from './components/RoundSheet'
 import HomeTab from './tabs/HomeTab'
 import MatchesTab from './tabs/MatchesTab'
@@ -27,6 +28,8 @@ export default function SeasonsScreen({ onBack }) {
   const [tab, setTab] = useState('home')
   const [compSel, setCompSel] = useState(null)
   const [playing, setPlaying] = useState(false)
+  const [advancing, setAdvancing] = useState(false)
+  const [digest, setDigest] = useState(null)
   const [result, setResult] = useState(null)
   const [sheet, setSheet] = useState(null)
   const [busyOffer, setBusyOffer] = useState(null)
@@ -47,13 +50,12 @@ export default function SeasonsScreen({ onBack }) {
     if (!hub) return null
     const myClub = hub.career.club_id
     const flat = flattenFixtures(byComp)
-    const upcoming = projectUpcoming(byComp, hub.competitions, myClub, 12)
-    return { myClub, flat, upcoming, history: playerHistory(flat), nextComp: pickNextMatch(hub.competitions) }
+    return { myClub, flat, calendar: projectCalendar(byComp, myClub, 14), history: playerHistory(flat), nextEvent: hub.next_event }
   }, [hub, byComp])
 
   const finished = hub?.season.status === 'finished'
   const hasEnergy = hub ? hub.career.energy + hub.career.bonus_energy > 0 : false
-  const canPlay = hasEnergy && !finished && !playing
+  const canPlay = hasEnergy && !finished && !playing && !advancing
   const blockedText = finished
     ? 'Temporada encerrada'
     : remaining != null
@@ -62,10 +64,10 @@ export default function SeasonsScreen({ onBack }) {
 
   // ---- ações ----------------------------------------------------------------
   async function handlePlay() {
-    if (!derived?.nextComp || playing) return
+    if (derived?.nextEvent?.kind !== 'mine' || playing) return
     setPlaying(true)
     try {
-      const r = await playMatch(derived.nextComp.id) // sempre a próxima partida do SEU clube
+      const r = await playMatch() // sempre a próxima partida do SEU clube (o calendário é do banco)
       setResult(r)
       refresh({ silent: true }) // energia, XP, tabelas... atualizam enquanto o placar é revelado
     } catch (e) {
@@ -73,6 +75,22 @@ export default function SeasonsScreen({ onBack }) {
       refresh({ silent: true })
     } finally {
       setPlaying(false)
+    }
+  }
+
+  // "Próximo": simula os campeonatos em que seu clube não joga (sem energia) e mostra o resumo
+  async function handleAdvance() {
+    if (advancing) return
+    setAdvancing(true)
+    try {
+      const d = await advanceCalendar()
+      setDigest(d)
+      refresh({ silent: true })
+    } catch (e) {
+      notify(e.message, 'alert')
+      refresh({ silent: true })
+    } finally {
+      setAdvancing(false)
     }
   }
 
@@ -120,7 +138,7 @@ export default function SeasonsScreen({ onBack }) {
   }
   const openRound = (f) => setSheet({ comp: f.comp, stage: f.stage, round_no: f.round_no })
 
-  const ctx = hub && derived ? { hub, byComp, ...derived, canPlay, blockedText, playing, starting } : null
+  const ctx = hub && derived ? { hub, byComp, ...derived, canPlay, blockedText, playing, advancing, starting } : null
 
   return (
     <AppShell
@@ -149,17 +167,29 @@ export default function SeasonsScreen({ onBack }) {
           )}
 
           {ctx && tab === 'home' && (
-            <HomeTab ctx={ctx} onGoTab={setTab} onOpenComp={openComp} onOpenRound={openRound} onPlay={handlePlay} onStartNext={handleStartNext} />
+            <HomeTab ctx={ctx} onGoTab={setTab} onOpenComp={openComp} onOpenRound={openRound} onPlay={handlePlay} onAdvance={handleAdvance} onStartNext={handleStartNext} />
           )}
           {ctx && tab === 'matches' && <MatchesTab ctx={ctx} onOpenRound={openRound} />}
-          {ctx && tab === 'comps' && <CompetitionsTab ctx={ctx} selected={compSel || ctx.nextComp?.id || 'brasileirao'} onSelect={setCompSel} />}
-          {ctx && tab === 'market' && <MarketTab ctx={ctx} busyId={busyOffer} onRespond={handleOffer} />}
+          {ctx && tab === 'comps' && <CompetitionsTab ctx={ctx} selected={compSel || ctx.nextEvent?.competition || 'brasileirao'} onSelect={setCompSel} />}
+          {ctx && tab === 'market' && <MarketTab ctx={ctx} busyId={busyOffer} onRespond={handleOffer} onExpired={() => refresh({ silent: true })} />}
           {ctx && tab === 'career' && <CareerTab ctx={ctx} onRecharged={() => refresh({ silent: true })} />}
         </div>
 
         {ctx && <BottomNav active={tab} onChange={setTab} badges={{ market: hub.offers.length }} />}
 
         {sheet && ctx && <RoundSheet target={sheet} byComp={byComp} myClub={ctx.myClub} onClose={() => setSheet(null)} />}
+
+        {digest && (
+          <ParallelDigest
+            digest={digest}
+            myClub={ctx?.myClub}
+            onClose={() => {
+              setDigest(null)
+              setTab('home')
+              refresh({ silent: true })
+            }}
+          />
+        )}
 
         {result && (
           <PostMatch

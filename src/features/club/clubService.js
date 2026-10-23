@@ -1,21 +1,29 @@
 import { supabase } from '../../lib/supabaseClient'
 import { mapRowToCareer } from '../player/mapCareerRow'
 
-// Vincula o jogador a um clube. Fica guardado na própria carreira
-// (careers.club_id) — futuramente, trocar de clube é só chamar isso de
-// novo com outro clubId, e o modo de simular partidas lê esse campo pra
-// saber qual time o usuário defende agora.
-export async function chooseClub({ careerId, clubId }) {
-  if (!careerId || !clubId) {
-    throw new Error('Carreira ou clube inválido.')
+// Propostas iniciais: 2 clubes sorteados entre os mais fracos da Série A. O sorteio acontece
+// UMA vez, no banco (função get_initial_offers), e fica gravado: recarregar a página mostra as
+// mesmas propostas, então não dá para "re-sortear" até aparecer um clube melhor.
+export async function fetchInitialOffers() {
+  const { data, error } = await supabase.rpc('get_initial_offers')
+  if (error) {
+    console.error('[fetchInitialOffers]', error)
+    throw new Error('Não foi possível carregar as propostas. Tente novamente.')
+  }
+  return data || []
+}
+
+// Aceita uma das propostas iniciais. O clube e as luvas de assinatura são aplicados pelo banco
+// (choose_initial_club); depois trocar de clube só pelas propostas do modo Temporadas.
+export async function chooseClub({ careerId, offerId }) {
+  if (!careerId || !offerId) {
+    throw new Error('Carreira ou proposta inválida.')
   }
 
-  // A escolha passa por uma função do banco (choose_initial_club): o app não
-  // pode mais trocar de clube por conta própria — só pelas propostas do modo Temporadas.
-  const { error: rpcError } = await supabase.rpc('choose_initial_club', { p_club: clubId })
+  const { error: rpcError } = await supabase.rpc('choose_initial_club', { p_offer: offerId })
   if (rpcError) {
     console.error('[chooseClub]', rpcError)
-    throw new Error('Não foi possível salvar o clube escolhido. Tente novamente.')
+    throw new Error('Não foi possível fechar com o clube escolhido. Tente novamente.')
   }
 
   const { data, error } = await supabase.from('careers').select('*').eq('id', careerId).single()

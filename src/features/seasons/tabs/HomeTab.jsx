@@ -1,6 +1,8 @@
 import { useMemo } from 'react'
 import { ArrowLeftRight, ChevronRight } from 'lucide-react'
 import NextMatchCard from '../components/NextMatchCard'
+import FreeRoundCard from '../components/FreeRoundCard'
+import CalendarRow from '../components/CalendarRow'
 import SeasonSummary from '../components/SeasonSummary'
 import MatchRow from '../components/MatchRow'
 import { EXPECTED_MATCHES, clubForm, standingsFrom } from '../utils/seasonSelectors'
@@ -14,22 +16,24 @@ function campaignText(c) {
   return `${STAGE_LABEL[c.stage]}${pos}`
 }
 
-// INÍCIO: o que fazer agora (uma única partida), o último jogo, os próximos e a campanha em cada torneio.
-export default function HomeTab({ ctx, onGoTab, onOpenComp, onOpenRound, onPlay, onStartNext }) {
-  const { hub, byComp, flat, nextComp, upcoming, history, myClub, canPlay, blockedText, playing, starting } = ctx
+// INÍCIO: o que fazer agora (jogar a SUA partida ou tocar em "Próximo"), o último jogo, o calendário e a campanha.
+export default function HomeTab({ ctx, onGoTab, onOpenComp, onOpenRound, onPlay, onAdvance, onStartNext }) {
+  const { hub, byComp, flat, nextEvent, calendar, history, myClub, canPlay, blockedText, playing, advancing, starting } = ctx
   const finished = hub.season.status === 'finished'
+  const mine = nextEvent?.kind === 'mine' ? nextEvent : null
+  const free = nextEvent?.kind === 'free' ? nextEvent : null
 
   // Relatório do adversário: posição na tabela + forma recente dos dois clubes
   const reports = useMemo(() => {
-    if (!nextComp) return {}
-    const m = nextComp.next
-    const rows = m.stage === 'league' || m.stage === 'group' ? standingsFrom(byComp[nextComp.id], m.group || null) : null
+    if (!mine) return {}
+    const m = mine.match
+    const rows = m.stage === 'league' || m.stage === 'group' ? standingsFrom(byComp[mine.competition], m.group || null) : null
     const rep = (id) => {
       const r = rows?.find((x) => x.club_id === id)
       return { pos: r?.pos, points: r?.points, form: clubForm(flat, id) }
     }
     return { [m.home]: rep(m.home), [m.away]: rep(m.away) }
-  }, [nextComp, byComp, flat])
+  }, [mine, byComp, flat])
 
   const last = history[0]
 
@@ -37,8 +41,18 @@ export default function HomeTab({ ctx, onGoTab, onOpenComp, onOpenRound, onPlay,
     <div className="sn-page">
       {finished ? (
         <SeasonSummary season={hub.season} starting={starting} onStartNext={onStartNext} />
-      ) : nextComp ? (
-        <NextMatchCard comp={nextComp} myClub={myClub} reports={reports} canPlay={canPlay} playing={playing} blockedText={blockedText} onPlay={onPlay} />
+      ) : mine ? (
+        <NextMatchCard
+          comp={{ id: mine.competition, next: mine.match }}
+          myClub={myClub}
+          reports={reports}
+          canPlay={canPlay}
+          playing={playing}
+          blockedText={blockedText}
+          onPlay={onPlay}
+        />
+      ) : free ? (
+        <FreeRoundCard event={free} calendar={calendar} advancing={advancing} onAdvance={onAdvance} />
       ) : (
         <div className="sn-empty card">
           <p>Nenhuma partida pendente agora.</p>
@@ -50,7 +64,7 @@ export default function HomeTab({ ctx, onGoTab, onOpenComp, onOpenRound, onPlay,
         <button type="button" className="sn-offer-alert" onClick={() => onGoTab('market')}>
           <ArrowLeftRight size={18} />
           <span>
-            Você tem <b>{hub.offers.length}</b> proposta{hub.offers.length > 1 ? 's' : ''} de clube. Toque para ver.
+            Você tem <b>{hub.offers.length}</b> proposta{hub.offers.length > 1 ? 's' : ''} de clube com prazo para responder. Toque para ver.
           </span>
         </button>
       )}
@@ -62,7 +76,7 @@ export default function HomeTab({ ctx, onGoTab, onOpenComp, onOpenRound, onPlay,
         </section>
       )}
 
-      {!finished && upcoming.length > 1 && (
+      {!finished && calendar.length > 1 && (
         <section>
           <div className="sn-h-row">
             <h3 className="sn-h">Depois disso</h3>
@@ -71,8 +85,8 @@ export default function HomeTab({ ctx, onGoTab, onOpenComp, onOpenRound, onPlay,
             </button>
           </div>
           <div className="sn-stack">
-            {upcoming.slice(1, 4).map((f) => (
-              <MatchRow key={f.id} f={f} myClub={myClub} />
+            {calendar.slice(1, 4).map((e) => (
+              <CalendarRow key={`${e.comp}-${e.stage}-${e.round}`} event={e} myClub={myClub} />
             ))}
           </div>
         </section>

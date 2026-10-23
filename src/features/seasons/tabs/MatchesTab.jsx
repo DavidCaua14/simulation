@@ -1,16 +1,16 @@
 import { useState } from 'react'
 import MatchRow from '../components/MatchRow'
+import CalendarRow from '../components/CalendarRow'
 import { COMP_ORDER, COMP_SHORT } from '../utils/seasonUtils'
 
 // JOGOS: histórico completo (resultados) e calendário (próximos jogos). Tocar num resultado abre a rodada.
 export default function MatchesTab({ ctx, onOpenRound }) {
-  const { history, upcoming, myClub } = ctx
+  const { history, calendar, myClub } = ctx
   const [view, setView] = useState('results')
   const [filter, setFilter] = useState('all')
 
-  const source = view === 'results' ? history : upcoming
+  const source = view === 'results' ? history : calendar
   const list = filter === 'all' ? source : source.filter((f) => f.comp === filter)
-  const nextId = upcoming[0]?.id
 
   return (
     <div className="sn-page">
@@ -38,12 +38,16 @@ export default function MatchesTab({ ctx, onOpenRound }) {
         </div>
       ) : (
         <div className="sn-stack">
-          {list.map((f) => (
-            <MatchRow key={f.id} f={f} myClub={myClub} onOpen={view === 'results' ? onOpenRound : undefined} highlight={view === 'upcoming' && f.id === nextId} />
-          ))}
+          {view === 'results'
+            ? list.map((f) => <MatchRow key={f.id} f={f} myClub={myClub} onOpen={onOpenRound} />)
+            : list.map((e) => <CalendarRow key={`${e.comp}-${e.stage}-${e.round}`} event={e} myClub={myClub} highlight={e === calendar[0]} />)}
         </div>
       )}
-      {view === 'upcoming' && <p className="sn-hint">A ordem dos jogos intercala os campeonatos. O Início sempre mostra o próximo.</p>}
+      {view === 'upcoming' && (
+        <p className="sn-hint">
+          Os campeonatos se intercalam. Nos dias em que seu clube não joga, o botão "Próximo" no Início simula a rodada, sem gastar energia.
+        </p>
+      )}
     </div>
   )
 }

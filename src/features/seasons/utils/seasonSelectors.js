@@ -12,14 +12,6 @@ const progress = (id, played) => played / (EXPECTED_MATCHES[id] || 38)
 const byPriority = (a, b) => PRIORITY.indexOf(a) - PRIORITY.indexOf(b)
 export const involves = (f, club) => f.home_club === club || f.away_club === club
 
-// REGRA "UMA PARTIDA POR VEZ": o próximo jogo é do campeonato em que o clube está mais "atrasado"
-// no calendário (menor fração de jogos disputados). Empate -> Libertadores, Copa, Brasileirão.
-export function pickNextMatch(competitions = []) {
-  const active = competitions.filter((c) => c.status === 'active' && c.next)
-  active.sort((a, b) => progress(a.id, a.played) - progress(b.id, b.played) || byPriority(a.id, b.id))
-  return active[0] ?? null
-}
-
 export function flattenFixtures(byComp = {}) {
   return COMP_ORDER.flatMap((comp) => (byComp[comp] || []).map((f) => ({ ...f, comp })))
 }
@@ -29,25 +21,35 @@ const newestFirst = (a, b) => (b.played_at || '').localeCompare(a.played_at || '
 // Histórico: todas as partidas que VOCÊ jogou (inclusive de clubes anteriores), da mais recente para a mais antiga.
 export const playerHistory = (flat) => flat.filter((f) => f.player_match && f.status === 'played').sort(newestFirst)
 
-// Próximos jogos do seu clube, já intercalados entre os campeonatos na mesma ordem da regra acima.
-export function projectUpcoming(byComp, competitions, myClub, count = 6) {
-  const queues = {}
-  const played = {}
-  for (const c of competitions) {
-    if (c.status !== 'active') continue
-    queues[c.id] = (byComp[c.id] || [])
-      .filter((f) => f.status === 'pending' && involves(f, myClub))
-      .sort((a, b) => a.round_no - b.round_no || a.id - b.id)
-    played[c.id] = c.played
+// CALENDÁRIO ÚNICO da temporada (mesma regra do banco, função sim_next_event): em cada "dia" acontece
+// a próxima rodada do campeonato mais atrasado. Se o seu clube joga nela -> "mine" (você simula, 1 energia);
+// se não -> "free" (outro campeonato: o botão "Próximo" simula, sem energia).
+export function projectCalendar(byComp, myClub, count = 14) {
+  const pending = {}
+  const done = {}
+  for (const comp of COMP_ORDER) {
+    const all = buildRounds(byComp[comp] || [])
+    done[comp] = all.filter((r) => r.done).length
+    pending[comp] = all.filter((r) => !r.done)
   }
   const out = []
   while (out.length < count) {
-    const ids = Object.keys(queues).filter((id) => queues[id].length)
+    const ids = COMP_ORDER.filter((id) => pending[id].length)
     if (!ids.length) break
-    ids.sort((a, b) => progress(a, played[a]) - progress(b, played[b]) || byPriority(a, b))
-    const id = ids[0]
-    out.push({ ...queues[id].shift(), comp: id })
-    played[id] += 1
+    ids.sort((a, b) => progress(a, done[a]) - progress(b, done[b]) || byPriority(a, b))
+    const comp = ids[0]
+    const round = pending[comp].shift()
+    done[comp] += 1
+    const mine = round.matches.find((f) => f.status === 'pending' && involves(f, myClub))
+    out.push({
+      kind: mine ? 'mine' : 'free',
+      comp,
+      stage: round.stage,
+      round: round.round,
+      label: round.label,
+      fixture: mine ? { ...mine, comp } : null,
+      matches: round.matches.length,
+    })
   }
   return out
 }

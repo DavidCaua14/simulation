@@ -1,20 +1,21 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import AppShell from '../../components/layout/AppShell'
 import SignOutButton from '../../components/ui/SignOutButton'
 import LoadingOverlay from '../../components/ui/LoadingOverlay'
 import { AlertIcon } from '../../components/ui/icons'
 import ChatBubble from './components/ChatBubble'
 import ClubProposalCard from './components/ClubProposalCard'
-import { CLUBS, getClubById } from './data/clubs'
-import { chooseClub } from './clubService'
+import { getClubById } from './data/clubs'
+import { chooseClub, fetchInitialOffers } from './clubService'
 import './club-offer.css'
+import './club-offer-extra.css'
 
 function buildScript(nickname) {
   return [
     `Fala, ${nickname}! Seja bem-vindo ao futebol profissional.`,
     'Sou seu empresário — a partir de agora cuido da sua carreira.',
-    'Boa notícia: três clubes já mandaram proposta depois de ver seu potencial.',
-    'Dá uma olhada e escolhe onde você quer começar:',
+    'Boa notícia: dois clubes já mandaram proposta depois de ver seu potencial.',
+    'Todo mundo começa de baixo. Joga bem, que as propostas melhores vêm depois. Escolhe onde você quer começar:',
   ]
 }
 
@@ -24,14 +25,27 @@ export default function ClubOfferScreen({ career, onClubChosen }) {
 
   const [visibleCount, setVisibleCount] = useState(0)
   const [showProposals, setShowProposals] = useState(false)
-  const [selectedClub, setSelectedClub] = useState(null)
+  const [offers, setOffers] = useState(null) // null = carregando em segundo plano durante a conversa
+  const [offersError, setOffersError] = useState('')
+  const [selectedId, setSelectedId] = useState(null)
   const [closingLine, setClosingLine] = useState(false)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const scrollRef = useRef(null)
 
-  // Revela as mensagens uma a uma, como num chat — sem nenhum loading aqui,
-  // é só o ritmo da conversa.
+  // As propostas são sorteadas (e gravadas) no banco. A chamada roda enquanto o "empresário" conversa,
+  // então quando as mensagens terminam as propostas já chegaram.
+  const loadOffers = useCallback(() => {
+    setOffersError('')
+    fetchInitialOffers()
+      .then(setOffers)
+      .catch((e) => setOffersError(e.message))
+  }, [])
+  useEffect(() => {
+    loadOffers()
+  }, [loadOffers])
+
+  // Revela as mensagens uma a uma, como num chat.
   useEffect(() => {
     if (visibleCount >= script.length) {
       const t = setTimeout(() => setShowProposals(true), 500)
@@ -43,16 +57,19 @@ export default function ClubOfferScreen({ career, onClubChosen }) {
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' })
-  }, [visibleCount, showProposals, closingLine])
+  }, [visibleCount, showProposals, closingLine, offers])
+
+  const selected = offers?.find((o) => o.id === selectedId) || null
+  const club = selected ? getClubById(selected.club_id) : null
 
   async function handleConfirm() {
-    if (!selectedClub) return
+    if (!selected) return
     setClosingLine(true)
     setError('')
     await new Promise((r) => setTimeout(r, 700))
     setSaving(true)
     try {
-      const updatedCareer = await chooseClub({ careerId: career.id, clubId: selectedClub })
+      const updatedCareer = await chooseClub({ careerId: career.id, offerId: selected.id })
       onClubChosen?.(updatedCareer)
     } catch (err) {
       setSaving(false)
@@ -60,8 +77,6 @@ export default function ClubOfferScreen({ career, onClubChosen }) {
       setError(err.message || 'Não foi possível salvar o clube escolhido.')
     }
   }
-
-  const club = selectedClub ? getClubById(selectedClub) : null
 
   return (
     <AppShell left={<SignOutButton />} title="Propostas">
@@ -73,23 +88,28 @@ export default function ClubOfferScreen({ career, onClubChosen }) {
             <ChatBubble key={i} text={text} />
           ))}
 
-          {showProposals && (
+          {showProposals && offers && (
             <div className="club-grid">
-              {CLUBS.map((c, i) => (
-                <ClubProposalCard
-                  key={c.id}
-                  club={c}
-                  selected={selectedClub === c.id}
-                  onSelect={setSelectedClub}
-                  style={{ animationDelay: `${i * 120}ms` }}
-                />
+              {offers.map((o, i) => (
+                <ClubProposalCard key={o.id} offer={o} selected={selectedId === o.id} onSelect={setSelectedId} style={{ animationDelay: `${i * 120}ms` }} />
               ))}
             </div>
           )}
 
-          {closingLine && club && (
-            <ChatBubble text={`Show de bola! Vou acertar tudo com o ${club.name}.`} />
+          {showProposals && !offers && !offersError && <ChatBubble text="Só um instante, estou terminando de acertar os detalhes com os clubes…" />}
+
+          {showProposals && offersError && (
+            <div className="club-grid">
+              <p className="sheet-msg is-error">
+                <AlertIcon /> {offersError}
+              </p>
+              <button type="button" className="btn-primary" onClick={loadOffers}>
+                Tentar de novo
+              </button>
+            </div>
           )}
+
+          {closingLine && club && <ChatBubble text={`Show de bola! Vou acertar tudo com o ${club.name}.`} />}
         </div>
 
         <div className="offer-footer">
@@ -98,12 +118,7 @@ export default function ClubOfferScreen({ career, onClubChosen }) {
               <AlertIcon /> {error}
             </p>
           )}
-          <button
-            type="button"
-            className="btn-primary"
-            disabled={!selectedClub || closingLine}
-            onClick={handleConfirm}
-          >
+          <button type="button" className="btn-primary" disabled={!selected || closingLine} onClick={handleConfirm}>
             Fechar com {club ? club.name : 'o clube'}
           </button>
         </div>
