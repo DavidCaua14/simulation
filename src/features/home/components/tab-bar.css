@@ -1,0 +1,44 @@
+/* Menu fixo embaixo (usado na Home e no Perfil) */
+.tab-bar {
+  flex-shrink: 0;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  padding: 6px 4px calc(6px + env(safe-area-inset-bottom));
+  background: var(--gx-panel, var(--surface));
+  border-top: 1px solid var(--gx-line, var(--border));
+  box-shadow: 0 -6px 18px rgba(0, 0, 0, 0.12);
+}
+.tab-item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 6px 0 2px;
+  border: 0;
+  background: none;
+  color: var(--gx-ink-2, var(--text-secondary));
+  font: 700 0.6rem var(--font-body);
+  letter-spacing: 0.02em;
+  -webkit-tap-highlight-color: transparent;
+}
+.tab-item svg { width: 20px; height: 20px; }
+.tab-item span { white-space: nowrap; }
+.tab-item:disabled { opacity: 0.38; cursor: default; }
+.tab-item.is-active { color: var(--gx-gold, var(--gold)); }
+.tab-item.is-active::before {
+  content: '';
+  position: absolute;
+  top: -6px;
+  left: 26%;
+  right: 26%;
+  height: 3px;
+  border-radius: 0 0 3px 3px;
+  background: var(--gx-gold, var(--gold));
+  box-shadow: 0 0 10px var(--gx-gold, var(--gold));
+}
+@media (max-width: 360px) {
+  .tab-item { font-size: 0.54rem; }
+  .tab-item svg { width: 18px; height: 18px; }
+}

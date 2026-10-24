@@ -3,12 +3,13 @@ import AppShell from '../../components/layout/AppShell'
 import SignOutButton from '../../components/ui/SignOutButton'
 import LoadingOverlay from '../../components/ui/LoadingOverlay'
 import { AlertIcon } from '../../components/ui/icons'
+import { Check } from 'lucide-react'
+import agentPhoto from './assets/agent-photo.webp'
 import ChatBubble from './components/ChatBubble'
 import ClubProposalCard from './components/ClubProposalCard'
 import { getClubById } from './data/clubs'
 import { chooseClub, fetchInitialOffers } from './clubService'
 import './club-offer.css'
-import './club-offer-extra.css'
 
 function buildScript(nickname) {
   return [
@@ -78,50 +79,75 @@ export default function ClubOfferScreen({ career, onClubChosen }) {
     }
   }
 
+  const typing = !showProposals && visibleCount < script.length
+
   return (
     <AppShell left={<SignOutButton />} title="Propostas">
       <LoadingOverlay show={saving} label={`Fechando com o ${club?.name}...`} />
 
-      <div className="offer-screen">
-        <div className="offer-body" ref={scrollRef}>
+      <div className="of-screen">
+        <header className="of-agent">
+          <span className="gx-frame of-agent-photo">
+            <img src={agentPhoto} alt="" />
+          </span>
+          <span className="of-agent-id">
+            <small>Mercado da bola</small>
+            <strong>Seu empresário</strong>
+          </span>
+          <span className="gx-tag is-live">
+            <span className="gx-dot" /> online
+          </span>
+        </header>
+
+        <div className="of-body" ref={scrollRef}>
           {script.slice(0, visibleCount).map((text, i) => (
             <ChatBubble key={i} text={text} />
           ))}
+          {typing && (
+            <div className="of-typing" aria-label="Digitando">
+              <i />
+              <i />
+              <i />
+            </div>
+          )}
 
           {showProposals && offers && (
-            <div className="club-grid">
+            <section className="of-offers" role="radiogroup" aria-label="Propostas dos clubes">
+              <h2 className="gx-title">
+                Propostas na mesa <small>{offers.length} clubes</small>
+              </h2>
               {offers.map((o, i) => (
-                <ClubProposalCard key={o.id} offer={o} selected={selectedId === o.id} onSelect={setSelectedId} style={{ animationDelay: `${i * 120}ms` }} />
+                <ClubProposalCard key={o.id} offer={o} selected={selectedId === o.id} onSelect={setSelectedId} style={{ animationDelay: `${i * 140}ms` }} />
               ))}
-            </div>
+            </section>
           )}
 
           {showProposals && !offers && !offersError && <ChatBubble text="Só um instante, estou terminando de acertar os detalhes com os clubes…" />}
 
           {showProposals && offersError && (
-            <div className="club-grid">
-              <p className="sheet-msg is-error">
+            <div className="of-offers">
+              <p className="of-error">
                 <AlertIcon /> {offersError}
               </p>
-              <button type="button" className="btn-primary" onClick={loadOffers}>
+              <button type="button" className="gx-btn-ghost" onClick={loadOffers}>
                 Tentar de novo
               </button>
             </div>
           )}
 
-          {closingLine && club && <ChatBubble text={`Show de bola! Vou acertar tudo com o ${club.name}.`} />}
+          {closingLine && club && <ChatBubble tone="me" text={`Fechado! Vou vestir a camisa do ${club.name}.`} />}
         </div>
 
-        <div className="offer-footer">
+        <footer className="of-footer">
           {error && (
-            <p className="sheet-msg is-error">
+            <p className="of-error">
               <AlertIcon /> {error}
             </p>
           )}
-          <button type="button" className="btn-primary" disabled={!selected || closingLine} onClick={handleConfirm}>
-            Fechar com {club ? club.name : 'o clube'}
+          <button type="button" className="gx-btn" disabled={!selected || closingLine} onClick={handleConfirm}>
+            <Check size={18} strokeWidth={3} /> {club ? `Assinar com ${club.name}` : 'Escolha um clube'}
           </button>
-        </div>
+        </footer>
       </div>
     </AppShell>
   )

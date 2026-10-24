@@ -1,158 +1,191 @@
-.offer-screen {
+/* Propostas iniciais — mesmo sistema visual da criação (gx-*). Prefixo of-. */
+.of-screen {
   flex: 1;
   min-height: 0;
   display: flex;
   flex-direction: column;
+  background: var(--gx-bg);
 }
 
-.offer-body {
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
-  scrollbar-width: none;
-  padding: 16px 16px 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-.offer-body::-webkit-scrollbar {
-  display: none;
-}
-
-.offer-footer {
+/* Cartão do empresário (fixo no topo) */
+.of-agent {
   flex-shrink: 0;
-  padding: 10px 16px 14px;
-  border-top: 1px solid var(--border);
-  background: var(--surface);
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-/* Chat do empresário */
-@keyframes bubble-in {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.chat-row {
-  display: flex;
-  align-items: flex-end;
-  gap: 8px;
-  max-width: 88%;
-  animation: bubble-in 0.3s ease both;
-}
-
-.chat-avatar {
-  width: 32px;
-  height: 32px;
-  flex-shrink: 0;
-  border-radius: 50%;
-  overflow: hidden;
-  border: 1px solid var(--border);
-}
-.chat-avatar img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-
-.chat-bubble {
-  background: var(--surface-strong);
-  border: 1px solid var(--border);
-  border-bottom-left-radius: 4px;
-  border-radius: var(--radius-md);
-  padding: 10px 13px;
-  font-size: 0.85rem;
-  line-height: 1.4;
-  color: var(--text-primary);
-}
-
-/* Cards de proposta */
-.club-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin: 4px 0 2px 40px;
-}
-
-.club-card {
-  position: relative;
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 12px;
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border);
-  background: var(--surface);
-  text-align: left;
-  animation: bubble-in 0.35s ease both;
+  margin: 12px 14px 0;
+  padding: 10px 12px;
+  border-radius: 18px;
+  background: var(--gx-stage);
+  color: #fff;
+  box-shadow: 0 10px 26px rgba(4, 10, 24, 0.3);
 }
-.club-card.is-selected {
-  border-color: var(--ring);
-  background: color-mix(in srgb, var(--primary) 12%, var(--surface));
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--ring) 22%, transparent);
+.of-agent-photo { width: 52px; height: 52px; padding: 3px; flex-shrink: 0; }
+.of-agent-id { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.of-agent-id small {
+  font: 800 0.64rem var(--font-display);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--gx-gold-hi);
 }
+.of-agent-id strong { font: 800 1.2rem/1.1 var(--font-display); letter-spacing: 0.02em; text-transform: uppercase; }
+.of-agent .gx-tag.is-live { background: rgba(46, 227, 138, 0.14); color: #2ee38a; }
+.of-agent .gx-dot { background: #2ee38a; }
 
-.club-card-shield {
-  width: 48px;
-  height: 48px;
-  flex-shrink: 0;
-  border-radius: 10px;
-  background: #fff;
-  display: grid;
-  place-items: center;
-  overflow: hidden;
-  padding: 4px;
-}
-.club-card-shield img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-
-.club-card-info {
+/* Conversa */
+.of-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 14px 14px 18px;
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  min-width: 0;
+  gap: 8px;
+  scrollbar-width: none;
+  -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 14px);
+  mask-image: linear-gradient(180deg, transparent 0, #000 14px);
 }
-.club-card-info strong {
-  font-size: 0.95rem;
-  color: var(--text-primary);
+.of-body::-webkit-scrollbar { display: none; }
+.of-body > * { flex-shrink: 0; } /* nada encolhe dentro da rolagem */
+.of-bubble {
+  align-self: flex-start;
+  max-width: 86%;
+  padding: 10px 13px;
+  border-radius: 4px 16px 16px 16px;
+  background: var(--gx-panel);
+  border: 1px solid var(--gx-line);
+  color: var(--gx-ink);
+  box-shadow: var(--gx-shadow);
+  animation: of-pop 0.3s cubic-bezier(0.2, 1.2, 0.4, 1) both;
 }
-.club-card-info span {
-  font-size: 0.74rem;
-  color: var(--text-secondary);
-  line-height: 1.3;
+.of-bubble p { margin: 0; font-size: 0.9rem; line-height: 1.4; }
+.of-bubble.is-me {
+  align-self: flex-end;
+  border-radius: 16px 4px 16px 16px;
+  background: linear-gradient(180deg, #ff6a3d, var(--primary));
+  border-color: transparent;
+  color: #fff;
 }
+.of-typing {
+  align-self: flex-start;
+  display: inline-flex;
+  gap: 4px;
+  padding: 12px 14px;
+  border-radius: 4px 16px 16px 16px;
+  background: var(--gx-panel);
+  border: 1px solid var(--gx-line);
+}
+.of-typing i { width: 6px; height: 6px; border-radius: 50%; background: var(--gx-ink-2); animation: of-dots 1s ease-in-out infinite; }
+.of-typing i:nth-child(2) { animation-delay: 0.15s; }
+.of-typing i:nth-child(3) { animation-delay: 0.3s; }
 
-.club-card-check {
+/* Propostas = contratos */
+.of-offers { display: flex; flex-direction: column; gap: 10px; margin-top: 8px; }
+.of-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  padding: 14px 14px 12px;
+  border-radius: 18px;
+  border: 1.5px solid var(--gx-line);
+  background:
+    radial-gradient(90% 120% at 0% 0%, color-mix(in srgb, var(--c1) 26%, transparent), transparent 60%),
+    var(--gx-panel);
+  color: var(--gx-ink);
+  text-align: left;
+  overflow: hidden;
+  box-shadow: var(--gx-shadow);
+  cursor: pointer;
+  transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s;
+  animation: of-card-in 0.45s cubic-bezier(0.2, 1, 0.3, 1) both;
+}
+.of-card:active { transform: scale(0.985); }
+.of-card.is-selected {
+  border-color: var(--gx-gold);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--gx-gold) 22%, transparent), var(--gx-shadow);
+}
+.of-card-band {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 6px;
+  background: linear-gradient(180deg, var(--c1) 0 60%, var(--c2) 60% 100%);
+}
+.of-card-top { display: flex; align-items: center; gap: 12px; }
+.of-card-crest {
+  width: 62px;
+  height: 62px;
   flex-shrink: 0;
-  width: 22px;
-  height: 22px;
   display: grid;
   place-items: center;
   border-radius: 50%;
-  background: var(--primary);
-  color: var(--primary-contrast);
+  background: radial-gradient(circle, #ffffff 0%, #e8ecf3 70%);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--c1) 55%, transparent), 0 6px 14px rgba(0, 0, 0, 0.25);
 }
-
-.offer-footer .sheet-msg {
+.of-card-id { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.of-card-id small {
+  font: 800 0.66rem var(--font-display);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--gx-ink-2);
+}
+.of-card-id strong {
+  font: 800 1.45rem/1.05 var(--font-display);
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.of-card-pick {
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: 2px solid var(--gx-line);
+  display: grid;
+  place-items: center;
+  color: #241700;
+  transition: background 0.15s, border-color 0.15s;
+}
+.of-card.is-selected .of-card-pick { background: var(--gx-gold); border-color: var(--gx-gold); }
+.of-card-pitch {
+  font-size: 0.86rem;
+  font-style: italic;
+  line-height: 1.4;
+  color: var(--gx-ink-2);
+}
+.of-card-foot {
   display: flex;
-  align-items: flex-start;
-  gap: 6px;
-  margin: 0;
-  font-size: 0.74rem;
-  line-height: 1.3;
+  align-items: center;
+  gap: 8px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--gx-line);
 }
-.offer-footer .sheet-msg.is-error {
-  color: var(--danger);
+.of-card-bonus {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font: 800 1.05rem var(--font-display);
+  color: var(--gx-gold);
+}
+.of-card-bonus-label { flex: 1; font-size: 0.72rem; color: var(--gx-ink-2); }
+
+.of-footer {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 14px calc(12px + env(safe-area-inset-bottom));
+  border-top: 1px solid var(--gx-line);
+  background: var(--gx-bg);
+}
+.of-error { display: flex; align-items: center; gap: 6px; margin: 0; font-size: 0.8rem; color: var(--danger); }
+
+@keyframes of-pop { from { opacity: 0; transform: translateY(6px) scale(0.96); } to { opacity: 1; transform: none; } }
+@keyframes of-card-in { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+@keyframes of-dots { 0%, 100% { opacity: 0.3; transform: translateY(0); } 50% { opacity: 1; transform: translateY(-3px); } }
+@media (prefers-reduced-motion: reduce) {
+  .of-bubble, .of-card, .of-typing i { animation: none; }
 }
