@@ -1,12 +1,8 @@
-import agentPhoto from '../assets/agent-photo.webp'
-
-export default function ChatBubble({ text, showAvatar = true }) {
+// Fala do empresário. A foto e o nome ficam no cartão do topo da tela; aqui só o balão.
+export default function ChatBubble({ text, tone = 'agent' }) {
   return (
-    <div className="chat-row">
-      <div className="chat-avatar" style={{ visibility: showAvatar ? 'visible' : 'hidden' }}>
-        <img src={agentPhoto} alt="" />
-      </div>
-      <div className="chat-bubble">{text}</div>
+    <div className={`of-bubble ${tone === 'me' ? 'is-me' : ''}`}>
+      <p>{text}</p>
     </div>
   )
 }

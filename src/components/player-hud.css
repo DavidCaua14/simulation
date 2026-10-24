@@ -246,3 +246,13 @@
 .hud-row { display: flex; gap: 4px; justify-content: flex-end; }
 .hud-row .hud-pill { min-width: 0; }
 .hud-pill.gems svg { color: #38bdf8; }
+
+/* ---- Ajustes do redesign (sistema gx-) ---- */
+.hud-name { font-family: var(--font-display); font-size: 1.2rem; font-weight: 800; letter-spacing: 0.02em; text-transform: uppercase; }
+.hud-level { background: linear-gradient(180deg, #ffe08a, #f5b800 55%, #b07a00); color: #2a1a00; border-color: var(--gx-panel, var(--surface)); font-family: var(--font-display); font-size: 0.72rem; }
+.hud-xp i { background: linear-gradient(90deg, var(--gx-gold-lo, #a86f00), var(--gx-gold, #f5b800), var(--gx-gold-hi, #ffe08a)); }
+
+/* Interruptor de tema (menu do perfil e Perfil) */
+.theme-toggle { position: relative; width: 56px; height: 30px; flex-shrink: 0; padding: 0; border-radius: 999px; border: 1px solid var(--border); background: var(--surface-alt); transition: background 0.3s ease; }
+.theme-toggle-thumb { position: absolute; top: 2px; left: 2px; width: 24px; height: 24px; display: grid; place-items: center; border-radius: 50%; background: var(--surface); color: var(--gold); box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+.theme-toggle.is-dark .theme-toggle-thumb { transform: translateX(26px); }

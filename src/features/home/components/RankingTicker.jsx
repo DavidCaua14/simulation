@@ -1,22 +1,24 @@
-import { RankingIcon } from '../../../components/ui/icons'
+import { Trophy } from 'lucide-react'
 import useRankingRealtime from '../../predictions/hooks/useRankingRealtime'
 
-function Entries({ entries, hidden }) {
+function Entries({ entries, me, hidden }) {
   return (
-    <div className="ranking-ticker-list" aria-hidden={hidden || undefined}>
+    <div className="hm-rank-list" aria-hidden={hidden || undefined}>
       {entries.map((entry) => (
-        <span className={`ranking-entry ${entry.position === 1 ? 'is-first' : ''}`} key={entry.id}>
-          <span className="ranking-entry-pos">#{entry.position}</span>
+        <span className={`hm-rank-entry ${entry.position <= 3 ? `is-top${entry.position}` : ''} ${entry.nickname === me ? 'is-me' : ''}`} key={entry.id}>
+          <b>#{entry.position}</b>
           <strong>{entry.nickname}</strong>
-          <span className="ranking-entry-pts">{entry.points.toLocaleString('pt-BR')} pts</span>
+          <span>{entry.points.toLocaleString('pt-BR')} pts</span>
         </span>
       ))}
     </div>
   )
 }
 
-export default function RankingTicker() {
+// Ranking de palpites ao vivo + a posição do próprio jogador (se estiver no top 10).
+export default function RankingTicker({ me, onOpen }) {
   const { entries, status } = useRankingRealtime()
+  const mine = entries.find((e) => e.nickname === me)
 
   let message = null
   if (status === 'loading') message = 'Carregando ranking…'
@@ -24,19 +26,21 @@ export default function RankingTicker() {
   else if (entries.length === 0) message = 'Seja o primeiro do ranking de palpites!'
 
   return (
-    <div className="ranking-ticker">
-      <span className="ranking-ticker-label">
-        <RankingIcon size={13} />
-        Ranking
-        <span className="live-dot" aria-hidden="true" />
-      </span>
-      <div className="ranking-ticker-track">
+    <div className="hm-rank">
+      <button type="button" className="hm-rank-me" onClick={onOpen} aria-label="Ver ranking de palpites">
+        <Trophy size={16} />
+        <span>
+          <small>Ranking</small>
+          <b>{mine ? `#${mine.position}` : '—'}</b>
+        </span>
+      </button>
+      <div className="hm-rank-track">
         {message ? (
-          <span className="ranking-ticker-empty">{message}</span>
+          <span className="hm-rank-empty">{message}</span>
         ) : (
-          <div className="ranking-ticker-inner" style={{ '--ticker-duration': `${Math.max(18, entries.length * 4)}s` }}>
-            <Entries entries={entries} />
-            <Entries entries={entries} hidden />
+          <div className="hm-rank-inner" style={{ '--ticker-duration': `${Math.max(18, entries.length * 4)}s` }}>
+            <Entries entries={entries} me={me} />
+            <Entries entries={entries} me={me} hidden />
           </div>
         )}
       </div>

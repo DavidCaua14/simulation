@@ -1,0 +1,229 @@
+/* =====================================================================
+   SISTEMA VISUAL DO JOGO ("noite de estádio")
+   Usado pela criação do atleta, propostas e tela inicial (e pode ser usado
+   em qualquer tela nova). Prefixo gx-. Funciona nos temas claro e escuro.
+
+   Papel de cada cor (não misture):
+     --gx-gold   : progressão, prêmios, raridade, seleção ("o que vale")
+     --primary   : ação principal (botão de jogar/confirmar) — laranja do jogo
+     --gx-green  : disponível / ao vivo / ok
+     --gx-stage  : fundo de "palco" (banner, avatar) — sempre noturno, nos dois temas
+   ===================================================================== */
+
+:root {
+  --font-display: 'Saira Condensed', 'Rajdhani', 'Inter', sans-serif;
+
+  --gx-bg: #e9edf3;
+  --gx-panel: #ffffff;
+  --gx-panel-2: #f2f4f8;
+  --gx-line: rgba(12, 22, 44, 0.1);
+  --gx-ink: #0c1322;
+  --gx-ink-2: #566078;
+  --gx-gold: #b98300;
+  --gx-gold-hi: #ffd257;
+  --gx-gold-lo: #8a5c00;
+  --gx-green: #0e9f5a;
+  --gx-lock: #8a93a6;
+  --gx-stage: radial-gradient(120% 90% at 50% 0%, #1b3566 0%, #0b1730 45%, #060b17 100%);
+  --gx-shadow: 0 6px 18px rgba(14, 24, 48, 0.1);
+  --gx-radius: 18px;
+}
+
+[data-theme='dark'] {
+  --gx-bg: #060a14;
+  --gx-panel: #0e1526;
+  --gx-panel-2: #131c31;
+  --gx-line: rgba(160, 185, 230, 0.12);
+  --gx-ink: #f3f6fc;
+  --gx-ink-2: #93a0bb;
+  --gx-gold: #f5b800;
+  --gx-gold-hi: #ffe08a;
+  --gx-gold-lo: #a86f00;
+  --gx-green: #2ee38a;
+  --gx-lock: #6b7690;
+  --gx-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+}
+
+/* ---------- Painel ---------- */
+.gx-panel {
+  position: relative;
+  background: var(--gx-panel);
+  border: 1px solid var(--gx-line);
+  border-radius: var(--gx-radius);
+  box-shadow: var(--gx-shadow);
+}
+
+/* Título de seção: barrinha dourada + texto condensado */
+.gx-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font: 800 0.95rem/1 var(--font-display);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--gx-ink);
+}
+.gx-title::before {
+  content: '';
+  width: 4px;
+  height: 14px;
+  border-radius: 2px;
+  background: linear-gradient(180deg, var(--gx-gold-hi), var(--gx-gold));
+}
+.gx-title small {
+  margin-left: auto;
+  font: 600 0.72rem var(--font-body);
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--gx-ink-2);
+}
+
+/* ---------- Botão principal (ação) ---------- */
+.gx-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 54px;
+  padding: 0 22px;
+  border: 0;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #ff6a3d 0%, var(--primary) 55%, #a92a0a 100%);
+  color: #fff;
+  font: 800 1.2rem/1 var(--font-display);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.35),
+    0 8px 22px color-mix(in srgb, var(--primary) 38%, transparent);
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.12s ease, filter 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.gx-btn::after {
+  /* reflexo que passa no botão (só quando habilitado) */
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 -40%;
+  width: 30%;
+  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.28), transparent);
+  transform: skewX(-20deg);
+  animation: gx-sheen 3.6s ease-in-out 1s infinite;
+}
+.gx-btn:hover:not(:disabled) { filter: brightness(1.06); }
+.gx-btn:active:not(:disabled) { transform: translateY(1px) scale(0.99); }
+.gx-btn:disabled {
+  background: var(--gx-panel-2);
+  color: var(--gx-ink-2);
+  box-shadow: inset 0 0 0 1px var(--gx-line);
+  cursor: not-allowed;
+}
+.gx-btn:disabled::after { display: none; }
+.gx-btn svg { flex-shrink: 0; }
+
+/* Botão secundário compacto */
+.gx-btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 1px solid var(--gx-line);
+  background: var(--gx-panel-2);
+  color: var(--gx-ink);
+  font: 700 0.8rem var(--font-body);
+  cursor: pointer;
+}
+
+/* ---------- Selos de estado ---------- */
+.gx-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 20px;
+  padding: 0 8px;
+  border-radius: 999px;
+  font: 800 0.62rem/1 var(--font-body);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.gx-tag.is-live { background: color-mix(in srgb, var(--gx-green) 18%, transparent); color: var(--gx-green); }
+.gx-tag.is-soon { background: rgba(10, 16, 30, 0.62); color: #c9d1e2; backdrop-filter: blur(4px); }
+.gx-tag.is-free { background: color-mix(in srgb, var(--gx-green) 16%, transparent); color: var(--gx-green); }
+.gx-tag.is-earn { background: color-mix(in srgb, var(--gx-gold) 18%, transparent); color: var(--gx-gold); }
+.gx-tag.is-gold { background: linear-gradient(180deg, var(--gx-gold-hi), var(--gx-gold)); color: #241700; }
+.gx-tag svg { width: 11px; height: 11px; }
+
+.gx-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--gx-green);
+  box-shadow: 0 0 0 0 color-mix(in srgb, var(--gx-green) 60%, transparent);
+  animation: gx-pulse 1.8s ease-out infinite;
+}
+
+/* ---------- Barra de XP ---------- */
+.gx-xp {
+  position: relative;
+  height: 8px;
+  border-radius: 99px;
+  background: color-mix(in srgb, var(--gx-ink) 12%, transparent);
+  overflow: hidden;
+}
+.gx-xp > i {
+  display: block;
+  height: 100%;
+  min-width: 6px;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--gx-gold-lo), var(--gx-gold) 55%, var(--gx-gold-hi));
+  box-shadow: 0 0 10px color-mix(in srgb, var(--gx-gold) 55%, transparent);
+  transition: width 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* ---------- Moldura metálica dourada (avatar) ---------- */
+.gx-frame {
+  position: relative;
+  border-radius: 50%;
+  padding: 4px;
+  background: conic-gradient(from 210deg, var(--gx-gold-lo), var(--gx-gold-hi), var(--gx-gold), #fff4c7, var(--gx-gold-lo));
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35), 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+.gx-frame > img,
+.gx-frame > .gx-frame-inner {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #0b1222;
+  border: 2px solid #0b1222;
+}
+
+/* Topo padrão mais discreto: botões de ícone menores (tema, sair, voltar) */
+.app-topbar .icon-btn {
+  width: 34px;
+  height: 34px;
+  background: transparent;
+  border-color: var(--gx-line);
+  color: var(--text-secondary);
+}
+.app-topbar .icon-btn svg { width: 16px; height: 16px; }
+
+@keyframes gx-sheen { 0%, 60% { left: -40%; } 100% { left: 130%; } }
+@keyframes gx-pulse {
+  0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--gx-green) 55%, transparent); }
+  100% { box-shadow: 0 0 0 7px transparent; }
+}
+@keyframes gx-rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .gx-btn::after, .gx-dot { animation: none; }
+}
