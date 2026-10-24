@@ -67,7 +67,7 @@ export default function PlayerHeader({ player, wallet, avatarSrc }) {
         </span>
       </button>
 
-      <CurrencyRow coins={wallet?.coins} energy={wallet?.energy} />
+      <CurrencyRow coins={wallet?.coins} energy={wallet?.energy} diamonds={wallet?.diamonds} />
 
       {menuOpen && (
         <div className="hud-menu" role="menu">

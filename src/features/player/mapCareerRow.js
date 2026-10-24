@@ -19,6 +19,7 @@ export function mapRowToCareer(row) {
       // Carteira do jogo (colunas criadas pela migração de palpites).
       coins: row.coins ?? 0,
       energy: row.energy ?? 0,
+      diamonds: row.diamonds ?? 0,
     },
   }
 }

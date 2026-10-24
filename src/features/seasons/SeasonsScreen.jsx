@@ -12,6 +12,9 @@ import BottomNav from './components/BottomNav'
 import PostMatch from './components/PostMatch'
 import ParallelDigest from './components/ParallelDigest'
 import RoundSheet from './components/RoundSheet'
+import BoxOpener from '../cards/components/BoxOpener'
+import { fetchLatestWinBox } from '../cards/services/cardsApi'
+import '../cards/cards.css'
 import HomeTab from './tabs/HomeTab'
 import MatchesTab from './tabs/MatchesTab'
 import CompetitionsTab from './tabs/CompetitionsTab'
@@ -35,6 +38,8 @@ export default function SeasonsScreen({ onBack }) {
   const [busyOffer, setBusyOffer] = useState(null)
   const [starting, setStarting] = useState(false)
   const [toast, setToast] = useState(null)
+  const [winBox, setWinBox] = useState(null) // caixa ganha na vitória (aparece no pós-jogo)
+  const [openingBox, setOpeningBox] = useState(null)
 
   const notify = useCallback((text, kind = 'info') => setToast({ text, kind, id: Date.now() }), [])
   useEffect(() => {
@@ -68,8 +73,11 @@ export default function SeasonsScreen({ onBack }) {
     setPlaying(true)
     try {
       const r = await playMatch() // sempre a próxima partida do SEU clube (o calendário é do banco)
+      setWinBox(null)
       setResult(r)
       refresh({ silent: true }) // energia, XP, tabelas... atualizam enquanto o placar é revelado
+      // Vitória = 1 caixa na caixa de entrada (o banco entrega sozinho); buscamos para mostrar no pós-jogo.
+      if (r.result === 'win') fetchLatestWinBox().then(setWinBox).catch(() => {})
     } catch (e) {
       notify(e.message, 'alert')
       refresh({ silent: true })
@@ -196,9 +204,23 @@ export default function SeasonsScreen({ onBack }) {
             result={result}
             byComp={byComp}
             onClose={closeResult}
+            box={winBox}
+            onOpenBox={() => winBox && setOpeningBox([winBox])}
             onOpenOffers={() => {
               setResult(null)
               setTab('market')
+              refresh({ silent: true })
+            }}
+          />
+        )}
+
+        {openingBox && (
+          <BoxOpener
+            boxes={openingBox}
+            onOpened={() => refresh({ silent: true })} /* energia bônus e moedas mudaram */
+            onClose={() => {
+              setOpeningBox(null)
+              setWinBox(null)
               refresh({ silent: true })
             }}
           />

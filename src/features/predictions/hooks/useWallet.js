@@ -3,18 +3,19 @@ import { fetchWallet } from '../services/predictionsApi'
 
 const POLL_MS = 30000
 
-// initial = { coins, energy } vindos do career.player (evita piscar vazio).
-// Devolve sempre { coins, energy, refresh }: é seguro usar na Home e nos Palpites.
+// initial = { coins, energy, diamonds } vindos do career.player (evita piscar vazio).
+// Devolve sempre { coins, energy, diamonds, refresh }: é seguro usar na Home e nos Palpites.
 export default function useWallet(initial) {
   const [wallet, setWallet] = useState({
     coins: initial?.coins ?? null,
     energy: initial?.energy ?? null,
+    diamonds: initial?.diamonds ?? null,
   })
 
   const refresh = useCallback(async () => {
     try {
       const data = await fetchWallet() // careers.coins / careers.energy da carreira ativa
-      if (data) setWallet({ coins: data.coins, energy: data.energy })
+      if (data) setWallet({ coins: data.coins, energy: data.energy, diamonds: data.diamonds })
     } catch {
       /* mantém o último valor */
     }
@@ -35,5 +36,5 @@ export default function useWallet(initial) {
     }
   }, [refresh])
 
-  return { coins: wallet.coins, energy: wallet.energy, refresh }
+  return { coins: wallet.coins, energy: wallet.energy, diamonds: wallet.diamonds, refresh }
 }

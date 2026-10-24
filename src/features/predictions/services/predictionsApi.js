@@ -37,7 +37,7 @@ export function fetchMatchesForDay(dayKey) {
 // energy = energia livre + energia bônus (comprada).
 export async function fetchWallet() {
   const w = await unwrap(supabase.rpc('refresh_wallet'))
-  return { coins: w.coins, energy: (w.energy ?? 0) + (w.bonus_energy ?? 0) }
+  return { coins: w.coins, energy: (w.energy ?? 0) + (w.bonus_energy ?? 0), diamonds: w.diamonds ?? 0 }
 }
 
 export function placeTicket(stake, picks) {

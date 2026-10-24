@@ -347,3 +347,11 @@ button.sn-mr { cursor: pointer; } button.sn-mr:active { background: var(--surfac
 .sn-digest-round { display: flex; flex-direction: column; gap: 8px; }
 .sn-deadline { display: inline-flex; align-items: center; gap: 5px; align-self: flex-start; font-size: .74rem; font-weight: 800; color: var(--text-secondary); padding: 4px 9px; border-radius: 999px; background: var(--surface-alt); }
 .sn-deadline.urgent { color: var(--danger); background: color-mix(in srgb, var(--danger) 14%, transparent); animation: sn-glow 1.2s ease-in-out infinite alternate; }
+
+/* Caixa ganha na vitória */
+.sn-boxwin { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 14px; border: 1px solid color-mix(in srgb, var(--tier) 60%, var(--border)); background: radial-gradient(ellipse at 12% 50%, color-mix(in srgb, var(--tier) 24%, transparent), transparent 70%), var(--surface-alt); color: var(--text-primary); text-align: left; cursor: pointer; animation: sn-boxwin 2.4s ease-in-out infinite; }
+.sn-boxwin img { height: 56px; flex-shrink: 0; filter: drop-shadow(0 3px 8px var(--glow)); }
+.sn-boxwin span { display: flex; flex-direction: column; gap: 2px; }
+.sn-boxwin b { font-size: .9rem; } .sn-boxwin small { font-size: .7rem; color: var(--text-secondary); }
+@keyframes sn-boxwin { 50% { box-shadow: 0 0 0 4px color-mix(in srgb, var(--tier) 20%, transparent); } }
+@media (prefers-reduced-motion: reduce) { .sn-boxwin { animation: none; } }

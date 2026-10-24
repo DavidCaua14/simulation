@@ -241,3 +241,8 @@
     transition: none;
   }
 }
+
+/* Segunda linha do HUD: moedas + diamantes lado a lado */
+.hud-row { display: flex; gap: 4px; justify-content: flex-end; }
+.hud-row .hud-pill { min-width: 0; }
+.hud-pill.gems svg { color: #38bdf8; }

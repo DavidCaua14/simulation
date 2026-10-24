@@ -9,6 +9,7 @@ import ClubOfferScreen from './features/club/ClubOfferScreen'
 import HomeScreen from './features/home/HomeScreen'
 import PredictionsScreen from './features/predictions/PredictionsScreen'
 import SeasonsScreen from './features/seasons/SeasonsScreen'
+import CardsScreen from './features/cards/CardsScreen'
 import ProfileScreen from './features/profile/ProfileScreen'
 import { AudioProvider } from './features/audio/AudioContext'
 import { getActiveCareer } from './features/player/playerService'
@@ -21,6 +22,7 @@ function Gate() {
   // Navegação simples entre as telas do jogo depois do onboarding.
   // 'home' | 'tips' (palpites esportivos) | 'profile'
   const [screen, setScreen] = useState('home')
+  const [screenParams, setScreenParams] = useState(null) // ex.: { tab: 'inbox' } ao abrir as cartas
 
   // Carrega a carreira do banco sempre que a sessão muda — é isso que faz
   // reload, login de novo e troca de conta caírem na tela certa.
@@ -67,8 +69,11 @@ function Gate() {
   }
 
   // Só estas telas estão construídas; os demais ids da barra/menu ainda não fazem nada.
-  const navigate = (id) => {
-    if (id === 'home' || id === 'tips' || id === 'profile' || id === 'seasons') setScreen(id)
+  const navigate = (id, params = null) => {
+    if (id === 'home' || id === 'tips' || id === 'profile' || id === 'seasons' || id === 'cards') {
+      setScreenParams(params)
+      setScreen(id)
+    }
   }
 
   // Nível, XP, moedas e clube mudam no banco enquanto se joga: ao voltar, recarrega a carreira.
@@ -83,6 +88,10 @@ function Gate() {
 
   if (screen === 'seasons') {
     return <SeasonsScreen career={career} onBack={backHome} />
+  }
+
+  if (screen === 'cards') {
+    return <CardsScreen career={career} params={screenParams} onBack={backHome} />
   }
 
   if (screen === 'profile') {

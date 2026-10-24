@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { ArrowLeftRight, Coins, Sparkles, Star, Target, Trophy, Users } from 'lucide-react'
 import ClubCrest from '../../club/components/ClubCrest'
+import { tierOf } from '../../cards/data/tiers'
 import { getClubById } from '../../club/data/clubs'
 import RoundResults from './RoundResults'
 import StandingsTable from './StandingsTable'
@@ -18,7 +19,7 @@ function performanceText(rating, goals, assists) {
 
 // Tela de PÓS-JOGO em 3 abas: Resumo (placar revelado + seu desempenho), Rodada (todos os placares)
 // e Classificação (ou chaveamento, no mata-mata). Tudo vem do resultado e dos dados já carregados.
-export default function PostMatch({ result, byComp, onClose, onOpenOffers }) {
+export default function PostMatch({ result, byComp, onClose, onOpenOffers, box, onOpenBox }) {
   const [shown, setShown] = useState({ h: 0, a: 0 })
   const [done, setDone] = useState(false)
   const [tab, setTab] = useState('summary')
@@ -143,6 +144,16 @@ export default function PostMatch({ result, byComp, onClose, onOpenOffers }) {
                     {result.rewards.popularity}
                   </span>
                 </div>
+
+                {box && (
+                  <button type="button" className="sn-boxwin" style={{ '--tier': tierOf(box.tier).color, '--glow': tierOf(box.tier).glow }} onClick={onOpenBox}>
+                    <img src={tierOf(box.tier).closed} alt="" draggable="false" />
+                    <span>
+                      <b>Você ganhou uma caixa {tierOf(box.tier).label}!</b>
+                      <small>Toque para abrir agora · ou abra depois na caixa de entrada</small>
+                    </span>
+                  </button>
+                )}
 
                 {result.level_up && (
                   <div className="sn-levelup">
