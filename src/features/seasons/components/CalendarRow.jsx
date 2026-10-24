@@ -1,20 +1,20 @@
 import { FastForward } from 'lucide-react'
 import MatchRow from './MatchRow'
-import { COMP_NAME } from '../utils/seasonUtils'
+import CompEmblem from '../ui/CompEmblem'
+import { COMP_SHORT } from '../utils/seasonUtils'
 
-// Uma linha do calendário: partida do seu clube ("mine") ou rodada de outro campeonato ("free").
+// Item do calendário: partida do seu clube ("mine") ou rodada de outro campeonato em que você folga ("free").
 export default function CalendarRow({ event, myClub, highlight }) {
   if (event.kind === 'mine') return <MatchRow f={event.fixture} myClub={myClub} highlight={highlight} />
   return (
-    <div className={`sn-free-row ${highlight ? 'is-next' : ''}`}>
-      <span className="sn-free-ico">
-        <FastForward size={14} />
+    <div className={`fr ${highlight ? 'is-next' : ''}`}>
+      <CompEmblem comp={event.comp} size={18} dim />
+      <span className="fr-txt">
+        <b>{COMP_SHORT[event.comp]}</b> · {event.label}
       </span>
-      <div>
-        <b>{COMP_NAME[event.comp]}</b>
-        <small>{event.label} · seu clube não joga</small>
-      </div>
-      {highlight && <em>PRÓXIMO</em>}
+      <span className="fr-tag">
+        <FastForward size={11} /> folga
+      </span>
     </div>
   )
 }

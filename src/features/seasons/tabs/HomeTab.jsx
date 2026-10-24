@@ -1,29 +1,25 @@
 import { useMemo } from 'react'
-import { ArrowLeftRight, ChevronRight } from 'lucide-react'
-import NextMatchCard from '../components/NextMatchCard'
-import FreeRoundCard from '../components/FreeRoundCard'
+import { ArrowLeftRight, CalendarDays, ChevronRight } from 'lucide-react'
+import ClubCrest from '../../club/components/ClubCrest'
+import { getClubById } from '../../club/data/clubs'
+import NextMatchHero from '../components/NextMatchHero'
+import FreeRoundHero from '../components/FreeRoundHero'
 import CalendarRow from '../components/CalendarRow'
 import SeasonSummary from '../components/SeasonSummary'
 import MatchRow from '../components/MatchRow'
-import { EXPECTED_MATCHES, clubForm, standingsFrom } from '../utils/seasonSelectors'
-import { COMP_NAME, STAGE_LABEL, ordinal } from '../utils/seasonUtils'
+import CompCard from '../components/CompCard'
+import { EmptyState } from '../ui/States'
+import { clubForm, standingsFrom } from '../utils/seasonSelectors'
 
-function campaignText(c) {
-  if (c.status === 'finished') return c.player_result || 'Encerrado'
-  if (c.status === 'out') return 'Eliminado'
-  if (c.status === 'not_in') return 'Seu clube não disputa'
-  const pos = c.table ? ` · ${c.table.group ? `Grupo ${c.table.group} · ` : ''}${ordinal(c.table.pos)} · ${c.table.points} pts` : ''
-  return `${STAGE_LABEL[c.stage]}${pos}`
-}
-
-// INÍCIO: o que fazer agora (jogar a SUA partida ou tocar em "Próximo"), o último jogo, o calendário e a campanha.
+// INÍCIO: o evento do dia em destaque (sua partida, rodada de folga ou fim de temporada),
+// propostas pendentes, a linha do tempo da temporada e os três campeonatos.
 export default function HomeTab({ ctx, onGoTab, onOpenComp, onOpenRound, onPlay, onAdvance, onStartNext }) {
   const { hub, byComp, flat, nextEvent, calendar, history, myClub, canPlay, blockedText, playing, advancing, starting } = ctx
   const finished = hub.season.status === 'finished'
   const mine = nextEvent?.kind === 'mine' ? nextEvent : null
   const free = nextEvent?.kind === 'free' ? nextEvent : null
 
-  // Relatório do adversário: posição na tabela + forma recente dos dois clubes
+  // Relatório dos dois clubes: posição na tabela (quando é pontos corridos/grupos) + forma recente
   const reports = useMemo(() => {
     if (!mine) return {}
     const m = mine.match
@@ -36,13 +32,15 @@ export default function HomeTab({ ctx, onGoTab, onOpenComp, onOpenRound, onPlay,
   }, [mine, byComp, flat])
 
   const last = history[0]
+  const upcoming = finished ? [] : calendar.slice(1, 4)
+  const firstOffer = hub.offers[0]
 
   return (
     <div className="sn-page">
       {finished ? (
         <SeasonSummary season={hub.season} starting={starting} onStartNext={onStartNext} />
       ) : mine ? (
-        <NextMatchCard
+        <NextMatchHero
           comp={{ id: mine.competition, next: mine.match }}
           myClub={myClub}
           reports={reports}
@@ -52,62 +50,58 @@ export default function HomeTab({ ctx, onGoTab, onOpenComp, onOpenRound, onPlay,
           onPlay={onPlay}
         />
       ) : free ? (
-        <FreeRoundCard event={free} calendar={calendar} advancing={advancing} onAdvance={onAdvance} />
+        <FreeRoundHero event={free} calendar={calendar} advancing={advancing} onAdvance={onAdvance} />
       ) : (
-        <div className="sn-empty card">
-          <p>Nenhuma partida pendente agora.</p>
-          <small>Abra a aba Torneios para acompanhar os campeonatos.</small>
-        </div>
+        <EmptyState icon={CalendarDays} title="Nenhuma partida pendente agora" text="Acompanhe os campeonatos na aba Torneios." />
       )}
 
-      {hub.offers.length > 0 && (
-        <button type="button" className="sn-offer-alert" onClick={() => onGoTab('market')}>
-          <ArrowLeftRight size={18} />
-          <span>
-            Você tem <b>{hub.offers.length}</b> proposta{hub.offers.length > 1 ? 's' : ''} de clube com prazo para responder. Toque para ver.
+      {firstOffer && (
+        <button type="button" className="sn-offerbar" onClick={() => onGoTab('market')}>
+          <span className="sn-offerbar-crest">
+            <ClubCrest clubId={firstOffer.club_id} size={34} />
           </span>
+          <span className="sn-offerbar-txt">
+            <b>
+              {hub.offers.length > 1 ? `${hub.offers.length} propostas na mesa` : `O ${getClubById(firstOffer.club_id)?.name} quer você`}
+            </b>
+            <small>Toda proposta tem prazo. Toque para responder.</small>
+          </span>
+          <ArrowLeftRight size={18} />
         </button>
       )}
 
-      {last && (
-        <section>
-          <h3 className="sn-h">Último jogo</h3>
-          <MatchRow f={last} myClub={myClub} onOpen={onOpenRound} />
-        </section>
-      )}
-
-      {!finished && calendar.length > 1 && (
-        <section>
-          <div className="sn-h-row">
-            <h3 className="sn-h">Depois disso</h3>
+      {(last || upcoming.length > 0) && (
+        <section className="sn-sec">
+          <div className="sn-sec-head">
+            <h2 className="gx-title">Calendário</h2>
             <button type="button" className="sn-link" onClick={() => onGoTab('matches')}>
-              Calendário <ChevronRight size={14} />
+              Ver tudo <ChevronRight size={14} />
             </button>
           </div>
-          <div className="sn-stack">
-            {calendar.slice(1, 4).map((e) => (
-              <CalendarRow key={`${e.comp}-${e.stage}-${e.round}`} event={e} myClub={myClub} />
+          <ol className="tl">
+            {last && (
+              <li className="tl-item is-done">
+                <span className="tl-label">Último jogo</span>
+                <MatchRow f={last} myClub={myClub} onOpen={onOpenRound} />
+              </li>
+            )}
+            {upcoming.map((e, i) => (
+              <li key={`${e.comp}-${e.stage}-${e.round}`} className="tl-item is-future">
+                {i === 0 && <span className="tl-label">Depois disso</span>}
+                <CalendarRow event={e} myClub={myClub} />
+              </li>
             ))}
-          </div>
+          </ol>
         </section>
       )}
 
-      <section>
-        <h3 className="sn-h">Sua campanha</h3>
+      <section className="sn-sec">
+        <h2 className="gx-title">
+          Competições <small>toque para ver tabela e chaves</small>
+        </h2>
         <div className="sn-stack">
           {hub.competitions.map((c) => (
-            <button key={c.id} type="button" className={`sn-camp status-${c.status}`} onClick={() => onOpenComp(c.id)}>
-              <span className="sn-camp-main">
-                <b>{COMP_NAME[c.id]}</b>
-                <small>{campaignText(c)}</small>
-              </span>
-              {c.status === 'active' && (
-                <span className="sn-camp-bar" aria-hidden="true">
-                  <i style={{ width: `${Math.min(100, (c.played / (EXPECTED_MATCHES[c.id] || c.total || 1)) * 100)}%` }} />
-                </span>
-              )}
-              <ChevronRight size={16} />
-            </button>
+            <CompCard key={c.id} comp={c} onOpen={onOpenComp} />
           ))}
         </div>
       </section>

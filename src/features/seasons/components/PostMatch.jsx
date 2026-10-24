@@ -4,6 +4,7 @@ import ClubCrest from '../../club/components/ClubCrest'
 import { tierOf } from '../../cards/data/tiers'
 import { getClubById } from '../../club/data/clubs'
 import RoundResults from './RoundResults'
+import CompEmblem from '../ui/CompEmblem'
 import StandingsTable from './StandingsTable'
 import Bracket from './Bracket'
 import { standingsFrom } from '../utils/seasonSelectors'
@@ -65,8 +66,12 @@ export default function PostMatch({ result, byComp, onClose, onOpenOffers, box, 
     <div className="sn-overlay" role="dialog" aria-modal="true" aria-label="Resultado da partida">
       <div className="sn-modal">
         <header className="sn-modal-head">
-          <small>{COMP_NAME[result.competition]}</small>
-          <b>{describeMatch(result)}</b>
+          <CompEmblem comp={result.competition} size={28} />
+          <span>
+            <small>{COMP_NAME[result.competition]}</small>
+            <b>{describeMatch(result)}</b>
+          </span>
+          <span className={`pm-live ${done ? 'is-done' : ''}`}>{done ? 'Fim de jogo' : 'Ao vivo'}</span>
         </header>
 
         <div className="sn-board">
@@ -205,7 +210,7 @@ export default function PostMatch({ result, byComp, onClose, onOpenOffers, box, 
                 <Bracket fixtures={byComp[result.competition] || []} myClub={result.my_club} />
               ))}
 
-            <button type="button" className="sn-continue" onClick={onClose}>
+            <button type="button" className="gx-btn sn-continue" onClick={onClose}>
               {result.season_finished ? 'Ver resumo da temporada' : 'Continuar'}
             </button>
           </div>

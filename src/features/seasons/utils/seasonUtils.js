@@ -85,3 +85,35 @@ export function fixtureLabel(f) {
   if (f.stage === 'final') return 'Final'
   return `${STAGE_LABEL[f.stage]} · ${f.leg === 1 ? 'Ida' : 'Volta'}`
 }
+
+// ---------------------------------------------------------------------------
+// Identidade visual de cada campeonato (cores e símbolo). Não são logos oficiais:
+// é um emblema próprio do jogo, com as cores que lembram cada torneio.
+export const COMP_THEME = {
+  brasileirao: { c1: '#0f8a45', c2: '#f7cf1e', code: 'A', kicker: 'Liga nacional' },
+  copa_brasil: { c1: '#1747b8', c2: '#f5b800', code: 'CB', kicker: 'Copa nacional' },
+  libertadores: { c1: '#121a33', c2: '#d4af37', code: 'LIB', kicker: 'Continental' },
+}
+
+// Regras de prêmio, só para EXIBIR (os cálculos de verdade ficam no banco: season_play e sim_finish_competition).
+// Se mudar os números no SQL, mude aqui também.
+export const REWARD_RULES = {
+  result: [
+    { id: 'win', label: 'Vitória', xp: 30, coins: 60 },
+    { id: 'draw', label: 'Empate', xp: 15, coins: 25 },
+    { id: 'loss', label: 'Derrota', xp: 8, coins: 10 },
+  ],
+  goal: { xp: 10, coins: 30 },
+  assist: { xp: 6, coins: 15 },
+  compMult: { brasileirao: 1, copa_brasil: 1.2, libertadores: 1.3 },
+  stageMult: [
+    { label: 'Oitavas, quartas e semi', mult: 1.2 },
+    { label: 'Final', mult: 1.5 },
+  ],
+  campaign: [
+    { label: 'Campeão brasileiro', xp: 500, coins: 3000 },
+    { label: 'Campeão da Libertadores', xp: 600, coins: 4000 },
+    { label: 'Campeão da Copa do Brasil', xp: 400, coins: 2500 },
+    { label: 'G4 do Brasileirão', xp: 250, coins: 1500 },
+  ],
+}

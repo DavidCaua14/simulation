@@ -9,8 +9,10 @@ export default function ParallelDigest({ digest, myClub, onClose }) {
     <div className="sn-overlay" role="dialog" aria-modal="true" aria-label="Resumo dos outros campeonatos">
       <div className="sn-modal">
         <header className="sn-modal-head">
-          <small>Enquanto isso…</small>
-          <b>Outros campeonatos</b>
+          <span>
+            <small>Enquanto isso…</small>
+            <b>Outros campeonatos</b>
+          </span>
         </header>
 
         {digest.rounds.map((r) => (
@@ -49,7 +51,7 @@ export default function ParallelDigest({ digest, myClub, onClose }) {
           </div>
         )}
 
-        <button type="button" className="sn-continue" onClick={onClose}>
+        <button type="button" className="gx-btn sn-continue" onClick={onClose}>
           {digest.season_finished ? 'Ver resumo da temporada' : 'Continuar'}
         </button>
       </div>
