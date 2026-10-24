@@ -1,11 +1,14 @@
 import { useMemo, useState } from 'react'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Trophy } from 'lucide-react'
 import StandingsTable from '../components/StandingsTable'
 import Bracket from '../components/Bracket'
 import RoundResults from '../components/RoundResults'
+import ClubCrest from '../../club/components/ClubCrest'
 import { getClubById } from '../../club/data/clubs'
-import { buildRounds, defaultRoundIndex, groupOf, standingsFrom } from '../utils/seasonSelectors'
-import { COMP_NAME, COMP_ORDER, COMP_SHORT, STAGE_LABEL, ordinal } from '../utils/seasonUtils'
+import CompEmblem from '../ui/CompEmblem'
+import { compStatus } from '../utils/compStatus'
+import { EXPECTED_MATCHES, buildRounds, defaultRoundIndex, groupOf, standingsFrom } from '../utils/seasonSelectors'
+import { COMP_NAME, COMP_ORDER, COMP_SHORT, COMP_THEME } from '../utils/seasonUtils'
 
 const VIEWS = {
   brasileirao: [
@@ -26,18 +29,18 @@ const VIEWS = {
 function RoundBrowser({ fixtures, myClub, lastKey }) {
   const rounds = useMemo(() => buildRounds(fixtures), [fixtures])
   const [idx, setIdx] = useState(() => defaultRoundIndex(rounds, lastKey))
-  if (!rounds.length) return <p className="sn-muted">Sem rodadas ainda.</p>
+  if (!rounds.length) return <p className="sn-muted sn-center">Sem rodadas ainda.</p>
   const i = Math.min(idx, rounds.length - 1)
   const r = rounds[i]
   return (
     <div>
-      <div className="sn-rb-nav">
+      <div className="rb-nav">
         <button type="button" onClick={() => setIdx(i - 1)} disabled={i <= 0} aria-label="Rodada anterior">
           <ChevronLeft size={20} />
         </button>
         <div>
           <b>{r.label}</b>
-          <small>{r.done ? 'Encerrada' : 'Em aberto'}</small>
+          <small className={r.done ? '' : 'is-open'}>{r.done ? 'Encerrada' : 'Em aberto'}</small>
         </div>
         <button type="button" onClick={() => setIdx(i + 1)} disabled={i >= rounds.length - 1} aria-label="Próxima rodada">
           <ChevronRight size={20} />
@@ -71,7 +74,7 @@ function CompetitionView({ comp, fixtures, myClub, lastKey }) {
       {view === 'table' && (
         <>
           {comp.id === 'libertadores' && (
-            <div className="sn-groups">
+            <div className="sn-groups" role="tablist" aria-label="Grupos">
               {groups.map((g) => (
                 <button key={g} type="button" className={g === group ? 'is-on' : ''} onClick={() => setGroup(g)}>
                   {g}
@@ -88,14 +91,6 @@ function CompetitionView({ comp, fixtures, myClub, lastKey }) {
   )
 }
 
-function statusLine(c) {
-  if (c.status === 'finished') return `Sua campanha: ${c.player_result || 'encerrado'}`
-  if (c.status === 'out') return 'Seu clube foi eliminado'
-  if (c.status === 'not_in') return 'Seu clube não disputa este torneio'
-  const t = c.table
-  return `${STAGE_LABEL[c.stage]}${t ? ` · ${t.group ? `Grupo ${t.group} · ` : ''}${ordinal(t.pos)} · ${t.points} pts` : ''}`
-}
-
 // TORNEIOS: acompanhar tabela, grupos, chaveamento e rodadas de cada campeonato (só leitura).
 export default function CompetitionsTab({ ctx, selected, onSelect }) {
   const { hub, byComp, history, myClub } = ctx
@@ -103,21 +98,44 @@ export default function CompetitionsTab({ ctx, selected, onSelect }) {
   const last = history.find((f) => f.comp === comp.id)
   const lastKey = last ? `${last.stage}:${last.round_no}` : null
 
+  const t = COMP_THEME[comp.id]
+  const st = compStatus(comp)
+  const inactive = comp.status === 'not_in' || comp.status === 'out'
+  const pct = Math.min(100, (comp.played / (EXPECTED_MATCHES[comp.id] || comp.total || 1)) * 100)
+
   return (
     <div className="sn-page">
-      <div className="sn-chipbar">
+      <div className="ct-picker" role="tablist" aria-label="Campeonatos">
         {COMP_ORDER.map((id) => (
-          <button key={id} type="button" className={comp.id === id ? 'is-on' : ''} onClick={() => onSelect(id)}>
-            {COMP_SHORT[id]}
+          <button key={id} type="button" role="tab" aria-selected={comp.id === id} className={comp.id === id ? 'is-on' : ''} style={{ '--c1': COMP_THEME[id].c1, '--c2': COMP_THEME[id].c2 }} onClick={() => onSelect(id)}>
+            <CompEmblem comp={id} size={26} />
+            <span>{COMP_SHORT[id]}</span>
           </button>
         ))}
       </div>
 
-      <div className={`sn-campaign card tone-${comp.id}`}>
-        <b>{COMP_NAME[comp.id]}</b>
-        <span>{statusLine(comp)}</span>
-        {comp.status === 'finished' && comp.champion && <small>Campeão da edição: {getClubById(comp.champion)?.name}</small>}
-      </div>
+      <section className={`ct-banner ${inactive ? 'is-inactive' : ''}`} style={{ '--c1': t.c1, '--c2': t.c2 }}>
+        <CompEmblem comp={comp.id} size={58} dim={inactive} />
+        <div className="ct-banner-txt">
+          <small>{t.kicker}</small>
+          <h2>{COMP_NAME[comp.id]}</h2>
+          <span className="ct-line">{st.line}</span>
+          <span className="ct-goal">
+            {comp.status === 'finished' && comp.champion ? (
+              <>
+                <Trophy size={13} /> Campeão: <ClubCrest clubId={comp.champion} size={16} /> {getClubById(comp.champion)?.name}
+              </>
+            ) : (
+              <>→ {st.goal}</>
+            )}
+          </span>
+          {!inactive && comp.status !== 'finished' && (
+            <span className="ct-bar" aria-label={`${comp.played} jogos disputados`}>
+              <i style={{ width: `${pct}%` }} />
+            </span>
+          )}
+        </div>
+      </section>
 
       <CompetitionView key={comp.id} comp={comp} fixtures={byComp[comp.id] || []} myClub={myClub} lastKey={lastKey} />
     </div>

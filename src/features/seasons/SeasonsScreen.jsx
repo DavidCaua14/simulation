@@ -1,13 +1,13 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import AppShell from '../../components/layout/AppShell'
-import { BackIcon } from '../../components/ui/icons'
 import { getClubById } from '../club/data/clubs'
 import useSeasonData from './hooks/useSeasonData'
 import useCountdown from './hooks/useCountdown'
 import { advanceCalendar, playMatch, respondOffer, startNextSeason } from './services/seasonsApi'
 import { flattenFixtures, playerHistory, projectCalendar } from './utils/seasonSelectors'
 import { formatRemaining } from './utils/seasonUtils'
-import StatusBar from './components/StatusBar'
+import SeasonHeader from './ui/SeasonHeader'
+import { ErrorState, LoadingState } from './ui/States'
 import BottomNav from './components/BottomNav'
 import PostMatch from './components/PostMatch'
 import ParallelDigest from './components/ParallelDigest'
@@ -149,30 +149,18 @@ export default function SeasonsScreen({ onBack }) {
   const ctx = hub && derived ? { hub, byComp, ...derived, canPlay, blockedText, playing, advancing, starting } : null
 
   return (
-    <AppShell
-      left={
-        <button type="button" className="icon-btn" onClick={onBack} aria-label="Voltar ao menu">
-          <BackIcon />
-        </button>
-      }
-      title={`Temporadas · ${TITLES[tab]}`}
-    >
+    <AppShell header={<SeasonHeader title={TITLES[tab]} career={hub?.career} season={hub?.season} remaining={remaining} onBack={onBack} />}>
       <div className="sn-screen">
-        {toast && <div className={`sn-toast ${toast.kind}`}>{toast.text}</div>}
-
-        {ctx && <StatusBar career={hub.career} season={hub.season} remaining={remaining} />}
+        {toast && (
+          <div className={`sn-toast ${toast.kind}`} role="status" key={toast.id}>
+            {toast.text}
+          </div>
+        )}
 
         <div className="sn-scroll" key={tab}>
-          {loading && !hub && <p className="sn-muted sn-center">Carregando sua temporada…</p>}
+          {loading && !hub && <LoadingState />}
 
-          {error && !hub && (
-            <div className="sn-empty card">
-              <p>{error}</p>
-              <button type="button" className="sn-ghost" onClick={() => refresh()}>
-                Tentar de novo
-              </button>
-            </div>
-          )}
+          {error && !hub && <ErrorState message={error} onRetry={() => refresh()} />}
 
           {ctx && tab === 'home' && (
             <HomeTab ctx={ctx} onGoTab={setTab} onOpenComp={openComp} onOpenRound={openRound} onPlay={handlePlay} onAdvance={handleAdvance} onStartNext={handleStartNext} />

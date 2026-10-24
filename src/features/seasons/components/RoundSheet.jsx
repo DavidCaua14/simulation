@@ -15,7 +15,7 @@ export default function RoundSheet({ target, byComp, myClub, onClose }) {
             <small>{COMP_NAME[target.comp]}</small>
             <strong className="heading">{round?.label || 'Rodada'}</strong>
           </div>
-          <button type="button" className="icon-btn" onClick={onClose} aria-label="Fechar">
+          <button type="button" className="sn-x" onClick={onClose} aria-label="Fechar">
             <X size={18} />
           </button>
         </header>
