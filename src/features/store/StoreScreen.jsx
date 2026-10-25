@@ -9,6 +9,7 @@ import BuyConfirm from './components/BuyConfirm'
 import DiamondsSoon from './components/DiamondsSoon'
 import WheelTab from './components/WheelTab'
 import MarketTab from './components/MarketTab'
+import EnergyTab from './components/EnergyTab'
 import '../cards/cards.css'
 import './store.css'
 
@@ -61,6 +62,7 @@ export default function StoreScreen({ career, params, onBack, onNavigate }) {
     ...sections.map((s) => ({ id: s.tier, label: s.label, Icon: SECTION_ICON[s.tier] || Sparkles })),
     { id: 'wheel', label: 'Roleta', Icon: CircleDot },
     { id: 'market', label: 'Mercado', Icon: ArrowLeftRight },
+    { id: 'energy', label: 'Energia', Icon: Zap },
     { id: 'diamonds', label: 'Diamantes', Icon: Gem, soon: true },
   ]
   // saldo mais recente: o do servidor depois de uma compra, senão o da carteira
@@ -124,6 +126,8 @@ export default function StoreScreen({ career, params, onBack, onNavigate }) {
               onOpenCollection={() => onNavigate?.('cards', { tab: 'collection' })}
             />
           )}
+
+          {tab === 'energy' && <EnergyTab onChanged={refreshWallet} />}
 
           {tab === 'diamonds' && <DiamondsSoon />}
         </div>

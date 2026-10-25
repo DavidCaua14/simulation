@@ -46,3 +46,7 @@ export const buyListing = (listingId, requestId) => unwrap(supabase.rpc('market_
 
 // taxa como o servidor calcula (arredonda para cima) — só para mostrar ANTES; o valor real vem da resposta
 export const feeOf = (price, pct) => Math.min(price, Math.ceil((price * pct) / 100))
+
+// Energia (supabase/evolution/10_energy_packs.sql)
+export const fetchEnergy = () => unwrap(supabase.rpc('energy_catalog'))
+export const buyEnergy = (packId, requestId) => unwrap(supabase.rpc('energy_buy', { p_pack: packId, p_request: requestId }))

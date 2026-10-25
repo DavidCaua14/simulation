@@ -1,9 +1,14 @@
 -- =====================================================================
--- DESFAZ a evolução 01–09 (competições, clube inicial por nacionalidade, livro de transações, loja, roleta e mercado). Use só se precisar voltar atrás.
+-- DESFAZ a evolução 01–10 (competições, clube inicial por nacionalidade, livro de transações, loja, roleta, mercado e energia). Use só se precisar voltar atrás.
 -- Depois de rodar, reaplique supabase/seasons/03_engine.sql, 04_features.sql (get_initial_offers antiga), supabase/manager/03_engine.sql e 04_career.sql
 -- para restaurar as funções antigas. Temporadas criadas na Inglaterra ou com Série B são apagadas (não existem no modelo antigo).
 -- =====================================================================
 begin;
+-- evolução 10 (pacotes de energia). Para a troca avulsa voltar ao comportamento antigo, reaplique supabase/cards/01_cards.sql.
+drop function if exists public.energy_buy(text, uuid);
+drop function if exists public.energy_catalog();
+drop table if exists public.energy_packs;
+drop table if exists public.energy_config;
 -- evolução 09 (mercado): anúncios ATIVOS devolvem a cópia ao vendedor antes de remover as tabelas
 insert into public.user_cards (career_id, card_id, qty)
 select seller_career, card_id, count(*) from public.market_listings where status = 'active' group by 1, 2
