@@ -2,9 +2,7 @@
 -- EVOLUÇÃO 01 — ESQUEMA DO MOTOR DE COMPETIÇÕES CONFIGURÁVEL
 -- Regiões (Brasil / Inglaterra), divisões, participantes por temporada, acesso e rebaixamento.
 --
--- Ordem de instalação (banco novo):
---   supabase/seasons/01..04 -> supabase/manager/01 -> supabase/cards/01..04 -> supabase/manager/02..06
---   -> supabase/evolution/01, 02, 03 ... (em ordem numérica)
+-- Ordem de instalação: veja supabase/evolution/LEIA-ME.md
 -- Tudo é idempotente (if not exists / create or replace / on conflict). Para desfazer: evolution/99_rollback.sql
 -- =====================================================================
 
