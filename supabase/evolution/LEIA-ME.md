@@ -20,7 +20,8 @@ supabase/evolution/04_manager.sql           <- carreira do treinador no motor co
 supabase/evolution/05_career_start.sql      <- clube inicial pela nacionalidade + perfis de dificuldade
 supabase/evolution/06_economy_shop.sql      <- livro de transações, idempotência e loja de cartas
 supabase/evolution/07_shop_price_range.sql  <- preço pela faixa de notas (converte bancos com a 06 antiga; num banco novo não muda nada)
-supabase/evolution/08+ ...                  <- próximas etapas
+supabase/evolution/08_wheel.sql             <- roleta de cartas por diamantes
+supabase/evolution/09+ ...                  <- próximas etapas
 ```
 
 Banco que já estava no ar: rode só `evolution/01`, `evolution/02`, `manager/02_players_seed.sql` (gerado de novo) e
@@ -55,6 +56,7 @@ psql -v ON_ERROR_STOP=1 -f supabase/evolution/tests/competitions_tests.sql
 psql -v ON_ERROR_STOP=1 -f supabase/manager/tests/manager_tests.sql
 psql -v ON_ERROR_STOP=1 -f supabase/evolution/tests/career_start_tests.sql
 psql -v ON_ERROR_STOP=1 -f supabase/evolution/tests/economy_shop_tests.sql
+psql -v ON_ERROR_STOP=1 -f supabase/evolution/tests/wheel_tests.sql
 PSQL="psql ..." bash supabase/evolution/tests/economy_concurrency.sh     # duas conexões ao mesmo tempo
 ```
 
@@ -66,6 +68,8 @@ PSQL="psql ..." bash supabase/evolution/tests/economy_concurrency.sh     # duas 
   (idempotência por `request_id`).
 * Loja: `shop_sections` (raridades à venda, cartas por vitrine, rodízio em horas UTC, limite por usuário) e
   `shop_prices` (por raridade e moeda: `base` = carta mais fraca da raridade, `top` = mais forte). Ajuste com UPDATE, sem código.
+* Roleta: `wheel_config` (custo, garantia) e `wheel_segments` (fatias: raridade, faixa de nota, chance em %). Mude as chances
+  numa transação só (`begin; update ...; update ...; commit;`): o banco confere no COMMIT que as fatias ativas somam 100%.
 
 ## Desfazer
 

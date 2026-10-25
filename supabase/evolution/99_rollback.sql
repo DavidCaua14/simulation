@@ -1,9 +1,18 @@
 -- =====================================================================
--- DESFAZ a evolução 01–06 (competições configuráveis, clube inicial por nacionalidade, livro de transações e loja). Use só se precisar voltar atrás.
+-- DESFAZ a evolução 01–08 (competições configuráveis, clube inicial por nacionalidade, livro de transações, loja e roleta). Use só se precisar voltar atrás.
 -- Depois de rodar, reaplique supabase/seasons/03_engine.sql, 04_features.sql (get_initial_offers antiga), supabase/manager/03_engine.sql e 04_career.sql
 -- para restaurar as funções antigas. Temporadas criadas na Inglaterra ou com Série B são apagadas (não existem no modelo antigo).
 -- =====================================================================
 begin;
+-- evolução 08 (roleta). As cartas ganhas continuam no inventário; o livro de transações é removido logo abaixo (06).
+drop function if exists public.wheel_spin(uuid);
+drop function if exists public.wheel_catalog();
+drop function if exists public.wheel_segment_cards(public.wheel_segments);
+drop table if exists public.wheel_spins;
+drop table if exists public.wheel_state;
+drop table if exists public.wheel_segments;
+drop function if exists public.wheel_check_sum();
+drop table if exists public.wheel_config;
 -- evolução 06 (livro de transações e loja). Os saldos em careers NÃO mudam; as cartas compradas continuam no inventário.
 drop trigger if exists econ_ledger_trg on public.careers;
 drop function if exists public.shop_buy_card(text, text, uuid);

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Coins, Crown, Gem, Hourglass, Lock, Sparkles, Zap } from 'lucide-react'
+import { CircleDot, Coins, Crown, Gem, Hourglass, Lock, Sparkles, Zap } from 'lucide-react'
 import AppShell from '../../components/layout/AppShell'
 import { BackIcon } from '../../components/ui/icons'
 import useWallet from '../predictions/hooks/useWallet'
@@ -7,6 +7,7 @@ import { fetchShop } from './services/storeApi'
 import ShopItem from './components/ShopItem'
 import BuyConfirm from './components/BuyConfirm'
 import DiamondsSoon from './components/DiamondsSoon'
+import WheelTab from './components/WheelTab'
 import '../cards/cards.css'
 import './store.css'
 
@@ -28,7 +29,7 @@ function useCountdown(endsAt, onEnd) {
   return m >= 60 ? `${Math.floor(m / 60)}h ${String(m % 60).padStart(2, '0')}min` : `${m} min`
 }
 
-// Loja: vitrine rotativa de Destaques e Lendas (moedas ou diamantes) + "Comprar diamantes" (EM BREVE).
+// Loja: vitrine rotativa de Destaques e Lendas (moedas ou diamantes), roleta (diamantes) e "Comprar diamantes" (EM BREVE).
 // Preço, saldo e entrega são decididos no servidor; a tela só mostra e pede a compra.
 export default function StoreScreen({ career, onBack, onNavigate }) {
   const { player } = career
@@ -54,7 +55,11 @@ export default function StoreScreen({ career, onBack, onNavigate }) {
   const sections = shop?.sections || []
   const section = sections.find((s) => s.tier === tab)
   const countdown = useCountdown(section?.ends_at, load)
-  const tabs = [...sections.map((s) => ({ id: s.tier, label: s.label, Icon: SECTION_ICON[s.tier] || Sparkles })), { id: 'diamonds', label: 'Diamantes', Icon: Gem, soon: true }]
+  const tabs = [
+    ...sections.map((s) => ({ id: s.tier, label: s.label, Icon: SECTION_ICON[s.tier] || Sparkles })),
+    { id: 'wheel', label: 'Roleta', Icon: CircleDot },
+    { id: 'diamonds', label: 'Diamantes', Icon: Gem, soon: true },
+  ]
   // saldo mais recente: o do servidor depois de uma compra, senão o da carteira
   const balance = { coins: wallet.coins ?? shop?.wallet?.coins ?? 0, diamonds: wallet.diamonds ?? shop?.wallet?.diamonds ?? 0 }
 
@@ -105,6 +110,8 @@ export default function StoreScreen({ career, onBack, onNavigate }) {
               </p>
             </>
           )}
+
+          {tab === 'wheel' && <WheelTab onSpent={refreshWallet} onOpenCollection={() => onNavigate?.('cards', { tab: 'collection' })} />}
 
           {tab === 'diamonds' && <DiamondsSoon />}
         </div>

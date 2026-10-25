@@ -15,9 +15,13 @@
 }
 .sh-tabs::-webkit-scrollbar { display: none; }
 .sh-tabs button {
-  flex: 1 0 auto;
-  height: 38px;
-  padding: 0 10px;
+  flex: 1 1 0;
+  min-width: 64px;
+  height: 46px;
+  padding: 0 4px;
+  flex-direction: column;
+  gap: 2px !important;
+  font-size: 0.74rem !important;
   border: 0;
   border-radius: 10px;
   background: transparent;
@@ -32,7 +36,8 @@
   white-space: nowrap;
 }
 .sh-tabs button.is-on { background: var(--primary); color: var(--primary-contrast); }
-.sh-tabs button .sh-tab-lock { opacity: 0.7; }
+.sh-tabs button .sh-tab-lock { position: absolute; top: 5px; right: 6px; opacity: 0.7; }
+.sh-tabs button { position: relative; }
 
 .sh-head { display: flex; flex-direction: column; gap: 6px; margin: 2px 0 12px; }
 .sh-head p { margin: 0; color: var(--text-secondary); font-size: 0.82rem; line-height: 1.4; }
@@ -170,4 +175,85 @@
 
 @media (prefers-reduced-motion: reduce) {
   .sh-price:not(:disabled):active { transform: none; }
+}
+
+/* =====================================================================
+   ROLETA — fatias proporcionais às chances reais; o ponteiro fica no topo
+   ===================================================================== */
+.wh { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.wh-wrap { position: relative; width: min(78vw, 290px); aspect-ratio: 1; margin: 6px auto 4px; }
+.wh-wheel {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  box-shadow: 0 0 0 6px #2a1d00, 0 0 0 9px #fbbf24, 0 0 40px -6px rgba(251, 191, 36, 0.55), 0 18px 40px -18px rgba(0, 0, 0, 0.8);
+  transition-property: transform;
+  transition-timing-function: cubic-bezier(0.12, 0.6, 0.08, 1);
+}
+.wh-label { font: 900 11px var(--font-heading); fill: #2a1d00; letter-spacing: 0.02em; }
+.wh-hub { fill: #141821; stroke: #fbbf24; stroke-width: 2.5; }
+.wh-hub-gem { position: absolute; inset: 0; display: grid; place-items: center; color: #38bdf8; pointer-events: none; }
+.wh-pointer {
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  z-index: 2;
+  width: 0;
+  height: 0;
+  transform: translateX(-50%);
+  border-left: 13px solid transparent;
+  border-right: 13px solid transparent;
+  border-top: 26px solid var(--primary);
+  filter: drop-shadow(0 3px 4px rgba(0, 0, 0, 0.5));
+}
+.wh-spin { min-width: 220px; }
+.wh-balance { margin: 0; font-size: 0.82rem; color: var(--text-secondary); }
+.wh-balance b { display: inline-flex; align-items: center; gap: 3px; color: var(--text-primary); }
+.wh-balance svg { color: #38bdf8; }
+
+.wh-odds { width: 100%; border-radius: 14px; background: var(--surface); border: 1px solid var(--border); padding: 10px 12px; }
+.wh-odds-head, .wh-odds-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.wh-odds-head { font: 800 0.66rem var(--font-body); letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-secondary); padding-bottom: 6px; }
+.wh-odds-row { padding: 6px 0; border-top: 1px solid var(--border); font-size: 0.86rem; }
+.wh-odds-row span { display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.wh-odds-row i { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
+.wh-odds-row small { color: var(--text-secondary); font-size: 0.72rem; }
+.wh-odds-row b { font: 800 0.95rem var(--font-body); }
+.wh-odds-sum { margin: 6px 0 0; font-size: 0.72rem; color: var(--text-secondary); text-align: right; }
+
+.wh-pity {
+  width: 100%;
+  display: flex;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: color-mix(in srgb, #c084fc 12%, var(--surface));
+  border: 1px solid color-mix(in srgb, #c084fc 40%, transparent);
+}
+.wh-pity svg { flex-shrink: 0; color: #c084fc; margin-top: 2px; }
+.wh-pity p { margin: 0; font-size: 0.8rem; line-height: 1.4; }
+.wh-pity-now { display: inline-block; margin-top: 4px; font-weight: 800; color: #c084fc; }
+
+.wh-hist { width: 100%; }
+.wh-hist h4 { margin: 6px 0; font: 800 0.86rem var(--font-heading); }
+.wh-hist ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.wh-hist li {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 10px;
+  background: var(--surface);
+  border-left: 3px solid var(--tier);
+  font-size: 0.82rem;
+}
+.wh-hist li b { color: var(--tier); }
+.wh-hist li small { color: var(--text-secondary); font-size: 0.7rem; }
+
+.wh-result-kicker { margin: 0 0 6px; font: 900 1.1rem var(--font-heading); letter-spacing: 0.2em; text-transform: uppercase; }
+.wh-result.t-epica { box-shadow: 0 -10px 60px -10px rgba(192, 132, 252, 0.6); }
+
+@media (prefers-reduced-motion: reduce) {
+  .wh-wheel { transition: none !important; }
 }
