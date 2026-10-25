@@ -1468,6 +1468,46 @@ begin
 end;
 $$;
 
+-- posições escolhidas pelo treinador durante o jogo (arrastar no campo): {"ZAG1": "player-id", ...}
+-- Só vale para quem está em campo; posição errada = rende menos (adequação), goleiro improvisado = desastre.
+create or replace function public.mgr_set_positions(p_fixture bigint, p_side char, p_slots jsonb, p_minute int)
+returns text language plpgsql security definer set search_path = public as $$
+declare
+  v_form  jsonb;
+  v_m     public.mgr_matches;
+  r       record;
+  v_pos   text;
+  v_n     int := 0;
+begin
+  if p_slots is null or jsonb_typeof(p_slots) <> 'object' then return null; end if;
+  select * into v_m from public.mgr_matches where fixture_id = p_fixture;
+  select f.slots into v_form from public.sim_formations f where f.id = v_m.state -> 'formation' ->> (case when p_side = 'h' then 0 else 1 end);
+  -- jogador repetido em duas vagas
+  if (select count(*) from jsonb_each_text(p_slots)) <> (select count(distinct value) from jsonb_each_text(p_slots)) then
+    return 'O mesmo jogador está em duas posições.';
+  end if;
+  for r in select key as slot, value as pid from jsonb_each_text(p_slots) loop
+    select s ->> 'pos' into v_pos from jsonb_array_elements(v_form) s where s ->> 'slot' = r.slot;
+    if v_pos is null then return format('A vaga %s não existe na formação atual.', r.slot); end if;
+    if not exists (select 1 from public.mgr_match_players where fixture_id = p_fixture and side = p_side and player_id = r.pid and status = 'on') then
+      continue;   -- quem já saiu (lesão/expulsão) é ignorado
+    end if;
+    if exists (select 1 from public.mgr_match_players where fixture_id = p_fixture and player_id = r.pid and slot is distinct from r.slot) then
+      v_n := v_n + 1;
+    end if;
+    update public.mgr_match_players set slot = '__' || r.slot, pos = v_pos, fit = public.mgr_fit(r.pid, v_pos)
+     where fixture_id = p_fixture and player_id = r.pid;
+  end loop;
+  update public.mgr_match_players set slot = substr(slot, 3) where fixture_id = p_fixture and side = p_side and slot like '\_\_%';
+  if exists (select 1 from public.mgr_match_players where fixture_id = p_fixture and side = p_side and status = 'on' and slot is not null
+              group by slot having count(*) > 1) then
+    return 'Dois jogadores na mesma posição.';
+  end if;
+  if v_n > 0 then perform public.mgr_event(p_fixture, p_minute, p_side, 'tactic', null, null, 'Jogadores trocam de posição'); end if;
+  return null;
+end;
+$$;
+
 -- mudança de formação no meio do jogo: redistribui quem está em campo nas novas vagas
 create or replace function public.mgr_change_formation(p_fixture bigint, p_side char, p_form text, p_minute int)
 returns text language plpgsql security definer set search_path = public as $$
@@ -1555,6 +1595,10 @@ begin
     if v_err is not null then raise exception '%', v_err; end if;
     v_first := false;
   end loop;
+  if p_changes ? 'slots' then
+    v_err := public.mgr_set_positions(p_fixture, v_side, p_changes -> 'slots', v_m.minute);
+    if v_err is not null then raise exception '%', v_err; end if;
+  end if;
   -- lesionado sem troca escolhida: o auxiliar troca (se houver substituição disponível)
   for r in select player_id, pos from public.mgr_match_players
             where fixture_id = p_fixture and side = v_side and status = 'injured_off' and slot is not null loop
