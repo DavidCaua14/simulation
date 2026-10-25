@@ -43,7 +43,7 @@ export default function DiamondExchange({ diamonds, onClose, onDone }) {
         </div>
         {diamonds < 1 && <p className="cx-hint">Você ainda não tem diamantes. Eles saem das caixas mais raras.</p>}
         {msg && <p className="cx-msg">{msg}</p>}
-        <p className="cx-hint">Em breve: usar diamantes para comprar cartas.</p>
+        <p className="cx-hint">Diamantes também compram cartas Destaque e Lenda na Loja.</p>
       </div>
     </div>
   )

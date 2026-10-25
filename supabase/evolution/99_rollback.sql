@@ -1,9 +1,27 @@
 -- =====================================================================
--- DESFAZ a evolução 01–05 (competições configuráveis e clube inicial por nacionalidade). Use só se precisar voltar atrás.
+-- DESFAZ a evolução 01–06 (competições configuráveis, clube inicial por nacionalidade, livro de transações e loja). Use só se precisar voltar atrás.
 -- Depois de rodar, reaplique supabase/seasons/03_engine.sql, 04_features.sql (get_initial_offers antiga), supabase/manager/03_engine.sql e 04_career.sql
 -- para restaurar as funções antigas. Temporadas criadas na Inglaterra ou com Série B são apagadas (não existem no modelo antigo).
 -- =====================================================================
 begin;
+-- evolução 06 (livro de transações e loja). Os saldos em careers NÃO mudam; as cartas compradas continuam no inventário.
+drop trigger if exists econ_ledger_trg on public.careers;
+drop function if exists public.shop_buy_card(text, text, uuid);
+drop function if exists public.shop_catalog();
+drop function if exists public.shop_showcase_cards(text);
+drop function if exists public.shop_price(public.cards, text);
+drop function if exists public.shop_period(int, timestamptz);
+drop function if exists public.wallet_history(int);
+drop function if exists public.econ_apply(uuid, text, int, text, text);
+drop function if exists public.econ_request_save(uuid, uuid, text, jsonb);
+drop function if exists public.econ_request_get(uuid, uuid, text);
+drop function if exists public.econ_ledger_trg();
+drop function if exists public.econ_tag(text, text);
+drop table if exists public.shop_purchases;
+drop table if exists public.shop_prices;
+drop table if exists public.shop_sections;
+drop table if exists public.econ_requests;
+drop table if exists public.wallet_ledger;
 -- evolução 05 (clube inicial por nacionalidade)
 alter table public.careers drop constraint if exists careers_country_fkey;
 alter table public.careers drop constraint if exists careers_difficulty_fkey;

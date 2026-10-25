@@ -4,7 +4,7 @@ import { tierOf } from '../../cards/data/tiers'
 import lojaImg from '../assets/loja.webp'
 
 // Coleção & loja: caixas esperando (grátis/conquistadas jogando), vitrine das melhores cartas
-// do jogador e o acesso à loja (ainda "em breve" — nada pago aparece aqui).
+// do jogador e o acesso à loja (cartas por moedas/diamantes do jogo — nenhum pagamento real).
 export default function CardsHub({ boxes, summary, onNavigate, storeLocked = true }) {
   const count = boxes.length
   const best = boxes.reduce((b, x) => (tierOf(x.tier).rank > tierOf(b?.tier).rank ? x : b), boxes[0])
@@ -68,7 +68,7 @@ export default function CardsHub({ boxes, summary, onNavigate, storeLocked = tru
         </span>
         <span className="hm-store-text">
           <strong>Loja</strong>
-          <span>Pacotes, itens e novidades</span>
+          <span>{storeLocked ? 'Pacotes, itens e novidades' : 'Destaques e Lendas à venda'}</span>
         </span>
         {storeLocked && (
           <span className="gx-tag is-soon">

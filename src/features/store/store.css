@@ -1,0 +1,173 @@
+/* =====================================================================
+   LOJA — usa os tokens do tema (theme.css / game-ui.css) e o mesmo "sheet" das Cartas (cards.css)
+   Destaque = azul (#38bdf8) · Lenda = dourado (#fbbf24): as mesmas cores das caixas.
+   ===================================================================== */
+
+.sh-tabs {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding: 4px;
+  border-radius: 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  scrollbar-width: none;
+}
+.sh-tabs::-webkit-scrollbar { display: none; }
+.sh-tabs button {
+  flex: 1 0 auto;
+  height: 38px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text-secondary);
+  font: 800 0.84rem var(--font-heading);
+  letter-spacing: 0.02em;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.sh-tabs button.is-on { background: var(--primary); color: var(--primary-contrast); }
+.sh-tabs button .sh-tab-lock { opacity: 0.7; }
+
+.sh-head { display: flex; flex-direction: column; gap: 6px; margin: 2px 0 12px; }
+.sh-head p { margin: 0; color: var(--text-secondary); font-size: 0.82rem; line-height: 1.4; }
+.sh-timer {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  font: 800 0.74rem var(--font-body);
+  color: var(--text-primary);
+}
+
+.sh-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+
+.sh-item {
+  --tier: #38bdf8;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 12px 10px 10px;
+  border-radius: 16px;
+  background:
+    radial-gradient(120% 70% at 50% 0%, color-mix(in srgb, var(--tier) 22%, transparent), transparent 70%),
+    var(--surface);
+  border: 1px solid color-mix(in srgb, var(--tier) 38%, var(--border));
+  min-width: 0;
+}
+.sh-item.t-lenda { --tier: #fbbf24; box-shadow: 0 0 0 1px color-mix(in srgb, #fbbf24 25%, transparent), 0 10px 24px -14px rgba(251, 191, 36, 0.6); }
+.sh-item.is-out { opacity: 0.62; }
+.sh-item-card { position: relative; margin-bottom: 4px; }
+.sh-owned {
+  position: absolute;
+  left: 50%;
+  bottom: -6px;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--surface-strong);
+  border: 1px solid var(--border);
+  font: 800 0.62rem var(--font-body);
+  color: var(--text-primary);
+}
+.sh-item-name {
+  margin: 4px 0 0;
+  max-width: 100%;
+  font: 800 0.92rem/1.15 var(--font-heading);
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.sh-item-facts { margin: 0; font-size: 0.74rem; color: var(--text-primary); text-align: center; }
+.sh-item-facts b { color: var(--tier, var(--gold)); }
+.sh-item-facts.muted { color: var(--text-secondary); }
+.sh-stock { margin: 2px 0 4px; font: 800 0.66rem var(--font-body); letter-spacing: 0.06em; text-transform: uppercase; color: var(--gx-green); }
+.sh-stock.is-out { color: var(--text-secondary); }
+
+.sh-prices { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; width: 100%; }
+.sh-price {
+  height: 34px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface-alt);
+  color: var(--text-primary);
+  font: 800 0.8rem var(--font-body);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  cursor: pointer;
+  min-width: 0;
+}
+.sh-price.coins svg { color: var(--gold); }
+.sh-price.gems svg { color: #38bdf8; }
+.sh-price.is-short { color: var(--text-secondary); }
+.sh-price:disabled { cursor: not-allowed; opacity: 0.5; }
+.sh-price:not(:disabled):active { transform: scale(0.97); }
+.sh-foot { margin-top: 14px; text-align: center; }
+
+/* confirmação */
+.sh-confirm h3 { margin-top: 8px; }
+.sh-confirm-tier { margin: 0; font: 800 0.72rem var(--font-body); letter-spacing: 0.16em; text-transform: uppercase; }
+.sh-bill { width: 100%; margin: 10px 0 4px; display: flex; flex-direction: column; gap: 6px; }
+.sh-bill div {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: var(--surface-alt);
+}
+.sh-bill dt { color: var(--text-secondary); font-size: 0.8rem; }
+.sh-bill dd { margin: 0; display: inline-flex; align-items: center; gap: 5px; font: 800 0.9rem var(--font-body); }
+.sh-bill .is-short dd { color: var(--danger); }
+.sh-msg { width: 100%; margin: 4px 0; display: flex; align-items: flex-start; gap: 6px; font-size: 0.82rem; line-height: 1.35; }
+.sh-msg svg { flex-shrink: 0; margin-top: 1px; }
+.sh-msg.is-error { color: var(--danger); }
+.sh-msg.is-ok { color: var(--gx-green); font-weight: 800; justify-content: center; }
+.sh-confirm-btn { width: 100%; margin-top: 6px; }
+.sh-confirm-actions { width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 6px; }
+
+/* comprar diamantes (EM BREVE) */
+.sh-diamonds { display: flex; flex-direction: column; gap: 12px; }
+.sh-dia-card {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  border-radius: 16px;
+  background: var(--surface);
+  border: 1px dashed var(--border);
+  filter: grayscale(0.5);
+  opacity: 0.85;
+  cursor: not-allowed;
+}
+.sh-dia-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  color: #38bdf8;
+  background: color-mix(in srgb, #38bdf8 14%, transparent);
+}
+.sh-dia-card h4 { margin: 0; font: 800 1rem var(--font-heading); }
+.sh-dia-card p { margin: 2px 0 0; font-size: 0.78rem; color: var(--text-secondary); }
+
+@media (prefers-reduced-motion: reduce) {
+  .sh-price:not(:disabled):active { transform: none; }
+}

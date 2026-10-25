@@ -64,10 +64,10 @@ export const GAME_MODES = [
   {
     id: 'store',
     title: 'Loja',
-    desc: 'Compre itens, melhorias e muito mais!',
+    desc: 'Cartas Destaque e Lenda por moedas ou diamantes.',
     Icon: StoreIcon,
     image: loja,
-    locked: true,
+    locked: false,
   },
   {
     id: 'messages',

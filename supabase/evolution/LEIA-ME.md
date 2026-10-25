@@ -18,7 +18,8 @@ supabase/manager/06_cards_coach.sql
 supabase/evolution/03_engine.sql            <- motor de competições configurável
 supabase/evolution/04_manager.sql           <- carreira do treinador no motor configurável
 supabase/evolution/05_career_start.sql      <- clube inicial pela nacionalidade + perfis de dificuldade
-supabase/evolution/06+ ...                  <- próximas etapas
+supabase/evolution/06_economy_shop.sql      <- livro de transações, idempotência e loja de cartas
+supabase/evolution/07+ ...                  <- próximas etapas
 ```
 
 Banco que já estava no ar: rode só `evolution/01`, `evolution/02`, `manager/02_players_seed.sql` (gerado de novo) e
@@ -52,7 +53,18 @@ banco recusa (`careers_country_fkey`) carreira com nacionalidade sem regra.
 psql -v ON_ERROR_STOP=1 -f supabase/evolution/tests/competitions_tests.sql
 psql -v ON_ERROR_STOP=1 -f supabase/manager/tests/manager_tests.sql
 psql -v ON_ERROR_STOP=1 -f supabase/evolution/tests/career_start_tests.sql
+psql -v ON_ERROR_STOP=1 -f supabase/evolution/tests/economy_shop_tests.sql
+PSQL="psql ..." bash supabase/evolution/tests/economy_concurrency.sh     # duas conexões ao mesmo tempo
 ```
+
+## Economia e loja
+
+* Saldos continuam em `careers` (coins, diamonds, energy, bonus_energy). Toda alteração vira uma linha em `wallet_ledger`
+  (gatilho), com motivo e referência quando a função informa (`econ_apply` / `econ_tag`).
+* Compras novas: `econ_apply(carreira, moeda, delta, motivo, ref)` (recusa saldo insuficiente) + `econ_request_get/save`
+  (idempotência por `request_id`).
+* Loja: `shop_sections` (raridades à venda, cartas por vitrine, rodízio em horas UTC, limite por usuário) e
+  `shop_prices` (preço = base + (nota − referência) × por ponto, por raridade e moeda). Ajuste com UPDATE, sem código.
 
 ## Desfazer
 

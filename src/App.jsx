@@ -11,6 +11,7 @@ import PredictionsScreen from './features/predictions/PredictionsScreen'
 import SeasonsScreen from './features/seasons/SeasonsScreen'
 import CardsScreen from './features/cards/CardsScreen'
 import ProfileScreen from './features/profile/ProfileScreen'
+import StoreScreen from './features/store/StoreScreen'
 import { AudioProvider } from './features/audio/AudioContext'
 import { getActiveCareer } from './features/player/playerService'
 import './styles/theme.css'
@@ -70,7 +71,7 @@ function Gate() {
 
   // Só estas telas estão construídas; os demais ids da barra/menu ainda não fazem nada.
   const navigate = (id, params = null) => {
-    if (id === 'home' || id === 'tips' || id === 'profile' || id === 'seasons' || id === 'cards') {
+    if (id === 'home' || id === 'tips' || id === 'profile' || id === 'seasons' || id === 'cards' || id === 'store') {
       setScreenParams(params)
       setScreen(id)
     }
@@ -92,6 +93,10 @@ function Gate() {
 
   if (screen === 'cards') {
     return <CardsScreen career={career} params={screenParams} onBack={backHome} />
+  }
+
+  if (screen === 'store') {
+    return <StoreScreen career={career} onBack={backHome} onNavigate={navigate} />
   }
 
   if (screen === 'profile') {
