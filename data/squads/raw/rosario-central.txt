@@ -1,0 +1,40 @@
+# club: rosario-central
+# source: https://en.wikipedia.org/wiki/Rosario_Central
+# accessed: 2026-10-24
+# as_of: 2026-02-24
+1|GK|ARG|Jorge Broun|
+2|DF|ARG|Carlos Quintana|
+3|DF|PAR|Agustín Sández|
+4|DF|ARG|Ulises Ciccioli|
+5|MF|ARG|Franco Ibarra|
+6|DF|ARG|Juan Cruz Komar|
+8|MF|COL|Jáminton Campaz|
+9|FW|ARG|Alejo Véliz|on loan from Tottenham Hotspur
+10|MF|ARG|Santiago Segovia|
+11|FW|ARG|Ángel Di María|captain
+13|DF|ARG|Gastón Ávila|on loan from Ajax
+15|DF|URU|Facundo Mallo|
+16|DF|PAR|Enzo Giménez|
+18|MF|ARG|Julián Fernández|on loan from New York City
+20|MF|CHI|Vicente Pizarro|
+22|FW|ARG|Enzo Copetti|
+23|GK|ARG|Conan Ledesma|on loan from River Plate
+24|DF|ARG|Juan Giménez|
+26|MF|ARG|Giovanni Cantizano|
+27|FW|ARG|Gaspar Duarte|
+28|MF|ARG|Pol Fernández|
+29|FW|ARG|Marco Ruben|
+31|MF|ARG|Federico Navarro|
+32|DF|ARG|Emanuel Coronel|
+33|DF|ARG|Alexis Soto|on loan from Defensa y Justicia
+34|MF|ARG|Samuel Beltrán|
+36|DF|ARG|Álvaro Güich|
+38|GK|ARG|Damián Fernández|
+39|FW|ARG|Fabricio Oviedo|
+41|DF|ARG|Leonardo Ríos|
+42|DF|ARG|Elías Verón|
+43|MF|ARG|Kevin Gutiérrez|
+44|MF|ARG|Paolo Giaccone|
+46|DF|ARG|Ignacio Ovando|
+47|DF|ARG|Luca Raffin|
+48|GK|PAR|Leonardo Sosa|

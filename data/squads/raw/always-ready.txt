@@ -1,0 +1,28 @@
+# club: always-ready
+# source: https://en.wikipedia.org/wiki/Club_Always_Ready
+# accessed: 2026-10-24
+# as_of: 2026-03-14
+1|GK|VEN|Alain Baroja|
+2|DF|BOL|José Herrera|
+4|DF|BOL|Nicolás Villarroel|
+5|MF|BOL|Alvaro Quiroga|
+6|MF|BOL|Rai Lima|
+7|MF|ARG|Joel Amoroso|
+8|MF|BOL|Juan Pablo Gomez|
+9|FW|ARG|Enrique Triverio|
+10|MF|BOL|Jesús Maraude|
+11|FW|BOL|Javier Uzeda|
+12|GK|BOL|Santiago Paz|
+14|DF|BOL|Damian Medina|
+17|MF|BOL|Fernando Nava|
+18|DF|BOL|Carlitos Rodriguez|
+19|MF|BOL|Dario Torrico|
+20|MF|BOL|Fernando Saucedo|
+21|DF|COL|Alex Rambal|
+22|DF|BOL|Richet Gómez|
+23|FW|BOL|Juan Godoy|
+24|FW|BOL|Carmelo Algarañaz|
+26|DF|COL|Edisson Restrepo|
+38|DF|BOL|Santiago Cuestas|
+99|GK|BOL|Enzo Rodriguez|
+-|FW|PAR|Carlos Florenciañez|

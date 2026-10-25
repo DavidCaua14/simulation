@@ -11,7 +11,7 @@ import { createPlayer, isNicknameTaken } from './playerService'
 import stageBg from '../home/assets/temporadas.webp'
 import './create-character.css'
 
-// Criação do atleta: o personagem fica no centro (palco iluminado), a ficha logo abaixo
+// Criação do treinador: o personagem fica no centro (palco iluminado), a ficha logo abaixo
 // e o botão de iniciar a carreira fixo no rodapé. A lógica (validação, checagem do username
 // no banco, criação da carreira) é a mesma de antes.
 export default function CreateCharacterScreen({ userId, onCreated }) {
@@ -101,7 +101,7 @@ export default function CreateCharacterScreen({ userId, onCreated }) {
   const subtitle = [countryObj?.name, shownAge ? `${shownAge} anos` : null, 'Estreante'].filter(Boolean).join(' · ')
 
   const stage = (
-    <section className="ca-stage" aria-label="Seu atleta">
+    <section className="ca-stage" aria-label="Seu treinador">
       <img className="ca-stage-bg" src={stageBg} alt="" />
       <span className="ca-beam left" aria-hidden="true" />
       <span className="ca-beam right" aria-hidden="true" />
@@ -164,8 +164,8 @@ export default function CreateCharacterScreen({ userId, onCreated }) {
   )
 
   return (
-    <AppShell left={<SignOutButton />} title={created ? 'Atleta criado' : 'Criar atleta'}>
-      <LoadingOverlay show={submitting} label="Criando seu atleta..." />
+    <AppShell left={<SignOutButton />} title={created ? 'Treinador criado' : 'Criar treinador'}>
+      <LoadingOverlay show={submitting} label="Criando seu treinador..." />
 
       {created ? (
         <div className="ca-screen">
@@ -183,7 +183,7 @@ export default function CreateCharacterScreen({ userId, onCreated }) {
 
             <section className="gx-panel ca-sheet">
               <h2 className="gx-title">
-                Ficha do atleta <small>{done}/4 prontos</small>
+                Ficha do treinador <small>{done}/4 prontos</small>
               </h2>
 
               {/* Username */}

@@ -1,0 +1,43 @@
+# club: la-guaira
+# source: https://canchallena.lanacion.com.ar/equipo/deportivo-la-guaira-em31nnti82q57le3wp7g5lsrj/
+# accessed: 2026-10-24
+# as_of: 2026-10-24
+-|GK|VEN|A. Pacheco|
+-|GK|VEN|C. Varela|
+-|GK|VEN|J. Sánchez|
+-|DF|VEN|A. Doria|
+-|DF|VEN|A. López|
+-|DF|VEN|C. Rivero|
+-|DF|VEN|C. Rojas|
+-|DF|VEN|D. Sánchez|
+-|DF|VEN|G. Ascanio|
+-|DF|VEN|G. Melillo|
+-|DF|ARG|G. Ortiz|
+-|DF|VEN|J. Martinez|
+-|DF|VEN|L. Casimiro Peña|
+-|DF|ARG|M. Orihuela|
+-|DF|VEN|M. Villero|
+-|DF|VEN|N. Hernández|
+-|DF|VEN|S. Vegas|
+-|DF|ARG|T. Quiroz|
+-|MF|VEN|C. Da Silva|
+-|MF|VEN|C. Faya|
+-|MF|VEN|F. Lunar|
+-|MF|VEN|G. Vargas|
+-|MF|VEN|H. Pomozy|
+-|MF|VEN|J. Castellanos|
+-|MF|VEN|J. Correa|
+-|MF|VEN|J. Luis Perdomo|
+-|MF|VEN|Miguel González|
+-|MF|VEN|R. Ibarra|
+-|MF|ARG|S. Zeballos|
+-|FW|VEN|A. Uribe|
+-|FW|COL|F. Londoño|
+-|FW|VEN|F. Rivas|
+-|FW|VEN|J. González|
+-|FW|COL|J. Herrera|
+-|FW|VEN|J. Meza|
+-|FW|VEN|L. Mena|
+-|FW|VEN|M. Peña|
+-|FW|VEN|M. Sulbarán|
+-|FW|VEN|Maiken González|

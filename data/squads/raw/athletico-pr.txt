@@ -1,0 +1,42 @@
+# club: athletico-pr
+# source: https://en.wikipedia.org/wiki/Club_Athletico_Paranaense
+# accessed: 2026-10-24
+# as_of: 2026-09-22
+1|GK|BRA|Mycael|
+2|DF|BRA|Gilberto dos Santos|on loan from Palmeiras
+3|DF|BRA|Léo Pelé|
+4|DF|BRA|Arthur Dias|
+5|MF|BRA|Felipinho|
+6|DF|BRA|Léo Derik|
+7|FW|COL|Stiven Mendoza|
+8|MF|BRA|João Cruz|
+9|FW|COL|Kevin Viveros|
+10|MF|ARG|Bruno Zapelli|
+12|DF|BRA|Gilberto Moraes|
+14|MF|BRA|Luiz Gustavo|
+16|MF|BRA|Jadson|
+17|MF|COL|Alejandro García|
+18|FW|COL|Kerwin Vargas|
+19|FW|COL|Jorge Rivaldo|
+21|FW|BRA|Leozinho|
+22|DF|COL|Carlos Terán|
+23|GK|BRA|Santos|captain; on loan from Fortaleza
+25|DF|BRA|Dantas|on loan from Novorizontino
+26|DF|BRA|Claudinho|
+27|MF|COL|Juan Portilla|
+29|DF|ARG|Gastón Benavídez|
+33|DF|COL|Juan Felipe Aguirre|
+37|DF|ARG|Lucas Esquivel|
+42|GK|BRA|Matheus Soares|
+47|FW|BRA|Felipe Chiqueti|
+50|FW|BRA|Renan Viana|
+53|MF|BRA|Dudu Kogitzki|
+63|MF|BRA|Riquelme|
+70|FW|BRA|Renan Peixoto|
+36|DF|BRA|Arthur Monteiro|
+41|DF|BRA|Vitinho|
+43|FW|BRA|Kayke Ayrton|
+46|DF|BRA|Marcos André|
+73|FW|USA|Rikelme|
+76|GK|UKR|Maksym Voronov|
+80|GK|BRA|Carlos Eduardo|

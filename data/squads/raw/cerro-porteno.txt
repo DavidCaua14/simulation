@@ -1,0 +1,36 @@
+# club: cerro-porteno
+# source: https://en.wikipedia.org/wiki/Cerro_Porte%C3%B1o
+# accessed: 2026-10-24
+# as_of: 2026-06-27
+1|GK|ARG|Alexis Martín Arias|
+2|DF|URU|Fabricio Domínguez|
+3|DF|PAR|Alexis Cañete|
+5|MF|PAR|Jorge Morel|
+6|DF|ARG|Abel Luciatti|
+7|MF|USA|Alan Soñora|
+8|MF|PAR|Cristhian Paredes|
+9|FW|PAR|Luis Amarilla|
+10|FW|PAR|Cecilio Domínguez|
+11|FW|PAR|Juan Iturbe|
+13|DF|ARG|Guillermo Benítez|
+14|DF|PAR|Lucas Quintana|
+15|DF|PAR|Blas Riveros|
+16|MF|PAR|Fabrizio Peralta|on loan from Cruzeiro
+17|FW|PAR|Gabriel Aguayo|
+18|DF|PAR|Rodrigo Melgarejo|
+19|FW|ARG|Pablo Vegetti|
+20|MF|PAR|Wilder Viera|
+21|FW|ARG|Sergio Araujo|
+22|DF|ARG|Matías Pérez|
+23|DF|PAR|Gustavo Velázquez|captain
+25|GK|PAR|Gatito Fernández|
+26|MF|PAR|Robert Piris Da Motta|
+27|FW|ARG|Jonathan Torres|
+28|MF|PAR|Carlos Franco|
+29|FW|COL|Santiago Mosquera|
+30|MF|PAR|Gastón Giménez|
+31|FW|ARG|Ignacio Aliseda|
+38|FW|PAR|Freddy Noguera|
+40|MF|GER|Mateo Klimowicz|
+-|DF|ARG|Lucas Merolla|
+-|DF|PAR|Iván Ramírez|

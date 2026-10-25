@@ -1,0 +1,37 @@
+# club: corinthians
+# source: https://en.wikipedia.org/wiki/2026_SC_Corinthians_Paulista_season
+# accessed: 2026-10-24
+# as_of: 2026-08-11
+1|GK|BRA|Hugo Souza|
+2|DF|BRA|Matheuzinho|
+3|DF|BRA|Gabriel Paulista|
+4|DF|BRA|João Pedro|
+5|DF|BRA|André Ramalho|
+7|MF|BRA|Breno Bidon|
+8|MF|ARG|Rodrigo Garro|captain
+9|FW|BRA|Yuri Alberto|
+10|FW|NED|Memphis Depay|
+11|MF|BRA|Vitinho|
+13|DF|BRA|Gustavo Henrique|
+14|MF|BRA|Raniele|
+18|FW|BRA|Pedro Raul|
+19|MF|PER|André Carrillo|
+20|DF|URU|Pedro Milans|
+21|DF|BRA|Matheus Bidu|
+23|MF|BRA|Matheus Pereira|on loan from Fortaleza
+26|DF|ARG|Fabrizio Angileri|
+29|MF|BRA|Allan|on loan from Flamengo
+31|FW|BRA|Kayke|
+35|MF|BRA|Charles|
+37|FW|BRA|Kaio César|on loan from Al-Hilal
+40|GK|BRA|Felipe Longo|
+46|DF|BRA|Hugo|
+49|MF|BRA|André|
+52|MF|MAR|Zakaria Labyad|
+54|MF|BRA|Luiz Gustavo|
+55|DF|BRA|Iago Machado|
+56|FW|BRA|Gui Negão|
+59|DF|BRA|João Vitor|
+61|FW|BRA|Dieguinho|
+77|MF|ENG|Jesse Lingard|
+80|MF|BRA|Alex Santana|

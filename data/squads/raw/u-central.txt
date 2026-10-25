@@ -1,0 +1,35 @@
+# club: u-central
+# source: https://en.wikipedia.org/wiki/Universidad_Central_de_Venezuela_F.C.
+# accessed: 2026-10-24
+# as_of: 2026-03-10
+1|GK|ARG|Lautaro Morales|on loan from Lanús
+2|DF|VEN|Kendrys Silva|
+3|DF|VEN|Rubén Ramírez|
+4|DF|VEN|Williams Velásquez|
+5|DF|VEN|Adrián Martínez|
+6|MF|ARG|Francisco Solé|
+7|MF|COL|Juan Manuel Cuesta|
+8|FW|COL|Juan Camilo Zapata|
+9|FW|VEN|Yeiber Murillo|
+10|FW|VEN|Samuel Sosa|
+11|FW|VEN|Jovanny Bolívar|on loan from Albacete
+12|GK|VEN|Carlos González|
+13|GK|VEN|Giancarlo Schiavone|
+14|MF|VEN|Kendry Mendoza|
+15|DF|VEN|Román Davis|
+16|FW|VEN|Daniel De Sousa|
+17|MF|VEN|Vicente Rodríguez|
+18|FW|VEN|Roberto Sarli|
+19|DF|COL|Alfonso Simarra|
+21|FW|VEN|Charlis Ortiz|captain
+22|GK|VEN|Diego Ochoa|
+23|DF|VEN|Yanniel Hernández|
+24|MF|VEN|Yohan Cumana|
+27|DF|VEN|Daniel Carrillo|
+28|MF|COL|Maicol Ruiz|
+30|MF|PAN|Alexander Gonzalez|
+31|MF|VEN|Jose Lopez|
+39|DF|VEN|Diego Rinaldi|
+47|FW|VEN|Alexander Granko|
+57|MF|VEN|Carlos Cermeño|
+-|MF|VEN|Williander Muñoz|

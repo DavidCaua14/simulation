@@ -1,0 +1,33 @@
+# club: ind-rivadavia
+# source: https://en.wikipedia.org/wiki/Independiente_Rivadavia
+# accessed: 2026-10-24
+# as_of: 2026-03-05
+2|DF|URU|Leonard Costa|
+3|DF|ARG|Juan Elordi|on loan from Racing Club
+5|MF|ARG|Tomás Bottari|
+6|DF|ARG|Santiago Cena|
+7|FW|ARG|Victorio Ramis|
+8|MF|ARG|Leonel Bucca|
+9|FW|PAR|Álex Arce|
+10|MF|ARG|Matías Fernández|
+11|MF|ARG|Gonzalo Ríos|
+12|GK|ARG|Ramiro Macagno|on loan from Levadiakos
+13|DF|ARG|Alejo Osella|
+14|DF|ARG|Luciano Gómez|on loan from Argentinos Juniors
+15|DF|ARG|Nahuel Arena|on loan from Macará
+17|FW|ARG|Bautista Dadín|on loan from River Plate
+19|FW|ARG|Rodrigo Atencio|on loan from Sport Recife
+20|FW|ARG|Alessandro Riep|on loan from Audax Italiano
+21|GK|ARG|Emmanuel Gómez Riga|on loan from Alvarado
+22|FW|COL|Sebastián Villa|captain
+23|MF|ARG|Tomás Muro|
+25|MF|PAR|José Florentín|
+27|MF|ARG|Diego Crego|
+30|GK|ARG|Nicolás Bolcato|
+32|MF|ARG|Kevin Vázquez|on loan from Vélez Sarsfield
+34|MF|ARG|Stefano Moreyra|
+36|DF|ARG|Ezequiel Bonifacio|
+40|DF|PAR|Iván Villalba|
+42|DF|ARG|Sheyko Studer|
+43|FW|ARG|Fabrizio Sartori|
+77|MF|ARG|Luis Sequeira|on loan from Talleres

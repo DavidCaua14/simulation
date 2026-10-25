@@ -1,0 +1,35 @@
+# club: mirassol
+# source: https://en.wikipedia.org/wiki/Mirassol_Futebol_Clube
+# accessed: 2026-10-24
+# as_of: 2026-08-13
+1|GK|BRA|Georgemy|
+2|DF|BRA|Lucas Oliveira|
+3|DF|BRA|Willian Machado|
+6|DF|BRA|Reinaldo|captain
+7|MF|BRA|Shaylon|
+8|MF|BRA|Denilson|
+10|MF|BRA|Chico Kim|
+11|FW|BRA|Negueba|
+12|DF|BRA|Victor Luis|
+16|FW|BRA|Gustavo Silva|
+17|FW|BRA|Fernandinho|
+20|DF|BRA|Daniel Borges|
+21|MF|BRA|José Aldo|
+22|GK|BRA|Walter|
+23|GK|BRA|Alex Muralha|
+25|MF|BRA|Neto Moura|
+30|FW|BRA|Bruno Santos|
+32|DF|BRA|Igor Formiga|
+33|MF|BRA|Eduardo|
+34|DF|BRA|João Victor|
+35|DF|BRA|Luiz Silva|
+45|DF|BRA|Cauã Victor|
+47|FW|BRA|Vinicius Bacchi|
+53|DF|BRA|Marcelinho|
+55|MF|BRA|Gustavo Cazonatti|
+77|FW|BRA|Alesson|
+80|MF|BRA|Wallisson|
+90|GK|BRA|Thomazella|
+95|FW|BRA|Edson Carioca|
+96|FW|BRA|Carlos Eduardo|
+99|FW|BRA|André Luis|

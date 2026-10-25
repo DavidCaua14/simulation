@@ -1,0 +1,37 @@
+# club: atletico-mg
+# source: https://en.wikipedia.org/wiki/2026_Clube_Atl%C3%A9tico_Mineiro_season
+# accessed: 2026-10-24
+# as_of: 2026-08-17
+1|GK|BRA|Gabriel Delfim|
+2|DF|BRA|Natanael|
+3|DF|BRA|Léo Duarte|
+4|DF|BRA|Ruan Tressoldi|
+5|MF|BRA|Alexsander|
+6|DF|BRA|Renan Lodi|
+7|MF|BRA|Fred|
+8|MF|BRA|Maycon|
+9|FW|COL|Mateo Cassierra|
+10|MF|BRA|Gustavo Scarpa|
+11|MF|BRA|Bernard|
+13|DF|BRA|Lyanco|
+14|DF|BRA|Vitor Hugo|
+15|MF|COL|Kevin Castaño|on loan from River Plate
+17|MF|BRA|Igor Gomes|
+18|FW|URU|Thiago Borbas|on loan from Red Bull Bragantino
+19|MF|BRA|Reinier|
+20|MF|BRA|Patrick|
+21|MF|ECU|Alan Franco|
+22|GK|BRA|Everson|captain
+23|DF|ECU|Ángelo Preciado|
+25|MF|ARG|Tomás Pérez|on loan from Porto
+27|FW|ECU|Alan Minda|
+28|FW|ARG|Tomás Cuello|
+29|FW|BRA|Cauã Soares|
+30|MF|BRA|Victor Hugo|
+31|GK|BRA|Robert|
+36|DF|BRA|Kauã Pascini|
+38|MF|BRA|Índio|
+39|MF|GUI|Mamady Cissé|
+40|DF|BRA|Vitão|
+46|GK|BRA|Pedro Cobra|
+92|FW|BRA|Dudu|

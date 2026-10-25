@@ -1,0 +1,33 @@
+# club: bolivar
+# source: https://en.wikipedia.org/wiki/Club_Bol%C3%ADvar
+# accessed: 2026-10-24
+# as_of: 2026-02-13
+1|GK|BOL|Carlos Lampe|vice-captain
+2|DF|BOL|Jesús Sagredo|
+3|DF|ECU|Xavier Arreaga|
+4|DF|BOL|José Sagredo|
+5|DF|ARG|Santiago Echeverría|
+6|MF|BOL|Ervin Vaca|
+7|FW|BOL|Jhon Velásquez|
+8|DF|BOL|Luis Paz|
+9|FW|URU|Martín Cauteruccio|
+11|FW|ARG|Braian Oyola|
+12|GK|BOL|Juan Lopez|
+13|GK|BOL|Diego Méndez|
+14|MF|BOL|Robson Matheus|
+17|FW|ARG|Patito Rodríguez|
+18|MF|BOL|Lucas Chávez|
+19|MF|BOL|John García|
+20|MF|BOL|Carlos Sejas|
+22|MF|BOL|Anderson Ayhuana|
+23|MF|BOL|Leonel Justiniano|captain
+24|MF|BOL|Matías Galindo|
+26|MF|BOL|Erwin Saavedra|
+27|DF|ARG|Ignacio Gariglio|
+29|MF|BOL|Jesús Velásquez|
+31|DF|BOL|Heiden Butrón|
+33|DF|BOL|Fernando Mena|
+35|DF|BOL|Escleizon Freita|
+77|FW|DOM|Dorny Romero|
+80|MF|BOL|Carlos Melgar|
+99|FW|ARG|Damián Batallini|on loan from Argentinos Juniors

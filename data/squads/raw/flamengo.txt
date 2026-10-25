@@ -1,0 +1,30 @@
+# club: flamengo
+# source: https://en.wikipedia.org/wiki/2026_CR_Flamengo_season
+# accessed: 2026-10-24
+# as_of: 2026-08-30
+1|GK|ARG|Agustín Rossi|
+42|GK|BRA|Andrew|
+49|GK|BRA|Dyogo Alves|youth
+2|RB|URU|Guillermo Varela|
+3|CB|BRA|Léo Ortiz|
+4|CB|BRA|Léo Pereira|3rd vice-captain
+6|LB|BRA|Ayrton Lucas|
+13|CB|BRA|Danilo|
+22|RB|BRA|Emerson Royal|
+26|LB|BRA|Alex Sandro|2nd vice-captain
+44|CB|BRA|Vitão|
+61|CB|BRA|João Victor|youth
+5|DM|CHI|Erick Pulgar|
+8|CM|ESP|Saúl Ñíguez|
+10|AM|URU|Giorgian de Arrascaeta|vice-captain
+15|AM|COL|Jorge Carrascal|
+18|CM|URU|Nicolás de la Cruz|
+20|AM|BRA|Lucas Paquetá|
+21|DM|ITA|Jorginho|
+52|DM|BRA|Evertton Araújo|youth
+7|RW|BRA|Luiz Araújo|
+9|CF|BRA|Pedro|
+11|LW|BRA|Everton|
+16|LW|BRA|Samuel Lino|
+27|LW|BRA|Bruno Henrique|captain
+99|RW|BRA|Lorran|youth

@@ -1,0 +1,37 @@
+# club: tolima
+# source: https://en.wikipedia.org/wiki/Deportes_Tolima
+# accessed: 2026-10-24
+# as_of: unknown
+1|GK|BRA|Neto Volpi|
+2|DF|COL|Anderson Angulo|captain
+3|DF|COL|Jan Carlos Angulo|
+4|DF|COL|Daniel Pedrozo|
+5|DF|COL|Juan José Mera|
+6|MF|COL|Cristian Trujillo|
+7|FW|COL|Jorge Cabezas Hurtado|on loan from Watford
+8|FW|COL|Ever Valencia|
+9|FW|COL|Luis Sandoval|on loan from Independiente Medellín
+10|MF|COL|Luis Sánchez|
+11|FW|COL|Jader Valencia|
+12|GK|COL|Jhon Azcárate|
+13|GK|MEX|Miguel Ortega|
+14|DF|COL|Homer Martínez|on loan from Juárez
+15|FW|USA|Sergio Aguayo|on loan from Tapatío
+16|MF|COL|Víctor Reyes|
+17|DF|COL|Cristian Arrieta|
+18|MF|COL|Kelvin Flórez|
+19|MF|COL|Santiago Joven|
+20|DF|COL|Junior Hernández|
+22|FW|COL|Santiago Urrutia|
+23|GK|COL|Gali Balanta|
+24|FW|COL|Adrián Parra|
+25|FW|COL|Jeinner Fuentes|
+27|DF|COL|Michael Martínez|
+28|FW|COL|Edwar López|
+29|MF|COL|Neifer Sánchez|
+30|DF|COL|Shean Barbosa|
+31|FW|COL|Yoimar Moreno|
+32|MF|COL|Sebastián Guzmán|
+33|DF|COL|Jherson Mosquera|
+71|DF|VEN|Yordan Osorio|
+80|MF|COL|Brayan Rovira|

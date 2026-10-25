@@ -1,0 +1,40 @@
+# club: gremio
+# source: https://en.wikipedia.org/wiki/2026_Gr%C3%AAmio_FBPA_season
+# accessed: 2026-10-24
+# as_of: 2026-10-07
+1|GK|BRA|Weverton|
+12|GK|BRA|Gabriel Grando|youth
+24|GK|BRA|Thiago Beltrame|youth
+31|GK|BRA|Gabriel Menegon|youth
+2|CB|PAR|Fabián Balbuena|
+3|CB|BRA|Wagner Leonardo|
+4|CB|ARG|Walter Kannemann|captain
+6|CB/RB|BRA|Gustavo Martins|youth
+14|RB|BRA|Marcos Rocha|
+18|RB|BRA|João Pedro|
+23|LB|BRA|Marlon|
+27|RB|BRA|Diego Caito|on loan from Goiás
+32|RB|BRA|Vitor Ramon|youth
+38|LB/LW|BRA|Caio Paulista|on loan from Palmeiras
+43|CB|BRA|Luis Eduardo|youth
+54|LB|BRA|Pedro Gabriel|youth
+82|CB|BRA|Wallace|
+5|DM/CM|ARG|Juan Nardoni|
+8|DM/CB|PER|Erick Noriega|
+10|AM/CM|CRO|Filip Krovinović|
+15|DM|BRA|Danilo Barbosa|
+17|DM|BRA|Dodi|
+20|CM/DM|PAR|Mathías Villasanti|vice-captain
+39|CM/AM|BRA|Tiago|youth
+40|AM|BRA|Jeferson Forneck|youth
+50|CM|BRA|Zortea|youth
+65|AM/LW|BRA|Riquelme|youth
+7|RW/RB/LW|ARG|Cristian Pavón|
+9|LW|GHA|Francis Amuzu|
+11|RW/LW/AM|BRA|Tetê|
+22|CF/SS|DEN|Martin Braithwaite|
+30|CF|BRA|Matheus Nascimento|
+47|RW|BRA|Roger|youth
+77|LW/RW|CPV|Jovane Cabral|
+95|CF|BRA|Carlos Vinícius|
+99|RW/LW|COL|José Enamorado|

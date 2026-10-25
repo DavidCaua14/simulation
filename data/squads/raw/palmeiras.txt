@@ -1,0 +1,29 @@
+# club: palmeiras
+# source: https://en.wikipedia.org/wiki/2026_SE_Palmeiras_season
+# accessed: 2026-10-24
+# as_of: 2026-08-31
+1|GK|BRA|Carlos Miguel|
+2|DF|ARG|Alexander Barboza|
+3|DF|BRA|Bruno Fuchs|
+4|DF|ARG|Agustín Giay|
+6|DF|BRA|Jefté|
+7|MF|BRA|Felipe Anderson|
+8|MF|BRA|Andreas Pereira|
+9|FW|BRA|Vitor Roque|
+10|FW|BRA|Paulinho|
+11|MF|COL|Jhon Arias|
+12|DF|BRA|Khellven|
+14|GK|BRA|Marcelo Lomba|
+15|DF|PAR|Gustavo Gómez|captain
+17|MF|BRA|Marlon Freitas|
+18|MF|PAR|Maurício|
+19|FW|PAR|Ramón Sosa|
+22|DF|URU|Joaquín Piquerez|
+26|DF|BRA|Murilo|
+30|MF|BRA|Lucas Evangelista|
+32|MF|URU|Emiliano Martínez|
+42|FW|ARG|José Manuel López|
+43|DF|BRA|Benedetti|
+48|MF|BRA|Larson|
+56|DF|BRA|Arthur|
+-|GK|BRA|Bruno Bertinato|

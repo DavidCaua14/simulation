@@ -1,44 +1,47 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import AppShell from '../../components/layout/AppShell'
 import { getClubById } from '../club/data/clubs'
-import useSeasonData from './hooks/useSeasonData'
+import useManagerData from './hooks/useManagerData'
 import useCountdown from './hooks/useCountdown'
-import { advanceCalendar, playMatch, respondOffer, startNextSeason } from './services/seasonsApi'
+import { advanceDays, markMessagesRead, resign, respondOffer, startMatch, startNextSeason } from './services/managerApi'
 import { flattenFixtures, playerHistory, projectCalendar } from './utils/seasonSelectors'
 import { formatRemaining } from './utils/seasonUtils'
 import SeasonHeader from './ui/SeasonHeader'
 import { ErrorState, LoadingState } from './ui/States'
 import BottomNav from './components/BottomNav'
 import PostMatch from './components/PostMatch'
+import MatchLive from './components/MatchLive'
+import MatchReport from './components/MatchReport'
 import ParallelDigest from './components/ParallelDigest'
-import RoundSheet from './components/RoundSheet'
+import InboxSheet from './components/InboxSheet'
 import BoxOpener from '../cards/components/BoxOpener'
 import { fetchLatestWinBox } from '../cards/services/cardsApi'
 import '../cards/cards.css'
 import HomeTab from './tabs/HomeTab'
+import TeamTab from './tabs/TeamTab'
 import MatchesTab from './tabs/MatchesTab'
 import CompetitionsTab from './tabs/CompetitionsTab'
-import MarketTab from './tabs/MarketTab'
 import CareerTab from './tabs/CareerTab'
 import './seasons.css'
+import './manager.css'
 
-const TITLES = { home: 'Início', matches: 'Jogos', comps: 'Torneios', market: 'Mercado', career: 'Carreira' }
+const TITLES = { home: 'Início', team: 'Time', matches: 'Jogos', comps: 'Torneios', career: 'Carreira' }
 
-// Modo Temporadas = "modo carreira" em abas. Os dados são carregados UMA vez (useSeasonData);
-// as abas só leem a memória. Só existe uma partida para jogar por vez: a do seu clube.
+// MODO CARREIRA (treinador): você comanda um clube real. Tudo é decidido no banco (supabase/manager/*.sql);
+// a tela só mostra e envia as decisões do treinador. Abas: Início · Time · Jogos · Torneios · Carreira.
 export default function SeasonsScreen({ onBack }) {
-  const { hub, byComp, loading, error, refresh } = useSeasonData()
+  const { hub, byComp, loading, error, refresh } = useManagerData()
   const [tab, setTab] = useState('home')
+  const [careerView, setCareerView] = useState(null)
   const [compSel, setCompSel] = useState(null)
-  const [playing, setPlaying] = useState(false)
-  const [advancing, setAdvancing] = useState(false)
+  const [busy, setBusy] = useState(null) // 'start' | 'advance' | 'next' | 'resign' | 'offer:<id>'
+  const [live, setLive] = useState(null) // payload da partida ao vivo
+  const [summary, setSummary] = useState(null) // pós-jogo
   const [digest, setDigest] = useState(null)
-  const [result, setResult] = useState(null)
-  const [sheet, setSheet] = useState(null)
-  const [busyOffer, setBusyOffer] = useState(null)
-  const [starting, setStarting] = useState(false)
+  const [report, setReport] = useState(null)
+  const [inbox, setInbox] = useState(null)
   const [toast, setToast] = useState(null)
-  const [winBox, setWinBox] = useState(null) // caixa ganha na vitória (aparece no pós-jogo)
+  const [winBox, setWinBox] = useState(null)
   const [openingBox, setOpeningBox] = useState(null)
 
   const notify = useCallback((text, kind = 'info') => setToast({ text, kind, id: Date.now() }), [])
@@ -50,106 +53,113 @@ export default function SeasonsScreen({ onBack }) {
 
   const remaining = useCountdown(hub?.career.next_reset_at, () => refresh({ silent: true }))
 
-  // ---- dados derivados (tudo em memória) ----------------------------------
+  // ---- dados derivados (em memória) ----
   const derived = useMemo(() => {
     if (!hub) return null
-    const myClub = hub.career.club_id
+    const myClub = hub.coach.club_id
     const flat = flattenFixtures(byComp)
     return { myClub, flat, calendar: projectCalendar(byComp, myClub, 14), history: playerHistory(flat), nextEvent: hub.next_event }
   }, [hub, byComp])
 
   const finished = hub?.season.status === 'finished'
   const hasEnergy = hub ? hub.career.energy + hub.career.bonus_energy > 0 : false
-  const canPlay = hasEnergy && !finished && !playing && !advancing
-  const blockedText = finished
-    ? 'Temporada encerrada'
-    : remaining != null
-      ? `Sem energia · recarga em ${formatRemaining(remaining)}`
-      : 'Sem energia'
+  const canPlay = (hasEnergy || Boolean(hub?.live_match)) && !finished && !busy
+  const blockedText = finished ? 'Temporada encerrada' : remaining != null ? `Sem energia · recarga em ${formatRemaining(remaining)}` : 'Sem energia'
 
-  // ---- ações ----------------------------------------------------------------
-  async function handlePlay() {
-    if (derived?.nextEvent?.kind !== 'mine' || playing) return
-    setPlaying(true)
+  const goTab = useCallback((id, sub = null) => {
+    setTab(id)
+    if (id === 'career') setCareerView(sub)
+  }, [])
+
+  // ---- ações ----
+  async function run(kind, fn) {
+    if (busy) return null
+    setBusy(kind)
     try {
-      const r = await playMatch() // sempre a próxima partida do SEU clube (o calendário é do banco)
-      setWinBox(null)
-      setResult(r)
-      refresh({ silent: true }) // energia, XP, tabelas... atualizam enquanto o placar é revelado
-      // Vitória = 1 caixa na caixa de entrada (o banco entrega sozinho); buscamos para mostrar no pós-jogo.
-      if (r.result === 'win') fetchLatestWinBox().then(setWinBox).catch(() => {})
+      return await fn()
     } catch (e) {
       notify(e.message, 'alert')
       refresh({ silent: true })
+      return null
     } finally {
-      setPlaying(false)
+      setBusy(null)
     }
   }
 
-  // "Próximo": simula os campeonatos em que seu clube não joga (sem energia) e mostra o resumo
-  async function handleAdvance() {
-    if (advancing) return
-    setAdvancing(true)
-    try {
-      const d = await advanceCalendar()
+  const play = () =>
+    run('start', async () => {
+      const p = await startMatch() // idempotente: retoma a partida em andamento sem cobrar energia de novo
+      setWinBox(null)
+      setLive(p)
+      refresh({ silent: true })
+    })
+
+  function onMatchFinished(s) {
+    setLive(null)
+    setSummary(s)
+    refresh({ silent: true })
+    if (s?.result === 'win') fetchLatestWinBox().then(setWinBox).catch(() => {})
+  }
+
+  const advance = (untilOffer) =>
+    run('advance', async () => {
+      const d = await advanceDays(untilOffer)
       setDigest(d)
       refresh({ silent: true })
-    } catch (e) {
-      notify(e.message, 'alert')
-      refresh({ silent: true })
-    } finally {
-      setAdvancing(false)
-    }
-  }
+      if (d.more) notify('Avançamos o máximo possível de uma vez. Toque em avançar de novo para continuar.', 'info')
+    })
 
-  async function handleOffer(offerId, accept) {
-    setBusyOffer(offerId)
-    try {
+  const respond = (offerId, accept) =>
+    run(`offer:${offerId}`, async () => {
       const r = await respondOffer(offerId, accept)
       await refresh({ silent: true })
       if (r.accepted) {
-        notify(`Transferência concluída! Você agora joga pelo ${getClubById(r.club_id)?.name}.`, 'ok')
+        notify(`Contrato assinado! Você é o novo treinador: ${getClubById(r.club_id)?.name}. A temporada segue de onde parou.`, 'ok')
         setTab('home')
-      } else {
-        notify('Proposta recusada.', 'info')
-      }
-    } catch (e) {
-      notify(e.message, 'alert')
-    } finally {
-      setBusyOffer(null)
-    }
-  }
+      } else notify('Proposta recusada.', 'info')
+    })
 
-  async function handleStartNext() {
-    setStarting(true)
-    try {
+  const startNext = () =>
+    run('next', async () => {
       await startNextSeason()
       await refresh({ silent: true })
       setTab('home')
-      notify('Nova temporada! Bola rolando.', 'ok')
-    } catch (e) {
-      notify(e.message, 'alert')
-    } finally {
-      setStarting(false)
-    }
+      notify('Nova temporada! Elenco descansado e objetivos renovados.', 'ok')
+    })
+
+  const doResign = () =>
+    run('resign', async () => {
+      await resign()
+      await refresh({ silent: true })
+      setTab('home')
+      notify('Você deixou o clube. Avance os dias para receber propostas.', 'info')
+    })
+
+  const openInbox = (focusId = null) => setInbox({ focusId: typeof focusId === 'number' ? focusId : null })
+  const seenInbox = () => {
+    if (hub?.unread > 0) markMessagesRead().then(() => refresh({ silent: true })).catch(() => {})
   }
 
-  const closeResult = () => {
-    setResult(null)
-    setTab('home')
-    refresh({ silent: true })
+  const actions = {
+    play,
+    advance,
+    startNext,
+    goTab,
+    openInbox,
+    respondOffer: respond,
+    resign: doResign,
+    openReport: (f) => setReport(typeof f === 'number' ? f : f.id),
+    openComp: (id) => {
+      setCompSel(id)
+      setTab('comps')
+    },
   }
 
-  const openComp = (id) => {
-    setCompSel(id)
-    setTab('comps')
-  }
-  const openRound = (f) => setSheet({ comp: f.comp, stage: f.stage, round_no: f.round_no })
-
-  const ctx = hub && derived ? { hub, byComp, ...derived, canPlay, blockedText, playing, advancing, starting } : null
+  const ctx = hub && derived ? { hub, byComp, ...derived, canPlay, blockedText, busy } : null
+  const badges = hub ? { career: hub.offers.length, home: hub.unread > 0 ? hub.unread : 0, team: hub.lineup?.errors || 0 } : {}
 
   return (
-    <AppShell header={<SeasonHeader title={TITLES[tab]} career={hub?.career} season={hub?.season} remaining={remaining} onBack={onBack} />}>
+    <AppShell header={<SeasonHeader title={live ? 'Ao vivo' : TITLES[tab]} career={hub?.career} season={hub?.season} remaining={remaining} onBack={onBack} />}>
       <div className="sn-screen">
         {toast && (
           <div className={`sn-toast ${toast.kind}`} role="status" key={toast.id}>
@@ -159,53 +169,63 @@ export default function SeasonsScreen({ onBack }) {
 
         <div className="sn-scroll" key={tab}>
           {loading && !hub && <LoadingState />}
-
           {error && !hub && <ErrorState message={error} onRetry={() => refresh()} />}
 
-          {ctx && tab === 'home' && (
-            <HomeTab ctx={ctx} onGoTab={setTab} onOpenComp={openComp} onOpenRound={openRound} onPlay={handlePlay} onAdvance={handleAdvance} onStartNext={handleStartNext} />
+          {ctx && tab === 'home' && <HomeTab ctx={ctx} actions={actions} />}
+          {ctx && tab === 'team' && <TeamTab hub={hub} notify={notify} onSaved={() => refresh({ silent: true })} />}
+          {ctx && tab === 'matches' && <MatchesTab ctx={ctx} onOpenReport={actions.openReport} />}
+          {ctx && tab === 'comps' && (
+            <CompetitionsTab ctx={ctx} selected={compSel || ctx.nextEvent?.competition || 'brasileirao'} onSelect={setCompSel} onOpenReport={actions.openReport} />
           )}
-          {ctx && tab === 'matches' && <MatchesTab ctx={ctx} onOpenRound={openRound} />}
-          {ctx && tab === 'comps' && <CompetitionsTab ctx={ctx} selected={compSel || ctx.nextEvent?.competition || 'brasileirao'} onSelect={setCompSel} />}
-          {ctx && tab === 'market' && <MarketTab ctx={ctx} busyId={busyOffer} onRespond={handleOffer} onExpired={() => refresh({ silent: true })} />}
-          {ctx && tab === 'career' && <CareerTab ctx={ctx} onRecharged={() => refresh({ silent: true })} />}
+          {ctx && tab === 'career' && <CareerTab ctx={ctx} initialView={careerView} actions={actions} />}
         </div>
 
-        {ctx && <BottomNav active={tab} onChange={setTab} badges={{ market: hub.offers.length }} />}
+        {ctx && !live && <BottomNav active={tab} onChange={(id) => goTab(id)} badges={badges} />}
 
-        {sheet && ctx && <RoundSheet target={sheet} byComp={byComp} myClub={ctx.myClub} onClose={() => setSheet(null)} />}
+        {live && <MatchLive initial={live} myClub={ctx?.myClub} onFinished={onMatchFinished} notify={notify} />}
+
+        {summary && (
+          <PostMatch
+            summary={summary}
+            seasonId={hub?.season.id}
+            byComp={byComp}
+            box={winBox}
+            onOpenBox={() => winBox && setOpeningBox([winBox])}
+            onClose={() => {
+              setSummary(null)
+              setTab('home')
+              refresh({ silent: true })
+            }}
+            onOffers={() => {
+              setSummary(null)
+              goTab('career', 'offers')
+            }}
+          />
+        )}
 
         {digest && (
           <ParallelDigest
             digest={digest}
             myClub={ctx?.myClub}
+            onOpenReport={actions.openReport}
+            onOffers={() => {
+              setDigest(null)
+              goTab('career', 'offers')
+            }}
             onClose={() => {
               setDigest(null)
               setTab('home')
-              refresh({ silent: true })
             }}
           />
         )}
 
-        {result && (
-          <PostMatch
-            result={result}
-            byComp={byComp}
-            onClose={closeResult}
-            box={winBox}
-            onOpenBox={() => winBox && setOpeningBox([winBox])}
-            onOpenOffers={() => {
-              setResult(null)
-              setTab('market')
-              refresh({ silent: true })
-            }}
-          />
-        )}
+        {report && <MatchReport fixtureId={report} onClose={() => setReport(null)} />}
+        {inbox && hub && <InboxSheet messages={hub.messages} focusId={inbox.focusId} onSeen={seenInbox} onClose={() => setInbox(null)} />}
 
         {openingBox && (
           <BoxOpener
             boxes={openingBox}
-            onOpened={() => refresh({ silent: true })} /* energia bônus e moedas mudaram */
+            onOpened={() => refresh({ silent: true })}
             onClose={() => {
               setOpeningBox(null)
               setWinBox(null)

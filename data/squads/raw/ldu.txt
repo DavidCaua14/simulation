@@ -1,0 +1,40 @@
+# club: ldu
+# source: https://canchallena.lanacion.com.ar/equipo/ldu-quito-cxb4hqite921i36gwrezdts7c/
+# accessed: 2026-10-24
+# as_of: 2026-10-24
+-|GK|ECU|A. Domínguez|
+-|GK|ECU|A. Preciado|
+-|GK|ECU|A. Villa|
+-|GK|ECU|G. Valle|
+-|GK|ECU|J. García|
+-|DF|URU|G. Allala|
+-|DF|ECU|J. Cuero|
+-|DF|ECU|J. Quintero|
+-|DF|ECU|L. Quiñónez|
+-|DF|ECU|L. Segovia|
+-|DF|ARG|M. Weigandt|
+-|DF|HAI|R. Adé|
+-|DF|ECU|Richard Mina|
+-|MF|ECU|A. Alvarado|
+-|MF|ECU|A. Tobar|
+-|MF|ECU|E. Castillo|
+-|MF|ECU|E. Gomez|
+-|MF|CHI|F. Cornejo|
+-|MF|BOL|G. Villamíl|
+-|MF|ECU|I. Zambrano|
+-|MF|ECU|J. Calle|
+-|MF|ECU|J. Carabalí|
+-|MF|ECU|J. Mina|
+-|MF|PER|J. Pretell|
+-|MF|ECU|J. Rodríguez|
+-|MF|ARG|L. Rodríguez|
+-|MF|ECU|P. Ortiz|
+-|MF|ECU|Ruddy Mina|
+-|MF|ECU|S. González|
+-|MF|ECU|W. Olvera|
+-|FW|BRA|Deyverson|
+-|FW|ECU|J. Corozo|
+-|FW|ECU|K. Pineda|
+-|FW|ECU|K. Velasco|
+-|FW|ECU|M. Estrada|
+-|FW|ECU|Y. Quiñónez|

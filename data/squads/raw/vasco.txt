@@ -1,0 +1,43 @@
+# club: vasco
+# source: https://en.wikipedia.org/wiki/2026_CR_Vasco_da_Gama_season
+# accessed: 2026-10-24
+# as_of: 2026-10-13
+1|GK|BRA|Léo Jardim|
+13|GK|BRA|Daniel Fuzato|
+37|GK|BRA|Pablo|
+2|RB/LB|URU|Puma Rodríguez|
+96|RB|BRA|Paulo Henrique|
+4|CB|URU|Alan Saldivia|
+30|CB|BRA|Robert Renan|
+43|CB|BRA|Lucas Freitas|
+46|CB|COL|Carlos Cuesta|on loan
+55|CB|BRA|Gabriel Pereira|
+64|CB|BRA|Walace Falcão|
+6|LB|BRA|Lucas Piton|
+29|LB|BRA|Paulinho|
+66|LB|BRA|Cuiabano|on loan
+5|DM/CB|ARG|Santiago Sosa|
+85|DM|BRA|Matheus Carvalho|
+88|DM|BRA|Cauan Barros|
+3|CM/AM|BRA|Tchê Tchê|
+8|CM|BRA|Jair|
+23|CM/AM|BRA|Thiago Mendes|captain
+83|CM/AM|BRA|Ramon Rique|
+10|AM|COL|Johan Rojas|on loan
+22|AM|ARG|Alan Lescano|
+18|RW/LW|COL|Marino Hinestroza|
+28|RW|BRA|Adson|
+19|CF|BRA|Bruno Duarte|
+20|CF|BRA|Brenner|
+77|CF|ARG|Claudio Spinelli|
+9|SS/RW/CF/LW|ARG|Facundo Colidio|
+7|LW/CF|BRA|David|
+11|LW/RW|COL|Andrés Gómez|
+17|LW/RW|POR|Nuno Moreira|
+60|LB/RB|BRA|João Vitor|academy
+82|LB|BRA|Riquelme Avellar|academy
+67|DM|BRA|Samuel Jesus|academy
+74|AM|BRA|Andrey Fernandes|academy
+86|AM|BRA|Lukas Zuccarello|academy
+90|AM|BRA|Diego Minete|academy
+72|CF|BRA|Bruno Lopes|academy

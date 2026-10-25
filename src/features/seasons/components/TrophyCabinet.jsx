@@ -7,7 +7,7 @@ import { COMP_NAME } from '../utils/seasonUtils'
 export default function TrophyCabinet({ history, titles }) {
   const items = history
     .filter((s) => s.status === 'finished')
-    .flatMap((s) => (s.summary || []).filter((x) => x.player_result).map((x) => ({ ...x, year: s.year, club: s.club_id })))
+    .flatMap((s) => (Array.isArray(s.summary) ? s.summary : s.summary?.competitions || []).filter((x) => x.player_result).map((x) => ({ ...x, year: s.year, club: x.player_club || s.club_id })))
   const wins = items.filter((x) => x.player_result === 'Campeão')
   const podium = items.filter((x) => x.player_result === 'Vice-campeão' || /^[234]º lugar$/.test(x.player_result || ''))
 

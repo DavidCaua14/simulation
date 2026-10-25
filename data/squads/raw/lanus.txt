@@ -1,0 +1,33 @@
+# club: lanus
+# source: https://en.wikipedia.org/wiki/Club_Atl%C3%A9tico_Lan%C3%BAs
+# accessed: 2026-10-24
+# as_of: 2026-09-19
+1|GK|ARG|Franco Petroli|
+2|DF|ARG|Luciano Romero|
+3|DF|ARG|Nicolás Morgantini|
+4|DF|URU|Gonzalo Pérez|
+5|MF|ARG|Felipe Peña Biafore|
+6|DF|ARG|Sasha Marcich|
+8|MF|ARG|Franco Watson|
+10|MF|ARG|Marcelino Moreno|
+11|FW|ARG|Eduardo Salvio|
+13|DF|PAR|José Canale|
+15|MF|COL|Raúl Loaiza|
+16|MF|CHI|Matías Sepúlveda|
+17|MF|ARG|Agustín Medina|
+18|FW|ARG|Jeremías Chavero|
+19|FW|COL|Yoshan Valois|
+20|FW|PAR|Allan Wlk|
+22|DF|ARG|Alexis González|
+23|MF|ARG|Ramiro Carrera|
+24|DF|ARG|Carlos Izquierdoz|captain
+26|GK|ARG|Nahuel Losada|
+27|MF|ARG|Facundo Sánchez|
+28|DF|ARG|Octavio Ontivero|
+30|MF|ARG|Agustín Cardozo|
+33|DF|ARG|Tomás Guidara|
+35|DF|PAR|Ronaldo Dejesús|
+37|FW|ARG|Thomás De Martis|
+38|FW|ARG|Benjamín Acosta|
+39|MF|ARG|Thiago Laplace|
+77|FW|ARG|Lucas Besozzi|

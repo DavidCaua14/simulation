@@ -1,0 +1,40 @@
+# club: platense
+# source: https://en.wikipedia.org/wiki/Club_Atl%C3%A9tico_Platense
+# accessed: 2026-10-24
+# as_of: 2026-03-06
+# note: reserve-team list (numbers 35-56) not imported
+1|GK|ARG|Brian Bustos|
+3|DF|ARG|Tomás Silva|
+4|DF|ARG|Agustín Lagos|on loan from Vélez Sarsfield
+5|MF|ARG|Iván Gómez|
+6|DF|ARG|Eugenio Raggio|
+7|FW|ARG|Guido Mainero|
+8|MF|ARG|Marcos Portillo|on loan from Talleres
+9|FW|ARG|Tomás Nasif|on loan from River Plate
+10|MF|ARG|Franco Zapiola|
+11|FW|URU|Agustín Ocampo|
+12|DF|ARG|Jonathan Bay|
+13|DF|ARG|Ignacio Vázquez|captain
+15|MF|ARG|Maximiliano Amarfil|on loan from Cipolletti
+16|MF|ARG|Mauro Luna Diale|on loan from Akhmat Grozny
+17|MF|ARG|Felipe Bussio|on loan from Vélez Sarsfield
+18|FW|ARG|Bautista Merlini|
+19|FW|PAR|Héctor Bobadilla|on loan from Cerro Porteño
+20|GK|ARG|Matías Borgogno|on loan from San Martín SJ
+21|FW|ARG|Augusto Lotti|
+22|GK|ARG|Nicolás Sumavil|
+23|MF|ARG|Leonardo Heredia|on loan from Argentinos Juniors
+24|MF|URU|Martín Barrios|on loan from Racing Club
+25|DF|ARG|Juan Ignacio Saborido|
+26|MF|ARG|Pablo Ferreira|
+27|MF|ARG|Santiago Dalmasso|on loan from Boca Juniors
+28|FW|ARG|Manuel Tucker|
+29|FW|ARG|Franco Minerva|
+31|DF|ARG|Víctor Cuesta|
+32|DF|ARG|Santiago Quirós|on loan from Racing Club
+33|FW|ARG|Juan Carlos Gauto|on loan from Basel
+34|DF|ARG|Mateo Mendía|on loan from Boca Juniors
+42|DF|ARG|Gonzalo Goñi|
+43|FW|ARG|Nicolás Retamar|on loan from Ferro Carril Oeste
+47|FW|ARG|Benjamín Bosch|on loan from Vélez Sarsfield
+99|FW|ARG|Gonzalo Lencina|

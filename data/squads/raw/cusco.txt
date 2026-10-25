@@ -1,0 +1,29 @@
+# club: cusco
+# source: https://en.wikipedia.org/wiki/Cusco_FC
+# accessed: 2026-10-24
+# as_of: 2026-03-16
+1|GK|PER|Rodolfo Anderson|
+2|DF|PER|Carlos Gamarra|
+4|DF|VEN|Álex Custodio|
+5|MF|PER|Miguel Aucca|captain
+6|DF|PER|Álvaro Ampuero|
+7|FW|PER|José Manzaneda|
+8|MF|PER|Aldair Fuentes|
+9|FW|ARG|Facundo Callejo|
+10|MF|ARG|Iván Colman|
+11|FW|ARG|Juan Manuel Tévez|
+13|GK|PER|Andy Vidal|
+14|MF|PER|Carlo Diez|
+15|DF|PER|José Bolívar|
+16|MF|PER|Oswaldo Valenzuela|
+17|FW|PER|José Alí|
+21|DF|PER|José Zevallos|
+22|MF|ARG|Lucas Colitto|
+24|DF|PER|Marlon Ruidías|
+26|FW|ARG|Nicolás Silva|
+27|MF|ARG|Gabriel Carabajal|
+28|GK|PER|Pedro Díaz|
+30|FW|PER|Sergio Quillahuaman|
+33|GK|PER|Alessandro Cavagna|
+37|DF|PER|Gu-Rum Choi|
+88|MF|PER|Diego Soto|

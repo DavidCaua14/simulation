@@ -1,0 +1,34 @@
+# club: fluminense
+# source: https://en.wikipedia.org/wiki/Fluminense_FC
+# accessed: 2026-10-24
+# as_of: 2026-09-22
+1|GK|BRA|Fábio|vice-captain
+2|DF|BRA|Samuel Xavier|2nd vice-captain
+3|DF|BRA|Thiago Silva|captain
+4|DF|BRA|Ignácio|
+6|DF|BRA|Renê|
+7|FW|BRA|Hulk|
+8|MF|BRA|Matheus Martinelli|
+9|FW|BRA|John Kennedy|
+10|MF|BRA|Ganso|
+11|MF|VEN|Jefferson Savarino|
+13|DF|BRA|Guilherme Arana|
+14|FW|ARG|Germán Cano|
+16|MF|BRA|Nonato|
+17|FW|URU|Agustín Canobbio|
+19|FW|ARG|Rodrigo Castillo|
+21|DF|BRA|Igor Rabello|
+22|DF|ARG|Juan Pablo Freytes|
+23|DF|BRA|Guga|
+25|MF|BRA|Alisson|on loan from São Paulo
+27|GK|BRA|Marcelo Pitaluga|
+28|FW|BRA|Riquelme|
+29|DF|COL|Julián Millán|
+30|FW|VEN|Yeferson Soteldo|
+32|MF|ARG|Lucho Acosta|
+35|MF|BRA|Hércules|
+44|DF|BRA|Jemmes|
+46|DF|BRA|Júlio Fidelis|
+90|FW|COL|Kevin Serna|
+94|MF|BRA|Otávio|
+98|GK|BRA|Vitor Eudes|

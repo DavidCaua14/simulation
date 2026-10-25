@@ -1,0 +1,31 @@
+# club: u-catolica
+# source: https://en.wikipedia.org/wiki/2026_Club_Deportivo_Universidad_Cat%C3%B3lica_season
+# accessed: 2026-10-24
+# as_of: unknown
+1|GK|CHI|Vicente Bernedo|youth
+24|GK|CHI|Martín Contreras|
+27|GK|CHI|Darío Melo|
+2|DF|CHI|Daniel González|
+3|DF|CHI|Eugenio Mena|
+4|DF|CHI|Ignacio Pérez|
+6|DF|CHI|Sebastián Arancibia|
+15|DF|CHI|Cristián Cuevas|
+19|DF|CHI|Branco Ampuero|
+23|DF|CHI|Tomás Asta-Buruaga|
+26|DF|ARG|Juan Ignacio Díaz|
+28|DF|CHI|Bernardo Cerezo|
+39|DF|CHI|Nicolás L'Huillier|youth
+5|MF|ARG|Agustín Farías|
+8|MF|ARG|Fernando Zuqui|
+10|MF|ARG|Matías Palavecino|
+13|MF|CHI|Alfred Canales|
+14|MF|CHI|Jimmy Martínez|
+17|MF|CHI|Gary Medel|
+20|MF|COL|Jhojan Valencia|
+22|MF|ARG|Martín Gómez|
+7|FW|ARG|Justo Giani|
+9|FW|ARG|Fernando Zampedri|captain
+11|FW|CHI|Clemente Montes|
+18|FW|CHI|Juan Francisco Rossel|
+25|FW|CHI|Diego Corral|
+30|FW|CHI|Diego Valencia|youth

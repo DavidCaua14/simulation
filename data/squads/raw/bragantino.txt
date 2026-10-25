@@ -1,0 +1,49 @@
+# club: bragantino
+# source: https://canchallena.lanacion.com.ar/equipo/bragantino-4ayjm36vlnc5j8jhwpsdwxuph/
+# accessed: 2026-10-24
+# as_of: 2026-10-24
+-|GK|BRA|Cleiton|
+-|GK|BRA|Fabrício|
+-|GK|BRA|Gustavo|
+-|GK|BRA|João Montes|
+-|GK|BRA|Tiago Volpi|
+-|DF|URU|A. Sant'Anna|
+-|DF|BRA|Alix|
+-|DF|BRA|Breno de Moraes|
+-|DF|BRA|Cauê Santos|
+-|DF|PAR|E. González|
+-|DF|BRA|Eduardo Santos|
+-|DF|URU|G. Rodríguez|
+-|DF|BRA|Gustavo Marques|
+-|DF|ECU|J. Hurtado|
+-|DF|BRA|Juninho Capixaba|
+-|DF|BRA|Ryan Augusto|
+-|DF|BRA|Vanderlan|
+-|DF|COL|W. Vivas|
+-|MF|BRA|Chrystian Delfino|
+-|MF|BRA|Davi Gomes|
+-|MF|BRA|Eric Ramires|
+-|MF|BRA|Fabinho|
+-|MF|BRA|Gabriel|
+-|MF|BRA|Gabriel Lopes|
+-|MF|BRA|Gustavinho|
+-|MF|URU|I. Sosa|
+-|MF|BRA|Lucas Barbosa|
+-|MF|BRA|Luis Gustavo|
+-|MF|BRA|Marcelinho Braz|
+-|MF|BRA|Marquinhos|
+-|MF|BRA|Matheus Fernandes|
+-|MF|BRA|Patrick|
+-|MF|BRA|Praxedes|
+-|MF|BRA|Rodriguinho|
+-|MF|BRA|Vini Krygsman|
+-|MF|BRA|Yuri|
+-|FW|BRA|Bruninho|
+-|FW|BRA|Eduardo Sasha|
+-|FW|BRA|Fernando|
+-|FW|COL|H. Mosquera|
+-|FW|PAR|I. Pitta|
+-|FW|ARG|J. Herrera|
+-|FW|BRA|Jhuan Nunes|
+-|FW|BRA|Vinicinho|
+-|FW|BRA|Wallace Yan|
