@@ -15,9 +15,8 @@ export default function MatchDetailsSheet({ match, competitionName, now, pick, l
   ]
 
   return (
-    <div className="pred-overlay" onClick={onClose}>
-      <div className="pred-sheet" onClick={(e) => e.stopPropagation()}>
-        <span className="pred-grabber" />
+    <div className="sn-sheet-wrap" onClick={onClose}>
+      <div className="sn-sheet pred-sheet" role="dialog" aria-modal="true" onClick={(e) => e.stopPropagation()}>
         <div className="pred-sheet-head">
           <span className="pred-comp">
             {competitionName}
@@ -92,7 +91,7 @@ export default function MatchDetailsSheet({ match, competitionName, now, pick, l
           </>
         )}
 
-        <button type="button" className="pred-btn" onClick={onClose}>Fechar</button>
+        <button type="button" className="gx-btn-ghost pred-cta" onClick={onClose}>Fechar</button>
       </div>
     </div>
   )

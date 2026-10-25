@@ -15,7 +15,7 @@ const STATUS = {
 function Ticket({ t, now }) {
   const st = STATUS[t.status]
   return (
-    <article className="pred-ticket card">
+    <article className={`pred-ticket is-${t.status}`}>
       <div className="pred-ticket-head">
         <span className={`pred-pill ${st.cls}`}>{st.label}</span>
         <small>{formatDateTime(t.created_at)}</small>
@@ -104,7 +104,7 @@ export default function TicketsSection({ onWalletChange }) {
           <div><b>{formatMult(Number(stats.best_multiplier))}</b><small>maior odd</small></div>
         </div>
       )}
-      <div className="pred-seg small">
+      <div className="sn-seg pred-tabs">
         <button type="button" className={tab === 'open' ? 'is-on' : ''} onClick={() => setTab('open')}>Abertos</button>
         <button type="button" className={tab === 'done' ? 'is-on' : ''} onClick={() => setTab('done')}>Finalizados</button>
       </div>

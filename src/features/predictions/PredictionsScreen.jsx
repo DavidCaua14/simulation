@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
+import { CalendarDays, Ticket, Trophy } from 'lucide-react'
 import AppShell from '../../components/layout/AppShell'
-import { BackIcon } from '../../components/ui/icons'
+import SeasonHeader from '../seasons/ui/SeasonHeader'
 import useBetSlip from './hooks/useBetSlip'
 import useWallet from './hooks/useWallet'
 import useTicketResults from './hooks/useTicketResults'
@@ -10,15 +11,18 @@ import MatchesSection from './components/MatchesSection'
 import TicketsSection from './components/TicketsSection'
 import LeaderboardSection from './components/LeaderboardSection'
 import TicketResultModal from './components/TicketResultModal'
-import { Amount, ToastIcon } from './components/PredIcons'
+import { ToastIcon } from './components/PredIcons'
+import '../seasons/seasons.css'
 import './predictions.css'
 
 const SECTIONS = [
-  { id: 'games', label: 'Jogos' },
-  { id: 'tickets', label: 'Meus bilhetes' },
-  { id: 'rank', label: 'Ranking' },
+  { id: 'games', label: 'Jogos', title: 'Palpites', Icon: CalendarDays },
+  { id: 'tickets', label: 'Bilhetes', title: 'Bilhetes', Icon: Ticket },
+  { id: 'rank', label: 'Ranking', title: 'Ranking', Icon: Trophy },
 ]
 
+// PALPITES: mesmo padrão visual dos outros modos (cabeçalho do jogo, abas embaixo, painéis noturnos).
+// Simulação com moedas do jogo — sem dinheiro real.
 export default function PredictionsScreen({ career, onBack }) {
   const { player } = career
   const [section, setSection] = useState('games')
@@ -59,43 +63,36 @@ export default function PredictionsScreen({ career, onBack }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [now])
 
+  const current = SECTIONS.find((s) => s.id === section)
+  const headerCareer = { level: player.level, xp: player.xp ?? 0, coins: wallet.coins, energy: wallet.energy, bonus_energy: 0 }
+
   return (
-    <AppShell
-      left={
-        <button type="button" className="icon-btn" onClick={onBack} aria-label="Voltar">
-          <BackIcon />
-        </button>
-      }
-      title="Palpites"
-    >
-      <div className="pred-body">
-        <div className="pred-top">
-          <div className="pred-wallet">
-            <Amount kind="coin" value={wallet.coins ?? '—'} />
-            <Amount kind="energy" value={wallet.energy ?? '—'} />
-            <small>Simulação · sem dinheiro real</small>
-          </div>
-          <div className="pred-seg">
-            {SECTIONS.map((s) => (
-              <button key={s.id} type="button" className={section === s.id ? 'is-on' : ''} onClick={() => setSection(s.id)}>
-                {s.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {section === 'games' && (
-          <MatchesSection slip={slip} now={now} balance={wallet.coins} notify={notify} onWalletChange={refreshWallet} />
-        )}
-        {section === 'tickets' && <TicketsSection onWalletChange={refreshWallet} />}
-        {section === 'rank' && <LeaderboardSection nickname={player.nickname} />}
-
+    <AppShell header={<SeasonHeader title={current.title} kicker="Palpites · simulação" career={headerCareer} onBack={onBack} />}>
+      <div className="sn-screen pred-screen">
         {toast && (
-          <div className={`pred-toast ${toast.kind}`} key={toast.id} role="status">
+          <div className={`sn-toast pred-toast ${toast.kind}`} key={toast.id} role="status">
             <ToastIcon kind={toast.kind} />
             <span>{toast.text}</span>
           </div>
         )}
+
+        <div className="pred-body" key={section}>
+          {section === 'games' && <MatchesSection slip={slip} now={now} balance={wallet.coins} notify={notify} onWalletChange={refreshWallet} />}
+          {section === 'tickets' && <TicketsSection onWalletChange={refreshWallet} />}
+          {section === 'rank' && <LeaderboardSection nickname={player.nickname} />}
+        </div>
+
+        <nav className="sn-nav pred-nav" aria-label="Seções dos palpites">
+          {SECTIONS.map(({ id, label, Icon }) => (
+            <button key={id} type="button" className={section === id ? 'is-on' : ''} aria-current={section === id ? 'page' : undefined} onClick={() => setSection(id)}>
+              <span className="sn-nav-icon">
+                <Icon size={22} strokeWidth={section === id ? 2.4 : 2} />
+                {id === 'games' && slip.count > 0 && <em aria-label={`${slip.count} palpite(s) no bilhete`}>{slip.count}</em>}
+              </span>
+              <small>{label}</small>
+            </button>
+          ))}
+        </nav>
 
         {results[0] && <TicketResultModal ticket={results[0]} onClose={() => setResults((r) => r.slice(1))} />}
       </div>

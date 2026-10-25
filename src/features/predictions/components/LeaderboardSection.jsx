@@ -22,7 +22,7 @@ export default function LeaderboardSection({ nickname }) {
   return (
     <div className="pred-list">
       {!loading && !error && (
-        <div className="pred-mine card">
+        <div className="pred-mine">
           {mine ? (
             <>
               <span className="pred-mine-pos">{mine.position}º</span>
@@ -45,7 +45,7 @@ export default function LeaderboardSection({ nickname }) {
       {rows.map((r) => {
         const me = nickname && r.nickname.toLowerCase() === nickname.toLowerCase()
         return (
-          <div key={r.career_id} className={`pred-rank card ${me ? 'is-me' : ''}`}>
+          <div key={r.career_id} className={`pred-rank ${me ? 'is-me' : ''} ${r.position <= 3 ? `top top${r.position}` : ''}`}>
             <span className="pred-rank-pos">{r.position <= 3 ? <MedalIcon position={r.position} /> : `${r.position}º`}</span>
             <div>
               <strong>{r.nickname}{me ? ' (você)' : ''}</strong>

@@ -19,48 +19,63 @@ export function StatusBadge({ match, now }) {
   return <span className="pred-badge">{formatTime(match.kickoff_at)}</span>
 }
 
-function TeamRow({ name, logo, score, showScore }) {
+function Team({ name, logo, align }) {
   return (
-    <div className="pred-team">
-      <span className="pred-team-logo">{logo && <img src={logo} alt="" loading="lazy" />}</span>
-      <span className="pred-team-name">{name}</span>
-      {showScore && score != null && <strong className="pred-team-score">{score}</strong>}
-    </div>
+    <span className={`pc-team ${align}`}>
+      <span className="pc-logo">{logo ? <img src={logo} alt="" loading="lazy" /> : <i>{name?.[0]}</i>}</span>
+      <b>{name}</b>
+    </span>
   )
 }
 
+// Cartão do jogo no mesmo padrão "placar" do modo Temporadas: escudos frente a frente, odds embaixo.
 export default function MatchCard({ match, now, pick, locked, onPickResult, onOpen }) {
-  const showScore = match.status === 'live' || match.status === 'finished'
+  const showScore = (match.status === 'live' || match.status === 'finished') && match.home_score != null
   const fav = favoriteOf(match)
   const countdown = match.status === 'scheduled' && !locked ? formatCountdown(new Date(match.kickoff_at).getTime() - now) : null
 
   return (
-    <article className={`pred-card card ${match.status === 'live' ? 'is-live' : ''}`}>
+    <article className={`pc ${match.status === 'live' ? 'is-live' : ''} ${pick ? 'has-pick' : ''}`}>
       <div
-        className="pred-card-main"
+        className="pc-main"
         role="button"
         tabIndex={0}
         onClick={() => onOpen(match.id)}
         onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && onOpen(match.id)}
       >
-        <div className="pred-card-head">
-          <span className="pred-comp">{match.round || ''}</span>
+        <div className="pc-head">
+          <span className="pc-round">{match.round || ''}</span>
           <StatusBadge match={match} now={now} />
         </div>
-        <TeamRow name={match.home_team} logo={match.home_logo} score={match.home_score} showScore={showScore} />
-        <TeamRow name={match.away_team} logo={match.away_logo} score={match.away_score} showScore={showScore} />
+        <div className="pc-versus">
+          <Team name={match.home_team} logo={match.home_logo} align="home" />
+          <span className={`pc-mid ${showScore ? 'is-score' : ''}`}>
+            {showScore ? (
+              <>
+                {match.home_score}
+                <i>:</i>
+                {match.away_score}
+              </>
+            ) : (
+              'VS'
+            )}
+          </span>
+          <Team name={match.away_team} logo={match.away_logo} align="away" />
+        </div>
         {countdown && (
-          <span className="pred-countdown"><TimerIcon /> {countdown}</span>
+          <span className="pc-count">
+            <TimerIcon /> {countdown}
+          </span>
         )}
         {match.status === 'live' && match.home_score == null && (
-          <span className="pred-countdown"><TimerIcon /> O resultado aparece aqui quando o jogo terminar</span>
+          <span className="pc-count">
+            <TimerIcon /> O placar aparece quando o jogo terminar
+          </span>
         )}
       </div>
 
       {locked ? (
-        <p className="pred-locked">
-          {match.status === 'scheduled' ? 'Palpites encerrados' : 'Jogo já iniciado: palpites fechados'}
-        </p>
+        <p className="pred-locked">{match.status === 'scheduled' ? 'Palpites encerrados' : 'Jogo já iniciado: palpites fechados'}</p>
       ) : (
         <div className="pred-picks">
           {OPTIONS.map((o) => (
@@ -83,9 +98,7 @@ export default function MatchCard({ match, now, pick, locked, onPickResult, onOp
 
       {!locked && (
         <button type="button" className="pred-more" onClick={() => onOpen(match.id)}>
-          {pick?.btts != null
-            ? `Ambas marcam: ${pick.btts ? 'Sim' : 'Não'} · editar`
-            : 'Mais opções · ambas as equipes marcam?'}
+          {pick?.btts != null ? `Ambas marcam: ${pick.btts ? 'Sim' : 'Não'} · editar` : '+ Ambas as equipes marcam?'}
         </button>
       )}
     </article>

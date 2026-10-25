@@ -1,11 +1,11 @@
 import { ChevronLeft, Coins, Zap } from 'lucide-react'
 import { FREE_ENERGY, XP_PER_LEVEL, fmt, formatRemaining } from '../utils/seasonUtils'
 
-// Cabeçalho único do modo Carreira: voltar discreto, título esportivo e recursos (energia/moedas).
+// Cabeçalho padrão dos modos de jogo (Temporadas, Palpites): voltar discreto, título esportivo e recursos (energia/moedas).
 // A borda de baixo é a barra de XP do nível atual. Sem botão de tema (fica no Perfil).
-export default function SeasonHeader({ title, career, season, remaining, onBack, backLabel = 'Voltar ao menu' }) {
+export default function SeasonHeader({ title, career, season, remaining, onBack, backLabel = 'Voltar ao menu', kicker }) {
   const xpPct = career ? Math.max(0, Math.min(100, (career.xp / XP_PER_LEVEL) * 100)) : 0
-  const energy = career ? career.energy + career.bonus_energy : null
+  const energy = career && career.energy != null ? career.energy + (career.bonus_energy ?? 0) : null
   const recharging = career && career.energy < FREE_ENERGY && remaining != null
 
   return (
@@ -16,8 +16,8 @@ export default function SeasonHeader({ title, career, season, remaining, onBack,
 
       <div className="sh-title">
         <small>
-          {season ? `Temporada ${season.year}` : 'Carreira'}
-          {season?.status === 'active' && season.day_no != null ? ` · dia ${season.day_no}` : ''}
+          {kicker ?? (season ? `Temporada ${season.year}` : 'Carreira')}
+          {!kicker && season?.status === 'active' && season.day_no != null ? ` · dia ${season.day_no}` : ''}
           {career ? <b> · NV {career.level}</b> : null}
         </small>
         <h1>{title}</h1>

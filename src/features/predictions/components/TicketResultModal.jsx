@@ -8,10 +8,10 @@ export default function TicketResultModal({ ticket, onClose }) {
   const lost = ticket.status === 'lost'
 
   return (
-    <div className="pred-overlay center" onClick={onClose}>
+    <div className="sn-overlay" onClick={onClose}>
       <div className={`pred-modal ${ticket.status}`} onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
         <span className="pred-modal-icon"><Icon size={40} aria-hidden="true" /></span>
-        <h3>{won ? 'Bilhete ganho!' : lost ? 'Não foi dessa vez' : 'Bilhete anulado'}</h3>
+        <h3 className="heading">{won ? 'Bilhete ganho!' : lost ? 'Não foi dessa vez' : 'Bilhete anulado'}</h3>
         <p className="pred-hint">
           {won && `Você acertou todos os palpites, com odd ${formatMult(Number(ticket.multiplier))}.`}
           {lost && 'Um dos palpites errou. Em outra rodada você recupera.'}
@@ -27,7 +27,7 @@ export default function TicketResultModal({ ticket, onClose }) {
         )}
         {lost && <div className="pred-modal-rewards"><Amount kind="coin" value={ticket.stake} sign="-" /></div>}
 
-        <button type="button" className="pred-btn primary" onClick={onClose}>Continuar</button>
+        <button type="button" className="gx-btn" onClick={onClose}>Continuar</button>
       </div>
     </div>
   )
