@@ -16,7 +16,7 @@ export default function InboxTab({ boxes, onOpenOne, onOpenSequence, onOpenAll, 
       <div className="cx-empty">
         <img src={tierOf('basica').open} alt="" draggable="false" />
         <h3>Nenhuma caixa por aqui</h3>
-        <p>Entre todo dia para receber as caixas diárias e ganhe uma caixa a cada vitória no modo Temporadas.</p>
+        <p>Entre todo dia para ganhar 1 caixa Destaque e ganhe uma caixa a cada vitória no modo Temporadas.</p>
       </div>
     )
   }

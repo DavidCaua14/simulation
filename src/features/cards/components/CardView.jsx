@@ -1,13 +1,16 @@
 import { useState } from 'react'
 import { tierOf } from '../data/tiers'
+import AutoCard from './AutoCard'
 
-// A carta. A imagem já traz moldura, nota e nome desenhados (public/cards/<arquivo>); se ela faltar,
+// A carta. Cartas automáticas (image = 'auto') são desenhadas pelo app (AutoCard). As manuais usam a imagem
+// pronta em public/cards/<arquivo> (moldura, nota e nome desenhados); se ela faltar,
 // aparece uma carta simples feita em CSS com a cor da raridade, então nada quebra.
 // hidden: silhueta ("carta que você ainda não tem").
 export default function CardView({ card, width = 140, qty, hidden = false, shine = false, onClick, className = '' }) {
   const [failed, setFailed] = useState(false)
   const t = tierOf(card?.tier)
-  const src = card?.image && !failed ? `${import.meta.env.BASE_URL}cards/${card.image}` : null
+  const auto = card?.image === 'auto'
+  const src = card?.image && !auto && !failed ? `${import.meta.env.BASE_URL}cards/${card.image}` : null
   const style = { width, '--tier': t.color, '--glow': t.glow }
   const Tag = onClick ? 'button' : 'div'
 
@@ -19,7 +22,9 @@ export default function CardView({ card, width = 140, qty, hidden = false, shine
       onClick={onClick}
       aria-label={hidden ? 'Carta ainda não conquistada' : `${card?.name}, ${t.label}, nota ${card?.overall}`}
     >
-      {src ? (
+      {auto ? (
+        <AutoCard card={card} />
+      ) : src ? (
         <img src={src} alt="" draggable="false" loading="lazy" decoding="async" onError={() => setFailed(true)} />
       ) : (
         <span className="cv-fallback">

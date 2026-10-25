@@ -9,7 +9,7 @@ async function unwrap(promise) {
 }
 
 // Colunas listadas de propósito: a coluna "weight" (chance de cada carta) não é pública.
-const CARD_COLS = 'id, name, tier, overall, position, club_id, player_key, image, active'
+const CARD_COLS = 'id, name, tier, overall, position, club_id, player_key, image, active, meta'
 
 // Entrega as caixas de boas-vindas (1x na vida) e as diárias (1x por dia). Pode chamar sempre que entrar na Home.
 export const claimDaily = () => unwrap(supabase.rpc('card_claim_daily'))
