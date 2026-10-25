@@ -1,5 +1,5 @@
 import { Ambulance, Ban, BatteryLow } from 'lucide-react'
-import { fitTone, ovrTone, posFit } from '../utils/managerUtils'
+import { POS_NAME, fitTone, ovrTone, posFit } from '../utils/managerUtils'
 
 // Campo visto de cima (ataque para cima). Cada vaga da formação fica na posição real do campo
 // (coordenadas vêm de sim_formations, as mesmas que o motor usa).
@@ -61,6 +61,12 @@ export function PlayerToken({ player, pos, colors, selected, live, onClick, labe
         )}
       </span>
       <span className="pt-name">{player ? player.short_name || player.name : label || pos}</span>
+      {player && pos && (
+        <span className={`pt-pos fit-${fitTone(fit)}`} title={player.position && player.position !== pos ? `Jogando de ${POS_NAME[pos] || pos}; posição de origem: ${POS_NAME[player.position] || player.position}` : POS_NAME[pos] || pos}>
+          {pos}
+          {player.position && player.position !== pos && <em>é {player.position}</em>}
+        </span>
+      )}
       {player && player.condition != null && (
         <span className={`pt-cond ${player.condition >= 85 ? 'ok' : player.condition >= 70 ? 'warn' : 'bad'}`}>
           <i style={{ width: `${Math.max(4, Math.min(100, player.condition))}%` }} />

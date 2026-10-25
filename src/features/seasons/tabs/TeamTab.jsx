@@ -326,7 +326,7 @@ export default function TeamTab({ hub, onSaved, notify }) {
             </p>
           )}
           <p className="sn-hint">
-            Arraste um jogador até outra vaga ou até o banco para trocar de lugar — ou toque nele para escolher da lista. Fora de posição ele rende menos; cansado também. Mudar a formação toda hora reduz o entrosamento
+            Arraste um jogador até outra vaga ou até o banco para trocar de lugar — ou toque nele para escolher da lista. A etiqueta abaixo do nome é a posição: no campo, a da vaga ("é MC" mostra a posição de origem de quem está improvisado); no banco, a posição de cada reserva. Fora de posição ele rende menos; cansado também. Mudar a formação toda hora reduz o entrosamento
             tático ({squad.lineup.formation_games} jogo{squad.lineup.formation_games === 1 ? '' : 's'} seguidos nesta formação).
           </p>
         </>

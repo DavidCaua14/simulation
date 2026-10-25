@@ -265,7 +265,7 @@ export default function MatchLineupEditor({
               {msg && <p className="mle-msg">{msg}</p>}
               <p className="sn-hint">
                 Arraste um reserva até quem vai sair, ou um titular até outra vaga para trocar de posição (também dá para tocar em um e depois no outro). Fora de posição
-                o jogador rende menos — a nota mostrada é a que ele terá naquela vaga.
+                o jogador rende menos — a nota mostrada é a que ele terá naquela vaga, e a etiqueta "é MC" indica a posição de origem.
               </p>
               {changed && (
                 <button
