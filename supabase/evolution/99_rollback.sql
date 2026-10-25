@@ -1,9 +1,30 @@
 -- =====================================================================
--- DESFAZ a evolução 01–10 (competições, clube inicial por nacionalidade, livro de transações, loja, roleta, mercado e energia). Use só se precisar voltar atrás.
+-- DESFAZ a evolução 01–11 (competições, clube inicial, livro de transações, loja, roleta, mercado, energia e perfil). Use só se precisar voltar atrás.
 -- Depois de rodar, reaplique supabase/seasons/03_engine.sql, 04_features.sql (get_initial_offers antiga), supabase/manager/03_engine.sql e 04_career.sql
 -- para restaurar as funções antigas. Temporadas criadas na Inglaterra ou com Série B são apagadas (não existem no modelo antigo).
 -- =====================================================================
 begin;
+-- evolução 11 (perfil). O app volta a guardar foto e banner só no navegador.
+drop trigger if exists profile_featured_guard on public.user_cards;
+drop function if exists public.cosmetic_equip(text, text);
+drop function if exists public.cosmetic_buy(text, uuid);
+drop function if exists public.cosmetics_catalog();
+drop function if exists public.profile_migrate_local(text, text);
+drop function if exists public.profile_set_privacy(jsonb);
+drop function if exists public.profile_set_featured(text);
+drop function if exists public.profile_set_avatar(text);
+drop function if exists public.profile_me();
+drop function if exists public.profile_build(uuid, boolean);
+drop function if exists public.cosmetic_json(text);
+drop function if exists public.profile_ensure(uuid);
+drop function if exists public.badges_refresh(uuid);
+drop function if exists public.badge_metric(uuid, text, numeric);
+drop function if exists public.profile_featured_guard();
+drop table if exists public.player_badges;
+drop table if exists public.badges;
+drop table if exists public.player_profiles;
+drop table if exists public.player_cosmetics;
+drop table if exists public.cosmetics;
 -- evolução 10 (pacotes de energia). Para a troca avulsa voltar ao comportamento antigo, reaplique supabase/cards/01_cards.sql.
 drop function if exists public.energy_buy(text, uuid);
 drop function if exists public.energy_catalog();

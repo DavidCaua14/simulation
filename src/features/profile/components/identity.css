@@ -1,0 +1,115 @@
+/* Identidade do jogador (ProfileHero, avatar com moldura/efeito, insígnias, miniaturas de cosméticos).
+   Arquivo próprio porque aparece no Perfil, na Loja (prévia) e no perfil de amigos. */
+/* =====================================================================
+   IDENTIDADE (ProfileHero) — fundo, moldura, efeito, emblema e tema vêm dos cosméticos equipados
+   ===================================================================== */
+.ph { position: relative; margin: 0; overflow: hidden; border-bottom: 1px solid var(--border); isolation: isolate; }
+.ph-bg { position: absolute; inset: 0; z-index: -2; }
+.ph::after { content: ''; position: absolute; inset: 0; z-index: -1; background: linear-gradient(180deg, transparent 0%, rgba(5, 8, 14, 0.35) 55%, var(--surface) 100%); }
+.ph-actions { position: absolute; top: 10px; right: 10px; z-index: 2; display: flex; gap: 6px; }
+.ph-actions .pf-edit-pill { position: static; }
+.ph-body { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 52px 16px 16px; text-align: center; }
+.ph.is-compact .ph-body { padding: 18px 12px 12px; }
+.ph-name { display: inline-flex; align-items: center; gap: 6px; margin: 8px 0 0; font: 800 1.5rem/1.1 var(--font-heading); color: #fff; text-shadow: 0 2px 10px rgba(0, 0, 0, 0.55); }
+.ph.is-compact .ph-name { font-size: 1.15rem; }
+.ph-emblem { display: inline-grid; place-items: center; filter: drop-shadow(0 0 6px currentColor); }
+.ph-sub { display: inline-flex; align-items: center; gap: 5px; flex-wrap: wrap; justify-content: center; margin: 0; font-size: 0.8rem; font-weight: 700; color: rgba(255, 255, 255, 0.92); text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6); }
+.ph-sub svg { width: 18px; height: 12px; border-radius: 2px; }
+.ph-level { display: flex; align-items: center; gap: 8px; width: min(260px, 90%); margin-top: 6px; }
+.ph-level b { padding: 2px 8px; border-radius: 999px; background: linear-gradient(180deg, var(--pf-accent2), var(--pf-accent)); color: #fff; font: 900 0.72rem var(--font-heading); letter-spacing: 0.06em; }
+.ph-level small { font-size: 0.7rem; font-weight: 700; color: var(--text-secondary); white-space: nowrap; }
+.ph-xp { flex: 1; height: 6px; border-radius: 3px; background: rgba(255, 255, 255, 0.16); overflow: hidden; }
+.ph-xp i { display: block; height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--pf-accent), var(--pf-accent2)); }
+.ph-joined { margin: 4px 0 0; font-size: 0.72rem; color: var(--text-secondary); }
+
+/* efeito "chuva dourada" no fundo */
+.ph-rain {
+  position: absolute; inset: 0; z-index: -1; pointer-events: none; opacity: 0.8;
+  background-image: radial-gradient(circle, var(--fx-color) 0 1.5px, transparent 2px), radial-gradient(circle, var(--fx-color) 0 1px, transparent 1.5px);
+  background-size: 46px 46px, 31px 31px; background-position: 0 0, 15px 10px;
+  animation: ph-rain 3.2s linear infinite;
+}
+@keyframes ph-rain { to { background-position: 0 46px, 15px 72px; } }
+
+/* AVATAR com moldura */
+.pa { --av-size: 108px; position: relative; display: inline-grid; place-items: center; width: calc(var(--av-size) + 10px); height: calc(var(--av-size) + 10px); }
+.pa-ring { position: absolute; inset: 0; border-radius: 50%; background: var(--av-ring); box-shadow: 0 0 18px -2px var(--av-glow); }
+.pa.is-spin .pa-ring { animation: pa-spin 6s linear infinite; }
+.pa-img { position: relative; width: var(--av-size); height: var(--av-size); border-radius: 50%; overflow: hidden; display: grid; place-items: center;
+  background: var(--surface-alt); color: var(--text-secondary); box-shadow: 0 0 0 3px var(--surface); }
+.pa-img img { width: 100%; height: 100%; object-fit: cover; }
+@keyframes pa-spin { to { transform: rotate(360deg); } }
+/* efeito "pulso" */
+.pa.fx-pulse .pa-ring { animation: pa-pulse 1.6s ease-in-out infinite; }
+.pa.fx-pulse.is-spin .pa-ring { animation: pa-spin 6s linear infinite, pa-pulse 1.6s ease-in-out infinite; }
+@keyframes pa-pulse { 50% { box-shadow: 0 0 0 6px color-mix(in srgb, var(--fx-color) 35%, transparent), 0 0 26px 4px var(--fx-color); } }
+/* efeito "faíscas" */
+.pa-sparks { position: absolute; inset: -8px; animation: pa-spin 9s linear infinite; pointer-events: none; }
+.pa-sparks i { position: absolute; top: 50%; left: 50%; width: 5px; height: 5px; margin: -2.5px; border-radius: 50%;
+  background: var(--fx-color); box-shadow: 0 0 8px 2px var(--fx-color); animation: pa-twinkle 1.4s ease-in-out infinite; }
+.pa-sparks i:nth-child(1) { transform: rotate(0deg) translateY(calc(var(--av-size) / -2 - 8px)); }
+.pa-sparks i:nth-child(2) { transform: rotate(60deg) translateY(calc(var(--av-size) / -2 - 8px)); animation-delay: .2s; }
+.pa-sparks i:nth-child(3) { transform: rotate(120deg) translateY(calc(var(--av-size) / -2 - 8px)); animation-delay: .4s; }
+.pa-sparks i:nth-child(4) { transform: rotate(180deg) translateY(calc(var(--av-size) / -2 - 8px)); animation-delay: .6s; }
+.pa-sparks i:nth-child(5) { transform: rotate(240deg) translateY(calc(var(--av-size) / -2 - 8px)); animation-delay: .8s; }
+.pa-sparks i:nth-child(6) { transform: rotate(300deg) translateY(calc(var(--av-size) / -2 - 8px)); animation-delay: 1s; }
+@keyframes pa-twinkle { 50% { opacity: 0.25; } }
+
+/* ---------- seções novas ---------- */
+.pf-link { border: 0; background: none; color: var(--primary); font: 800 0.78rem var(--font-body); cursor: pointer; padding: 4px; }
+.pf-newbadge { margin: 12px 12px 0; padding: 10px 12px; border-radius: var(--radius-md); background: color-mix(in srgb, var(--gold) 16%, var(--surface)); border: 1px solid color-mix(in srgb, var(--gold) 45%, transparent); font-size: 0.82rem; font-weight: 800; }
+.pf-featured-body { display: flex; align-items: center; gap: 14px; }
+.pf-featured-body strong { display: block; font: 800 1.05rem var(--font-heading); }
+.pf-featured-body span { font-size: 0.8rem; color: var(--tier); font-weight: 700; }
+.pf-pick-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; justify-items: center; margin-bottom: 12px; }
+.pf-stats.six { grid-template-columns: repeat(3, 1fr); margin: 0; }
+.pf-titles { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.pf-titles li { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 10px; padding: 8px 10px; border-radius: var(--radius-sm); background: var(--surface-alt); }
+.pf-titles strong { display: block; font-size: 0.86rem; }
+.pf-titles small { font-size: 0.72rem; color: var(--text-secondary); }
+.pf-trophy { font-size: 1.2rem; }
+.pf-col-bars { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.pf-col-bars div { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 8px 4px; border-radius: var(--radius-sm); background: var(--surface-alt); border-bottom: 3px solid var(--tier); }
+.pf-col-bars span { font-size: 0.64rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-secondary); }
+.pf-col-bars b { font: 800 1.1rem var(--font-heading); }
+.pf-panel .pf-visibility + .pf-visibility { margin-top: 6px; }
+
+/* insígnias */
+.bg-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(76px, 1fr)); gap: 8px; }
+.bg-item { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 4px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface-alt); color: var(--text-secondary); cursor: pointer; font: inherit; }
+.bg-item.is-open { border-color: var(--primary); }
+.bg-medal { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; background: color-mix(in srgb, var(--text-secondary) 18%, transparent); filter: grayscale(1); opacity: 0.55; }
+.bg-item.is-on .bg-medal { filter: none; opacity: 1; color: #2a1d00; }
+.bg-item.is-on.t-bronze .bg-medal { background: linear-gradient(135deg, #f0b27a, #a8642c); }
+.bg-item.is-on.t-prata .bg-medal { background: linear-gradient(135deg, #f1f5f9, #94a3b8); }
+.bg-item.is-on.t-ouro .bg-medal { background: linear-gradient(135deg, #fde68a, #d97706); box-shadow: 0 0 14px -2px rgba(251, 191, 36, 0.7); }
+.bg-item.is-on { color: var(--text-primary); }
+.bg-label { font-size: 0.66rem; font-weight: 800; text-align: center; line-height: 1.15; }
+.bg-detail { margin: 10px 0 0; padding: 8px 10px; border-radius: var(--radius-sm); background: var(--surface-alt); font-size: 0.78rem; line-height: 1.4; }
+
+/* personalizar */
+.cz-kinds { display: flex; gap: 4px; overflow-x: auto; margin: 12px 0 10px; scrollbar-width: none; }
+.cz-kinds button { flex: 0 0 auto; height: 32px; padding: 0 12px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface-alt); color: var(--text-secondary); font: 800 0.78rem var(--font-body); cursor: pointer; }
+.cz-kinds button.is-on { background: var(--primary); border-color: var(--primary); color: var(--primary-contrast); }
+.cz-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; }
+.cz-item { position: relative; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 10px 6px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--surface-alt); color: var(--text-primary); font: inherit; cursor: pointer; }
+.cz-item.is-on { border-color: var(--primary); box-shadow: inset 0 0 0 1px var(--primary); }
+.cz-label { font-size: 0.72rem; font-weight: 700; text-align: center; }
+.cz-none { width: 54px; height: 54px; display: grid; place-items: center; border-radius: 12px; border: 1px dashed var(--border); font-size: 0.7rem; color: var(--text-secondary); }
+.cz-check { position: absolute; top: 6px; right: 6px; width: 20px; height: 20px; border-radius: 50%; display: grid; place-items: center; background: var(--primary); color: var(--primary-contrast); }
+
+/* miniaturas de cosméticos */
+.cs { display: inline-grid; place-items: center; border-radius: 12px; flex-shrink: 0; position: relative; overflow: hidden; }
+.cs-frame { border-radius: 50%; background: var(--ring); box-shadow: 0 0 12px -2px var(--glow); overflow: visible; }
+.cs-frame i { width: 72%; height: 72%; border-radius: 50%; background: var(--surface); }
+.cs-frame.is-spin { animation: pa-spin 6s linear infinite; }
+.cs-emb, .cs-fx { background: var(--surface); border: 1px solid var(--border); }
+.cs-fx i { position: absolute; width: 6px; height: 6px; border-radius: 50%; background: var(--fx-color); box-shadow: 0 0 8px 2px var(--fx-color); animation: pa-twinkle 1.4s ease-in-out infinite; }
+.cs-fx i:nth-child(1) { top: 20%; left: 25%; } .cs-fx i:nth-child(2) { top: 55%; left: 65%; animation-delay: .4s; } .cs-fx i:nth-child(3) { top: 70%; left: 30%; animation-delay: .8s; }
+.cs-fx.fx-pulse i { display: none; }
+.cs-fx.fx-pulse::after { content: ''; width: 50%; height: 50%; border-radius: 50%; background: var(--fx-color); animation: pa-pulse 1.6s ease-in-out infinite; }
+.cs-fx.fx-rain { background-image: radial-gradient(circle, var(--fx-color) 0 1.5px, transparent 2px); background-size: 12px 12px; animation: ph-rain 3s linear infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .ph-rain, .pa-ring, .pa-sparks, .pa-sparks i, .cs-frame, .cs-fx i, .cs-fx::after, .cs-fx.fx-rain { animation: none !important; }
+}

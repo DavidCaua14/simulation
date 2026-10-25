@@ -331,3 +331,25 @@ button.mk-row:active { transform: scale(0.99); }
 .en-pack .sh-price { width: 100%; }
 .en-full { color: var(--danger) !important; min-height: 0 !important; font-weight: 800; }
 .en-big { display: inline-flex; align-items: center; gap: 6px; font: 900 2.2rem var(--font-heading); color: var(--primary); }
+
+/* =====================================================================
+   VISUAL (cosméticos)
+   ===================================================================== */
+.vs { display: flex; flex-direction: column; gap: 8px; }
+.vs .ph { border-radius: 16px; border: 1px solid var(--border); }
+.vs-note { text-align: center; }
+.vs-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.vs-item { display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 10px 6px 8px; border-radius: 14px; background: var(--surface); border: 1px solid var(--border); text-align: center; min-width: 0; }
+.vs-item.is-sel { border-color: var(--primary); box-shadow: inset 0 0 0 1px var(--primary); }
+.vs-item.r-raro { background: linear-gradient(180deg, color-mix(in srgb, #38bdf8 10%, transparent), transparent), var(--surface); }
+.vs-item.r-epico { background: linear-gradient(180deg, color-mix(in srgb, #c084fc 14%, transparent), transparent), var(--surface); }
+.vs-item.r-lendario { background: linear-gradient(180deg, color-mix(in srgb, #fbbf24 16%, transparent), transparent), var(--surface); }
+.vs-preview { border: 0; background: none; padding: 0; cursor: pointer; }
+.vs-item strong { font: 800 0.78rem var(--font-heading); max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.vs-item small { font-size: 0.64rem; color: var(--text-secondary); }
+.vs-btn { width: 100%; height: 30px; margin-top: 4px; border-radius: 9px; border: 1px solid var(--border); background: var(--surface-alt); color: var(--text-primary); font: 800 0.72rem var(--font-body); display: inline-flex; align-items: center; justify-content: center; gap: 4px; cursor: pointer; }
+.vs-btn.is-on { color: var(--gx-green); border-color: color-mix(in srgb, var(--gx-green) 50%, transparent); }
+.vs-btn.buy svg { color: #38bdf8; }
+.vs-btn.is-short { color: var(--text-secondary); }
+.vs-sheet .ph { width: 100%; border-radius: 14px; }
+.vs-meta { margin: 0; font-size: 0.74rem; color: var(--text-secondary); text-align: center; }

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { ArrowLeftRight, CircleDot, Coins, Crown, Gem, Hourglass, Lock, Sparkles, Zap } from 'lucide-react'
+import { ArrowLeftRight, CircleDot, Coins, Crown, Gem, Hourglass, Lock, Palette, Sparkles, Zap } from 'lucide-react'
 import AppShell from '../../components/layout/AppShell'
 import { BackIcon } from '../../components/ui/icons'
 import useWallet from '../predictions/hooks/useWallet'
@@ -10,6 +10,7 @@ import DiamondsSoon from './components/DiamondsSoon'
 import WheelTab from './components/WheelTab'
 import MarketTab from './components/MarketTab'
 import EnergyTab from './components/EnergyTab'
+import VisualTab from './components/VisualTab'
 import '../cards/cards.css'
 import './store.css'
 
@@ -63,6 +64,7 @@ export default function StoreScreen({ career, params, onBack, onNavigate }) {
     { id: 'wheel', label: 'Roleta', Icon: CircleDot },
     { id: 'market', label: 'Mercado', Icon: ArrowLeftRight },
     { id: 'energy', label: 'Energia', Icon: Zap },
+    { id: 'visual', label: 'Visual', Icon: Palette },
     { id: 'diamonds', label: 'Diamantes', Icon: Gem, soon: true },
   ]
   // saldo mais recente: o do servidor depois de uma compra, senão o da carteira
@@ -128,6 +130,8 @@ export default function StoreScreen({ career, params, onBack, onNavigate }) {
           )}
 
           {tab === 'energy' && <EnergyTab onChanged={refreshWallet} />}
+
+          {tab === 'visual' && <VisualTab onChanged={refreshWallet} />}
 
           {tab === 'diamonds' && <DiamondsSoon />}
         </div>

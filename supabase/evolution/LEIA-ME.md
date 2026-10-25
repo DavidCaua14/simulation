@@ -23,7 +23,8 @@ supabase/evolution/07_shop_price_range.sql  <- preço pela faixa de notas (conve
 supabase/evolution/08_wheel.sql             <- roleta de cartas por diamantes
 supabase/evolution/09_market.sql            <- mercado entre jogadores
 supabase/evolution/10_energy_packs.sql      <- pacotes de energia (diamantes → energia bônus, com limite)
-supabase/evolution/11+ ...                  <- próximas etapas
+supabase/evolution/11_profile.sql           <- perfil no servidor, carta em destaque, insígnias e cosméticos
+supabase/evolution/12+ ...                  <- próximas etapas
 ```
 
 Banco que já estava no ar: rode só `evolution/01`, `evolution/02`, `manager/02_players_seed.sql` (gerado de novo) e
@@ -61,6 +62,7 @@ psql -v ON_ERROR_STOP=1 -f supabase/evolution/tests/economy_shop_tests.sql
 psql -v ON_ERROR_STOP=1 -f supabase/evolution/tests/wheel_tests.sql
 psql -v ON_ERROR_STOP=1 -f supabase/evolution/tests/market_tests.sql
 psql -v ON_ERROR_STOP=1 -f supabase/evolution/tests/energy_tests.sql
+psql -v ON_ERROR_STOP=1 -f supabase/evolution/tests/profile_tests.sql
 PSQL="psql ..." bash supabase/evolution/tests/market_concurrency.sh      # compradores simultâneos e compras cruzadas
 PSQL="psql ..." bash supabase/evolution/tests/economy_concurrency.sh     # duas conexões ao mesmo tempo
 ```
@@ -75,6 +77,8 @@ PSQL="psql ..." bash supabase/evolution/tests/economy_concurrency.sh     # duas 
   `shop_prices` (por raridade e moeda: `base` = carta mais fraca da raridade, `top` = mais forte). Ajuste com UPDATE, sem código.
 * Roleta: `wheel_config` (custo, garantia) e `wheel_segments` (fatias: raridade, faixa de nota, chance em %). Mude as chances
   numa transação só (`begin; update ...; update ...; commit;`): o banco confere no COMMIT que as fatias ativas somam 100%.
+* Perfil: `cosmetics` (catálogo visual; `price_diamonds = 0` = grátis para todos) e `badges` (regras: `kind` + `threshold`,
+  calculadas em `badge_metric`). Nova insígnia de um tipo existente = uma linha em `badges`.
 * Mercado: `market_config` (taxa %, validade em horas, máximo de anúncios por jogador, liga/desliga) e
   `market_price_limits` (preço mínimo/máximo por raridade; raridade fora da tabela não pode ser vendida).
 
