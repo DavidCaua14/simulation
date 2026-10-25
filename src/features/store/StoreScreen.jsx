@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { CircleDot, Coins, Crown, Gem, Hourglass, Lock, Sparkles, Zap } from 'lucide-react'
+import { ArrowLeftRight, CircleDot, Coins, Crown, Gem, Hourglass, Lock, Sparkles, Zap } from 'lucide-react'
 import AppShell from '../../components/layout/AppShell'
 import { BackIcon } from '../../components/ui/icons'
 import useWallet from '../predictions/hooks/useWallet'
@@ -8,6 +8,7 @@ import ShopItem from './components/ShopItem'
 import BuyConfirm from './components/BuyConfirm'
 import DiamondsSoon from './components/DiamondsSoon'
 import WheelTab from './components/WheelTab'
+import MarketTab from './components/MarketTab'
 import '../cards/cards.css'
 import './store.css'
 
@@ -29,15 +30,16 @@ function useCountdown(endsAt, onEnd) {
   return m >= 60 ? `${Math.floor(m / 60)}h ${String(m % 60).padStart(2, '0')}min` : `${m} min`
 }
 
-// Loja: vitrine rotativa de Destaques e Lendas (moedas ou diamantes), roleta (diamantes) e "Comprar diamantes" (EM BREVE).
+// Loja: vitrine rotativa de Destaques e Lendas (moedas ou diamantes), roleta (diamantes), mercado entre jogadores
+// (moedas) e "Comprar diamantes" (EM BREVE).
 // Preço, saldo e entrega são decididos no servidor; a tela só mostra e pede a compra.
-export default function StoreScreen({ career, onBack, onNavigate }) {
+export default function StoreScreen({ career, params, onBack, onNavigate }) {
   const { player } = career
   const wallet = useWallet({ coins: player.coins, energy: player.energy, diamonds: player.diamonds })
   const refreshWallet = wallet.refresh
   const [shop, setShop] = useState(null)
   const [error, setError] = useState('')
-  const [tab, setTab] = useState('destaque')
+  const [tab, setTab] = useState(params?.tab || 'destaque')
   const [buying, setBuying] = useState(null) // { item, currency }
 
   const load = useCallback(async () => {
@@ -58,6 +60,7 @@ export default function StoreScreen({ career, onBack, onNavigate }) {
   const tabs = [
     ...sections.map((s) => ({ id: s.tier, label: s.label, Icon: SECTION_ICON[s.tier] || Sparkles })),
     { id: 'wheel', label: 'Roleta', Icon: CircleDot },
+    { id: 'market', label: 'Mercado', Icon: ArrowLeftRight },
     { id: 'diamonds', label: 'Diamantes', Icon: Gem, soon: true },
   ]
   // saldo mais recente: o do servidor depois de uma compra, senão o da carteira
@@ -112,6 +115,15 @@ export default function StoreScreen({ career, onBack, onNavigate }) {
           )}
 
           {tab === 'wheel' && <WheelTab onSpent={refreshWallet} onOpenCollection={() => onNavigate?.('cards', { tab: 'collection' })} />}
+
+          {tab === 'market' && (
+            <MarketTab
+              wallet={balance}
+              initialSell={params?.sell}
+              onChanged={refreshWallet}
+              onOpenCollection={() => onNavigate?.('cards', { tab: 'collection' })}
+            />
+          )}
 
           {tab === 'diamonds' && <DiamondsSoon />}
         </div>

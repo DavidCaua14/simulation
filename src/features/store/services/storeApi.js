@@ -30,3 +30,19 @@ export function newRequestId() {
 // Roleta (supabase/evolution/08_wheel.sql): o sorteio é do servidor; a animação só mostra o resultado.
 export const fetchWheel = () => unwrap(supabase.rpc('wheel_catalog'))
 export const spinWheel = (requestId) => unwrap(supabase.rpc('wheel_spin', { p_request: requestId }))
+
+// Mercado entre jogadores (supabase/evolution/09_market.sql): dono, preço, saldo e taxa são decididos no servidor.
+export const fetchMarket = ({ q, tier, min, max, sort } = {}) =>
+  unwrap(supabase.rpc('market_browse', {
+    p_q: q || null, p_tier: tier || null, p_min: min ? Number(min) : null, p_max: max ? Number(max) : null, p_sort: sort || 'newest',
+  }))
+export const fetchMyMarket = () => unwrap(supabase.rpc('market_mine'))
+export const fetchSellable = () => unwrap(supabase.rpc('market_sellable'))
+export const fetchMarketRules = () => unwrap(supabase.rpc('market_rules'))
+export const listCard = (cardId, price, requestId) =>
+  unwrap(supabase.rpc('market_list_card', { p_card: cardId, p_price: Number(price), p_request: requestId }))
+export const cancelListing = (listingId) => unwrap(supabase.rpc('market_cancel', { p_listing: listingId }))
+export const buyListing = (listingId, requestId) => unwrap(supabase.rpc('market_buy', { p_listing: listingId, p_request: requestId }))
+
+// taxa como o servidor calcula (arredonda para cima) — só para mostrar ANTES; o valor real vem da resposta
+export const feeOf = (price, pct) => Math.min(price, Math.ceil((price * pct) / 100))

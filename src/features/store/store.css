@@ -16,7 +16,7 @@
 .sh-tabs::-webkit-scrollbar { display: none; }
 .sh-tabs button {
   flex: 1 1 0;
-  min-width: 64px;
+  min-width: 58px;
   height: 46px;
   padding: 0 4px;
   flex-direction: column;
@@ -257,3 +257,56 @@
 @media (prefers-reduced-motion: reduce) {
   .wh-wheel { transition: none !important; }
 }
+
+/* =====================================================================
+   MERCADO
+   ===================================================================== */
+.mk { display: flex; flex-direction: column; gap: 10px; }
+.mk-views { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; padding: 3px; border-radius: 12px; background: var(--surface-alt); }
+.mk-views button {
+  height: 34px; border: 0; border-radius: 9px; background: transparent; color: var(--text-secondary);
+  font: 800 0.8rem var(--font-heading); display: inline-flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer;
+}
+.mk-views button.is-on { background: var(--surface); color: var(--text-primary); box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2); }
+.mk-rules { margin: 0; font-size: 0.72rem; color: var(--text-secondary); line-height: 1.35; }
+.mk-filters { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.mk-filters .mk-search { grid-column: 1 / -1; }
+.mk-filters input, .mk-filters select, .mk-search {
+  min-width: 0; height: 36px; padding: 0 10px; border-radius: 10px; border: 1px solid var(--border);
+  background: var(--surface); color: var(--text-primary); font: 600 0.82rem var(--font-body);
+}
+.mk-search { display: flex; align-items: center; gap: 6px; color: var(--text-secondary); }
+.mk-search input { flex: 1; border: 0; background: transparent; height: 100%; padding: 0; color: var(--text-primary); outline: none; }
+.mk-list { display: flex; flex-direction: column; gap: 6px; }
+.mk-row {
+  width: 100%; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 10px; padding: 6px 10px 6px 6px;
+  border-radius: 12px; background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--tier);
+  color: var(--text-primary); text-align: left; font: inherit;
+}
+button.mk-row { cursor: pointer; }
+button.mk-row:active { transform: scale(0.99); }
+.mk-row-main { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.mk-row-main strong { font: 800 0.88rem var(--font-heading); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mk-row-main small { font-size: 0.72rem; color: var(--text-secondary); }
+.mk-row-main small b { color: var(--tier); }
+.mk-row-side { display: flex; flex-direction: column; align-items: flex-end; gap: 3px; text-align: right; }
+.mk-row-side small { font-size: 0.68rem; color: var(--text-secondary); max-width: 130px; }
+.mk-price-tag { display: inline-flex; align-items: center; gap: 4px; font: 800 0.88rem var(--font-body); }
+.mk-price-tag svg { color: var(--gold); }
+.mk-sell { font: 800 0.8rem var(--font-heading); color: var(--primary); }
+.mk-tag { font-weight: 800; color: var(--gx-green) !important; }
+.mk-cancel {
+  height: 26px; padding: 0 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface-alt);
+  color: var(--danger); font: 800 0.72rem var(--font-body); cursor: pointer;
+}
+.mk-hist { font: 800 0.86rem var(--font-body); }
+.mk-hist.is-in { color: var(--gx-green); }
+.mk-hist.is-out { color: var(--danger); }
+.mk-h { margin: 8px 0 2px; font: 800 0.86rem var(--font-heading); }
+.mk-price { width: 100%; display: flex; flex-direction: column; gap: 6px; margin-top: 8px; font-size: 0.78rem; color: var(--text-secondary); }
+.mk-price-input {
+  display: flex; align-items: center; gap: 8px; height: 46px; padding: 0 12px; border-radius: 12px;
+  border: 1px solid var(--border); background: var(--surface-alt);
+}
+.mk-price-input svg { color: var(--gold); }
+.mk-price-input input { flex: 1; min-width: 0; border: 0; background: transparent; color: var(--text-primary); font: 800 1.1rem var(--font-body); outline: none; }

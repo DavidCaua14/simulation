@@ -16,7 +16,7 @@ import './cards.css'
 const fmt = (n) => (n == null ? '—' : Number(n).toLocaleString('pt-BR'))
 
 // Cartas: caixa de entrada + coleção. Tudo vem do banco; abrir uma caixa é feito pela função box_open.
-export default function CardsScreen({ career, params, onBack }) {
+export default function CardsScreen({ career, params, onBack, onNavigate }) {
   const { player } = career
   const wallet = useWallet({ coins: player.coins, energy: player.energy, diamonds: player.diamonds })
   const refreshWallet = wallet.refresh
@@ -134,6 +134,7 @@ export default function CardsScreen({ career, params, onBack }) {
             entry={owned.find((o) => o.card.id === detail.card.id) || detail}
             tier={tierRow(detail.card.tier)}
             onClose={() => setDetail(null)}
+            onSell={onNavigate ? (cardId) => onNavigate('store', { tab: 'market', sell: cardId }) : undefined}
             onChanged={async () => {
               await loadCollection()
               refreshWallet()

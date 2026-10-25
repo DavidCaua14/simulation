@@ -92,11 +92,11 @@ function Gate() {
   }
 
   if (screen === 'cards') {
-    return <CardsScreen career={career} params={screenParams} onBack={backHome} />
+    return <CardsScreen career={career} params={screenParams} onBack={backHome} onNavigate={navigate} />
   }
 
   if (screen === 'store') {
-    return <StoreScreen career={career} onBack={backHome} onNavigate={navigate} />
+    return <StoreScreen key={JSON.stringify(screenParams)} career={career} params={screenParams} onBack={backHome} onNavigate={navigate} />
   }
 
   if (screen === 'profile') {

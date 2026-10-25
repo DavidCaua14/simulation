@@ -6,8 +6,8 @@ import { getClubById } from '../../club/data/clubs'
 import { tierOf } from '../data/tiers'
 import { discardCard } from '../services/cardsApi'
 
-// Detalhe de uma carta: quantas cópias, e descarte das REPETIDAS (sempre fica 1).
-export default function CardDetail({ entry, tier, onClose, onChanged }) {
+// Detalhe de uma carta: quantas cópias, descarte das REPETIDAS (sempre fica 1) e atalho para vender no mercado.
+export default function CardDetail({ entry, tier, onClose, onChanged, onSell }) {
   const { card, qty } = entry
   const t = tierOf(card.tier)
   const club = card.club_id ? getClubById(card.club_id) : null
@@ -82,9 +82,13 @@ export default function CardDetail({ entry, tier, onClose, onChanged }) {
           ) : (
             <p className="cx-hint">Sem repetidas. Quando vier outra igual, você poderá descartar ou vender.</p>
           )}
-          <button type="button" className="bx-btn ghost" disabled>
-            <Store size={14} /> Vender no mercado · em breve
-          </button>
+          {card.tier === 'basica' ? (
+            <p className="cx-hint">Cartas Básicas não entram no mercado.</p>
+          ) : (
+            <button type="button" className="bx-btn ghost" disabled={!onSell || qty < 1} onClick={() => onSell?.(card.id)}>
+              <Store size={14} /> Vender no mercado
+            </button>
+          )}
         </div>
         {msg && <p className="cx-msg">{msg}</p>}
       </div>

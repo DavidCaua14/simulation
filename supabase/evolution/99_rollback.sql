@@ -1,9 +1,28 @@
 -- =====================================================================
--- DESFAZ a evolução 01–08 (competições configuráveis, clube inicial por nacionalidade, livro de transações, loja e roleta). Use só se precisar voltar atrás.
+-- DESFAZ a evolução 01–09 (competições, clube inicial por nacionalidade, livro de transações, loja, roleta e mercado). Use só se precisar voltar atrás.
 -- Depois de rodar, reaplique supabase/seasons/03_engine.sql, 04_features.sql (get_initial_offers antiga), supabase/manager/03_engine.sql e 04_career.sql
 -- para restaurar as funções antigas. Temporadas criadas na Inglaterra ou com Série B são apagadas (não existem no modelo antigo).
 -- =====================================================================
 begin;
+-- evolução 09 (mercado): anúncios ATIVOS devolvem a cópia ao vendedor antes de remover as tabelas
+insert into public.user_cards (career_id, card_id, qty)
+select seller_career, card_id, count(*) from public.market_listings where status = 'active' group by 1, 2
+on conflict (career_id, card_id) do update set qty = public.user_cards.qty + excluded.qty;
+drop function if exists public.market_sellable();
+drop function if exists public.market_mine();
+drop function if exists public.market_browse(text, text, int, int, text, int, int);
+drop function if exists public.market_buy(uuid, uuid);
+drop function if exists public.market_cancel(uuid);
+drop function if exists public.market_list_card(text, int, uuid);
+drop function if exists public.market_rules();
+drop function if exists public.market_card_json(public.cards);
+drop function if exists public.market_expire_due(int);
+drop function if exists public.market_return_card(public.market_listings);
+drop function if exists public.market_fee(int, numeric);
+drop table if exists public.market_events;
+drop table if exists public.market_listings;
+drop table if exists public.market_price_limits;
+drop table if exists public.market_config;
 -- evolução 08 (roleta). As cartas ganhas continuam no inventário; o livro de transações é removido logo abaixo (06).
 drop function if exists public.wheel_spin(uuid);
 drop function if exists public.wheel_catalog();
