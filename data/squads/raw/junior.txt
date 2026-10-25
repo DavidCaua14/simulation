@@ -1,0 +1,33 @@
+# club: junior
+# source: https://en.wikipedia.org/wiki/Atl%C3%A9tico_Junior
+# accessed: 2026-10-24
+# as_of: unknown
+1|GK|URU|Mauro Silveira|
+3|DF|COL|Edwin Herrera|
+5|DF|COL|Daniel Rivera|
+6|MF|COL|Dilan Villarreal|
+7|MF|COL|Harold Rivera|
+8|FW|COL|Yimmi Chará|captain
+9|FW|PAR|Guillermo Paiva|
+10|FW|COL|Luis Muriel|
+14|MF|COL|Juan David Ríos|
+15|DF|COL|Yeferson Moreno|
+16|DF|COL|Carlos Pérez|
+18|FW|COL|Kevin Pérez|
+20|MF|COL|Jannenson Sarmiento|
+21|FW|COL|Joel Canchimbo|
+22|MF|COL|Jesús Rivas|
+24|DF|COL|Jean Pestaña|
+26|DF|COL|Yeison Suárez|on loan from Deportivo Pereira
+27|DF|COL|Jhon Navia|
+28|MF|COL|Guillermo Celis|
+29|FW|COL|Teófilo Gutiérrez|
+30|GK|COL|Jefersson Martínez|
+33|DF|URU|Lucas Monzón|on loan from Racing Montevideo
+34|DF|COL|Jhomier Guerrero|
+70|FW|COL|Carlos Bacca|
+77|FW|COL|Cristian Barrios|
+80|MF|COL|Fabián Ángel|
+88|FW|COL|Bryan Castrillón|
+98|DF|COL|Jermein Peña|
+-|FW|COL|Déiber Caicedo|

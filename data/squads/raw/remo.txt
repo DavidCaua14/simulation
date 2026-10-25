@@ -1,0 +1,39 @@
+# club: remo
+# source: https://en.wikipedia.org/wiki/2026_Clube_do_Remo_season
+# accessed: 2026-10-24
+# as_of: 2026-09-01
+2|DF|BRA|Matheus Alexandre|on loan from Sport
+4|DF|BRA|Matheus Felipe|
+5|DF|BRA|Léo Andrade|
+6|DF|BRA|Marlon|
+7|FW|BRA|Jajá|
+8|MF|BRA|Patrick|on loan from Santos
+9|FW|BRA|Gabriel Poveda|on loan from Primavera
+10|MF|BRA|Jáderson|
+11|FW|BRA|Alef Manga|
+13|DF|BRA|Marllon|
+14|MF|ARG|Leonel Picco|
+15|MF|BRA|Vitor Bueno|
+17|DF|URU|Cristian Tassano|
+18|DF|CMR|Duplexe Tchamba|
+19|FW|BRA|Gabriel Taliari|
+21|FW|PAR|Antonio Galeano|
+22|FW|BRA|Yago Pikachu|
+23|MF|URU|Franco Catarozzi|
+26|MF|BRA|David Braga|
+27|DF|BRA|Zé Ivaldo|on loan from Santos
+28|MF|BRA|Zé Welison|
+35|MF|BRA|Edson Fernando|on loan from Karpaty Lviv
+39|FW|BRA|Eduardo Melo|
+55|MF|BRA|Zé Ricardo|
+61|FW|BRA|Tico|youth
+62|MF|BRA|Rafael|youth
+63|FW|COL|Andrés González|youth
+64|FW|BRA|Paulo Henrique|youth
+65|MF|BRA|Miguel|youth
+77|DF|BRA|Mayk|
+79|DF|BRA|Marcelinho|
+88|GK|BRA|Marcelo Rangel|
+94|GK|BRA|Ygor Vinhas|
+97|GK|BRA|Ivan|
+-|DF|BRA|João Lucas|on loan from Grêmio

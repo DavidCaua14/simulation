@@ -1,0 +1,32 @@
+# club: nacional-uru
+# source: https://en.wikipedia.org/wiki/Club_Nacional_de_Football
+# accessed: 2026-10-24
+# as_of: 2026-09-30
+1|GK|PAN|Luis Mejía|
+2|DF|URU|Agustín Rogel|
+4|DF|URU|Sebastián Coates|captain
+5|DF|CRC|Francisco Calvo|
+6|MF|URU|Luciano Boggio|
+7|DF|URU|Nicolás Rodríguez|
+8|MF|URU|Santiago Silva|on loan from Huachipato
+9|FW|URU|Maxi Gómez|
+10|MF|URU|Agustín Dos Santos|
+11|FW|URU|Maximiliano Silvera|
+13|DF|URU|Emiliano Ancheta|
+14|FW|ARG|Alejandro Martínez|on loan from Talleres
+15|DF|URU|Gastón Martirena|on loan from Racing de Avellaneda
+18|FW|URU|Pavel Núñez|
+20|MF|ARG|Rubén Botta|
+21|DF|URU|Camilo Cándido|
+22|GK|ARG|Alexis Martín Arias|
+23|MF|URU|Lucas Rodríguez|
+24|DF|URU|Benjamín Núñez|
+25|GK|URU|Ignacio Suárez|
+27|FW|ARG|Tomás Verón Lupi|on loan from Grasshopper
+29|FW|URU|Tiziano Correa|on loan from Cerro Largo
+31|FW|URU|Rodrigo Martínez|
+32|DF|URU|Tomás Viera|
+36|MF|ARG|Bruno Zuculini|
+39|MF|URU|Luciano González|
+56|MF|URU|Juan Ignacio García|
+77|FW|URU|Nahuel Gelos|on loan from Miramar

@@ -6,8 +6,9 @@ import CompEmblem from '../ui/CompEmblem'
 import { EmptyState } from '../ui/States'
 import { COMP_ORDER, COMP_SHORT } from '../utils/seasonUtils'
 
-// JOGOS: resultados (tudo o que você jogou) e calendário (o que vem pela frente). Tocar num resultado abre a rodada.
-export default function MatchesTab({ ctx, onOpenRound }) {
+// JOGOS: resultados (tudo o que você comandou, inclusive em clubes anteriores) e calendário.
+// Tocar num resultado abre a súmula da partida.
+export default function MatchesTab({ ctx, onOpenReport }) {
   const { history, calendar, myClub } = ctx
   const [view, setView] = useState('results')
   const [filter, setFilter] = useState('all')
@@ -53,14 +54,14 @@ export default function MatchesTab({ ctx, onOpenRound }) {
 
       {list.length === 0 ? (
         view === 'results' ? (
-          <EmptyState icon={History} title="Nenhum resultado ainda" text="Volte ao Início e jogue sua primeira partida." />
+          <EmptyState icon={History} title="Nenhum resultado ainda" text="Volte ao Início e comande seu time na primeira partida." />
         ) : (
           <EmptyState icon={CalendarDays} title="Sem jogos programados" text="Os jogos do mata-mata aparecem conforme os confrontos são definidos." />
         )
       ) : view === 'results' ? (
         <div className="sn-stack">
           {list.map((f) => (
-            <MatchRow key={f.id} f={f} myClub={myClub} onOpen={onOpenRound} />
+            <MatchRow key={f.id} f={f} myClub={myClub} onOpen={onOpenReport} />
           ))}
         </div>
       ) : (
@@ -73,7 +74,7 @@ export default function MatchesTab({ ctx, onOpenRound }) {
         </ol>
       )}
       {view === 'upcoming' && list.length > 0 && (
-        <p className="sn-hint">Os campeonatos se intercalam. Nos dias de folga do seu clube, o botão "Avançar" no Início simula a rodada sem gastar energia.</p>
+        <p className="sn-hint">Os campeonatos se intercalam. Nos dias sem jogo do seu clube, "Avançar" no Início simula as rodadas sem gastar energia — e o elenco recupera a condição física.</p>
       )}
     </div>
   )

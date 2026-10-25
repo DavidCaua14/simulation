@@ -1,0 +1,36 @@
+# club: santa-fe
+# source: https://en.wikipedia.org/wiki/Independiente_Santa_Fe
+# accessed: 2026-10-24
+# as_of: unknown
+1|GK|COL|Andrés Mosquera|
+2|DF|COL|Juan Sebastián Quintero|
+3|DF|COL|Víctor Moreno|
+4|DF|COL|Mateo Puerta|on loan from Águilas Doradas
+6|MF|COL|Kilian Toscano|on loan from Atlético Nacional
+7|MF|COL|Jhojan Torres|
+8|MF|COL|Omar Fernández|
+9|FW|URU|Franco Fagúndez|on loan from Santos Laguna
+10|MF|COL|Alexis Zapata|
+11|FW|COL|Hugo Rodallega|captain
+12|GK|COL|Weimar Asprilla|
+13|DF|COL|Helibelton Palacios|
+14|DF|COL|Luis Palacios|on loan from Once Caldas
+15|DF|COL|Iván Scarpeta|
+16|MF|COL|Daniel Torres|
+17|FW|ARG|Maximiliano Lovera|on loan from Rosario Central
+18|DF|ARG|Emanuel Olivera|
+19|FW|ARG|Nahuel Bustos|on loan from Talleres de Córdoba
+20|MF|COL|Yilmar Velásquez|
+21|MF|COL|Éwil Murillo|
+24|DF|COL|Jeison Angulo|
+30|MF|COL|Kevin Cortés|
+32|DF|COL|Christian Mafla|
+33|GK|COL|Carlos Nemocón|
+34|FW|COL|Marlon Balanta|
+35|MF|COL|Kevin Balanta|on loan from Santos Laguna
+37|DF|COL|Jhon Rentería|
+40|FW|COL|Martín Palacios|
+43|DF|COL|Jean Carlos Caicedo|
+77|MF|COL|Jáder Obrian|
+-|GK|COL|Juan Espitia|
+-|FW|COL|Emerson Rodríguez|on loan from Ludogorets Razgrad

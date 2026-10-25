@@ -1,0 +1,56 @@
+# club: botafogo
+# source: https://canchallena.lanacion.com.ar/equipo/botafogo-2x94b2pn1o1tb5l1bbu8x9yu9/
+# accessed: 2026-10-24
+# as_of: 2026-10-24
+# note: lista de fev/2026 da Wikipedia estava desatualizada; usado o plantel do canchallena (La Nación)
+-|GK|ECU|C. Loor|
+-|GK|BRA|Cléber Lucas|
+-|GK|BRA|Gabriel Batista|
+-|GK|BRA|Rhyan Luca|
+-|GK|BRA|Warleson|
+-|DF|BRA|Alex Telles|
+-|DF|BRA|Anthony|
+-|DF|BRA|Arthur Chaves|
+-|DF|BRA|Gabriel|
+-|DF|BRA|Gabriel Justino|
+-|DF|BRA|Herick|
+-|DF|COL|J. Hernández|
+-|DF|BRA|Kadu|
+-|DF|BRA|Kaio Pantaleão|
+-|DF|BRA|Kauã Serafim|
+-|DF|URU|L. Monzón|
+-|DF|URU|M. Ponte|
+-|DF|BRA|Marçal|
+-|DF|BRA|Marquinhos|
+-|DF|VEN|N. Ferraresi|
+-|DF|BRA|Paulinho|
+-|DF|BRA|Riquelme|
+-|DF|BRA|Vitinho|
+-|MF|ARG|Á. Montoro|
+-|MF|BRA|Allan|
+-|MF|BRA|Arthur Novaes|
+-|MF|BRA|Bernardo Valim|
+-|MF|ARG|C. Medina|
+-|MF|BRA|Caio Valle|
+-|MF|BRA|Cauã Zappelini|
+-|MF|BRA|Danilo Santos|
+-|MF|ANG|Domingos Andrade|
+-|MF|BRA|Edenílson|
+-|MF|MAR|H. Ziyech|
+-|MF|BRA|Huguinho|
+-|MF|COL|J. Barrera|
+-|MF|BRA|Kauan Toledo|
+-|MF|BRA|Miguel Caldas|
+-|MF|BRA|Victor Hugo|
+-|MF|BRA|Wallace Davi|
+-|FW|BRA|Arthur Cabral|
+-|FW|BRA|Arthur Izaque|
+-|FW|BRA|Danilo|
+-|FW|BRA|Felipe Januário|
+-|FW|BRA|Júnior Santos|
+-|FW|PAN|K. Barría|
+-|FW|URU|L. Villalba|
+-|FW|BRA|Lucas Emanuel|
+-|FW|BRA|Matheus Martins|
+-|FW|BRA|Matheusinho|
+-|FW|BRA|Tiquinho Soares|

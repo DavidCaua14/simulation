@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { ChevronLeft, ChevronRight, Trophy } from 'lucide-react'
 import StandingsTable from '../components/StandingsTable'
 import Bracket from '../components/Bracket'
@@ -7,26 +7,65 @@ import ClubCrest from '../../club/components/ClubCrest'
 import { getClubById } from '../../club/data/clubs'
 import CompEmblem from '../ui/CompEmblem'
 import { compStatus } from '../utils/compStatus'
-import { EXPECTED_MATCHES, buildRounds, defaultRoundIndex, groupOf, standingsFrom } from '../utils/seasonSelectors'
+import { EXPECTED_MATCHES, buildRounds, defaultRoundIndex, groupOf } from '../utils/seasonSelectors'
+import useStandings from '../hooks/useStandings'
+import { fetchTopScorers } from '../services/managerApi'
 import { COMP_NAME, COMP_ORDER, COMP_SHORT, COMP_THEME } from '../utils/seasonUtils'
 
+const SCORERS = { id: 'scorers', label: 'Artilharia' }
 const VIEWS = {
-  brasileirao: [
-    { id: 'table', label: 'Tabela' },
-    { id: 'rounds', label: 'Rodadas' },
-  ],
-  copa_brasil: [
-    { id: 'bracket', label: 'Chaveamento' },
-    { id: 'rounds', label: 'Rodadas' },
-  ],
-  libertadores: [
-    { id: 'table', label: 'Grupos' },
-    { id: 'bracket', label: 'Mata-mata' },
-    { id: 'rounds', label: 'Rodadas' },
-  ],
+  brasileirao: [{ id: 'table', label: 'Tabela' }, { id: 'rounds', label: 'Rodadas' }, SCORERS],
+  copa_brasil: [{ id: 'bracket', label: 'Chave' }, { id: 'rounds', label: 'Rodadas' }, SCORERS],
+  libertadores: [{ id: 'table', label: 'Grupos' }, { id: 'bracket', label: 'Mata-mata' }, { id: 'rounds', label: 'Rodadas' }, SCORERS],
 }
 
-function RoundBrowser({ fixtures, myClub, lastKey }) {
+// Artilheiros e garçons da competição (todas as partidas simuladas pelo motor contam)
+function Scorers({ comp, version, myClub }) {
+  const [data, setData] = useState(null)
+  const [kind, setKind] = useState('scorers')
+  useEffect(() => {
+    let alive = true
+    fetchTopScorers(comp)
+      .then((d) => alive && setData(d))
+      .catch(() => alive && setData({ scorers: [], assists: [] }))
+    return () => {
+      alive = false
+    }
+  }, [comp, version])
+  if (!data) return <div className="st-sk row" />
+  const list = data[kind] || []
+  return (
+    <div className="ts">
+      <div className="sn-chips">
+        <button type="button" className={kind === 'scorers' ? 'is-on' : ''} onClick={() => setKind('scorers')}>
+          Gols
+        </button>
+        <button type="button" className={kind === 'assists' ? 'is-on' : ''} onClick={() => setKind('assists')}>
+          Assistências
+        </button>
+      </div>
+      {list.length === 0 ? (
+        <p className="sn-muted sn-center">Ninguém marcou ainda.</p>
+      ) : (
+        <ol className="ts-list">
+          {list.map((p, i) => (
+            <li key={p.id + p.club_id} className={p.club_id === myClub ? 'is-mine' : ''}>
+              <span className="ts-pos">{i + 1}</span>
+              <ClubCrest clubId={p.club_id} size={20} />
+              <span className="ts-name">
+                <b>{p.name}</b>
+                <small>{getClubById(p.club_id)?.name}</small>
+              </span>
+              <b className="ts-val">{kind === 'scorers' ? p.goals : p.assists}</b>
+            </li>
+          ))}
+        </ol>
+      )}
+    </div>
+  )
+}
+
+function RoundBrowser({ fixtures, myClub, lastKey, onOpenReport }) {
   const rounds = useMemo(() => buildRounds(fixtures), [fixtures])
   const [idx, setIdx] = useState(() => defaultRoundIndex(rounds, lastKey))
   if (!rounds.length) return <p className="sn-muted sn-center">Sem rodadas ainda.</p>
@@ -46,20 +85,20 @@ function RoundBrowser({ fixtures, myClub, lastKey }) {
           <ChevronRight size={20} />
         </button>
       </div>
-      <RoundResults matches={r.matches} myClub={myClub} />
+      <RoundResults matches={r.matches} myClub={myClub} onOpen={onOpenReport} />
+      {onOpenReport && r.done && <p className="sn-hint">Toque num jogo para ver a súmula.</p>}
     </div>
   )
 }
 
-function CompetitionView({ comp, fixtures, myClub, lastKey }) {
+function CompetitionView({ comp, fixtures, myClub, lastKey, seasonId, onOpenReport }) {
   const views = VIEWS[comp.id]
   const [view, setView] = useState(views[0].id)
   const [group, setGroup] = useState(() => groupOf(fixtures, myClub) || 'A')
   const groups = useMemo(() => [...new Set(fixtures.filter((f) => f.group_label).map((f) => f.group_label))].sort(), [fixtures])
-  const rows = useMemo(
-    () => (comp.id === 'brasileirao' ? standingsFrom(fixtures) : comp.id === 'libertadores' ? standingsFrom(fixtures, group) : []),
-    [comp.id, fixtures, group],
-  )
+  const version = useMemo(() => fixtures.filter((f) => f.status === 'played').length, [fixtures])
+  const hasTable = comp.id !== 'copa_brasil'
+  const { rows } = useStandings(hasTable ? seasonId : null, comp.id, comp.id === 'libertadores' ? group : null, version)
 
   return (
     <>
@@ -86,13 +125,15 @@ function CompetitionView({ comp, fixtures, myClub, lastKey }) {
         </>
       )}
       {view === 'bracket' && <Bracket fixtures={fixtures} myClub={myClub} />}
-      {view === 'rounds' && <RoundBrowser key={comp.id} fixtures={fixtures} myClub={myClub} lastKey={lastKey} />}
+      {view === 'rounds' && <RoundBrowser key={comp.id} fixtures={fixtures} myClub={myClub} lastKey={lastKey} onOpenReport={onOpenReport} />}
+      {view === 'scorers' && <Scorers comp={comp.id} version={version} myClub={myClub} />}
     </>
   )
 }
 
-// TORNEIOS: acompanhar tabela, grupos, chaveamento e rodadas de cada campeonato (só leitura).
-export default function CompetitionsTab({ ctx, selected, onSelect }) {
+// TORNEIOS: tabela (critérios de desempate oficiais, calculada no banco), grupos, chaveamento,
+// rodadas com súmula e artilharia de cada campeonato.
+export default function CompetitionsTab({ ctx, selected, onSelect, onOpenReport }) {
   const { hub, byComp, history, myClub } = ctx
   const comp = hub.competitions.find((c) => c.id === selected) || hub.competitions[0]
   const last = history.find((f) => f.comp === comp.id)
@@ -137,7 +178,7 @@ export default function CompetitionsTab({ ctx, selected, onSelect }) {
         </div>
       </section>
 
-      <CompetitionView key={comp.id} comp={comp} fixtures={byComp[comp.id] || []} myClub={myClub} lastKey={lastKey} />
+      <CompetitionView key={comp.id} comp={comp} fixtures={byComp[comp.id] || []} myClub={myClub} lastKey={lastKey} seasonId={hub.season.id} onOpenReport={onOpenReport} />
     </div>
   )
 }

@@ -1,0 +1,42 @@
+# club: juventude
+# source: https://en.wikipedia.org/wiki/Esporte_Clube_Juventude
+# accessed: 2026-10-24
+# as_of: 2026-09-23
+2|DF|BRA|Raí Ramos|
+3|DF|BRA|Titi|
+4|DF|BRA|Messias|
+5|MF|BRA|Luan Martins|on loan from Primavera
+6|DF|BRA|Wadson|on loan from Anapolina
+7|MF|BRA|Pablo Roberto|on loan from Fortaleza
+8|MF|BRA|Lucas Mineiro|on loan from Cuiabá
+9|FW|BRA|Alan Kardec|
+10|FW|POR|Marcos Paulo Costa|
+11|FW|BRA|Fábio Lima|
+12|GK|BRA|Pedro Rocha|
+13|DF|BRA|Aderlan|
+16|DF|BRA|Diogo Barbosa|
+17|FW|URU|Manuel Castro|
+18|FW|PAR|Luis Amarilla|on loan from Cerro Porteño
+20|FW|BRA|Allanzinho|on loan from Fortaleza
+21|GK|BRA|Ruan Carneiro|
+22|DF|BRA|Nathan Santos|on loan from Santos
+25|FW|BRA|Alisson Safira|
+26|MF|SEN|Iba Ly|on loan from São Paulo
+27|MF|BRA|Ray Breno|on loan from Vasco da Gama
+28|DF|BRA|Alan Ruschel|captain
+29|MF|BRA|Gabriel Pires|
+30|DF|BRA|Patryck Lanza|on loan from São Paulo
+31|GK|BRA|Zé Henrique|
+34|DF|BRA|Rodrigo Sam|
+43|DF|BRA|Bernardo|
+44|MF|BRA|Luis Mandaca|
+47|DF|BRA|Marcos Paulo Lima|
+72|FW|BRA|Lucas Alves|
+73|FW|BRA|Juan Christian|on loan from Riga
+75|MF|BRA|Raí Silva|
+88|MF|BRA|Davi Góes|
+93|GK|BRA|Jandrei|on loan from São Paulo
+97|DF|BRA|Gabriel Pinheiro|on loan from Volta Redonda
+-|DF|BRA|Luiz Eduardo|
+14|DF|BRA|Mateus Schaffer|
+53|MF|BRA|Kaynan|

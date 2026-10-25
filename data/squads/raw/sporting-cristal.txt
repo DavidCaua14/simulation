@@ -1,0 +1,40 @@
+# club: sporting-cristal
+# source: https://en.wikipedia.org/wiki/Sporting_Cristal
+# accessed: 2026-10-24
+# as_of: 2026-08-12
+1|GK|PER|Diego Enríquez|
+2|DF|PER|Duham Ballumbrosio|
+4|DF|PER|Anderson Villacorta|on loan from Zacatecas
+5|DF|PER|Rafael Lutiger|
+7|FW|ARG|Santiago González|
+8|MF|URU|Leandro Sosa|
+10|MF|PER|Christofer Gonzáles|
+11|FW|PER|Irven Ávila|
+12|GK|PER|Renato Solís|
+14|MF|PER|Cristian Benavente|
+16|FW|PER|Luis Iberico|
+17|DF|PER|Carlos Salgado|
+18|DF|ARG|Juan González|
+19|MF|PER|Yoshimar Yotún|captain
+20|DF|PER|Miguel Araujo|
+21|MF|PER|Catriel Cabellos|
+22|FW|ARG|Michael Hoyos|
+23|FW|PER|Maxloren Castro|
+25|MF|PER|Martín Távara|
+26|MF|PER|Ian Wisdom|
+27|MF|BRA|Gabriel|
+29|FW|ARG|Hernán Barcos|
+32|DF|PER|Leonardo Díaz|
+33|GK|PER|César Bautista|
+34|MF|PER|Yamir del Valle|
+35|GK|PER|Tomás Dulanto|
+37|DF|PER|Fabrizio Lora|
+40|FW|PER|Jair Moretti|
+41|DF|PER|Joao Cuenca|
+42|FW|PER|Josemaría Mellán|
+43|MF|PER|Lionel Herrera|
+44|MF|PER|Gerson Castillo|
+77|FW|COL|Juan Manuel Cuesta|
+90|DF|BRA|Cris Silva|
+96|DF|PER|Luis Abram|
+-|MF|URU|Agustín Álvarez|on loan from Montevideo City Torque

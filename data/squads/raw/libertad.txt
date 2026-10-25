@@ -1,0 +1,42 @@
+# club: libertad
+# source: https://canchallena.lanacion.com.ar/equipo/libertad-984ibdjplnlwb36kt6wbgwe97/
+# accessed: 2026-10-24
+# as_of: 2026-10-24
+-|GK|PAR|Á. González|
+-|GK|PAR|R. Morínigo|
+-|GK|PAR|V. Rojas|
+-|DF|PAR|A. Benítez|
+-|DF|PAR|A. Fretes|
+-|DF|PAR|E. Díaz|
+-|DF|PAR|E. Villalba|
+-|DF|PAR|F. Herrera|
+-|DF|PAR|G. Flores|
+-|DF|PAR|J. Bernal|
+-|DF|PAR|J. Estigarribia Meza|
+-|DF|PAR|M. Espinoza|
+-|DF|ARG|N. Freire|
+-|DF|PAR|N. Giménez|
+-|DF|PAR|R. Rojas|
+-|DF|PAR|R. Villalba|
+-|DF|PAR|T. Fernández|
+-|MF|PAR|Á. Campuzano|
+-|MF|PAR|A. Molinas|
+-|MF|PLE|Agustín Manzur|
+-|MF|PAR|C. Martínez|
+-|MF|PAR|D. Ruiz|
+-|MF|PAR|E. Vera|
+-|MF|ARG|F. Carrizo|
+-|MF|PAR|H. Caballero|
+-|MF|PAR|H. Fernández|
+-|MF|PAR|I. Franco|
+-|MF|PAR|J. Bogarín|
+-|MF|PAR|L. Melgarejo|
+-|MF|PAR|L. Sanabria|
+-|MF|PAR|M. Rojas|
+-|MF|PAR|P. Villalba|
+-|MF|PAR|T. Vera|
+-|FW|PAR|G. Aguilar|
+-|FW|PAR|I. Ramírez|
+-|FW|ARG|L. Nequecaur|
+-|FW|PAR|M. Fernández|
+-|FW|PAR|R. Vera|

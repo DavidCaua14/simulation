@@ -1,0 +1,33 @@
+# club: universitario
+# source: https://libero.pe/futbol-peruano/universitario/2026/07/10/asi-quedo-plantel-de-universitario-torneo-clausura-2026-salidas-fichajes-491800
+# accessed: 2026-10-24
+# as_of: 2026-07-10
+# note: a fonte não informa nacionalidade nem numeração
+-|GK|?|Diego Romero|
+-|GK|?|Miguel Vargas|
+-|GK|?|Jefferson Rodríguez|
+-|DF|?|Williams Riveros|
+-|DF|?|Caín Fara|
+-|DF|?|Matías Di Benedetto|
+-|DF|?|Aldo Corzo|
+-|DF|?|César Inga|
+-|MF|?|Jesús Castillo|
+-|MF|?|Jorge Murrugarra|
+-|MF|?|Jairo Concha|
+-|MF|?|Adrián Quiroz|
+-|MF|?|Jordan Guivin|
+-|MF|?|Horacio Calcaterra|
+-|MF|?|Sebastián Flores|
+-|MF|?|Fabián Cabanillas|
+-|MF|?|Bryan Reyna|
+-|MF|?|Héctor Fértoli|
+-|MF|?|Christopher Loayza|
+-|MF|?|Andy Polo|
+-|FW|?|Lissandro Alzugaray|
+-|FW|?|Alex Valera|
+-|FW|?|José Rivera|
+-|FW|?|Edison Flores|
+-|FW|?|Gianluca Lapadula|
+-|FW|?|Nicolás Rengifo|
+-|FW|?|Rodrigo Dioses|
+-|FW|?|John Guzmán|

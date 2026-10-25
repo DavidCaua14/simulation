@@ -1,0 +1,43 @@
+# club: chapecoense
+# source: https://en.wikipedia.org/wiki/Associa%C3%A7%C3%A3o_Chapecoense_de_Futebol
+# accessed: 2026-10-24
+# as_of: 2026-05-26
+1|GK|BRA|Rafael Santos|
+2|DF|BRA|Marcos Vinícius|
+3|DF|BRA|Eduardo Doma|
+4|DF|BRA|João Paulo|
+5|MF|BRA|João Vitor|on loan from CSP
+6|DF|BRA|Mancha|
+7|FW|BRA|Marcinho|
+8|MF|BRA|Robert Santos|on loan from Atlético Mineiro
+10|MF|BRA|Giovanni Augusto|
+11|FW|COD|Yannick Bolasie|
+15|DF|BRA|Rafael Thyere|
+16|MF|BRA|Bruno Matias|
+17|MF|BRA|Vinicius Balieiro|
+18|FW|BRA|Neto Pessoa|
+19|MF|BRA|David Antunes|
+20|MF|BRA|Jean Carlos|
+21|DF|BRA|Kauan Faria|
+22|MF|BRA|Higor Meritão|
+25|DF|BRA|Victor Caetano|
+26|DF|BRA|Everton|
+27|MF|BRA|Camilo|on loan from Grêmio
+31|FW|BRA|Maurício Garcez|
+33|DF|BRA|Bruno Leonardo|captain
+34|GK|BRA|Kainã|
+35|DF|BRA|Vinicius Eduardo|
+37|DF|PAR|Walter Clar|
+38|FW|BRA|Wermeson|on loan from Camboriú
+40|FW|BRA|João Bom|
+70|FW|BRA|Rubens Ricoldi|
+77|FW|BRA|Ítalo|
+91|DF|BRA|Bruno Pacheco|
+94|FW|URU|Kevin Ramírez|on loan from Atlético Goianiense
+97|FW|BRA|Ênio|on loan from Juventude
+98|GK|BRA|Anderson|
+99|MF|BRA|Rafael Carvalheira|
+32|GK|BRA|Wellington|
+23|DF|BRA|Gustavo Talles|
+-|GK|BRA|Matheus Aurélio|on loan from Tombense
+-|MF|BRA|Da Silva|

@@ -1,0 +1,39 @@
+# club: cruzeiro
+# source: https://en.wikipedia.org/wiki/2026_Cruzeiro_Esporte_Clube_season
+# accessed: 2026-10-24
+# as_of: 2026-08-06
+# note: Matías Viña incluído a partir da lista do artigo principal (https://en.wikipedia.org/wiki/Cruzeiro_EC)
+1|GK|BRA|Cássio|
+2|DF|BRA|Kauã Moraes|
+5|MF|BRA|Zé Lucas|
+6|DF|URU|Matías Viña|on loan from Flamengo
+7|MF|BRA|Matheus Henrique|
+8|MF|BRA|Gerson|
+9|FW|BRA|Bruno Rodrigues|on loan from Palmeiras
+10|MF|BRA|Matheus Pereira|
+11|FW|BRA|Marquinhos|
+12|DF|BRA|William|
+15|DF|BRA|Fabrício Bruno|
+16|MF|BRA|Lucas Silva|captain
+17|FW|COL|Luis Sinisterra|
+19|FW|BRA|Kaio Jorge|
+20|FW|BRA|Wesley|on loan from Al Nassr
+22|FW|COL|Néiser Villarreal|
+23|DF|BRA|Fagner|
+24|GK|BRA|Marcelo Eráclito|
+25|DF|ARG|Lucas Villalba|
+27|DF|ARG|Gabriel Rojas|
+29|MF|ARG|Lucas Romero|vice-captain
+34|DF|BRA|Jonathan Jesus|
+40|MF|BRA|Rhuan Gabriel|
+41|GK|BRA|Léo Aragão|
+43|DF|BRA|João Marcelo|
+51|GK|BRA|Vitor Lamounier|
+57|FW|BRA|Rayan Lelis|
+67|FW|POR|João Costa|on loan from Al-Ettifaq
+70|FW|JPN|Kaique Kenji|
+77|FW|BRA|Gabriel Pec|
+81|GK|BRA|Otávio|
+94|FW|BEL|Wanderson|
+97|FW|URU|Luciano Rodríguez|on loan from Neom
+99|FW|ECU|Keny Arroyo|

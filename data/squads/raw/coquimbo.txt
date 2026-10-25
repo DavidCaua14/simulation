@@ -1,0 +1,41 @@
+# club: coquimbo
+# source: https://canchallena.lanacion.com.ar/equipo/coquimbo-bw2py3aiws1rq61pokete3kv2/
+# accessed: 2026-10-24
+# as_of: 2026-10-24
+-|GK|CHI|C. Dorador|
+-|GK|CHI|D. Sánchez|
+-|GK|CHI|G. Flores|
+-|GK|CHI|M. Miranda|
+-|GK|CHI|V. Villegas|
+-|DF|CHI|B. Gazzolo|
+-|DF|CHI|D. Calderon|
+-|DF|ARG|E. Hernández|
+-|DF|CHI|F. Salinas|
+-|DF|CHI|J. Arancibia|
+-|DF|CHI|J. Cornejo|
+-|DF|CHI|J. Zambra|
+-|DF|CHI|L. Soza|
+-|DF|URU|M. Fernández|
+-|DF|CHI|S. Cabrera|
+-|MF|ARG|A. Camargo|
+-|MF|CHI|D. Chávez|
+-|MF|ARG|G. Vadalá|
+-|MF|CHI|L. Saavedra|
+-|MF|CHI|M. Zepeda|
+-|MF|CHI|P. Rodríguez|
+-|MF|CHI|P. Torres Rojas|
+-|MF|CHI|S. Cordero|
+-|MF|CHI|S. Galani|
+-|MF|CHI|Y. Blanco|
+-|FW|CHI|A. Azócar|
+-|FW|CHI|B. Chandía|
+-|FW|CHI|C. Zavala|
+-|FW|CHI|D. Pereira|
+-|FW|ARG|F. Pons|
+-|FW|CHI|G. Alfaro|
+-|FW|CHI|J. Rojas|
+-|FW|ARG|L. Pratto|
+-|FW|PAR|L. Riveros|
+-|FW|CHI|M. Mundaca|
+-|FW|ARG|N. Johansen|
+-|FW|MLI|R. Holgado|

@@ -1,17 +1,18 @@
-import { Target, Users } from 'lucide-react'
+import { Whistle } from './Whistle'
 import ClubCrest from '../../club/components/ClubCrest'
 import { getClubById } from '../../club/data/clubs'
 import CompEmblem from '../ui/CompEmblem'
 import { sideResult } from '../utils/seasonSelectors'
-import { COMP_SHORT, fixtureLabel, ratingTone } from '../utils/seasonUtils'
+import { COMP_SHORT, fixtureLabel } from '../utils/seasonUtils'
 
 const BADGE = { win: 'V', draw: 'E', loss: 'D' }
 
-// Uma partida do seu clube, como um "placar" compacto. Jogada: resultado colorido + sua nota, gols e assistências.
-// Por jogar: sem placar. Tocar (quando onOpen existe) abre os "Jogos da rodada".
+// Uma partida do seu clube, como um "placar" compacto. Jogada: resultado colorido do ponto de vista do
+// clube que você comandava NAQUELE jogo (o histórico não muda se você trocar de clube). Tocar abre a súmula.
 export default function MatchRow({ f, myClub, onOpen, highlight }) {
   const played = f.status === 'played'
-  const res = sideResult(f, myClub)
+  const me = f.player_match && f.coach_club ? f.coach_club : myClub
+  const res = sideResult(f, me)
   const Tag = onOpen ? 'button' : 'div'
   const home = getClubById(f.home_club)
   const away = getClubById(f.away_club)
@@ -29,12 +30,12 @@ export default function MatchRow({ f, myClub, onOpen, highlight }) {
         {res && <i className={`mr-res r-${res}`}>{BADGE[res]}</i>}
       </span>
       <span className="mr-teams">
-        <span className={`mr-t home ${f.home_club === myClub ? 'is-mine' : ''}`}>
+        <span className={`mr-t home ${f.home_club === me ? 'is-mine' : ''}`}>
           <b>{home?.name}</b>
           <ClubCrest clubId={f.home_club} size={26} />
         </span>
         <span className="mr-score">{played ? `${f.home_goals} – ${f.away_goals}` : 'x'}</span>
-        <span className={`mr-t away ${f.away_club === myClub ? 'is-mine' : ''}`}>
+        <span className={`mr-t away ${f.away_club === me ? 'is-mine' : ''}`}>
           <ClubCrest clubId={f.away_club} size={26} />
           <b>{away?.name}</b>
         </span>
@@ -44,18 +45,10 @@ export default function MatchRow({ f, myClub, onOpen, highlight }) {
           Pênaltis {f.home_pens} – {f.away_pens}
         </small>
       )}
-      {played && f.player_match && (
-        <span className="mr-me">
-          <i className={`mr-rate ${ratingTone(Number(f.player_rating))}`} title="Sua nota">
-            {Number(f.player_rating).toFixed(1)}
-          </i>
-          <span title="Seus gols">
-            <Target size={13} /> {f.player_goals}
-          </span>
-          <span title="Suas assistências">
-            <Users size={13} /> {f.player_assists}
-          </span>
-        </span>
+      {played && f.player_match && f.coach_club !== myClub && (
+        <small className="mr-note">
+          <Whistle /> No comando: {getClubById(f.coach_club)?.name}
+        </small>
       )}
     </Tag>
   )

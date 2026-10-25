@@ -1,0 +1,40 @@
+# club: coritiba
+# source: https://en.wikipedia.org/wiki/Coritiba_Foot_Ball_Club
+# accessed: 2026-10-24
+# as_of: 2026-09-11
+1|GK|BRA|Pedro Morisco|
+2|DF|BRA|Tinga|
+3|DF|BRA|Maicon|
+4|DF|BRA|Rodrigo Moledo|
+5|MF|URU|Nicolás Fonseca|on loan from León
+6|DF|BRA|Felipe Jonatan|
+7|FW|URU|Joaquín Lavega|on loan from Fluminense
+10|MF|POR|Josué Pesqueira|
+11|FW|BRA|Lucas Ronier|
+13|GK|BRA|Keiller|on loan from Internacional
+17|FW|URU|Brian Ocampo|
+18|FW|BRA|Paulo Roberto|
+19|MF|COL|Sebastián Gómez|captain
+20|FW|BRA|Keno|on loan from Fluminense
+21|DF|BRA|Thiago Santos|
+22|GK|BRA|Pedro Rangel|
+25|MF|BRA|Richard|
+23|DF|BRA|Tiago Cóser|
+26|DF|BRA|Bruno Melo|
+28|FW|BRA|Fabinho|
+32|FW|BRA|Pedro Rocha|
+36|MF|BRA|Vini Paulista|
+39|MF|BRA|Gustavo Silva|
+44|DF|BRA|JP Chermont|on loan from Santos
+55|DF|BRA|Jacy Maranhão|
+67|GK|BRA|Benassi|
+77|FW|BRA|Breno Lopes|
+78|FW|BRA|Renato Marques|on loan from Mirassol
+99|FW|BRA|Rodrigo Rodrigues|
+15|MF|COL|Alejandro Ararat|on loan from Independiente Yumbo
+33|FW|BRA|David Alves|
+50|MF|BRA|Vitor Tissi|
+80|MF|BRA|Matheus Dias|
+86|DF|BRA|Lucas Taverna|
+-|FW|BRA|Brandão|
+-|FW|BRA|Éberth|

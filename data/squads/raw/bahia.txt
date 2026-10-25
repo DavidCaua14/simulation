@@ -1,0 +1,44 @@
+# club: bahia
+# source: https://en.wikipedia.org/wiki/Esporte_Clube_Bahia
+# accessed: 2026-10-24
+# as_of: 2026-09-22
+1|GK|BRA|Ronaldo|
+3|DF|ESP|Marco Moreno|
+4|DF|BRA|Kanu|
+5|MF|URU|Nicolás Acevedo|
+6|MF|BRA|Jean Lucas|vice-captain
+7|FW|BRA|Ademir|
+8|MF|BRA|Caio Alexandre|
+9|FW|ARG|Alejo Véliz|
+10|MF|BRA|Éverton Ribeiro|captain
+11|MF|BRA|Rodrigo Nestor|
+12|FW|BRA|Willian José|
+14|MF|BRA|Erick|
+15|MF|URU|Michel Araújo|
+16|FW|BRA|Erick Pulga|
+17|GK|ARG|Guido Herrera|
+18|MF|ARG|Lautaro López|on loan from Montevideo City Torque
+22|GK|BRA|Léo Vieira|
+23|FW|ARG|Mateo Sanabria|
+27|FW|BRA|Everaldo|on loan from Fluminense
+31|DF|ARG|Román Gómez|
+33|DF|BRA|David Duarte|
+43|DF|BRA|Luiz Gustavo|
+44|DF|BRA|Marcos Victor|
+46|DF|BRA|Luciano Juba|
+57|FW|BRA|Kauê Furquim|
+63|MF|BRA|David Martins|
+66|DF|BRA|Zé Guilherme|
+77|FW|BRA|Ruan Pablo|
+99|FW|URU|Kike Olivera|on loan from Grêmio
+54|DF|BRA|Gerald Anjos|
+55|MF|BRA|Sidney Duarte|
+58|MF|BRA|Pedrinho|
+61|GK|BRA|Victor|
+67|MF|BRA|Wendel Passos|
+71|FW|BRA|Lyan Araújo|
+72|FW|BRA|Ryan Nascimento|
+80|MF|BRA|Roger Gabriel|
+81|GK|BRA|Fábio Ferreira|
+83|DF|BRA|Fredi Lippert|
+89|FW|BRA|Dell|

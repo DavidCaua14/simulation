@@ -1,0 +1,42 @@
+# club: sao-paulo
+# source: https://en.wikipedia.org/wiki/S%C3%A3o_Paulo_FC
+# accessed: 2026-10-24
+# as_of: 2026-09-17
+2|DF|ITA|Rafael Tolói|
+5|DF|ECU|Robert Arboleda|
+7|MF|BRA|Lucas Moura|vice-captain
+8|MF|BRA|Marcos Antônio|
+9|FW|ARG|Jonathan Calleri|captain
+10|FW|BRA|Luciano|
+11|FW|BRA|Ferreira|
+12|DF|BRA|Iago Borduchi|on loan from Bahia
+13|DF|ARG|Enzo Díaz|
+16|MF|PAR|Damián Bobadilla|
+17|FW|BRA|André Silva|
+18|DF|BRA|Wendell|
+19|DF|BRA|Lucas Ramon|
+20|DF|POR|Aurélio Buta|
+21|DF|POR|Cédric Soares|
+22|DF|POR|Domingos Duarte|
+23|GK|BRA|Rafael|3rd captain
+27|FW|BRA|Victor Sá|
+28|MF|BRA|Newton|
+29|MF|BRA|Pablo Maia|
+31|GK|PAR|Carlos Coronel|
+32|DF|BRA|Pedro Lima|on loan from Wolverhampton Wanderers
+34|FW|BRA|Tetê|
+35|DF|BRA|Sabino|
+37|FW|BRA|Artur|on loan from Botafogo
+41|GK|BRA|João Pedro|
+43|FW|BRA|Gustavo Santana|
+45|FW|BRA|Lucca Marques|
+46|MF|BRA|Pedro Ferreira|
+48|MF|BRA|Djhordney|
+49|FW|BRA|Ryan Francisco|
+50|GK|BRA|Young|
+52|GK|BRA|Felipe Preis|
+53|DF|BRA|Isac|
+54|DF|BRA|Luis Osorio|
+56|DF|BRA|Nicolas|
+80|MF|BRA|Cauly|on loan from Bahia
+94|MF|BRA|Danielzinho|

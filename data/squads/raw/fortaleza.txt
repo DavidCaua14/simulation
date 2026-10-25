@@ -1,0 +1,41 @@
+# club: fortaleza
+# source: https://canchallena.lanacion.com.ar/equipo/fortaleza-1vvaya787s5wg5geudzacya7m/
+# accessed: 2026-10-24
+# as_of: 2026-10-24
+-|GK|BRA|João Ricardo|
+-|GK|BRA|Magrão|
+-|GK|BRA|Vinícius Silvestre|
+-|DF|ANG|Bastos|
+-|DF|BRA|Cristovam|
+-|DF|COL|G. Fuentes|
+-|DF|BRA|Guilherme|
+-|DF|BRA|Kaio Henrique|
+-|DF|BRA|Kauã Rocha|
+-|DF|BRA|Luan Freitas|
+-|DF|BRA|Lucas Gazal|
+-|DF|BRA|Maílton|
+-|DF|BRA|Maurício Mucuri|
+-|DF|BRA|Neris|
+-|DF|BRA|Paulinho|
+-|DF|ARG|T. Cardona|
+-|MF|BRA|Bruninho|
+-|MF|BRA|Jailson|
+-|MF|BRA|Lucas Crispim|
+-|MF|BRA|Lucas Sasha|
+-|MF|BRA|Lucca Prior|
+-|MF|BRA|Pierre|
+-|MF|BRA|Rodrigo|
+-|MF|BRA|Rodriguinho|
+-|MF|BRA|Ronald|
+-|MF|BRA|Ryan|
+-|FW|BRA|Caio Wesley|
+-|FW|BRA|Chico da Costa|
+-|FW|COL|J. Cantillo|
+-|FW|ARG|J. Miritello|
+-|FW|BRA|Lucas Emanoel|
+-|FW|BRA|Luiz Fernando|
+-|FW|BRA|Nathan Fogaça|
+-|FW|BRA|Paulo Baya|
+-|FW|BRA|Pedro Henrique|
+-|FW|BRA|Vitinho|
+-|FW|BRA|Welliton|

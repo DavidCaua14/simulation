@@ -1,0 +1,49 @@
+# club: internacional
+# source: https://en.wikipedia.org/wiki/2026_Sport_Club_Internacional_season
+# accessed: 2026-10-24
+# as_of: 2026-07-25
+1|GK|URU|Sergio Rochet|
+3|DF|CHI|Guillermo Maripán|
+4|DF|ECU|Félix Torres|on loan from Corinthians
+5|MF|ARG|Rodrigo Villagra|on loan from CSKA Moscow
+6|DF|BRA|Matheus Bahia|
+7|FW|COL|Johan Carbonero|
+8|MF|BRA|Bruno Henrique|
+9|FW|BRA|Alerrandro|on loan from CSKA Moscow
+10|MF|BRA|Alan Patrick|captain
+11|FW|BRA|Kayky|on loan from Bahia
+12|GK|BRA|Anthoni|
+14|MF|URU|Alan Rodríguez|
+15|DF|BRA|Bruno Gomes|
+16|MF|BRA|Ronaldo|
+18|DF|BRA|Juninho|
+20|DF|BRA|Clayton Sampaio|
+22|GK|BRA|Kauan Jesus|
+25|DF|ARG|Gabriel Mercado|vice-captain
+26|DF|ARG|Alexandro Bernabei|
+27|MF|BRA|Paulinho|
+28|FW|BRA|Vitinho|on loan from Dynamo Kyiv
+29|MF|BRA|Thiago Maia|
+32|GK|BRA|Diego Esser|
+35|DF|ARG|Braian Aguirre|
+36|MF|BRA|Richard|
+41|DF|BRA|Victor Gabriel|
+-|MF|BRA|Calebe|on loan from Fortaleza
+30|DF|BRA|Alisson|youth
+31|MF|BRA|Allex|youth
+33|MF|GHA|Benjamin Arhin|youth
+34|FW|BRA|Leandro Kauã|youth, on loan from Náutico
+37|FW|BRA|Yago Noal|youth
+38|FW|BRA|Diego Coser|youth
+39|FW|BRA|Carlos Eduardo|youth
+40|DF|BRA|Lázaro|youth
+42|DF|BRA|Pablo|youth
+44|FW|BRA|João Victor|youth
+45|DF|BRA|Yan Henrique|youth, on loan from Guarani
+46|DF|BRA|Pedro Kauã|youth
+48|FW|BRA|Raykkonen|youth
+49|FW|BRA|João Bezerra|youth
+50|MF|BRA|Kauan Alves|youth
+51|MF|BRA|Kempes|youth
+53|DF|BRA|Luiz Felipe|youth
+-|DF|BRA|João Dalla Corte|youth

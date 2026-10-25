@@ -1,0 +1,34 @@
+# club: boca-juniors
+# source: https://en.wikipedia.org/wiki/Boca_Juniors
+# accessed: 2026-10-24
+# as_of: 2026-08-18
+1|GK|COL|Álvaro Montero|
+2|DF|ARG|Lautaro Di Lollo|
+3|DF|ARG|Lautaro Blanco|
+4|DF|ARG|Nicolás Figal|
+5|MF|ARG|Leandro Paredes|captain
+6|MF|ARG|Rodrigo Battaglia|
+7|MF|CHI|Carlos Palacios|
+8|MF|ARG|Tomás Belmonte|
+9|FW|ARG|Milton Giménez|
+10|MF|ARG|Tomás Aranda|
+11|FW|PAR|Ángel Romero|
+12|GK|ARG|Leandro Brey|
+13|GK|ARG|Javier García|
+15|MF|CHI|Williams Alarcón|
+16|FW|URU|Miguel Merentiel|
+17|DF|URU|Leandro Lozano|
+18|MF|ARG|Milton Delgado|
+19|FW|ARG|Leonel Flores|
+20|MF|ARG|Alan Velasco|
+21|MF|ARG|Kevin Zenón|
+22|MF|COL|Sebastián Villa|
+23|MF|ARG|Camilo Rey Domenech|
+24|DF|ARG|Dylan Gorosito|
+25|MF|ARG|Santiago Ascacíbar|
+26|DF|ARG|Marco Pellegrino|
+27|MF|ARG|Malcom Braida|
+28|FW|PAR|Adam Bareiro|
+30|FW|ECU|Enner Valencia|
+32|DF|ARG|Ayrton Costa|
+-|GK|ARG|Agustín Marchesín|

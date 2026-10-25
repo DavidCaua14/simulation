@@ -1,0 +1,35 @@
+# club: ind-medellin
+# source: https://en.wikipedia.org/wiki/Independiente_Medell%C3%ADn
+# accessed: 2026-10-24
+# as_of: unknown
+1|GK|URU|Salvador Ichazo|
+4|DF|COL|Kevin Mantilla|on loan from Talleres de Córdoba
+5|DF|URU|Joaquín Varela|
+6|MF|COL|Didier Moreno|captain
+7|MF|COL|Léider Berrío|
+8|MF|COL|Juan Fernando Quintero|
+9|FW|COL|Jeison Medina|on loan from LDU Quito
+10|MF|COL|Daniel Cataño|
+11|FW|COL|Yony González|
+12|GK|COL|Simón Romero|
+13|DF|COL|Jhan Mena|
+14|MF|COL|Baldomero Perlaza|
+15|FW|COL|Luis Maturana|
+16|MF|COL|Halam Loboa|
+17|FW|COL|Gerónimo Mancilla|
+18|DF|COL|Frank Fabra|
+19|DF|COL|Alfonso Simarra|
+20|FW|COL|John Montaño|on loan from Lommel
+21|MF|ARG|Agustín Martegani|on loan from Boca Juniors
+24|FW|COL|Nivaldo Erazo|
+25|GK|COL|Eder Chaux|
+26|MF|COL|Esneyder Mena|
+28|FW|COL|Andrés Dávila|
+30|DF|COL|Hayen Palacios|on loan from Athletico Paranaense
+31|FW|COL|Diego Moreno|
+32|FW|COL|Carlos Lucumí|
+34|MF|COL|Keiner Klinger|
+39|DF|COL|Luis Escorcia|
+70|FW|COL|Juan José Córdoba|on loan from Dinamo Zagreb
+-|MF|COL|Alexis Serna|
+-|FW|URU|Enzo Larrosa|

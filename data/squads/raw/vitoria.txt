@@ -1,0 +1,40 @@
+# club: vitoria
+# source: https://en.wikipedia.org/wiki/Esporte_Clube_Vit%C3%B3ria
+# accessed: 2026-10-24
+# as_of: 2026-09-12
+1|GK|BRA|Lucas Arcanjo|
+2|DF|ARG|Emanuel Brítez|
+4|DF|BRA|Camutanga|
+6|MF|ARG|Emmanuel Martínez|
+7|FW|BRA|Marinho|
+8|MF|ARG|Tomás Pochettino|on loan from Fortaleza
+9|FW|BRA|Alex Bruno|on loan from ASA
+10|MF|BRA|Matheuzinho|
+11|FW|BRA|Osvaldo|
+12|FW|ARG|Diego Tarzia|
+13|DF|BRA|Ramon|on loan from Internacional
+15|MF|BRA|Walace|on loan from Cruzeiro
+16|MF|POR|Rúben Ismael|
+18|DF|BRA|Kauan Coutinho|
+20|FW|BRA|Lucas Silva|on loan from FC Seoul
+21|MF|BRA|Dudu|
+23|FW|BRA|Fabrí|
+25|DF|BRA|Cacá|on loan from Corinthians
+26|DF|BRA|Edenilson|
+28|FW|BRA|Anderson Pato|
+33|FW|BRA|Erick|
+35|GK|BRA|Fintelman|
+36|DF|BRA|Luan Cândido|on loan from Red Bull Bragantino
+41|MF|BRA|Wendell Santos|
+43|DF|BRA|Edu Ribeiro|
+44|MF|BRA|Gabriel Baralhas|captain
+45|DF|BRA|Nathan Mendes|on loan from Red Bull Bragantino
+70|DF|BRA|Fabiano|on loan from Moreirense
+71|GK|BRA|Yuri Sena|
+79|FW|BRA|Renato Kayzer|
+83|DF|BRA|Jamerson|on loan from Coritiba
+88|MF|BRA|Zé Vitor|on loan from Maringá
+91|FW|BRA|Renê|
+95|MF|BRA|Caíque Gonçalves|
+98|DF|BRA|Mateusinho|
+-|FW|URU|Ignacio Laquintana|on loan from Red Bull Bragantino

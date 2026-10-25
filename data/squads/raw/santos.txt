@@ -1,0 +1,44 @@
+# club: santos
+# source: https://en.wikipedia.org/wiki/2026_Santos_FC_season
+# accessed: 2026-10-24
+# as_of: 2026-10-08
+1|GK|BRA|Diógenes|
+34|GK|BRA|João Paulo|
+67|GK|BRA|Rodrigo Falcão|youth
+77|GK|BRA|Gabriel Brazão|
+79|GK|BRA|João Pedro|youth
+3|LB|BRA|Vinicius Lira|youth
+4|CB|BRA|Lucas Veríssimo|
+14|CB/LB|BRA|Luan Peres|
+18|RB|BRA|Igor Vinícius|
+23|RB|BRA|Rodinei|
+25|RB/DM|BRA|Gabriel Menino|on loan from Atlético Mineiro
+26|CB|BRA|João Ananias|youth
+27|RB/RW|BRA|Davizinho|youth
+31|LB|ARG|Gonzalo Escobar|
+38|LB|BRA|Rafael Gonzaga|youth
+42|CB|BRA|João Alencar|youth
+5|DM/CM|BRA|João Schmidt|
+6|CM/DM|BRA|Arthur|
+8|AM/RW|BRA|Gabriel Bontempo|youth
+10|AM/LW|BRA|Neymar|
+11|AM|BRA|Philippe Coutinho|
+15|DM/CB|BRA|Willian Arão|
+20|AM/CM|BRA|Pepê Fermino|youth
+28|DM|URU|Christian Oliva|
+30|AM/RW|BOL|Miguel Terceros|youth
+32|AM/RW|ARG|Benjamín Rollheiser|
+45|AM/CM|BRA|Lima|on loan from Fluminense
+48|DM/RB|BRA|Gustavo Henrique|youth
+81|DM|BRA|Samuel Pierri|youth
+7|LW|BRA|Everton Cebolinha|
+9|ST|BRA|Gabriel|on loan from Cruzeiro
+16|ST/AM|BRA|Thaciano|
+17|RW/LW|PAR|Gustavo Caballero|
+21|LW/RW|BRA|Moisés|
+22|LW/LM|ARG|Álvaro Barreal|
+33|ST/LW|BRA|Rony|
+39|ST|BRA|Pedro Assis|youth
+47|LW/RW|BRA|Mateus Xavier|youth
+55|ST|BRA|Fernando Pradella|youth
+57|RW/LW|BRA|Nadson|youth

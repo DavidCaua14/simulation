@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react'
-import { ArrowLeftRight, Coins, Sparkles, Star, Target, Trophy, Users } from 'lucide-react'
+import { useMemo, useState } from 'react'
+import { Ambulance, ArrowDown, ArrowLeftRight, ArrowUp, Ban, Building2, Coins, Crown, Megaphone, Sparkles, Star, Trophy, UserX } from 'lucide-react'
 import ClubCrest from '../../club/components/ClubCrest'
 import { tierOf } from '../../cards/data/tiers'
 import { getClubById } from '../../club/data/clubs'
@@ -7,214 +7,254 @@ import RoundResults from './RoundResults'
 import CompEmblem from '../ui/CompEmblem'
 import StandingsTable from './StandingsTable'
 import Bracket from './Bracket'
-import { standingsFrom } from '../utils/seasonSelectors'
-import { COMP_NAME, RESULT_LABEL, describeMatch, ratingTone } from '../utils/seasonUtils'
+import MatchStats from './MatchStats'
+import useStandings from '../hooks/useStandings'
+import { boardMood, fansMood } from '../utils/managerUtils'
+import { COMP_NAME, RESULT_LABEL, describeMatch } from '../utils/seasonUtils'
 
-function performanceText(rating, goals, assists) {
-  if (rating >= 8.5) return 'Atuação de craque! A torcida foi à loucura.'
-  if (goals + assists >= 2) return 'Participou de vários gols. Jogão!'
-  if (rating >= 7) return 'Boa partida, decisivo no setor.'
-  if (rating >= 6) return 'Partida regular, cumpriu a função.'
-  return 'Dia difícil. Siga trabalhando.'
+function Delta({ v, suffix = '' }) {
+  const n = Number(v) || 0
+  if (Math.abs(n) < 0.05) return <span className="pm-d is-zero">=</span>
+  return (
+    <span className={`pm-d ${n > 0 ? 'is-up' : 'is-down'}`}>
+      {n > 0 ? <ArrowUp size={12} /> : <ArrowDown size={12} />}
+      {Math.abs(n).toFixed(Math.abs(n) < 1 ? 1 : 0)}
+      {suffix}
+    </span>
+  )
 }
 
-// Tela de PÓS-JOGO em 3 abas: Resumo (placar revelado + seu desempenho), Rodada (todos os placares)
-// e Classificação (ou chaveamento, no mata-mata). Tudo vem do resultado e dos dados já carregados.
-export default function PostMatch({ result, byComp, onClose, onOpenOffers, box, onOpenBox }) {
-  const [shown, setShown] = useState({ h: 0, a: 0 })
-  const [done, setDone] = useState(false)
+function headline(s) {
+  const mine = s.my_goals
+  const opp = s.opp_goals
+  if (s.fired) return 'A diretoria decidiu pela sua saída.'
+  if (s.competition_result === 'Campeão') return 'É CAMPEÃO! Noite histórica para o clube.'
+  if (s.eliminated) return 'Eliminado. A torcida cobra explicações.'
+  if (s.advanced) return 'Classificado! O time segue vivo na competição.'
+  if (s.result === 'win' && s.expected < 0.4) return 'Vitória de peso contra um adversário mais forte!'
+  if (s.result === 'win' && mine - opp >= 3) return 'Goleada! Atuação dominante do seu time.'
+  if (s.result === 'win') return 'Vitória importante. Trabalho bem feito.'
+  if (s.result === 'draw' && s.expected > 0.62) return 'Empate com sabor de derrota: era jogo para vencer.'
+  if (s.result === 'draw') return 'Empate. Um ponto somado.'
+  if (s.expected > 0.6) return 'Derrota inesperada. A pressão aumenta.'
+  return 'Derrota. Hora de ajustar o time.'
+}
+
+// PÓS-JOGO do treinador: resultado, reação da diretoria e da torcida, reputação, departamento médico,
+// a rodada completa e a classificação atualizada.
+export default function PostMatch({ summary: s, seasonId, byComp, onClose, onOffers, box, onOpenBox }) {
   const [tab, setTab] = useState('summary')
-
-  useEffect(() => {
-    let h = 0
-    let a = 0
-    let finish
-    const id = setInterval(() => {
-      if (h < result.home_goals) h += 1
-      if (a < result.away_goals) a += 1
-      setShown({ h, a })
-      if (h >= result.home_goals && a >= result.away_goals) {
-        clearInterval(id)
-        finish = setTimeout(() => setDone(true), 450)
-      }
-    }, 600)
-    return () => {
-      clearInterval(id)
-      clearTimeout(finish)
-    }
-  }, [result])
-
-  const skip = () => {
-    setShown({ h: result.home_goals, a: result.away_goals })
-    setDone(true)
-  }
-
-  const home = getClubById(result.home)
-  const away = getClubById(result.away)
-  const { goals, assists, rating } = result.player
-  const mineIsHome = result.home === result.my_club
-  const pens = result.home_pens != null ? `Pênaltis: ${result.home_pens} × ${result.away_pens}` : null
-  const qualified = result.tie_winner ? getClubById(result.tie_winner) : null
-  const isTable = result.stage === 'league' || result.stage === 'group'
-  const roundMatches = [
-    { home: result.home, away: result.away, hg: result.home_goals, ag: result.away_goals, group: result.group, mine: true },
-    ...(result.round_results || []),
-  ]
-  const tableRows = isTable ? standingsFrom(byComp[result.competition] || [], result.group || null) : []
+  const home = getClubById(s.home)
+  const away = getClubById(s.away)
+  const mineIsHome = s.home === s.my_club
+  const isTable = s.stage === 'league' || s.stage === 'group'
+  const qualified = s.tie_winner && s.stage !== 'final' && (s.leg === 2 || s.leg == null) ? getClubById(s.tie_winner) : null
+  const { rows } = useStandings(isTable ? seasonId : null, s.competition, s.group || null, `pm${s.fixture_id}`)
+  const roundMatches = useMemo(
+    () => [{ id: s.fixture_id, home: s.home, away: s.away, hg: s.home_goals, ag: s.away_goals, hp: s.pens?.[0], ap: s.pens?.[1], group: s.group, mine: true }, ...(s.round_results || [])],
+    [s],
+  )
+  const motmClub = s.motm ? (s.motm.side === 'h' ? s.home : s.away) : null
 
   return (
-    <div className="sn-overlay" role="dialog" aria-modal="true" aria-label="Resultado da partida">
+    <div className="sn-overlay" role="dialog" aria-modal="true" aria-label="Resumo da partida">
       <div className="sn-modal">
         <header className="sn-modal-head">
-          <CompEmblem comp={result.competition} size={28} />
+          <CompEmblem comp={s.competition} size={28} />
           <span>
-            <small>{COMP_NAME[result.competition]}</small>
-            <b>{describeMatch(result)}</b>
+            <small>{COMP_NAME[s.competition]}</small>
+            <b>{describeMatch(s)}</b>
           </span>
-          <span className={`pm-live ${done ? 'is-done' : ''}`}>{done ? 'Fim de jogo' : 'Ao vivo'}</span>
+          <span className="pm-live is-done">Fim de jogo</span>
         </header>
 
         <div className="sn-board">
           <div className={`sn-board-team ${mineIsHome ? 'is-mine' : ''}`}>
-            <ClubCrest clubId={result.home} size={58} />
+            <ClubCrest clubId={s.home} size={58} />
             <span>{home?.name}</span>
           </div>
           <div className="sn-board-score">
-            <b>{shown.h}</b>
+            <b>{s.home_goals}</b>
             <i>×</i>
-            <b>{shown.a}</b>
+            <b>{s.away_goals}</b>
           </div>
           <div className={`sn-board-team ${!mineIsHome ? 'is-mine' : ''}`}>
-            <ClubCrest clubId={result.away} size={58} />
+            <ClubCrest clubId={s.away} size={58} />
             <span>{away?.name}</span>
           </div>
         </div>
 
-        {!done && (
-          <button type="button" className="sn-skip" onClick={skip}>
-            Pular
-          </button>
-        )}
+        <div className="sn-reveal">
+          <div className={`sn-banner r-${s.result}`}>{RESULT_LABEL[s.result]}</div>
+          {s.pens && <p className="sn-note">Pênaltis: {s.pens[0]} × {s.pens[1]}</p>}
+          {qualified && (
+            <p className="sn-note">
+              Classificado: <ClubCrest clubId={s.tie_winner} size={16} /> <b>{qualified.name}</b>
+            </p>
+          )}
+          <p className="pm-head">{headline(s)}</p>
 
-        {done && (
-          <div className="sn-reveal">
-            <div className={`sn-banner r-${result.result}`}>{RESULT_LABEL[result.result]}</div>
-            {pens && <p className="sn-note">{pens}</p>}
-            {qualified && result.stage !== 'final' && result.leg === 2 && (
-              <p className="sn-note">
-                Classificado: <b>{qualified.name}</b>
-              </p>
-            )}
-
-            <div className="sn-seg">
-              <button type="button" className={tab === 'summary' ? 'is-on' : ''} onClick={() => setTab('summary')}>
-                Resumo
+          <div className="sn-seg">
+            {[
+              ['summary', 'Resumo'],
+              ['stats', 'Números'],
+              ['round', 'Rodada'],
+              ['table', isTable ? 'Tabela' : 'Chave'],
+            ].map(([id, label]) => (
+              <button key={id} type="button" className={tab === id ? 'is-on' : ''} onClick={() => setTab(id)}>
+                {label}
               </button>
-              <button type="button" className={tab === 'round' ? 'is-on' : ''} onClick={() => setTab('round')}>
-                Rodada
-              </button>
-              <button type="button" className={tab === 'table' ? 'is-on' : ''} onClick={() => setTab('table')}>
-                {isTable ? 'Tabela' : 'Mata-mata'}
-              </button>
-            </div>
-
-            {tab === 'summary' && (
-              <>
-                <section className="sn-perf">
-                  <div className={`sn-rating ${ratingTone(rating)}`}>
-                    <b>{Number(rating).toFixed(1)}</b>
-                    <small>NOTA</small>
-                  </div>
-                  <div className="sn-perf-body">
-                    <strong>Seu desempenho</strong>
-                    <p>{performanceText(rating, goals, assists)}</p>
-                    <div className="sn-perf-stats">
-                      <span>
-                        <Target size={14} /> {goals} gol{goals === 1 ? '' : 's'}
-                      </span>
-                      <span>
-                        <Users size={14} /> {assists} assist.
-                      </span>
-                    </div>
-                  </div>
-                </section>
-
-                <div className="sn-rewards">
-                  <span className="xp">+{result.rewards.xp} XP</span>
-                  <span className="coins">
-                    <Coins size={13} /> +{result.rewards.coins}
-                  </span>
-                  <span className={`fame ${result.rewards.popularity < 0 ? 'neg' : ''}`}>
-                    <Star size={13} fill="currentColor" /> {result.rewards.popularity > 0 ? '+' : ''}
-                    {result.rewards.popularity}
-                  </span>
-                </div>
-
-                {box && (
-                  <button type="button" className="sn-boxwin" style={{ '--tier': tierOf(box.tier).color, '--glow': tierOf(box.tier).glow }} onClick={onOpenBox}>
-                    <img src={tierOf(box.tier).closed} alt="" draggable="false" />
-                    <span>
-                      <b>Você ganhou uma caixa {tierOf(box.tier).label}!</b>
-                      <small>Toque para abrir agora · ou abra depois na caixa de entrada</small>
-                    </span>
-                  </button>
-                )}
-
-                {result.level_up && (
-                  <div className="sn-levelup">
-                    <Sparkles size={18} /> SUBIU DE NÍVEL! Agora você é nível <b>{result.new_level}</b>
-                  </div>
-                )}
-
-                {result.competition_finished && (
-                  <div className="sn-compdone">
-                    <Trophy size={18} />
-                    <div>
-                      <b>Campeonato encerrado</b>
-                      <span>
-                        Sua campanha: {result.competition_result || '—'}
-                        {result.competition_bonus ? ` · +${result.competition_bonus.xp} XP · +${result.competition_bonus.coins} moedas` : ''}
-                      </span>
-                      {result.champion && <span>Campeão: {getClubById(result.champion)?.name}</span>}
-                    </div>
-                  </div>
-                )}
-
-                {result.offer && (
-                  <button type="button" className="sn-offer-alert" onClick={onOpenOffers}>
-                    <ArrowLeftRight size={18} />
-                    <span>
-                      Nova proposta do <b>{getClubById(result.offer.club_id)?.name}</b>! Toque para ver.
-                    </span>
-                  </button>
-                )}
-
-                {result.season_finished && (
-                  <div className="sn-compdone season">
-                    <Trophy size={18} />
-                    <div>
-                      <b>Temporada encerrada!</b>
-                      <span>Veja o resumo e inicie a próxima temporada.</span>
-                    </div>
-                  </div>
-                )}
-              </>
-            )}
-
-            {tab === 'round' && <RoundResults matches={roundMatches} myClub={result.my_club} title="Jogos da rodada" />}
-
-            {tab === 'table' &&
-              (isTable ? (
-                <StandingsTable rows={tableRows} myClub={result.my_club} mode={result.stage === 'group' ? 'group' : 'league'} />
-              ) : (
-                <Bracket fixtures={byComp[result.competition] || []} myClub={result.my_club} />
-              ))}
-
-            <button type="button" className="gx-btn sn-continue" onClick={onClose}>
-              {result.season_finished ? 'Ver resumo da temporada' : 'Continuar'}
-            </button>
+            ))}
           </div>
-        )}
+
+          {tab === 'summary' && (
+            <>
+              {s.fired && (
+                <div className="pm-fired">
+                  <UserX size={22} />
+                  <div>
+                    <b>Você foi demitido</b>
+                    <span>Motivo: {s.fire_reason}. Seu histórico continua: avance os dias para receber propostas de outros clubes.</span>
+                  </div>
+                </div>
+              )}
+
+              <section className="pm-impact">
+                <div className={`pm-imp t-${boardMood(s.board.after).tone}`}>
+                  <Building2 size={16} />
+                  <span>
+                    <small>Diretoria</small>
+                    <b>{boardMood(s.board.after).label}</b>
+                  </span>
+                  <Delta v={s.board.delta} />
+                </div>
+                <div className={`pm-imp t-${fansMood(s.fans.after).tone}`}>
+                  <Megaphone size={16} />
+                  <span>
+                    <small>Torcida</small>
+                    <b>{fansMood(s.fans.after).label}</b>
+                  </span>
+                  <Delta v={s.fans.delta} />
+                </div>
+                <div className="pm-imp t-rep">
+                  <Star size={16} />
+                  <span>
+                    <small>Reputação</small>
+                    <b>{s.reputation.after}</b>
+                  </span>
+                  <Delta v={s.reputation.delta} />
+                </div>
+              </section>
+
+              {s.motm && (
+                <div className="pm-motm">
+                  <Crown size={18} />
+                  <ClubCrest clubId={motmClub} size={22} />
+                  <span>
+                    <small>Craque do jogo</small>
+                    <b>{s.motm.name}</b>
+                  </span>
+                  <em>{Number(s.motm.rating).toFixed(1)}</em>
+                </div>
+              )}
+
+              {(s.injuries?.length > 0 || s.suspensions?.length > 0) && (
+                <ul className="pm-med">
+                  {s.injuries?.map((p) => (
+                    <li key={`i${p.player}`}>
+                      <Ambulance size={15} /> <b>{p.name}</b> — {p.injury}, fora por {p.days} dia{p.days > 1 ? 's' : ''}
+                    </li>
+                  ))}
+                  {s.suspensions?.map((p) => (
+                    <li key={`s${p.player}`}>
+                      <Ban size={15} /> <b>{p.name}</b> — suspenso por {p.games} jogo{p.games > 1 ? 's' : ''}
+                    </li>
+                  ))}
+                </ul>
+              )}
+
+              {s.table && s.table.before && s.table.after && (
+                <p className="pm-table">
+                  Tabela: {s.table.before}º → <b>{s.table.after}º</b>
+                </p>
+              )}
+
+              <div className="sn-rewards">
+                <span className="xp">+{s.rewards.xp} XP</span>
+                <span className="coins">
+                  <Coins size={13} /> +{s.rewards.coins}
+                </span>
+              </div>
+
+              {box && (
+                <button type="button" className="sn-boxwin" style={{ '--tier': tierOf(box.tier).color, '--glow': tierOf(box.tier).glow }} onClick={onOpenBox}>
+                  <img src={tierOf(box.tier).closed} alt="" draggable="false" />
+                  <span>
+                    <b>Você ganhou uma caixa {tierOf(box.tier).label}!</b>
+                    <small>Toque para abrir agora · ou abra depois na caixa de entrada</small>
+                  </span>
+                </button>
+              )}
+
+              {s.level_up && (
+                <div className="sn-levelup">
+                  <Sparkles size={18} /> SUBIU DE NÍVEL! Agora você é nível <b>{s.new_level}</b>
+                </div>
+              )}
+
+              {s.competition_finished && (
+                <div className="sn-compdone">
+                  <Trophy size={18} />
+                  <div>
+                    <b>{COMP_NAME[s.competition]} encerrada</b>
+                    <span>
+                      Sua campanha: {s.competition_result || '—'}
+                      {s.competition_bonus ? ` · +${s.competition_bonus.xp} XP · +${s.competition_bonus.coins} moedas` : ''}
+                    </span>
+                    {s.champion && (
+                      <span>
+                        Campeão: <ClubCrest clubId={s.champion} size={14} /> {getClubById(s.champion)?.name}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {s.offer && (
+                <button type="button" className="sn-offer-alert" onClick={onOffers}>
+                  <ArrowLeftRight size={18} />
+                  <ClubCrest clubId={s.offer.club_id} size={22} />
+                  <span>
+                    <b>{getClubById(s.offer.club_id)?.name}</b> quer você como treinador! Toque para ver.
+                  </span>
+                </button>
+              )}
+
+              {s.season_finished && (
+                <div className="sn-compdone season">
+                  <Trophy size={18} />
+                  <div>
+                    <b>Temporada encerrada!</b>
+                    <span>Veja o balanço e comece a próxima temporada.</span>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+
+          {tab === 'stats' && <MatchStats stats={s.stats} home={s.home} away={s.away} />}
+          {tab === 'round' && <RoundResults matches={roundMatches} myClub={s.my_club} title="Jogos da rodada" />}
+          {tab === 'table' &&
+            (isTable ? (
+              <StandingsTable rows={rows} myClub={s.my_club} mode={s.stage === 'group' ? 'group' : 'league'} />
+            ) : (
+              <Bracket fixtures={byComp[s.competition] || []} myClub={s.my_club} />
+            ))}
+
+          <button type="button" className="gx-btn sn-continue" onClick={onClose}>
+            {s.season_finished ? 'Ver balanço da temporada' : 'Continuar'}
+          </button>
+        </div>
       </div>
     </div>
   )

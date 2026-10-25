@@ -1,0 +1,35 @@
+# club: barcelona-sc
+# source: https://en.wikipedia.org/wiki/Barcelona_S.C.
+# accessed: 2026-10-24
+# as_of: 2026-09-26
+1|GK|VEN|José Contreras|
+4|DF|ECU|Gustavo Vallecilla|
+6|DF|ECU|Aníbal Chalá|
+7|FW|ECU|Erick Mendoza|
+8|FW|PAR|Sergio Díaz|
+9|FW|ARG|Darío Benedetto|
+10|MF|ECU|Damián Díaz|captain
+11|FW|PAN|Tomás Rodríguez|
+13|GK|ECU|José Luis Angulo|
+14|DF|ECU|Alex Rangel|
+15|DF|ECU|Jonathan Perlaza|
+16|FW|ECU|Luis Cano|
+18|DF|ECU|Bryan Carabalí|
+21|FW|PAR|Héctor Villalba|
+22|GK|ECU|José Gabriel Cevallos|
+23|MF|ARG|Tomás Martínez|
+25|FW|ECU|Ronald Perlaza|
+26|DF|ECU|Byron Castillo|
+27|DF|ECU|Willian Vargas|
+28|MF|ECU|Jhonny Quiñónez|on loan from Independiente
+29|MF|ECU|Jordan Medina|
+32|MF|ARG|Matías Lugo|on loan from Argentinos Juniors
+33|DF|PAR|Javier Báez|
+35|MF|ECU|Jefferson Intriago|
+44|DF|ECU|Jhonnier Chalá|
+50|MF|ECU|Johan García|
+51|FW|ECU|Jefferson Wila|
+63|FW|ECU|Klever Caicedo|
+70|FW|ECU|Marcos Mejía|
+77|FW|ECU|Yordi Vernaza|
+93|FW|ECU|Eduardo Esterilla|

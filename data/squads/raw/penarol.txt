@@ -1,0 +1,35 @@
+# club: penarol
+# source: https://en.wikipedia.org/wiki/Pe%C3%B1arol
+# accessed: 2026-10-24
+# as_of: 2026-02-23
+1|GK|URU|Sebastián Britos|
+2|DF|ARG|Franco Escobar|
+3|DF|URU|Mauricio Lemos|
+4|DF|URU|Emanuel Gularte|
+5|MF|ARG|Eric Remedi|
+7|FW|URU|Javier Cabrera|
+8|MF|URU|Nicolás Fernández|
+9|FW|URU|Facundo Batista|
+10|MF|URU|Leonardo Fernández|
+11|FW|URU|Abel Hernández|
+12|GK|URU|Leandro Díaz|
+13|MF|URU|Eduardo Darias|
+14|MF|URU|Julio Daguer|
+15|DF|URU|Maximiliano Olivera|captain
+16|MF|URU|Tomás Olase|
+18|MF|URU|Germán Barbas|
+20|DF|URU|Kevin Rodríguez|
+21|MF|URU|Jesús Trindade|
+24|DF|URU|Rodrigo Álvez|
+25|DF|URU|Matías González|
+26|DF|URU|Andrés Madruga|
+27|DF|URU|Lucas Hernández|vice-captain
+28|DF|URU|Ignacio Alegre|
+29|GK|URU|Washington Aguerre|
+30|MF|URU|Stiven Muhlethaler|
+32|MF|URU|Leandro Umpiérrez|
+34|DF|URU|Nahuel Herrera|
+40|FW|URU|Brandon Álvarez|
+55|MF|URU|Lorenzo Couture|
+80|MF|URU|Franco González|
+93|DF|URU|Diego Laxalt|

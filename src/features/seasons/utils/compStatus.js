@@ -7,6 +7,7 @@ export function compStatus(c) {
   if (c.status === 'not_in') return { line: 'Seu clube não disputa', goal: 'Fora desta edição' }
   const t = c.table
   const stage = STAGE_LABEL[c.stage] || ''
+  if ((c.stage === 'league' || c.stage === 'group') && t && !t.played) return { line: c.stage === 'group' ? `Grupo ${t.group} · sem jogos ainda` : 'Sem jogos ainda', goal: c.stage === 'group' ? 'Buscar vaga nas oitavas' : 'Começar bem a campanha' }
   if (c.stage === 'league' && t) {
     const goal = t.pos <= 4 ? 'Na zona da Libertadores (G4)' : t.pos > 16 ? 'Fugir da zona de rebaixamento' : 'Buscar o G4'
     return { line: `${ordinal(t.pos)} lugar · ${t.points} pts`, goal }

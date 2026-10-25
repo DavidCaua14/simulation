@@ -1,0 +1,33 @@
+# club: ind-del-valle
+# source: https://en.wikipedia.org/wiki/Independiente_del_Valle
+# accessed: 2026-10-24
+# as_of: 2026-08-16
+1|GK|COL|Aldair Quintana|
+2|DF|PAR|Luis Zárate|
+4|DF|ECU|Jhon Espinoza|
+5|DF|ARG|Richard Schunke|captain
+6|MF|ECU|Jordy Alcívar|
+7|MF|ECU|Patrik Mercado|
+8|MF|ECU|Youri Ochoa|
+9|FW|PAR|Charly González|
+10|MF|ECU|Junior Sornoza|
+11|FW|ARG|Matías Perelló|
+12|GK|ECU|Eduardo Bores|
+13|DF|ECU|Daykol Romero|
+14|DF|ARG|Mateo Carabajal|
+15|DF|ECU|Gustavo Cortez|
+16|MF|ECU|Ronald Briones|
+17|FW|ECU|Aron Rodríguez|
+18|FW|ECU|Steven Góngora|
+19|DF|ECU|Layan Loor|
+21|MF|ECU|Jean Arroyo|
+22|GK|ARG|Guido Villar|
+23|DF|URU|Juan Viacava|
+26|MF|ECU|Juan Cazares|
+31|FW|ECU|Emerson Pata|
+32|MF|ECU|Jhegson Méndez|
+33|DF|ECU|Andy Velasco|
+50|FW|ECU|Juan Angulo|
+51|DF|ECU|Deinner Ordóñez|
+52|FW|ECU|Yandri Vásquez|
+99|FW|ECU|Djorkaeff Reasco|

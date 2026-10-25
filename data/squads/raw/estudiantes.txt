@@ -1,0 +1,34 @@
+# club: estudiantes
+# source: https://en.wikipedia.org/wiki/Estudiantes_de_La_Plata
+# accessed: 2026-10-24
+# as_of: 2026-09-15
+1|GK|ARG|Fabricio Iacovich|
+4|DF|ARG|Santiago Núñez|
+7|MF|ARG|José Sosa|
+8|MF|URU|Gabriel Neves|
+9|FW|ARG|Guido Carrillo|captain
+10|FW|URU|Tiago Palacios|
+12|GK|ARG|Rodrigo Borzone|
+13|DF|ARG|Gastón Benedetti|
+14|DF|ARG|Leandro González Pírez|
+15|DF|PAR|Santiago Arzamendia|
+16|GK|URU|Fernando Muslera|
+17|FW|ARG|Joaquín Tobio Burgos|
+18|FW|COL|Edwuin Cetré|
+19|FW|ARG|Adolfo Gaich|
+20|DF|ARG|Eric Meza|
+21|MF|ARG|Ezequiel Piovi|
+22|MF|ARG|Alexis Castro|
+24|DF|ARG|Tomás Palacios|on loan from Inter Milan
+26|DF|ARG|Ramiro Funes Mori|
+27|FW|ARG|Lucas Alario|
+28|FW|ARG|Brian Aguirre|on loan from Boca Juniors
+29|FW|ARG|Fabricio Pérez|
+31|MF|ARG|Baltasar Rodríguez|
+32|FW|ARG|Joaquín Correa|
+34|MF|COL|Miguel Monsalve|on loan from Grêmio
+35|DF|ARG|Valente Pierani|
+36|DF|ARG|Joaquín Pereyra|
+39|MF|SYR|Jalil Elías|
+40|DF|ARG|Eros Mancuso|on loan from Fortaleza
+52|MF|ARG|Bautista Kociubinski|
