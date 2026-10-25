@@ -78,11 +78,11 @@ export const GAME_MODES = [
     locked: true,
   },
   {
-    id: 'invites',
-    title: 'Convites',
-    desc: 'Veja convites pra partidas, eventos e muito mais!',
+    id: 'friends',
+    title: 'Amigos',
+    desc: 'Adicione amigos pelo username, aceite convites e veja perfis.',
     Icon: InvitesIcon,
     image: convites,
-    locked: true,
+    locked: false,
   },
 ]

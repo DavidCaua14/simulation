@@ -18,7 +18,7 @@ import './home.css'
 import '../cards/cards.css'
 
 const modeById = (id) => GAME_MODES.find((m) => m.id === id)
-const QUICK = ['ranking', 'events', 'messages', 'invites']
+const QUICK = ['ranking', 'events', 'messages', 'friends']
 
 // Tela inicial, em ordem de importância:
 //   1. topo (HUD): atleta, nível/XP e moedas/energia/diamantes

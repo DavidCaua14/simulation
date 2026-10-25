@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { Palette } from 'lucide-react'
+import { Palette, Users } from 'lucide-react'
 import AppShell from '../../components/layout/AppShell'
 import ThemeToggle from '../../components/ThemeToggle'
 import { useTheme } from '../../context/ThemeContext'
@@ -93,6 +93,7 @@ export default function ProfileScreen({ career, onNavigate }) {
                   <>
                     <button type="button" className="pf-edit-pill" onClick={() => setSheet('customize')}><Palette size={14} /> Personalizar</button>
                     <button type="button" className="pf-edit-pill" onClick={() => setSheet('avatar')}><PencilIcon size={14} /> Foto</button>
+                    <button type="button" className="pf-edit-pill" onClick={() => onNavigate?.('friends')} aria-label="Amigos"><Users size={14} /></button>
                   </>
                 }
               />

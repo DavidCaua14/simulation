@@ -1,9 +1,25 @@
 -- =====================================================================
--- DESFAZ a evolução 01–11 (competições, clube inicial, livro de transações, loja, roleta, mercado, energia e perfil). Use só se precisar voltar atrás.
+-- DESFAZ a evolução 01–12 (competições, clube inicial, livro de transações, loja, roleta, mercado, energia, perfil e amigos). Use só se precisar voltar atrás.
 -- Depois de rodar, reaplique supabase/seasons/03_engine.sql, 04_features.sql (get_initial_offers antiga), supabase/manager/03_engine.sql e 04_career.sql
 -- para restaurar as funções antigas. Temporadas criadas na Inglaterra ou com Série B são apagadas (não existem no modelo antigo).
 -- =====================================================================
 begin;
+-- evolução 12 (amigos)
+do $$ begin
+  if exists (select 1 from pg_publication_tables where pubname = 'supabase_realtime' and tablename = 'friendships') then
+    alter publication supabase_realtime drop table public.friendships;
+  end if;
+end $$;
+drop function if exists public.friend_profile(text);
+drop function if exists public.friends_overview();
+drop function if exists public.friend_remove(uuid);
+drop function if exists public.friend_cancel(uuid);
+drop function if exists public.friend_respond(uuid, boolean);
+drop function if exists public.friend_request(text);
+drop function if exists public.friend_me();
+drop function if exists public.friend_card(uuid);
+drop table if exists public.friends_config;
+drop table if exists public.friendships;
 -- evolução 11 (perfil). O app volta a guardar foto e banner só no navegador.
 drop trigger if exists profile_featured_guard on public.user_cards;
 drop function if exists public.cosmetic_equip(text, text);

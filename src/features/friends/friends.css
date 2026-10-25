@@ -1,0 +1,36 @@
+/* Amigos: mesmos tokens do tema; abas reaproveitam .mk-views (Loja) */
+.fr-screen { position: relative; flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 10px; padding: 12px 14px 0; overflow: hidden; }
+.fr-add { display: flex; flex-direction: column; gap: 6px; padding: 12px; border-radius: 16px; background: var(--surface); border: 1px solid var(--border); }
+.fr-add label { font: 800 0.72rem var(--font-body); letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-secondary); }
+.fr-add-row { display: flex; align-items: center; gap: 6px; }
+.fr-at { font: 900 1.1rem var(--font-heading); color: var(--gold); }
+.fr-add-row input { flex: 1; min-width: 0; height: 40px; padding: 0 10px; border-radius: 10px; border: 1px solid var(--border); background: var(--surface-alt); color: var(--text-primary); font: 700 0.9rem var(--font-body); }
+.fr-add-row .fr-send { flex: 0 0 auto; width: auto; min-width: 0; height: 40px; padding: 0 14px; font-size: 0.85rem; }
+.fr-msg { margin: 0; display: flex; align-items: flex-start; gap: 6px; font-size: 0.8rem; line-height: 1.35; font-weight: 700; }
+.fr-msg svg { flex-shrink: 0; margin-top: 2px; }
+.fr-msg.is-ok { color: var(--gx-green); }
+.fr-msg.is-error { color: var(--danger); }
+.fr-msg.is-info { color: var(--gold); }
+.fr-tabs { grid-template-columns: 1fr 1fr; }
+.fr-scroll { flex: 1; min-height: 0; overflow-y: auto; padding-bottom: 20px; scrollbar-width: none; }
+.fr-list { display: flex; flex-direction: column; gap: 6px; }
+.fr-person { width: 100%; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 14px; background: var(--surface); border: 1px solid var(--border); color: var(--text-primary); text-align: left; font: inherit; }
+button.fr-person { cursor: pointer; }
+.fr-person-main { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.fr-person-main strong { font: 800 0.92rem var(--font-heading); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fr-person-main small { display: inline-flex; align-items: center; gap: 4px; font-size: 0.72rem; color: var(--text-secondary); }
+.fr-person-main small svg { width: 16px; height: 11px; border-radius: 2px; }
+.fr-person-side { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+.fr-person-side small { font-size: 0.68rem; color: var(--text-secondary); }
+.fr-state { display: inline-flex; align-items: center; gap: 4px; color: var(--gold) !important; font-weight: 800; }
+.fr-actions { display: flex; gap: 6px; }
+.fr-ok, .fr-no { width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; border: 0; cursor: pointer; }
+.fr-ok { background: var(--gx-green); color: #fff; }
+.fr-no { background: var(--surface-alt); color: var(--danger); border: 1px solid var(--border); }
+.fr-person.is-declined { opacity: 0.75; }
+.fr-declined-icon { width: 42px; height: 42px; border-radius: 50%; display: grid; place-items: center; background: var(--surface-alt); color: var(--danger); }
+.fr-profile { position: absolute; inset: 0; z-index: 120; display: flex; flex-direction: column; background: var(--bg, var(--surface)); animation: cx-up 0.25s ease-out; }
+.fr-profile-scroll { flex: 1; min-height: 0; overflow-y: auto; padding-bottom: 24px; }
+.fr-close { position: absolute; top: 10px; left: 10px; z-index: 3; width: 34px; height: 34px; border-radius: 50%; border: 1px solid rgba(255, 255, 255, 0.3); background: rgba(0, 0, 0, 0.45); color: #fff; display: grid; place-items: center; cursor: pointer; }
+.fr-since { margin: 10px 12px 0; font-size: 0.78rem; color: var(--text-secondary); text-align: center; }
+.fr-remove { margin: 16px 12px 0; width: calc(100% - 24px); }

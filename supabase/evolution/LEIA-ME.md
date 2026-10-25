@@ -24,7 +24,8 @@ supabase/evolution/08_wheel.sql             <- roleta de cartas por diamantes
 supabase/evolution/09_market.sql            <- mercado entre jogadores
 supabase/evolution/10_energy_packs.sql      <- pacotes de energia (diamantes → energia bônus, com limite)
 supabase/evolution/11_profile.sql           <- perfil no servidor, carta em destaque, insígnias e cosméticos
-supabase/evolution/12+ ...                  <- próximas etapas
+supabase/evolution/12_friends.sql           <- amigos e convites (com tempo real)
+supabase/evolution/13+ ...                  <- próximas etapas
 ```
 
 Banco que já estava no ar: rode só `evolution/01`, `evolution/02`, `manager/02_players_seed.sql` (gerado de novo) e
@@ -63,6 +64,7 @@ psql -v ON_ERROR_STOP=1 -f supabase/evolution/tests/wheel_tests.sql
 psql -v ON_ERROR_STOP=1 -f supabase/evolution/tests/market_tests.sql
 psql -v ON_ERROR_STOP=1 -f supabase/evolution/tests/energy_tests.sql
 psql -v ON_ERROR_STOP=1 -f supabase/evolution/tests/profile_tests.sql
+psql -v ON_ERROR_STOP=1 -f supabase/evolution/tests/friends_tests.sql
 PSQL="psql ..." bash supabase/evolution/tests/market_concurrency.sh      # compradores simultâneos e compras cruzadas
 PSQL="psql ..." bash supabase/evolution/tests/economy_concurrency.sh     # duas conexões ao mesmo tempo
 ```
