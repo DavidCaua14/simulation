@@ -87,7 +87,7 @@ export default function useDragSwap({ onDrop, getPlayer }) {
       'data-dnd': key,
       onPointerDown: (e) => {
         if (!pid || (e.pointerType === 'mouse' && e.button !== 0)) return
-        const scroller = e.currentTarget.closest('.sn-scroll') || document.scrollingElement
+        const scroller = e.currentTarget.closest('.sn-sheet-body, .sn-scroll') || document.scrollingElement
         start.current = { from: key, pid, x: e.clientX, y: e.clientY, lastX: e.clientX, lastY: e.clientY, active: false, scroller }
       },
       onClickCapture: (e) => {

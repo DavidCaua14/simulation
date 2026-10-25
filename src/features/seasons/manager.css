@@ -532,3 +532,19 @@ em.l, .co-nums .l b { color: #ff5b6e; }
 .tt-ghost { position: fixed; z-index: 200; pointer-events: none; transform: translate(-50%, -60%) scale(1.15); filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.55)); }
 .tt-ghost .pt-name { color: #fff; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9); }
 .tt-actions.is-hidden { visibility: hidden; }
+
+/* ---------- painel do jogo: escalação ao vivo ---------- */
+.mle { display: flex; flex-direction: column; gap: 10px; padding-bottom: 8px; }
+.mle-bar { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.mle-subs { font-size: 0.78rem; color: var(--gx-ink-2); }
+.mle-subs b { color: var(--gx-ink); font-family: var(--font-display); font-size: 0.95rem; }
+.mle-subs em { font-style: normal; color: var(--gx-green); }
+.mle-subs.is-out b { color: #ff5b6e; }
+.mle-ovr { min-width: 40px; padding: 4px 8px; border-radius: 10px; text-align: center; background: var(--tone); color: var(--tone-ink); font: 800 1rem var(--font-display); }
+.mle-pitch .pt { max-width: 420px; margin: 0 auto; }
+.mle-title { margin: 4px 0 0; display: flex; align-items: baseline; gap: 8px; font: 800 0.78rem var(--font-body); letter-spacing: 0.08em; text-transform: uppercase; color: var(--gx-ink-2); }
+.mle-title small { text-transform: none; letter-spacing: 0; font-weight: 600; opacity: 0.8; }
+.mle-msg { margin: 0; padding: 8px 10px; border-radius: 10px; background: rgba(255, 91, 110, 0.12); color: #ff7b8b; font-size: 0.8rem; }
+.mle-reset { align-self: center; display: inline-flex; align-items: center; gap: 6px; }
+.tt-bslot.is-picked { background: color-mix(in srgb, var(--gx-gold) 22%, transparent); box-shadow: inset 0 0 0 2px var(--gx-gold); }
+.mp-queue .in, .mp-queue .out { display: inline-flex; align-items: center; gap: 3px; }

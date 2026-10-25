@@ -3,9 +3,9 @@ import { Ambulance, ChevronsRight, FastForward, Pause, Play, Repeat2, Settings2,
 import ClubCrest from '../../club/components/ClubCrest'
 import { getClubById } from '../../club/data/clubs'
 import CompEmblem from '../ui/CompEmblem'
-import TacticsPanel from './TacticsPanel'
+import MatchLineupEditor, { draftFromMatch } from './MatchLineupEditor'
 import useCatalog from '../hooks/useCatalog'
-import { stepMatch } from '../services/managerApi'
+import { fetchSquad, stepMatch } from '../services/managerApi'
 import { MAJOR_EVENTS, condTone, eventText, isGoal } from '../utils/managerUtils'
 import { COMP_NAME, describeMatch } from '../utils/seasonUtils'
 
@@ -14,6 +14,7 @@ const SPEEDS = [
   { id: 2, label: '2x', ms: 330 },
   { id: 4, label: '4x', ms: 140 },
 ]
+const EMPTY = { subs: [], tactics: null, formation: null, slots: null, draft: null }
 const SEG = 5 // minutos por etapa simulada no servidor
 const STOPS = new Set(['ht', 'injury', 'red', 'et', 'et_ht'])
 const SHOT_KINDS = new Set(['goal', 'pen_goal', 'save', 'shot_off', 'pen_miss'])
@@ -38,7 +39,8 @@ export default function MatchLive({ initial, myClub, onFinished, notify }) {
   const [ack, setAck] = useState(null) // parada já vista (minuto)
   const [panel, setPanel] = useState(false)
   const [tab, setTab] = useState('feed')
-  const [pending, setPending] = useState({ subs: [], tactics: null, formation: null })
+  const [pending, setPending] = useState(EMPTY)
+  const [squadById, setSquadById] = useState(null)
   const [flash, setFlash] = useState(null)
   const [turbo, setTurbo] = useState(false)
   const lastSeq = useRef(Math.max(0, ...(initial.events || []).map((e) => e.seq)))
@@ -107,6 +109,7 @@ export default function MatchLive({ initial, myClub, onFinished, notify }) {
       if (pending.subs.length) changes.subs = pending.subs
       if (pending.tactics) changes.tactics = pending.tactics
       if (pending.formation) changes.formation = pending.formation
+      if (pending.slots) changes.slots = pending.slots
       try {
         const r = await stepMatch({
           fixtureId: data.fixture_id,
@@ -123,11 +126,11 @@ export default function MatchLive({ initial, myClub, onFinished, notify }) {
           return [...prev, ...add]
         })
         setData(r)
-        setPending({ subs: [], tactics: null, formation: null })
+        setPending(EMPTY)
         stopRef.current = STOPS.has(r.stop) ? { kind: r.stop, minute: r.minute } : null
       } catch (e) {
         notify?.(e.message, 'alert')
-        setPending({ subs: [], tactics: null, formation: null })
+        setPending(EMPTY)
       } finally {
         setBusy(false)
       }
@@ -160,16 +163,19 @@ export default function MatchLive({ initial, myClub, onFinished, notify }) {
     await requestNext({ auto: true })
   }
 
+  // notas por posição do elenco (para o campo do painel mostrar quanto cada um rende em cada vaga)
+  useEffect(() => {
+    if (!panel || squadById) return
+    fetchSquad()
+      .then((sq) => setSquadById(Object.fromEntries(sq.players.map((p) => [p.id, p]))))
+      .catch(() => setSquadById({}))
+  }, [panel, squadById])
+
   // ---- jogadores ----
   const players = data.players || []
-  const mineOn = players.filter((p) => p.side === side && p.status === 'on')
-  const mineBench = players.filter((p) => p.side === side && p.status === 'bench')
   const subsUsed = data.subs?.[side]?.used ?? 0
   const windowsUsed = data.subs?.[side]?.windows ?? 0
-  const subsLeft = (data.max_subs ?? 5) - subsUsed - pending.subs.length
   const atBreak = serverMin === 45 || serverMin === 90
-  const windowsLeft = Math.max(0, (data.max_windows ?? 3) - windowsUsed - (pending.subs.length && !atBreak ? 1 : 0))
-  const canSub = subsLeft > 0 && (atBreak || pending.subs.length > 0 || windowsLeft > 0)
   const myFormation = data.formation?.[side === 'h' ? 0 : 1]
   const myTactics = { ...(data.tactics?.[side] || {}), ...(pending.tactics || {}) }
   const injuredOff = players.filter((p) => p.side === side && p.status === 'injured_off' && p.slot)
@@ -311,7 +317,7 @@ export default function MatchLive({ initial, myClub, onFinished, notify }) {
         )}
       </div>
 
-      {(pending.subs.length > 0 || pending.tactics || pending.formation) && !finished && (
+      {(pending.subs.length > 0 || pending.tactics || pending.formation || pending.slots) && !finished && (
         <p className="ml-pending">
           <Repeat2 size={14} /> Mudanças entram a partir do {serverMin}' {busy ? '(aplicando…)' : ''}
         </p>
@@ -404,135 +410,38 @@ export default function MatchLive({ initial, myClub, onFinished, notify }) {
       )}
 
       {panel && (
-        <MatchPanel
+        <MatchLineupEditor
           catalog={catalog}
-          mineOn={mineOn}
-          mineBench={mineBench}
-          injuredOff={injuredOff}
-          pending={pending}
-          setPending={setPending}
-          subsLeft={subsLeft}
-          canSub={canSub}
-          windowsLeft={windowsLeft}
-          atBreak={atBreak}
-          formation={myFormation}
+          players={players}
+          squadById={squadById}
+          side={side}
+          colors={getClubById(myClub)?.colors || (side === 'h' ? home : away)?.colors}
+          serverFormation={myFormation}
+          initialDraft={pending.draft || draftFromMatch(players, side, myFormation)}
           tactics={myTactics}
+          maxSubs={data.max_subs ?? 5}
+          subsUsed={subsUsed}
+          maxWindows={data.max_windows ?? 3}
+          windowsUsed={windowsUsed}
+          atBreak={atBreak}
           serverMin={serverMin}
           onClose={() => setPanel(false)}
+          onApply={({ draft, tactics }) => {
+            const base = draftFromMatch(players, side, myFormation)
+            const slots = Object.fromEntries(Object.entries(draft.slots).filter(([, pid]) => !draft.injured.includes(pid) || draft.subs.some((x) => x.in === pid)))
+            const slotsChanged = JSON.stringify(slots) !== JSON.stringify(Object.fromEntries(Object.entries(base.slots).filter(([, pid]) => !base.injured.includes(pid))))
+            const tacChanged = JSON.stringify(tactics) !== JSON.stringify(data.tactics?.[side] || {})
+            setPending({
+              subs: draft.subs,
+              formation: draft.formation !== myFormation ? draft.formation : null,
+              slots: slotsChanged || draft.formation !== myFormation || draft.subs.length ? slots : null,
+              tactics: tacChanged ? tactics : null,
+              draft,
+            })
+            setPanel(false)
+          }}
         />
       )}
-    </div>
-  )
-}
-
-// Painel do treinador durante o jogo: substituições, formação e postura
-function MatchPanel({ catalog, mineOn, mineBench, injuredOff, pending, setPending, subsLeft, canSub, windowsLeft, atBreak, formation, tactics, serverMin, onClose }) {
-  const [out, setOut] = useState(injuredOff[0]?.id || null)
-  const [view, setView] = useState('subs')
-  const pendingOut = new Set(pending.subs.map((s) => s.out))
-  const pendingIn = new Set(pending.subs.map((s) => s.in))
-  const candidatesOut = [...injuredOff, ...mineOn].filter((p) => !pendingOut.has(p.id))
-
-  function addSub(inId) {
-    if (!out || !canSub) return
-    setPending((p) => ({ ...p, subs: [...p.subs, { out, in: inId }] }))
-    setOut(null)
-  }
-  return (
-    <div className="sn-sheet-wrap" onClick={onClose}>
-      <div className="sn-sheet is-tall mp" role="dialog" aria-modal="true" aria-label="Mexer no time" onClick={(e) => e.stopPropagation()}>
-        <header>
-          <div>
-            <small>Valem a partir do {serverMin}'</small>
-            <strong className="heading">Mexer no time</strong>
-          </div>
-          <button type="button" className="gx-btn mp-done" onClick={onClose}>
-            Pronto
-          </button>
-        </header>
-        <div className="sn-seg mp-tabs">
-          {[
-            ['subs', `Trocas (${Math.max(0, subsLeft)})`],
-            ['shape', 'Formação'],
-            ['tactics', 'Postura'],
-          ].map(([id, label]) => (
-            <button key={id} type="button" className={view === id ? 'is-on' : ''} onClick={() => setView(id)}>
-              {label}
-            </button>
-          ))}
-        </div>
-        <div className="sn-sheet-body">
-          {view === 'subs' && (
-            <div className="mp-subs">
-              <p className="sn-hint">
-                Restam {Math.max(0, subsLeft)} substituições e {Math.max(0, windowsLeft)} parada(s){atBreak ? ' — no intervalo não gasta parada' : ''}. Quem sai não volta.
-              </p>
-              {pending.subs.length > 0 && (
-                <ul className="mp-queue">
-                  {pending.subs.map((s, i) => (
-                    <li key={i}>
-                      <span className="in">↑ {mineBench.find((p) => p.id === s.in)?.name}</span>
-                      <span className="out">↓ {[...mineOn, ...injuredOff].find((p) => p.id === s.out)?.name}</span>
-                      <button type="button" className="sn-link" onClick={() => setPending((p) => ({ ...p, subs: p.subs.filter((_, k) => k !== i) }))}>
-                        desfazer
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              )}
-              <h4>1. Quem sai</h4>
-              <ul className="mp-list">
-                {candidatesOut.map((p) => (
-                  <li key={p.id}>
-                    <button type="button" className={`mp-row ${out === p.id ? 'is-sel' : ''} ${p.status === 'injured_off' ? 'is-inj' : ''}`} onClick={() => setOut(p.id)}>
-                      <span className="ml-pos">{p.pos}</span>
-                      <span className="ml-pn">
-                        {p.name} {p.yellow > 0 && <i className="mcard y" />}
-                        {p.status === 'injured_off' && <Ambulance size={12} />}
-                      </span>
-                      <span className={`ml-cond ${condTone(p.cond)}`}>
-                        <i style={{ width: `${p.cond}%` }} />
-                      </span>
-                      <b className="ml-rt">{Number(p.rating).toFixed(1)}</b>
-                    </button>
-                  </li>
-                ))}
-              </ul>
-              <h4>2. Quem entra</h4>
-              <ul className="mp-list">
-                {mineBench
-                  .filter((p) => !pendingIn.has(p.id))
-                  .map((p) => (
-                    <li key={p.id}>
-                      <button type="button" className="mp-row" disabled={!out || !canSub} onClick={() => addSub(p.id)}>
-                        <span className="ml-pos">{p.natural}</span>
-                        <span className="ml-pn">{p.name}</span>
-                        <span className={`ml-cond ${condTone(p.cond)}`}>
-                          <i style={{ width: `${p.cond}%` }} />
-                        </span>
-                        <b className="ml-rt">{p.overall}</b>
-                      </button>
-                    </li>
-                  ))}
-              </ul>
-            </div>
-          )}
-          {view === 'shape' && (
-            <div className="tt-forms is-wrap">
-              {(catalog?.formations || []).map((f) => {
-                const cur = (pending.formation || formation) === f.id
-                return (
-                  <button key={f.id} type="button" className={cur ? 'is-on' : ''} onClick={() => setPending((p) => ({ ...p, formation: f.id === formation ? null : f.id }))}>
-                    {f.name}
-                  </button>
-                )
-              })}
-              <p className="sn-hint">Os jogadores em campo são redistribuídos nas novas vagas, cada um onde rende mais.</p>
-            </div>
-          )}
-          {view === 'tactics' && <TacticsPanel compact tactics={tactics} onChange={(t) => setPending((p) => ({ ...p, tactics: t }))} />}
-        </div>
-      </div>
     </div>
   )
 }
