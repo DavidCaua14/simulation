@@ -33,12 +33,17 @@ Aba **Loja** liberada no menu e na tela inicial. Seções:
 * Limite: 1 cópia de cada carta por usuário por vitrine ("1 disponível" / "Comprada neste rodízio").
 
 ### Preços (configuração única: `shop_prices`)
-Preço = base + (nota − nota de referência) × valor por ponto, arredondado.
+Pela faixa de notas da raridade: a carta mais fraca da raridade custa `base`, a mais forte custa `top`, e as demais
+ficam proporcionais à nota (arredondado). Assim o preço funciona com qualquer catálogo — o de produção tem Destaques
+de nota 75–80 e um banco novo, 86–90 (o catálogo é gerado com os elencos do momento).
 
-| Raridade | Moedas | Diamantes |
+| Raridade | Moedas (mais fraca → mais forte) | Diamantes |
 |---|---|---|
-| Destaque (nota 86–90) | 1.500 + 200/ponto acima de 86 → 1.500 a 2.300 | 12 + 1/ponto → 12 a 16 |
-| Lenda (nota 85–99) | 9.000 + 900/ponto acima de 85 → 9.000 a 21.600 | 60 + 5/ponto → 60 a 130 |
+| Destaque | 1.500 → 2.300 | 12 → 16 |
+| Lenda | 9.000 → 21.600 | 60 → 130 |
+
+A primeira versão usava uma nota fixa de referência; o teste em produção mostrou que ali todos os Destaques cairiam no
+preço mínimo (1.000). A migração `07_shop_price_range.sql` corrigiu antes de qualquer compra real.
 
 Balanceamento medido em produção: ~24 moedas por partida + ~40 por caixa aberta; diamantes saem quase só das caixas
 raras e do descarte (0–1 por semana). Assim um Destaque custa mais ou menos uma temporada de moedas e uma Lenda exige

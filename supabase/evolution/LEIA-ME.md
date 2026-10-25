@@ -19,7 +19,8 @@ supabase/evolution/03_engine.sql            <- motor de competições configurá
 supabase/evolution/04_manager.sql           <- carreira do treinador no motor configurável
 supabase/evolution/05_career_start.sql      <- clube inicial pela nacionalidade + perfis de dificuldade
 supabase/evolution/06_economy_shop.sql      <- livro de transações, idempotência e loja de cartas
-supabase/evolution/07+ ...                  <- próximas etapas
+supabase/evolution/07_shop_price_range.sql  <- preço pela faixa de notas (converte bancos com a 06 antiga; num banco novo não muda nada)
+supabase/evolution/08+ ...                  <- próximas etapas
 ```
 
 Banco que já estava no ar: rode só `evolution/01`, `evolution/02`, `manager/02_players_seed.sql` (gerado de novo) e
@@ -64,7 +65,7 @@ PSQL="psql ..." bash supabase/evolution/tests/economy_concurrency.sh     # duas 
 * Compras novas: `econ_apply(carreira, moeda, delta, motivo, ref)` (recusa saldo insuficiente) + `econ_request_get/save`
   (idempotência por `request_id`).
 * Loja: `shop_sections` (raridades à venda, cartas por vitrine, rodízio em horas UTC, limite por usuário) e
-  `shop_prices` (preço = base + (nota − referência) × por ponto, por raridade e moeda). Ajuste com UPDATE, sem código.
+  `shop_prices` (por raridade e moeda: `base` = carta mais fraca da raridade, `top` = mais forte). Ajuste com UPDATE, sem código.
 
 ## Desfazer
 

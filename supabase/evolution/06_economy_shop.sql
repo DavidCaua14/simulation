@@ -162,17 +162,18 @@ create table if not exists public.shop_sections (
   active         boolean not null default true
 );
 
--- Preço = base + (nota − nota de referência) × por ponto, arredondado. Uma linha por raridade × moeda.
+-- Preço pela faixa de notas da raridade: a carta mais fraca da raridade custa `base`, a mais forte custa `top` e as
+-- demais ficam proporcionais à nota (funciona com qualquer catálogo). Uma linha por raridade × moeda.
 create table if not exists public.shop_prices (
   tier        text not null references public.card_tiers (id),
   currency    text not null check (currency in ('coins', 'diamonds')),
   base        int  not null check (base > 0),
-  ref_overall int  not null,
-  per_point   int  not null default 0,
+  top         int  not null,
   round_to    int  not null default 1 check (round_to >= 1),
   min_price   int  not null default 1 check (min_price >= 1),
   active      boolean not null default true,
-  primary key (tier, currency)
+  primary key (tier, currency),
+  constraint shop_prices_top_check check (top >= base)
 );
 
 -- Balanceamento (outubro/2026, medido em produção): ~24 moedas por partida + ~40 por caixa; diamantes saem quase só
@@ -182,11 +183,11 @@ insert into public.shop_sections (tier, label, description, slots, rotation_hour
   ('lenda',    'Lendas',    'Ídolos de todos os tempos. Poucas por dia e caras: junte moedas ao longo da carreira.', 3, 24, 1, 2)
 on conflict (tier) do nothing;   -- não sobrescreve ajustes feitos no painel
 
-insert into public.shop_prices (tier, currency, base, ref_overall, per_point, round_to, min_price) values
-  ('destaque', 'coins',     1500, 86,  200, 50, 1000),
-  ('destaque', 'diamonds',    12, 86,    1,  1,    8),
-  ('lenda',    'coins',     9000, 85,  900, 100, 6000),
-  ('lenda',    'diamonds',    60, 85,    5,  1,   40)
+insert into public.shop_prices (tier, currency, base, top, round_to, min_price) values
+  ('destaque', 'coins',     1500,  2300,  50, 1000),
+  ('destaque', 'diamonds',    12,    16,   1,    8),
+  ('lenda',    'coins',     9000, 21600, 100, 6000),
+  ('lenda',    'diamonds',    60,   130,   1,   40)
 on conflict (tier, currency) do nothing;
 
 create table if not exists public.shop_purchases (
@@ -232,8 +233,12 @@ $$;
 
 create or replace function public.shop_price(p_card public.cards, p_currency text)
 returns int language sql stable set search_path = public as $$
-  select greatest(p.min_price, (round((p.base + (p_card.overall - p.ref_overall) * p.per_point)::numeric / p.round_to) * p.round_to)::int)
-    from public.shop_prices p where p.tier = p_card.tier and p.currency = p_currency and p.active;
+  select greatest(p.min_price,
+           (round((p.base + (p.top - p.base) * coalesce((p_card.overall - r.lo)::numeric / nullif(r.hi - r.lo, 0), 0))
+                  / p.round_to) * p.round_to)::int)
+    from public.shop_prices p
+    cross join lateral (select min(c.overall) as lo, max(c.overall) as hi from public.cards c where c.tier = p_card.tier and c.active) r
+   where p.tier = p_card.tier and p.currency = p_currency and p.active;
 $$;
 
 -- Vitrine (a mesma para todos os usuários no mesmo rodízio; sorteio determinístico pela chave do rodízio)
