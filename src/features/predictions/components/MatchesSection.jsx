@@ -93,14 +93,14 @@ export default function MatchesSection({ slip, now, balance, notify, onWalletCha
         {!loading && error && (
           <div className="pred-empty">
             <p>{error}</p>
-            <button type="button" className="pred-btn" onClick={reload}>Tentar de novo</button>
+            <button type="button" className="gx-btn-ghost" onClick={reload}>Tentar de novo</button>
           </div>
         )}
         {!loading && !error && matches.length === 0 && (
           <div className="pred-empty">
             <p>{view === 'live' ? 'Nenhum jogo em andamento agora.' : 'Nenhum jogo neste dia.'}</p>
             {view === 'live' && (
-              <button type="button" className="pred-btn" onClick={() => setView(today)}>Ver jogos de hoje</button>
+              <button type="button" className="gx-btn-ghost" onClick={() => setView(today)}>Ver jogos de hoje</button>
             )}
           </div>
         )}
@@ -112,7 +112,7 @@ export default function MatchesSection({ slip, now, balance, notify, onWalletCha
                 <span className="pred-group-logo">
                   {g.comp?.emblem ? <img src={g.comp.emblem} alt="" loading="lazy" /> : <TrophyIcon />}
                 </span>
-                <h4>{nameOf(g.id)}</h4>
+                <h4 className="gx-title">{nameOf(g.id)}</h4>
                 <small>{g.list.length} {g.list.length === 1 ? 'jogo' : 'jogos'}</small>
               </header>
               {g.list.map((m) => (

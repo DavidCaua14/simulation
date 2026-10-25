@@ -12,7 +12,7 @@ export function BetSlipBar({ count, multiplier, onOpen }) {
   return (
     <button type="button" className="pred-slip-bar" onClick={onOpen}>
       <span className="pred-slip-count">{count}</span>
-      <span><TicketIcon /> Meu bilhete</span>
+      <span><TicketIcon /> Ver bilhete</span>
       <strong>{formatMult(multiplier)}</strong>
     </button>
   )
@@ -44,11 +44,10 @@ export function BetSlipSheet({ slip, balance, onClose, onPlaced }) {
   }
 
   return (
-    <div className="pred-overlay" onClick={onClose}>
-      <div className="pred-sheet" onClick={(e) => e.stopPropagation()}>
-        <span className="pred-grabber" />
+    <div className="sn-sheet-wrap" onClick={onClose}>
+      <div className="sn-sheet pred-sheet" role="dialog" aria-modal="true" onClick={(e) => e.stopPropagation()}>
         <div className="pred-sheet-head">
-          <h3>Meu bilhete</h3>
+          <h3 className="heading">Meu bilhete</h3>
           <span className="pred-comp">{slip.count}/{MAX_PICKS} jogos</span>
         </div>
 
@@ -116,10 +115,10 @@ export function BetSlipSheet({ slip, balance, onClose, onPlaced }) {
         )}
         {error && <p className="pred-error">{error}</p>}
 
-        <button type="button" className="pred-btn primary" disabled={!valid || busy} onClick={confirm}>
+        <button type="button" className="gx-btn pred-cta" disabled={!valid || busy} onClick={confirm}>
           {busy ? 'Criando…' : `Confirmar bilhete · ${safeStake} moedas`}
         </button>
-        <button type="button" className="pred-btn" onClick={() => { slip.clear(); onClose() }}>
+        <button type="button" className="gx-btn-ghost pred-cta" onClick={() => { slip.clear(); onClose() }}>
           Limpar bilhete
         </button>
       </div>
