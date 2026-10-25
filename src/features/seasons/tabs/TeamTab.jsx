@@ -8,6 +8,7 @@ import ClubCrest from '../../club/components/ClubCrest'
 import { getClubById } from '../../club/data/clubs'
 import { EmptyState, ErrorState, LoadingState } from '../ui/States'
 import useCatalog from '../hooks/useCatalog'
+import useDragSwap from '../hooks/useDragSwap'
 import { autoLineup, fetchSquad, saveLineup } from '../services/managerApi'
 import { DEFAULT_TACTICS, LINE_NAME, LINES, POS_LINE, condTone, lineupStrength, ovrTone } from '../utils/managerUtils'
 import { COMP_SHORT } from '../utils/seasonUtils'
@@ -72,6 +73,48 @@ export default function TeamTab({ hub, onSaved, notify }) {
   const byId = useMemo(() => Object.fromEntries((squad?.players || []).map((p) => [p.id, p])), [squad])
   const formation = catalog?.byId[draft?.formation]
   const strength = useMemo(() => (formation && draft ? lineupStrength(formation, draft.slots, byId) : null), [formation, draft, byId])
+
+  // ARRASTAR E SOLTAR: troca titular↔titular, titular↔reserva e reserva↔reserva
+  const onDrop = useCallback(
+    (from, to) => {
+      setDraft((d) => {
+        if (!d) return d
+        const slots = { ...d.slots }
+        const bench = [...d.bench]
+        const read = (k) => (k.startsWith('slot:') ? slots[k.slice(5)] : k === 'bench:new' ? null : bench[Number(k.slice(6))])
+        const write = (k, pid) => {
+          if (k.startsWith('slot:')) {
+            if (pid) slots[k.slice(5)] = pid
+            else delete slots[k.slice(5)]
+          } else if (k === 'bench:new') {
+            if (pid) bench.push(pid)
+          } else {
+            const i = Number(k.slice(6))
+            if (pid) bench[i] = pid
+            else bench.splice(i, 1)
+          }
+        }
+        const a = read(from)
+        const b = read(to)
+        if (!a) return d
+        if (to === 'bench:new' && from.startsWith('bench:')) return d
+        // reserva indo para o banco "novo" a partir do campo: precisa caber
+        if (to === 'bench:new' && bench.length >= (squad?.rules?.bench ?? 12)) return d
+        // ordem importa quando os dois estão no banco (índices)
+        if (from.startsWith('bench:') && to.startsWith('bench:')) {
+          write(to, a)
+          write(from, b)
+        } else {
+          write(from, b)
+          write(to, a)
+        }
+        return { ...d, slots, bench: bench.filter(Boolean) }
+      })
+      setDirty(true)
+    },
+    [squad],
+  )
+  const { drag, bind, ghost } = useDragSwap({ onDrop, getPlayer: (pid) => byId[pid] })
 
   // problemas calculados na hora (antes de salvar)
   const localIssues = useMemo(() => {
@@ -216,6 +259,8 @@ export default function TeamTab({ hub, onSaved, notify }) {
             colors={club?.colors}
             selected={picker?.kind === 'slot' ? picker.slot : null}
             onSlot={(s) => setPicker({ kind: 'slot', slot: s.slot, pos: s.pos, current: draft.slots[s.slot] })}
+            bind={bind}
+            drag={drag}
           />
 
           {strength && (
@@ -241,19 +286,22 @@ export default function TeamTab({ hub, onSaved, notify }) {
             <h2 className="gx-title">
               Banco <small>{draft.bench.length}/{squad.rules.bench} reservas</small>
             </h2>
-            <div className="tt-bench">
+            <div className={`tt-bench ${drag ? 'is-dragging' : ''}`}>
               {draft.bench.map((pid, i) => (
-                <PlayerToken
-                  key={pid}
-                  player={byId[pid]}
-                  pos={byId[pid]?.position}
-                  label={byId[pid]?.position}
-                  colors={club?.colors}
-                  onClick={() => setPicker({ kind: 'bench', index: i, pos: byId[pid]?.position, current: pid })}
-                />
+                <div key={pid} className={`tt-bslot ${drag?.over === `bench:${i}` ? 'is-drop' : ''} ${drag?.from === `bench:${i}` ? 'is-dragging' : ''}`} {...bind(`bench:${i}`, pid)}>
+                  <PlayerToken
+                    player={byId[pid]}
+                    pos={byId[pid]?.position}
+                    label={byId[pid]?.position}
+                    colors={club?.colors}
+                    onClick={() => setPicker({ kind: 'bench', index: i, pos: byId[pid]?.position, current: pid })}
+                  />
+                </div>
               ))}
               {draft.bench.length < squad.rules.bench && (
-                <PlayerToken player={null} label="Reserva" onClick={() => setPicker({ kind: 'bench', index: null, pos: null, current: null })} />
+                <div className={`tt-bslot ${drag?.over === 'bench:new' ? 'is-drop' : ''}`} {...bind('bench:new', null)}>
+                  <PlayerToken player={null} label="Reserva" onClick={() => setPicker({ kind: 'bench', index: null, pos: null, current: null })} />
+                </div>
               )}
             </div>
           </section>
@@ -278,7 +326,7 @@ export default function TeamTab({ hub, onSaved, notify }) {
             </p>
           )}
           <p className="sn-hint">
-            Toque numa vaga para trocar o jogador. Fora de posição ele rende menos; cansado também. Mudar a formação toda hora reduz o entrosamento
+            Arraste um jogador até outra vaga ou até o banco para trocar de lugar — ou toque nele para escolher da lista. Fora de posição ele rende menos; cansado também. Mudar a formação toda hora reduz o entrosamento
             tático ({squad.lineup.formation_games} jogo{squad.lineup.formation_games === 1 ? '' : 's'} seguidos nesta formação).
           </p>
         </>
@@ -338,13 +386,19 @@ export default function TeamTab({ hub, onSaved, notify }) {
       )}
 
       {(view === 'lineup' || view === 'tactics') && (
-        <div className="tt-actions">
+        <div className={`tt-actions ${drag ? "is-hidden" : ""}`}>
           <button type="button" className="gx-btn-ghost" onClick={handleAuto} disabled={saving}>
             <Sparkles size={16} /> Auxiliar escala
           </button>
           <button type="button" className={`gx-btn tt-save ${dirty ? 'is-dirty' : ''}`} onClick={handleSave} disabled={saving || !dirty}>
             <Save size={17} /> {saving ? 'Salvando…' : dirty ? 'Salvar' : 'Salvo'}
           </button>
+        </div>
+      )}
+
+      {drag && ghost && (
+        <div className="tt-ghost" style={{ left: drag.x, top: drag.y }} aria-hidden="true">
+          <PlayerToken player={ghost} pos={drag.over?.startsWith('slot:') ? formation?.slots.find((x) => `slot:${x.slot}` === drag.over)?.pos || ghost.position : ghost.position} colors={club?.colors} />
         </div>
       )}
 

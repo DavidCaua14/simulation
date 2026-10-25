@@ -71,7 +71,7 @@ export function PlayerToken({ player, pos, colors, selected, live, onClick, labe
   )
 }
 
-export default function Pitch({ formation, slots, playersById, colors, selected, onSlot, live = false, compact = false }) {
+export default function Pitch({ formation, slots, playersById, colors, selected, onSlot, live = false, compact = false, bind, drag }) {
   if (!formation) return <div className="pt pt-empty" />
   return (
     <div className={`pt ${compact ? 'is-compact' : ''}`}>
@@ -80,7 +80,12 @@ export default function Pitch({ formation, slots, playersById, colors, selected,
         const pid = slots?.[s.slot]
         const player = pid ? playersById[pid] : null
         return (
-          <div key={s.slot} className="pt-slot" style={{ left: `${s.x}%`, top: `${s.y * 0.94 + 2}%` }}>
+          <div
+            key={s.slot}
+            className={`pt-slot ${drag?.over === `slot:${s.slot}` ? 'is-drop' : ''} ${drag?.from === `slot:${s.slot}` ? 'is-dragging' : ''}`}
+            style={{ left: `${s.x}%`, top: `${s.y * 0.94 + 2}%` }}
+            {...(bind ? bind(`slot:${s.slot}`, pid) : {})}
+          >
             <PlayerToken
               player={player}
               pos={s.pos}
