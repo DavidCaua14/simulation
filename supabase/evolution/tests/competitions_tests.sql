@@ -13,7 +13,7 @@ create temp table t_ctx (k text primary key, v text);
 -- carreira de teste
 insert into auth.users (id) values ('99999999-9999-9999-9999-999999999999') on conflict do nothing;
 insert into public.careers (id, user_id, nickname, club_id, country, age)
-values ('99999999-0000-0000-0000-000000000001', '99999999-9999-9999-9999-999999999999', 'teste_evo', 'arsenal', 'ENG', 30);
+values ('99999999-0000-0000-0000-000000000001', '99999999-9999-9999-9999-999999999999', 'teste_evo', 'arsenal', 'EN', 30);
 
 -- ---------------------------------------------------------------------
 -- T1) Dados de referência: quantidades, potes, fases de entrada, nenhum clube em duas divisões

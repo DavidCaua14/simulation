@@ -17,7 +17,8 @@ supabase/cards/01..04
 supabase/manager/06_cards_coach.sql
 supabase/evolution/03_engine.sql            <- motor de competições configurável
 supabase/evolution/04_manager.sql           <- carreira do treinador no motor configurável
-supabase/evolution/05+ ...                  <- próximas etapas
+supabase/evolution/05_career_start.sql      <- clube inicial pela nacionalidade + perfis de dificuldade
+supabase/evolution/06+ ...                  <- próximas etapas
 ```
 
 Banco que já estava no ar: rode só `evolution/01`, `evolution/02`, `manager/02_players_seed.sql` (gerado de novo) e
@@ -38,11 +39,19 @@ Edite `data/competitions/competitions.json` (fases, mando, prorrogação, pênal
 objetivos, rodadas do calendário) e rode `node scripts/build-competitions.mjs`. Acesso e rebaixamento por ano ficam em
 `promotion` (tabela `sim_promotion_rules`, com `from_year`/`to_year`). O motor lê a configuração; não há regra fixa no código.
 
+## Clube inicial por nacionalidade
+
+Tabela `sim_start_rules` (uma linha por nacionalidade, mesmo código de `careers.country`) e `sim_difficulty_profiles`.
+Nova nacionalidade = inserir uma linha em `sim_start_rules` + a bandeira em `src/features/player/components/flags.jsx` e
+`src/features/player/data/countries.js`. A tela de criação só mostra nacionalidades que têm regra ativa no banco, e o
+banco recusa (`careers_country_fkey`) carreira com nacionalidade sem regra.
+
 ## Testes
 
 ```
 psql -v ON_ERROR_STOP=1 -f supabase/evolution/tests/competitions_tests.sql
 psql -v ON_ERROR_STOP=1 -f supabase/manager/tests/manager_tests.sql
+psql -v ON_ERROR_STOP=1 -f supabase/evolution/tests/career_start_tests.sql
 ```
 
 ## Desfazer

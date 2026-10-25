@@ -189,3 +189,19 @@
 @media (prefers-reduced-motion: reduce) {
   .of-bubble, .of-card, .of-typing i { animation: none; }
 }
+
+/* proposta com perfil de início diferente do padrão (ex.: "Início acessível" na Série B) */
+.of-card-diff {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  column-gap: 6px;
+  row-gap: 2px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--gx-green) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--gx-green) 35%, transparent);
+  color: var(--gx-green);
+}
+.of-card-diff strong { font: 800 0.74rem var(--font-display); letter-spacing: 0.1em; text-transform: uppercase; }
+.of-card-diff small { grid-column: 1 / -1; font-size: 0.74rem; line-height: 1.35; color: var(--gx-ink-2); }
