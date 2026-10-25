@@ -1,0 +1,28 @@
+# club: leeds
+# source: https://en.wikipedia.org/wiki/Leeds_United_F.C.
+# accessed: 2026-10-25
+# as_of: 2026-08-29
+1|GK|ENG|James Trafford|
+2|DF|ENG|Jayden Bogle|
+3|DF|SWE|Gabriel Gudmundsson|
+4|MF|WAL|Ethan Ampadu|captain
+5|DF|BIH|Tarik Muharemović|
+6|DF|WAL|Joe Rodon|
+7|MF|WAL|Daniel James|
+8|MF|ENG|Sean Longstaff|
+9|FW|ENG|Dominic Calvert-Lewin|
+10|MF|WAL|Harry Wilson|
+11|MF|USA|Brenden Aaronson|
+14|FW|GER|Lukas Nmecha|
+15|DF|SVN|Jaka Bijol|
+18|MF|GER|Anton Stach|
+19|FW|SUI|Noah Okafor|
+21|GK|ENG|Alex Cairns|
+22|MF|JPN|Ao Tanaka|
+24|DF|ENG|James Justin|
+29|FW|ITA|Wilfried Gnonto|
+30|DF|SUI|Nico Elvedi|
+44|MF|BUL|Ilia Gruev|
+-|GK|GER|Michael Zetterer|
+-|FW|ESP|Mateo Joseph|
+-|FW|BEL|Largie Ramazani|

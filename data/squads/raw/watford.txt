@@ -1,0 +1,32 @@
+# club: watford
+# source: https://en.wikipedia.org/wiki/Watford_F.C.
+# accessed: 2026-10-25
+# as_of: 2026-09-11
+1|GK|ITA|Federico Ravaglia|
+2|DF|COD|Jeremy Ngakia|
+3|DF|FRA|Soumaïla Coulibaly|on loan from Strasbourg
+4|DF|CMR|Kévin Keben|
+5|MF|CYP|Hector Kyprianou|
+6|DF|ENG|Mattie Pollock|captain
+7|FW|MAR|Othmane Maamma|
+8|MF|ITA|Edoardo Bove|
+9|FW|DEN|Luca Kjerrumgaard|
+10|FW|NED|Myron Boadu|
+11|FW|IRL|Rocco Vata|
+14|FW|GER|Kwadwo Baah|
+15|DF|SEN|Krépin Diatta|
+16|DF|ENG|Marc Bola|
+17|FW|ESP|Iker Bravo|
+18|FW|JAM|Michail Antonio|
+19|FW|GEO|Nikoloz Chikovani|
+20|FW|MLI|Mamadou Doumbia|
+21|FW|AFG|Amin Nabizada|
+22|MF|ARG|Martín Payero|
+23|DF|GER|Omar Traoré|
+24|GK|ENG|Sam Walker|
+26|GK|AUT|Daniel Bachmann|
+29|DF|CRO|Branimir Mlačić|on loan from Udinese
+33|DF|ZIM|Jordan Zemura|on loan from Udinese
+39|MF|COD|Edo Kayembe|
+43|MF|ENG|Jack Grieves|
+45|FW|COD|Stephy Mavididi|on loan from Leicester City

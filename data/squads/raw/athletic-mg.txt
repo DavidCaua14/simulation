@@ -1,0 +1,41 @@
+# club: athletic-mg
+# source: https://www.sofascore.com/pt/time/futebol/athletic-club/342775
+# accessed: 2026-10-25
+# as_of: 2026-10-25
+# note: a fonte não informa números nem nacionalidades ("?"); 4 estrangeiros não identificados
+-|FW|?|Carlinhos|
+-|FW|?|Ronaldo Tavares|
+-|FW|?|Yarlen|
+-|FW|?|Max|
+-|FW|?|Wilinton Aponzá|
+-|FW|?|Bruninho|
+-|FW|?|Gustavo Silva|
+-|MF|?|Felipe Negrucci|
+-|MF|?|Jota|
+-|MF|?|Kauan Rodrigues|
+-|MF|?|Kauan Lindes|
+-|MF|?|Gian Cabezas|
+-|MF|?|Gustavinho|
+-|MF|?|Dixon Vera|
+-|MF|?|João Miguel|
+-|MF|?|Yago Santos|
+-|MF|?|Redney|
+-|MF|?|Alexandre Pena|
+-|MF|?|Fabrício Isidoro|
+-|MF|?|Pedro Oliveira|
+-|DF|?|Philipe Sampaio|
+-|DF|?|Zeca|
+-|DF|?|Enzo|
+-|DF|?|Lucas Belezi|
+-|DF|?|Felipe Vieira|
+-|DF|?|Diogo Batista|
+-|DF|?|Douglas Pele|
+-|DF|?|Jhonathan|
+-|DF|?|Marcelo Henrique|
+-|DF|?|Sidimar|
+-|DF|?|Matheus Pimenta|
+-|GK|?|Luan Polli|
+-|GK|?|Glauco Tadeu|
+-|GK|?|Tony|
+-|GK|?|Eduardo Freire|
+-|GK|?|Luan|

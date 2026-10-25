@@ -37,6 +37,7 @@ const OUT_JSON = path.join(ROOT, 'data', 'squads', 'squads.json')
 const OUT_REPORT = path.join(ROOT, 'data', 'squads', 'IMPORT_REPORT.md')
 const OUT_SQL = path.join(ROOT, 'supabase', 'manager', '02_players_seed.sql')
 const CLUB_SEED = path.join(ROOT, 'supabase', 'seasons', '02_seed.sql')
+const EXTRA_CLUBS = path.join(ROOT, 'data', 'clubs', 'generated_strength.json')
 const UNKNOWN_DATE = '2026-01-01' // "as_of: unknown" perde qualquer conflito
 
 // Dados fixos dos clubes (nome oficial e cidade) — complementam sim_clubs
@@ -217,6 +218,12 @@ async function readClubStrength() {
   const re = /\('([a-z0-9-]+)',\s*'([^']+)',\s*'([^']+)',\s*'([A-Z]{3})',\s*'([a-z_]+)',\s*(\d+),/g
   let m
   while ((m = re.exec(sql))) map[m[1]] = { name: m[2], short: m[3], country: m[4], tier: m[5], strength: Number(m[6]) }
+  // clubes da evolução (Premier League, Championship, Champions, Série B): força calculada por scripts/build-competitions.mjs
+  const extra = JSON.parse(await readFile(EXTRA_CLUBS, 'utf8'))
+  for (const [id, c] of Object.entries(extra)) {
+    map[id] = { name: c.name, short: c.short, country: c.country, tier: c.tier, strength: c.strength }
+    if (!CLUB_META[id]) CLUB_META[id] = [c.full_name, c.city]
+  }
   return map
 }
 
@@ -318,7 +325,7 @@ async function main() {
 
   // 1) normaliza
   const clubs = raw.map((c) => {
-    if (!strength[c.club]) throw new Error(`${c.file}: clube "${c.club}" não existe em supabase/seasons/02_seed.sql`)
+    if (!strength[c.club]) throw new Error(`${c.file}: clube "${c.club}" não existe em supabase/seasons/02_seed.sql nem em data/clubs/clubs_evolution.json`)
     const players = c.rows.map((r) => {
       const pos = parsePositions(r.pos)
       return {
@@ -388,7 +395,17 @@ async function main() {
   }
   for (const c of clubs) c.players = c.players.filter((p) => !dropped.has(p))
 
-  // 3) ids estáveis: nome + nacionalidade; homônimos ganham o clube no fim
+  // 3) ids estáveis: nome + nacionalidade; homônimos ganham o clube no fim.
+  //    Quem já tinha id na importação anterior (data/squads/squads.json) MANTÉM o mesmo id — o id é referenciado
+  //    pelas carreiras (mgr_players), estatísticas e cartas, então não pode mudar quando entram clubes novos.
+  const prevIds = new Map()
+  try {
+    const prev = JSON.parse(await readFile(OUT_JSON, 'utf8'))
+    for (const p of prev.players) prevIds.set(`${norm(p.name)}|${p.nationality || ''}|${p.club}`, p.id)
+    for (const p of prev.players) if (!prevIds.has(`id:${p.id}`)) prevIds.set(`id:${p.id}`, `${norm(p.name)}|${p.nationality || ''}`)
+  } catch {
+    /* primeira importação */
+  }
   const idCount = new Map()
   for (const p of clubs.flatMap((c) => c.players)) {
     const base = `${slug(p.name)}${p.nat ? `-${p.nat.toLowerCase()}` : ''}`
@@ -396,10 +413,31 @@ async function main() {
     idCount.set(base, (idCount.get(base) || 0) + 1)
   }
   const used = new Set()
-  for (const p of clubs.flatMap((c) => c.players)) {
-    let id = idCount.get(p.baseId) > 1 ? `${p.baseId}-${p.club}` : p.baseId
+  const everyone = clubs.flatMap((c) => c.players)
+  // 3a) ids anteriores: mesmo nome + nacionalidade + clube; ou mesmo nome + nacionalidade (transferência) se o id antigo ainda estiver livre
+  for (const p of everyone) {
+    const old = prevIds.get(`${norm(p.name)}|${p.nat || ''}|${p.club}`)
+    if (old && !used.has(old)) {
+      p.id = old
+      used.add(old)
+    }
+  }
+  for (const p of everyone) {
+    if (p.id) continue
+    for (const cand of [p.baseId, `${p.baseId}-${p.club}`]) {
+      if (prevIds.get(`id:${cand}`) === `${norm(p.name)}|${p.nat || ''}` && !used.has(cand) && idCount.get(p.baseId) === 1) {
+        p.id = cand
+        used.add(cand)
+        break
+      }
+    }
+  }
+  // 3b) jogadores novos
+  for (const p of everyone) {
+    if (p.id) continue
+    let id = idCount.get(p.baseId) > 1 || used.has(p.baseId) || prevIds.has(`id:${p.baseId}`) ? `${p.baseId}-${p.club}` : p.baseId
     let n = 2
-    while (used.has(id)) id = `${p.baseId}-${p.club}-${n++}`
+    while (used.has(id) || (prevIds.has(`id:${id}`) && prevIds.get(`id:${id}`) !== `${norm(p.name)}|${p.nat || ''}`)) id = `${p.baseId}-${p.club}-${n++}`
     used.add(id)
     p.id = id
   }

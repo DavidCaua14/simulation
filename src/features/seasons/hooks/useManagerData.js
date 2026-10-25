@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { fetchFixtures, fetchHub } from '../services/managerApi'
+import { fetchCompetitions, fetchFixtures, fetchHub } from '../services/managerApi'
+import { registerCompetitions, setSeasonCompetitions } from '../utils/seasonUtils'
 
-const COMPS = ['brasileirao', 'copa_brasil', 'libertadores']
-
-// Carrega o modo Carreira de uma vez: o "hub" (treinador, clube, temporada, objetivos, mensagens...)
-// e todos os jogos dos 3 campeonatos. Depois disso as abas só leem a memória.
+// Carrega o modo Carreira de uma vez: o "hub" (treinador, clube, temporada, objetivos, mensagens...),
+// o catálogo de competições e todos os jogos das competições da temporada (Brasil ou Inglaterra).
+// Depois disso as abas só leem a memória.
 // Depois de cada ação o refresh é "silencioso": a tela mantém os dados até os novos chegarem.
 export default function useManagerData() {
   const [hub, setHub] = useState(null)
@@ -18,11 +18,14 @@ export default function useManagerData() {
     const mine = ++reqId.current
     if (!silent) setLoading(true)
     try {
-      const h = await fetchHub()
-      const lists = await Promise.all(COMPS.map((c) => fetchFixtures(h.season.id, c)))
+      const [h, comps] = await Promise.all([fetchHub(), fetchCompetitions()])
+      registerCompetitions(comps)
+      const ids = (h.competitions || []).map((c) => c.id)
+      const lists = await Promise.all(ids.map((c) => fetchFixtures(h.season.id, c)))
       if (!alive.current || mine !== reqId.current) return null
+      setSeasonCompetitions(ids)
       setHub(h)
-      setByComp(Object.fromEntries(COMPS.map((id, i) => [id, lists[i]])))
+      setByComp(Object.fromEntries(ids.map((id, i) => [id, lists[i]])))
       setError('')
       return h
     } catch (e) {

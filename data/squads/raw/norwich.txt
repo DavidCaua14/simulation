@@ -1,0 +1,39 @@
+# club: norwich
+# source: https://en.wikipedia.org/wiki/Norwich_City_F.C.
+# accessed: 2026-10-25
+# as_of: 2026-08-19
+1|GK|BIH|Vladan Kovačević|
+3|DF|ENG|Jack Stacey|
+5|DF|CRO|Jakov Medić|
+6|DF|ENG|Harry Darling|
+7|MF|DEN|Pelle Mattsson|vice-captain
+8|MF|ENG|Liam Gibbs|
+11|MF|JAM|Andre Brooks|
+12|DF|ENG|Lucien Mahovo|
+13|DF|CMR|Darlin Yongwa|
+14|DF|ENG|Ben Chrisene|
+15|DF|NIR|Ruairi McConville|
+16|MF|ENG|Jacob Wright|
+17|FW|CRO|Ante Crnac|
+18|MF|GHA|Amankwah Forson|
+19|MF|SEN|Papa Amadou Diallo|
+20|MF|TUN|Anis Ben Slimane|
+21|FW|AUS|Mohamed Touré|
+22|MF|SRB|Mirko Topić|
+23|MF|SCO|Kenny McLean|captain
+24|FW|ENG|Jovon Makama|
+25|MF|ENG|Paris Maghoma|
+26|MF|ENG|Sam Field|
+28|DF|BRA|Bruno Alves|on loan from Cruzeiro
+29|MF|DEN|Oscar Schwartau|
+30|FW|DEN|Mathias Kvistgaarden|
+32|GK|ENG|Daniel Grimshaw|
+33|DF|PAN|José Córdoba|
+34|GK|CHI|Vicente Reyes|
+35|DF|ENG|Kellen Fisher|
+37|MF|CAN|Ali Ahmed|
+40|GK|ENG|Caleb Ansen|
+41|MF|SCO|Gabriel Forsyth|
+44|MF|WAL|Elliot Myles|
+46|FW|ENG|Errol Mundle-Smith|
+49|FW|NED|Anthony Musaba|on loan from Fenerbahçe

@@ -1,0 +1,32 @@
+# club: ipswich
+# source: https://en.wikipedia.org/wiki/Ipswich_Town_F.C.
+# accessed: 2026-10-25
+# as_of: 2026-09-01
+1|GK|ENG|Alex Palmer|
+2|DF|ENG|Darnell Furlong|
+3|DF|ENG|Leif Davis|
+4|DF|CIV|Cédric Kipré|
+5|MF|NED|Azor Matusiwa|
+6|DF|MAR|Issa Diop|
+7|FW|GHA|Abdul Fatawu|
+8|FW|NOR|Sindre Walle Egeli|
+9|FW|NED|Zian Flemming|
+10|FW|PAR|Julio Enciso|
+11|FW|ENG|Jaden Philogene|
+12|MF|POR|Florentino Luís|
+14|MF|IRL|Jack Taylor|
+19|FW|BRA|Emersonn|
+20|FW|IRL|Kasey McAteer|
+23|MF|SRB|Saša Lukić|
+24|DF|ENG|Jacob Greaves|
+25|MF|ARG|Exequiel Palacios|
+26|DF|IRL|Dara O'Shea|captain
+27|GK|ENG|David Button|
+28|GK|ENG|Christian Walton|
+29|FW|ENG|Chuba Akpom|
+32|MF|CHI|Marcelino Núñez|
+33|FW|ALB|Anis Mehmeti|
+37|GK|NED|Kjell Scherpen|
+38|FW|JPN|Daizen Maeda|
+42|DF|CIV|Abdoul Ouattara|
+47|FW|ENG|Jack Clarke|

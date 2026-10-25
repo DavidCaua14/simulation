@@ -1,0 +1,35 @@
+# club: charlton
+# source: https://en.wikipedia.org/wiki/Charlton_Athletic_F.C.
+# accessed: 2026-10-25
+# as_of: unknown
+2|DF|ENG|Kayne Ramsay|
+3|DF|SCO|Josh Edwards|
+4|DF|ENG|Reece Burke|
+5|DF|ENG|Lloyd Jones|
+6|MF|IRL|Conor Coventry|
+7|FW|JAM|Tyreece Campbell|
+8|MF|ENG|Harvey Knibbs|
+9|FW|ENG|Karlan Grant|
+10|MF|SCO|Greg Docherty|captain
+11|FW|ENG|Miles Leaburn|
+12|DF|FRA|Billy Koumetio|
+13|GK|NGA|Arthur Okonkwo|on loan from Wrexham
+14|MF|ENG|Sonny Carey|
+15|MF|ENG|Nathaniel Chalobah|
+16|MF|KEN|Timothy Ouma|on loan from Slavia Prague
+17|DF|JAM|Amari'i Bell|
+18|DF|SVK|Ivan Mesík|
+19|FW|IRL|Millenic Alli|
+20|DF|IRL|Danny McNamara|
+21|GK|IRL|Tiernan Brooks|
+23|FW|USA|Charlie Kelman|
+24|FW|ENG|Matt Godden|
+25|GK|ENG|Will Mannion|
+26|MF|ENG|Joe Rankin-Costello|
+27|MF|ENG|Ibrahim Fullah|
+28|DF|KEN|Collins Sichenje|
+30|MF|SCO|Rob Apter|
+31|DF|UGA|Nathan Asiimwe|
+32|MF|ENG|Alan Mwamba|
+33|FW|ENG|Micah Mbick|
+-|DF|NZL|Tyler Bindon|on loan from Nottingham Forest

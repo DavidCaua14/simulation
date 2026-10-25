@@ -1,0 +1,38 @@
+# club: hull
+# source: https://en.wikipedia.org/wiki/2026%E2%80%9327_Hull_City_A.F.C._season
+# accessed: 2026-10-25
+# as_of: unknown
+1|GK|ENG|Jack Butland|
+12|GK|ENG|Dillon Phillips|
+19|GK|GRE|Konstantinos Tzolakis|
+2|RB|ENG|Lewie Coyle|captain
+3|LB|ENG|Ryan Giles|
+4|CB|ENG|Charlie Hughes|vice-captain
+6|CB|NGA|Semi Ajayi|
+15|CB|IRL|John Egan|
+17|CB|NIR|Paddy McNair|
+18|RB|ENG|Brooke Norton-Cuffy|
+22|CB|AUS|Lucas Herrington|
+23|LB|ENG|Matt Targett|
+32|CB|SEN|Nobel Mendy|
+5|CM|JPN|Hidemasa Morita|
+8|DM|BEL|Eliot Matazo|
+11|AM|ENG|Joe Gelhardt|
+14|CM|NOR|Jens Hjertø-Dahl|
+20|DM|ECU|Óscar Zambrano|
+24|CM|ENG|Darko Gyabi|
+25|CM|ENG|Matt Crooks|
+26|CM|ENG|Kieran Dowell|
+27|CM|ENG|Regan Slater|
+29|DM|FRA|Lucas Gourna-Douath|
+33|AM|TUR|Abdülkadir Ömür|
+36|CM|GRE|Christos Mouzakitis|
+-|CM|ENG|Tim Iroegbunam|
+7|RW|WAL|Sorba Thomas|
+9|CF|SCO|Oli McBurnie|
+10|RW|ALG|Mohamed Belloumi|
+21|LW|SWE|Elliot Stroud|
+30|RW|NGA|David Akintola|
+47|CF|FRA|Robinio Vaz|on loan from Roma
+50|RW|FRA|Mohamed-Ali Cho|
+-|CF|GER|Ilyas Ansah|

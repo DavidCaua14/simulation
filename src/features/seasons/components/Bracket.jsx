@@ -1,11 +1,9 @@
 import ClubCrest from '../../club/components/ClubCrest'
 import { getClubById } from '../../club/data/clubs'
-import { STAGE_LABEL } from '../utils/seasonUtils'
-
-const KNOCKOUT = ['r16', 'qf', 'sf', 'final']
+import { knockoutPhases, phaseOf, stageLabel } from '../utils/seasonUtils'
 
 // Agrupa os jogos de mata-mata em confrontos (ida + volta somados).
-function buildTies(fixtures) {
+function buildTies(fixtures, KNOCKOUT) {
   const ties = {}
   for (const f of fixtures) {
     if (!KNOCKOUT.includes(f.stage)) continue
@@ -40,15 +38,16 @@ function Line({ club, goals, win, mine, started }) {
   )
 }
 
-export default function Bracket({ fixtures, myClub }) {
-  const ties = buildTies(fixtures)
-  if (!ties.length) return <p className="sn-muted">O mata-mata ainda não começou.</p>
+export default function Bracket({ comp, fixtures, myClub }) {
+  const KNOCKOUT = knockoutPhases(comp)
+  const ties = buildTies(fixtures, KNOCKOUT)
+  if (!ties.length) return <p className="sn-muted">A fase eliminatória ainda não começou.</p>
 
   return (
     <div className="sn-bracket">
       {KNOCKOUT.filter((s) => ties.some((t) => t.stage === s)).map((stage) => (
         <section key={stage}>
-          <h4 className="sn-bracket-title">{STAGE_LABEL[stage]}</h4>
+          <h4 className="sn-bracket-title">{stageLabel(comp, stage)}</h4>
           <div className="sn-ties">
             {ties
               .filter((t) => t.stage === stage)
@@ -60,7 +59,7 @@ export default function Bracket({ fixtures, myClub }) {
                   <small>
                     {t.legs
                       .filter((l) => l.status === 'played')
-                      .map((l) => `${l.leg === 1 && stage !== 'final' ? 'Ida' : stage === 'final' ? 'Jogo' : 'Volta'} ${l.home_goals}×${l.away_goals}`)
+                      .map((l) => `${(phaseOf(comp, stage)?.legs || (stage === 'final' ? 1 : 2)) === 1 ? 'Jogo' : l.leg === 1 ? 'Ida' : 'Volta'} ${l.home_goals}×${l.away_goals}${l.extra_time ? ' (prorr.)' : ''}`)
                       .join(' · ') || 'A disputar'}
                     {t.pens ? ` · Pênaltis ${t.pens}` : ''}
                   </small>

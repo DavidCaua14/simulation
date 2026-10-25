@@ -1,0 +1,29 @@
+# club: lask
+# source: https://en.wikipedia.org/wiki/LASK
+# accessed: 2026-10-25
+# as_of: 2026-09-02
+1|GK|AUT|Lukas Jungwirth|
+2|DF|USA|George Bello|
+3|DF|JAM|Miguel Freckleton|
+4|DF|NED|Xavier Mbuyamba|
+5|MF|KOS|Art Smakaj|
+6|MF|SUR|Melayro Bogarde|
+7|FW|USA|Samuel Adeniran|
+8|FW|NGA|Moses Usor|
+9|MF|CZE|Kryštof Daněk|
+14|FW|AUT|Saša Kalajdžić|
+15|MF|MLI|Mohamed Sanogo|
+16|DF|PAN|Andrés Andrade|
+18|MF|AUT|Alessandro Schöpf|
+20|DF|DEN|Kasper Jørgensen|
+21|DF|COD|Manoël Verhaeghe|
+22|FW|FRA|Ramiz Harakaté|
+25|DF|CMR|Yvan Dibango|
+27|FW|AUT|Christoph Lang|
+29|DF|AUT|Florian Flecker|
+30|MF|AUT|Sascha Horvath|captain
+33|GK|AUT|Tobias Schützenauer|
+37|FW|MNE|Filip Perović|
+43|DF|BRA|Alemão|
+50|GK|AUT|Fabian Schillinger|
+52|DF|MLI|Cheikne Kébé|

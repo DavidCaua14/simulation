@@ -1,0 +1,34 @@
+# club: chelsea
+# source: https://en.wikipedia.org/wiki/2026%E2%80%9327_Chelsea_F.C._season
+# accessed: 2026-10-25
+# as_of: 2026-10-10
+1|GK|ARG|Emiliano Martínez|
+28|GK|ENG|Teddy Sharman-Lowe|
+39|GK|BEL|Mike Penders|
+44|GK|USA|Gabriel Slonina|
+2|RB|ITA|Marco Palestra|
+3|CB|FRA|Wesley Fofana|
+5|CB|FRA|Maxence Lacroix|
+6|CB|ENG|Levi Colwill|
+21|LB|NED|Jorrel Hato|
+24|RB|ENG|Reece James|captain
+27|RB|FRA|Malo Gusto|
+29|LB|ESP|Pep Chavarría|
+30|CB|ARG|Aarón Anselmino|
+34|RB/CB|ENG|Josh Acheampong|
+37|CB|ENG|Olutayo Subuloye|
+4|CM|ARG|Valentín Barco|
+10|AM/RW|ENG|Cole Palmer|
+14|CM|ENG|Jordan Henderson|
+17|AM/LW|ENG|Morgan Rogers|
+25|DM|ECU|Moisés Caicedo|
+31|CM|ENG|Reggie Watson|
+32|CM|ENG|Mahdi Nicoll-Jazuli|
+45|DM|BEL|Roméo Lavia|
+7|RW/LW|POR|Pedro Neto|
+9|ST|BRA|João Pedro|
+11|LW/RW|ENG|Jamie Gittens|
+18|ST|ENG|Danny Welbeck|
+22|ST|NED|Emmanuel Emegha|
+23|RW|POR|Geovany Quenda|
+41|RW|BRA|Estêvão|

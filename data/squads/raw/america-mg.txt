@@ -1,0 +1,40 @@
+# club: america-mg
+# source: https://en.wikipedia.org/wiki/Am%C3%A9rica_Futebol_Clube_(MG)
+# accessed: 2026-10-25
+# as_of: unknown
+1|GK|BRA|Gustavo|
+2|DF|BRA|Emerson Santos|
+3|DF|BRA|Nathan Pelae|
+4|DF|BRA|Rafa Barcelos|
+5|MF|ARG|Fernando Elizari|
+7|FW|BRA|Guilherme Parede|
+8|MF|BRA|Felipe Amaral|
+9|FW|BRA|Willian Bigode|
+10|MF|BRA|Yago Souza|
+11|FW|BRA|Gabriel Barros|on loan from Internacional
+12|DF|BRA|Samuel Alves|
+15|DF|BRA|Alex Silva|
+16|MF|BRA|Alê|
+17|FW|URU|Gonzalo Mastriani|on loan from Athletico Paranaense
+19|GK|BRA|William|
+20|FW|BRA|Paulo Victor|on loan from Chaves
+21|MF|BRA|Eduardo Person|
+22|DF|BRA|Léo Alaba|on loan from AVS
+27|GK|BRA|Cássio|
+29|DF|BRA|Dalbert|
+33|MF|BRA|Yago Santos|
+42|DF|BRA|Jhonny|on loan from Fluminense
+43|DF|BRA|Wesley|on loan from Tombense
+44|DF|BRA|Thallyson|
+45|DF|BRA|Ricardo Silva|captain
+52|GK|BRA|Ítalo Brito|
+55|MF|BRA|Otávio Gonçalves|
+67|FW|BRA|Yarlen|on loan from Botafogo
+77|FW|PAR|Matías Segovia|on loan from Botafogo
+88|MF|BRA|Jhonatan Lima|
+96|DF|BRA|Artur|
+97|MF|BRA|Val Soares|
+-|DF|BRA|Heitor|
+-|FW|BRA|Kaique Zizero|
+-|FW|BRA|Thauan Willians|
+-|FW|URU|Rodrigo Piñeiro|

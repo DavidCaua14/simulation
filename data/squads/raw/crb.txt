@@ -1,0 +1,29 @@
+# club: crb
+# source: https://en.wikipedia.org/wiki/Clube_de_Regatas_Brasil
+# accessed: 2026-10-25
+# as_of: unknown
+1|GK|BRA|Vitor Caetano|
+7|FW|BRA|Douglas Baggio|
+10|MF|BRA|Danielzinho|
+11|FW|BRA|Guilherme Pato|
+12|GK|BRA|Matheus Albino|
+16|MF|BRA|David Braw|
+17|FW|BRA|Thiaguinho|
+19|FW|BRA|Luiz Phellype|
+20|FW|BRA|Vinícius Nunes|
+21|MF|BRA|Pedro Castro|
+22|DF|BRA|Bressan|
+23|GK|BRA|Fábio Henrique|
+27|DF|BRA|Fábio Alemão|captain
+28|FW|BRA|Mikael|
+31|DF|BRA|Ruy|
+32|DF|BRA|Hereda|
+36|DF|BRA|Lucas Lovat|
+44|DF|BRA|Henri|
+45|MF|BRA|Patrick de Lucca|
+50|MF|BRA|Luizão|
+60|DF|BRA|Maycon|
+77|DF|BRA|Léo Campos|
+82|DF|BRA|Wallace|
+97|FW|BRA|Dadá Belmonte|
+-|GK|BRA|Cândido|

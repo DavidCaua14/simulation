@@ -1,0 +1,34 @@
+# club: man-united
+# source: https://en.wikipedia.org/wiki/Manchester_United_F.C.
+# accessed: 2026-10-25
+# as_of: 2026-09-01
+1|GK|BEL|Senne Lammens|
+2|DF|POR|Diogo Dalot|
+3|DF|MAR|Noussair Mazraoui|
+4|DF|NED|Matthijs de Ligt|
+5|DF|ENG|Harry Maguire|
+6|DF|ARG|Lisandro Martínez|
+7|MF|ENG|Mason Mount|
+8|MF|POR|Bruno Fernandes|captain
+9|FW|ENG|Marcus Rashford|
+10|FW|BRA|Matheus Cunha|
+11|FW|NED|Joshua Zirkzee|
+12|GK|WAL|Karl Darlow|
+13|DF|DEN|Patrick Dorgu|
+15|DF|FRA|Leny Yoro|
+16|FW|CIV|Amad Diallo|
+17|MF|BRA|Andrey Santos|
+18|MF|BEL|Youri Tielemans|
+19|FW|CMR|Bryan Mbeumo|
+20|MF|CMR|Carlos Baleba|
+22|GK|ENG|Tom Heaton|
+23|DF|ENG|Luke Shaw|
+25|MF|URU|Manuel Ugarte|
+26|DF|ENG|Ayden Heaven|
+30|FW|SVN|Benjamin Šeško|
+31|FW|ENG|Shea Lacey|
+37|MF|ENG|Kobbie Mainoo|
+38|MF|ENG|Jack Fletcher|
+39|MF|SCO|Tyler Fletcher|
+41|DF|ENG|Harry Amass|
+45|GK|NIR|Dermot Mee|

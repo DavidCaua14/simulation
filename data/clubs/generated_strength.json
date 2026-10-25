@@ -1,0 +1,1204 @@
+{
+ "arsenal": {
+  "name": "Arsenal",
+  "short": "ARS",
+  "country": "ENG",
+  "tier": "premier_league",
+  "strength": 88,
+  "full_name": "The Arsenal Football Club",
+  "city": "Londres",
+  "basis": {
+   "type": "pl_prev_pos",
+   "pos": 1
+  }
+ },
+ "aston-villa": {
+  "name": "Aston Villa",
+  "short": "AVL",
+  "country": "ENG",
+  "tier": "premier_league",
+  "strength": 86,
+  "full_name": "Aston Villa Football Club",
+  "city": "Birmingham",
+  "basis": {
+   "type": "pl_prev_pos",
+   "pos": 4
+  }
+ },
+ "bournemouth": {
+  "name": "Bournemouth",
+  "short": "BOU",
+  "country": "ENG",
+  "tier": "premier_league",
+  "strength": 85,
+  "full_name": "Athletic Football Club Bournemouth",
+  "city": "Bournemouth",
+  "basis": {
+   "type": "pl_prev_pos",
+   "pos": 6
+  }
+ },
+ "brentford": {
+  "name": "Brentford",
+  "short": "BRE",
+  "country": "ENG",
+  "tier": "premier_league",
+  "strength": 83,
+  "full_name": "Brentford Football Club",
+  "city": "Londres",
+  "basis": {
+   "type": "pl_prev_pos",
+   "pos": 9
+  }
+ },
+ "brighton": {
+  "name": "Brighton",
+  "short": "BHA",
+  "country": "ENG",
+  "tier": "premier_league",
+  "strength": 84,
+  "full_name": "Brighton & Hove Albion Football Club",
+  "city": "Falmer",
+  "basis": {
+   "type": "pl_prev_pos",
+   "pos": 8
+  }
+ },
+ "chelsea": {
+  "name": "Chelsea",
+  "short": "CHE",
+  "country": "ENG",
+  "tier": "premier_league",
+  "strength": 83,
+  "full_name": "Chelsea Football Club",
+  "city": "Londres",
+  "basis": {
+   "type": "pl_prev_pos",
+   "pos": 10
+  }
+ },
+ "coventry": {
+  "name": "Coventry City",
+  "short": "COV",
+  "country": "ENG",
+  "tier": "premier_league",
+  "strength": 76,
+  "full_name": "Coventry City Football Club",
+  "city": "Coventry",
+  "basis": {
+   "type": "champ_prev_pos",
+   "pos": 1
+  }
+ },
+ "crystal-palace": {
+  "name": "Crystal Palace",
+  "short": "CRY",
+  "country": "ENG",
+  "tier": "premier_league",
+  "strength": 80,
+  "full_name": "Crystal Palace Football Club",
+  "city": "Londres",
+  "basis": {
+   "type": "pl_prev_pos",
+   "pos": 15
+  }
+ },
+ "everton": {
+  "name": "Everton",
+  "short": "EVE",
+  "country": "ENG",
+  "tier": "premier_league",
+  "strength": 81,
+  "full_name": "Everton Football Club",
+  "city": "Liverpool",
+  "basis": {
+   "type": "pl_prev_pos",
+   "pos": 13
+  }
+ },
+ "fulham": {
+  "name": "Fulham",
+  "short": "FUL",
+  "country": "ENG",
+  "tier": "premier_league",
+  "strength": 82,
+  "full_name": "Fulham Football Club",
+  "city": "Londres",
+  "basis": {
+   "type": "pl_prev_pos",
+   "pos": 11
+  }
+ },
+ "hull": {
+  "name": "Hull City",
+  "short": "HUL",
+  "country": "ENG",
+  "tier": "premier_league",
+  "strength": 74,
+  "full_name": "Hull City Association Football Club",
+  "city": "Kingston upon Hull",
+  "basis": {
+   "type": "champ_prev_pos",
+   "pos": 6
+  }
+ },
+ "ipswich": {
+  "name": "Ipswich Town",
+  "short": "IPS",
+  "country": "ENG",
+  "tier": "premier_league",
+  "strength": 76,
+  "full_name": "Ipswich Town Football Club",
+  "city": "Ipswich",
+  "basis": {
+   "type": "champ_prev_pos",
+   "pos": 2
+  }
+ },
+ "leeds": {
+  "name": "Leeds United",
+  "short": "LEE",
+  "country": "ENG",
+  "tier": "premier_league",
+  "strength": 80,
+  "full_name": "Leeds United Football Club",
+  "city": "Leeds",
+  "basis": {
+   "type": "pl_prev_pos",
+   "pos": 14
+  }
+ },
+ "liverpool": {
+  "name": "Liverpool",
+  "short": "LIV",
+  "country": "ENG",
+  "tier": "premier_league",
+  "strength": 86,
+  "full_name": "Liverpool Football Club",
+  "city": "Liverpool",
+  "basis": {
+   "type": "pl_prev_pos",
+   "pos": 5
+  }
+ },
+ "man-city": {
+  "name": "Manchester City",
+  "short": "MCI",
+  "country": "ENG",
+  "tier": "premier_league",
+  "strength": 87,
+  "full_name": "Manchester City Football Club",
+  "city": "Manchester",
+  "basis": {
+   "type": "pl_prev_pos",
+   "pos": 2
+  }
+ },
+ "man-united": {
+  "name": "Manchester United",
+  "short": "MUN",
+  "country": "ENG",
+  "tier": "premier_league",
+  "strength": 87,
+  "full_name": "Manchester United Football Club",
+  "city": "Manchester",
+  "basis": {
+   "type": "pl_prev_pos",
+   "pos": 3
+  }
+ },
+ "newcastle": {
+  "name": "Newcastle United",
+  "short": "NEW",
+  "country": "ENG",
+  "tier": "premier_league",
+  "strength": 81,
+  "full_name": "Newcastle United Football Club",
+  "city": "Newcastle upon Tyne",
+  "basis": {
+   "type": "pl_prev_pos",
+   "pos": 12
+  }
+ },
+ "nottm-forest": {
+  "name": "Nottingham Forest",
+  "short": "NFO",
+  "country": "ENG",
+  "tier": "premier_league",
+  "strength": 79,
+  "full_name": "Nottingham Forest Football Club",
+  "city": "West Bridgford",
+  "basis": {
+   "type": "pl_prev_pos",
+   "pos": 16
+  }
+ },
+ "sunderland": {
+  "name": "Sunderland",
+  "short": "SUN",
+  "country": "ENG",
+  "tier": "premier_league",
+  "strength": 84,
+  "full_name": "Sunderland Association Football Club",
+  "city": "Sunderland",
+  "basis": {
+   "type": "pl_prev_pos",
+   "pos": 7
+  }
+ },
+ "tottenham": {
+  "name": "Tottenham Hotspur",
+  "short": "TOT",
+  "country": "ENG",
+  "tier": "premier_league",
+  "strength": 78,
+  "full_name": "Tottenham Hotspur Football Club",
+  "city": "Londres",
+  "basis": {
+   "type": "pl_prev_pos",
+   "pos": 17
+  }
+ },
+ "birmingham": {
+  "name": "Birmingham City",
+  "short": "BIR",
+  "country": "ENG",
+  "tier": "championship",
+  "strength": 72,
+  "full_name": "Birmingham City Football Club",
+  "city": "Birmingham",
+  "basis": {
+   "type": "champ_prev_pos",
+   "pos": 10
+  }
+ },
+ "blackburn": {
+  "name": "Blackburn Rovers",
+  "short": "BLB",
+  "country": "ENG",
+  "tier": "championship",
+  "strength": 67,
+  "full_name": "Blackburn Rovers Football Club",
+  "city": "Blackburn",
+  "basis": {
+   "type": "champ_prev_pos",
+   "pos": 20
+  }
+ },
+ "bolton": {
+  "name": "Bolton Wanderers",
+  "short": "BWA",
+  "country": "ENG",
+  "tier": "championship",
+  "strength": 65,
+  "full_name": "Bolton Wanderers Football Club",
+  "city": "Horwich",
+  "basis": {
+   "type": "l1_promoted"
+  }
+ },
+ "bristol-city": {
+  "name": "Bristol City",
+  "short": "BRC",
+  "country": "ENG",
+  "tier": "championship",
+  "strength": 71,
+  "full_name": "Bristol City Football Club",
+  "city": "Bristol",
+  "basis": {
+   "type": "champ_prev_pos",
+   "pos": 12
+  }
+ },
+ "burnley": {
+  "name": "Burnley",
+  "short": "BUR",
+  "country": "ENG",
+  "tier": "championship",
+  "strength": 77,
+  "full_name": "Burnley Football Club",
+  "city": "Burnley",
+  "basis": {
+   "type": "pl_prev_pos",
+   "pos": 19
+  }
+ },
+ "cardiff": {
+  "name": "Cardiff City",
+  "short": "CAR",
+  "country": "WAL",
+  "tier": "championship",
+  "strength": 65,
+  "full_name": "Cardiff City Football Club",
+  "city": "Cardiff",
+  "basis": {
+   "type": "l1_promoted"
+  }
+ },
+ "charlton": {
+  "name": "Charlton Athletic",
+  "short": "CHL",
+  "country": "ENG",
+  "tier": "championship",
+  "strength": 67,
+  "full_name": "Charlton Athletic Football Club",
+  "city": "Londres",
+  "basis": {
+   "type": "champ_prev_pos",
+   "pos": 19
+  }
+ },
+ "derby": {
+  "name": "Derby County",
+  "short": "DER",
+  "country": "ENG",
+  "tier": "championship",
+  "strength": 73,
+  "full_name": "Derby County Football Club",
+  "city": "Derby",
+  "basis": {
+   "type": "champ_prev_pos",
+   "pos": 8
+  }
+ },
+ "lincoln": {
+  "name": "Lincoln City",
+  "short": "LIN",
+  "country": "ENG",
+  "tier": "championship",
+  "strength": 65,
+  "full_name": "Lincoln City Football Club",
+  "city": "Lincoln",
+  "basis": {
+   "type": "l1_promoted"
+  }
+ },
+ "middlesbrough": {
+  "name": "Middlesbrough",
+  "short": "MID",
+  "country": "ENG",
+  "tier": "championship",
+  "strength": 74,
+  "full_name": "Middlesbrough Football Club",
+  "city": "Middlesbrough",
+  "basis": {
+   "type": "champ_prev_pos",
+   "pos": 5
+  }
+ },
+ "millwall": {
+  "name": "Millwall",
+  "short": "MIL",
+  "country": "ENG",
+  "tier": "championship",
+  "strength": 75,
+  "full_name": "Millwall Football Club",
+  "city": "Londres",
+  "basis": {
+   "type": "champ_prev_pos",
+   "pos": 3
+  }
+ },
+ "norwich": {
+  "name": "Norwich City",
+  "short": "NOR",
+  "country": "ENG",
+  "tier": "championship",
+  "strength": 72,
+  "full_name": "Norwich City Football Club",
+  "city": "Norwich",
+  "basis": {
+   "type": "champ_prev_pos",
+   "pos": 9
+  }
+ },
+ "portsmouth": {
+  "name": "Portsmouth",
+  "short": "PTH",
+  "country": "ENG",
+  "tier": "championship",
+  "strength": 68,
+  "full_name": "Portsmouth Football Club",
+  "city": "Portsmouth",
+  "basis": {
+   "type": "champ_prev_pos",
+   "pos": 18
+  }
+ },
+ "preston": {
+  "name": "Preston North End",
+  "short": "PNE",
+  "country": "ENG",
+  "tier": "championship",
+  "strength": 70,
+  "full_name": "Preston North End Football Club",
+  "city": "Preston",
+  "basis": {
+   "type": "champ_prev_pos",
+   "pos": 14
+  }
+ },
+ "qpr": {
+  "name": "Queens Park Rangers",
+  "short": "QPR",
+  "country": "ENG",
+  "tier": "championship",
+  "strength": 69,
+  "full_name": "Queens Park Rangers Football Club",
+  "city": "Londres",
+  "basis": {
+   "type": "champ_prev_pos",
+   "pos": 15
+  }
+ },
+ "sheffield-united": {
+  "name": "Sheffield United",
+  "short": "SHU",
+  "country": "ENG",
+  "tier": "championship",
+  "strength": 70,
+  "full_name": "Sheffield United Football Club",
+  "city": "Sheffield",
+  "basis": {
+   "type": "champ_prev_pos",
+   "pos": 13
+  }
+ },
+ "southampton": {
+  "name": "Southampton",
+  "short": "SOU",
+  "country": "ENG",
+  "tier": "championship",
+  "strength": 75,
+  "full_name": "Southampton Football Club",
+  "city": "Southampton",
+  "basis": {
+   "type": "champ_prev_pos",
+   "pos": 4
+  }
+ },
+ "stoke": {
+  "name": "Stoke City",
+  "short": "STK",
+  "country": "ENG",
+  "tier": "championship",
+  "strength": 68,
+  "full_name": "Stoke City Football Club",
+  "city": "Stoke-on-Trent",
+  "basis": {
+   "type": "champ_prev_pos",
+   "pos": 17
+  }
+ },
+ "swansea": {
+  "name": "Swansea City",
+  "short": "SWA",
+  "country": "WAL",
+  "tier": "championship",
+  "strength": 71,
+  "full_name": "Swansea City Association Football Club",
+  "city": "Swansea",
+  "basis": {
+   "type": "champ_prev_pos",
+   "pos": 11
+  }
+ },
+ "watford": {
+  "name": "Watford",
+  "short": "WAT",
+  "country": "ENG",
+  "tier": "championship",
+  "strength": 69,
+  "full_name": "Watford Football Club",
+  "city": "Watford",
+  "basis": {
+   "type": "champ_prev_pos",
+   "pos": 16
+  }
+ },
+ "west-brom": {
+  "name": "West Bromwich Albion",
+  "short": "WBA",
+  "country": "ENG",
+  "tier": "championship",
+  "strength": 66,
+  "full_name": "West Bromwich Albion Football Club",
+  "city": "West Bromwich",
+  "basis": {
+   "type": "champ_prev_pos",
+   "pos": 21
+  }
+ },
+ "west-ham": {
+  "name": "West Ham United",
+  "short": "WHU",
+  "country": "ENG",
+  "tier": "championship",
+  "strength": 78,
+  "full_name": "West Ham United Football Club",
+  "city": "Londres",
+  "basis": {
+   "type": "pl_prev_pos",
+   "pos": 18
+  }
+ },
+ "wolves": {
+  "name": "Wolverhampton",
+  "short": "WOL",
+  "country": "ENG",
+  "tier": "championship",
+  "strength": 77,
+  "full_name": "Wolverhampton Wanderers Football Club",
+  "city": "Wolverhampton",
+  "basis": {
+   "type": "pl_prev_pos",
+   "pos": 20
+  }
+ },
+ "wrexham": {
+  "name": "Wrexham",
+  "short": "WRE",
+  "country": "WAL",
+  "tier": "championship",
+  "strength": 73,
+  "full_name": "Wrexham Association Football Club",
+  "city": "Wrexham",
+  "basis": {
+   "type": "champ_prev_pos",
+   "pos": 7
+  }
+ },
+ "psg": {
+  "name": "Paris Saint-Germain",
+  "short": "PSG",
+  "country": "FRA",
+  "tier": "foreign",
+  "strength": 86,
+  "full_name": "Paris Saint-Germain Football Club",
+  "city": "Paris",
+  "basis": {
+   "type": "uefa_coef",
+   "value": 132
+  }
+ },
+ "bayern": {
+  "name": "Bayern de Munique",
+  "short": "BAY",
+  "country": "GER",
+  "tier": "foreign",
+  "strength": 88,
+  "full_name": "FC Bayern München",
+  "city": "Munique",
+  "basis": {
+   "type": "uefa_coef",
+   "value": 147.5
+  }
+ },
+ "real-madrid": {
+  "name": "Real Madrid",
+  "short": "RMA",
+  "country": "ESP",
+  "tier": "foreign",
+  "strength": 88,
+  "full_name": "Real Madrid Club de Fútbol",
+  "city": "Madri",
+  "basis": {
+   "type": "uefa_coef",
+   "value": 144.5
+  }
+ },
+ "inter": {
+  "name": "Inter de Milão",
+  "short": "INM",
+  "country": "ITA",
+  "tier": "foreign",
+  "strength": 86,
+  "full_name": "Football Club Internazionale Milano",
+  "city": "Milão",
+  "basis": {
+   "type": "uefa_coef",
+   "value": 127
+  }
+ },
+ "barcelona": {
+  "name": "Barcelona",
+  "short": "FCB",
+  "country": "ESP",
+  "tier": "foreign",
+  "strength": 85,
+  "full_name": "Futbol Club Barcelona",
+  "city": "Barcelona",
+  "basis": {
+   "type": "uefa_coef",
+   "value": 113.25
+  }
+ },
+ "atletico-madrid": {
+  "name": "Atlético de Madrid",
+  "short": "ATM",
+  "country": "ESP",
+  "tier": "foreign",
+  "strength": 84,
+  "full_name": "Club Atlético de Madrid",
+  "city": "Madri",
+  "basis": {
+   "type": "uefa_coef",
+   "value": 104.75
+  }
+ },
+ "dortmund": {
+  "name": "Borussia Dortmund",
+  "short": "BVB",
+  "country": "GER",
+  "tier": "foreign",
+  "strength": 83,
+  "full_name": "Ballspielverein Borussia 09 e.V. Dortmund",
+  "city": "Dortmund",
+  "basis": {
+   "type": "uefa_coef",
+   "value": 100.75
+  }
+ },
+ "roma": {
+  "name": "Roma",
+  "short": "ROM",
+  "country": "ITA",
+  "tier": "foreign",
+  "strength": 83,
+  "full_name": "Associazione Sportiva Roma",
+  "city": "Roma",
+  "basis": {
+   "type": "uefa_coef",
+   "value": 97.75
+  }
+ },
+ "sporting": {
+  "name": "Sporting",
+  "short": "SCP",
+  "country": "POR",
+  "tier": "foreign",
+  "strength": 81,
+  "full_name": "Sporting Clube de Portugal",
+  "city": "Lisboa",
+  "basis": {
+   "type": "uefa_coef",
+   "value": 84
+  }
+ },
+ "porto": {
+  "name": "Porto",
+  "short": "FCP",
+  "country": "POR",
+  "tier": "foreign",
+  "strength": 81,
+  "full_name": "Futebol Clube do Porto",
+  "city": "Porto",
+  "basis": {
+   "type": "uefa_coef",
+   "value": 80.75
+  }
+ },
+ "club-brugge": {
+  "name": "Club Brugge",
+  "short": "BRU",
+  "country": "BEL",
+  "tier": "foreign",
+  "strength": 80,
+  "full_name": "Club Brugge KV",
+  "city": "Bruges",
+  "basis": {
+   "type": "uefa_coef",
+   "value": 75.25
+  }
+ },
+ "betis": {
+  "name": "Real Betis",
+  "short": "BET",
+  "country": "ESP",
+  "tier": "foreign",
+  "strength": 80,
+  "full_name": "Real Betis Balompié",
+  "city": "Sevilha",
+  "basis": {
+   "type": "uefa_coef",
+   "value": 74.5
+  }
+ },
+ "psv": {
+  "name": "PSV Eindhoven",
+  "short": "PSV",
+  "country": "NED",
+  "tier": "foreign",
+  "strength": 80,
+  "full_name": "Philips Sport Vereniging",
+  "city": "Eindhoven",
+  "basis": {
+   "type": "uefa_coef",
+   "value": 71.25
+  }
+ },
+ "feyenoord": {
+  "name": "Feyenoord",
+  "short": "FEY",
+  "country": "NED",
+  "tier": "foreign",
+  "strength": 80,
+  "full_name": "Feyenoord Rotterdam",
+  "city": "Roterdã",
+  "basis": {
+   "type": "uefa_coef",
+   "value": 71
+  }
+ },
+ "lille": {
+  "name": "Lille",
+  "short": "LIL",
+  "country": "FRA",
+  "tier": "foreign",
+  "strength": 80,
+  "full_name": "Lille Olympique Sporting Club",
+  "city": "Lille",
+  "basis": {
+   "type": "uefa_coef",
+   "value": 68.75
+  }
+ },
+ "bodo-glimt": {
+  "name": "Bodø/Glimt",
+  "short": "BOD",
+  "country": "NOR",
+  "tier": "foreign",
+  "strength": 79,
+  "full_name": "Fotballklubben Bodø/Glimt",
+  "city": "Bodø",
+  "basis": {
+   "type": "uefa_coef",
+   "value": 64
+  }
+ },
+ "napoli": {
+  "name": "Napoli",
+  "short": "NAP",
+  "country": "ITA",
+  "tier": "foreign",
+  "strength": 79,
+  "full_name": "Società Sportiva Calcio Napoli",
+  "city": "Nápoles",
+  "basis": {
+   "type": "uefa_coef",
+   "value": 63
+  }
+ },
+ "leipzig": {
+  "name": "RB Leipzig",
+  "short": "RBL",
+  "country": "GER",
+  "tier": "foreign",
+  "strength": 79,
+  "full_name": "RasenBallsport Leipzig",
+  "city": "Leipzig",
+  "basis": {
+   "type": "uefa_coef",
+   "value": 61
+  }
+ },
+ "villarreal": {
+  "name": "Villarreal",
+  "short": "VCF",
+  "country": "ESP",
+  "tier": "foreign",
+  "strength": 78,
+  "full_name": "Villarreal Club de Fútbol",
+  "city": "Vila-real",
+  "basis": {
+   "type": "uefa_coef",
+   "value": 59
+  }
+ },
+ "fenerbahce": {
+  "name": "Fenerbahçe",
+  "short": "FEN",
+  "country": "TUR",
+  "tier": "foreign",
+  "strength": 78,
+  "full_name": "Fenerbahçe Spor Kulübü",
+  "city": "Istambul",
+  "basis": {
+   "type": "uefa_coef",
+   "value": 57.75
+  }
+ },
+ "shakhtar": {
+  "name": "Shakhtar Donetsk",
+  "short": "SHK",
+  "country": "UKR",
+  "tier": "foreign",
+  "strength": 78,
+  "full_name": "FC Shakhtar Donetsk",
+  "city": "Donetsk",
+  "basis": {
+   "type": "uefa_coef",
+   "value": 56.25
+  }
+ },
+ "galatasaray": {
+  "name": "Galatasaray",
+  "short": "GAL",
+  "country": "TUR",
+  "tier": "foreign",
+  "strength": 78,
+  "full_name": "Galatasaray Spor Kulübü",
+  "city": "Istambul",
+  "basis": {
+   "type": "uefa_coef",
+   "value": 53.5
+  }
+ },
+ "slavia-praha": {
+  "name": "Slavia Praga",
+  "short": "SLA",
+  "country": "CZE",
+  "tier": "foreign",
+  "strength": 76,
+  "full_name": "SK Slavia Praha",
+  "city": "Praga",
+  "basis": {
+   "type": "uefa_coef",
+   "value": 44
+  }
+ },
+ "slovan-bratislava": {
+  "name": "Slovan Bratislava",
+  "short": "SLO",
+  "country": "SVK",
+  "tier": "foreign",
+  "strength": 75,
+  "full_name": "ŠK Slovan Bratislava",
+  "city": "Bratislava",
+  "basis": {
+   "type": "uefa_coef",
+   "value": 36
+  }
+ },
+ "stuttgart": {
+  "name": "Stuttgart",
+  "short": "VFB",
+  "country": "GER",
+  "tier": "foreign",
+  "strength": 73,
+  "full_name": "VfB Stuttgart 1893",
+  "city": "Stuttgart",
+  "basis": {
+   "type": "uefa_coef",
+   "value": 27.5
+  }
+ },
+ "aek": {
+  "name": "AEK Atenas",
+  "short": "AEK",
+  "country": "GRE",
+  "tier": "foreign",
+  "strength": 72,
+  "full_name": "Athlitiki Enosi Konstantinoupoleos",
+  "city": "Atenas",
+  "basis": {
+   "type": "uefa_coef",
+   "value": 24
+  }
+ },
+ "lask": {
+  "name": "LASK",
+  "short": "LAS",
+  "country": "AUT",
+  "tier": "foreign",
+  "strength": 72,
+  "full_name": "Linzer Athletik-Sport-Klub",
+  "city": "Linz",
+  "basis": {
+   "type": "uefa_coef",
+   "value": 21
+  }
+ },
+ "como": {
+  "name": "Como",
+  "short": "COM",
+  "country": "ITA",
+  "tier": "foreign",
+  "strength": 71,
+  "full_name": "Como 1907",
+  "city": "Como",
+  "basis": {
+   "type": "uefa_coef",
+   "value": 19.989
+  }
+ },
+ "lens": {
+  "name": "Lens",
+  "short": "RCL",
+  "country": "FRA",
+  "tier": "foreign",
+  "strength": 71,
+  "full_name": "Racing Club de Lens",
+  "city": "Lens",
+  "basis": {
+   "type": "uefa_coef",
+   "value": 16.699
+  }
+ },
+ "viking": {
+  "name": "Viking",
+  "short": "VIK",
+  "country": "NOR",
+  "tier": "foreign",
+  "strength": 68,
+  "full_name": "Viking Fotballklubb",
+  "city": "Stavanger",
+  "basis": {
+   "type": "uefa_coef",
+   "value": 8.247
+  }
+ },
+ "sabah": {
+  "name": "Sabah",
+  "short": "SAB",
+  "country": "AZE",
+  "tier": "foreign",
+  "strength": 67,
+  "full_name": "Sabah Football Club",
+  "city": "Baku",
+  "basis": {
+   "type": "uefa_coef",
+   "value": 6
+  }
+ },
+ "america-mg": {
+  "name": "América-MG",
+  "short": "AME",
+  "country": "BRA",
+  "tier": "serie_b",
+  "strength": 58,
+  "full_name": "América Futebol Clube",
+  "city": "Belo Horizonte",
+  "basis": {
+   "type": "serieb_prev_pos",
+   "pos": 14
+  }
+ },
+ "athletic-mg": {
+  "name": "Athletic",
+  "short": "ATH",
+  "country": "BRA",
+  "tier": "serie_b",
+  "strength": 58,
+  "full_name": "Athletic Club",
+  "city": "São João del-Rei",
+  "basis": {
+   "type": "serieb_prev_pos",
+   "pos": 15
+  }
+ },
+ "atletico-go": {
+  "name": "Atlético-GO",
+  "short": "ACG",
+  "country": "BRA",
+  "tier": "serie_b",
+  "strength": 60,
+  "full_name": "Atlético Clube Goianiense",
+  "city": "Goiânia",
+  "basis": {
+   "type": "serieb_prev_pos",
+   "pos": 11
+  }
+ },
+ "avai": {
+  "name": "Avaí",
+  "short": "AVA",
+  "country": "BRA",
+  "tier": "serie_b",
+  "strength": 61,
+  "full_name": "Avaí Futebol Clube",
+  "city": "Florianópolis",
+  "basis": {
+   "type": "serieb_prev_pos",
+   "pos": 9
+  }
+ },
+ "botafogo-sp": {
+  "name": "Botafogo-SP",
+  "short": "BSP",
+  "country": "BRA",
+  "tier": "serie_b",
+  "strength": 57,
+  "full_name": "Botafogo Futebol Clube",
+  "city": "Ribeirão Preto",
+  "basis": {
+   "type": "serieb_prev_pos",
+   "pos": 16
+  }
+ },
+ "ceara": {
+  "name": "Ceará",
+  "short": "CEA",
+  "country": "BRA",
+  "tier": "serie_b",
+  "strength": 65,
+  "full_name": "Ceará Sporting Club",
+  "city": "Fortaleza",
+  "basis": {
+   "type": "seriea_relegated",
+   "pos": 17
+  }
+ },
+ "crb": {
+  "name": "CRB",
+  "short": "CRB",
+  "country": "BRA",
+  "tier": "serie_b",
+  "strength": 61,
+  "full_name": "Clube de Regatas Brasil",
+  "city": "Maceió",
+  "basis": {
+   "type": "serieb_prev_pos",
+   "pos": 8
+  }
+ },
+ "criciuma": {
+  "name": "Criciúma",
+  "short": "CRI",
+  "country": "BRA",
+  "tier": "serie_b",
+  "strength": 63,
+  "full_name": "Criciúma Esporte Clube",
+  "city": "Criciúma",
+  "basis": {
+   "type": "serieb_prev_pos",
+   "pos": 5
+  }
+ },
+ "cuiaba": {
+  "name": "Cuiabá",
+  "short": "CUI",
+  "country": "BRA",
+  "tier": "serie_b",
+  "strength": 60,
+  "full_name": "Cuiabá Esporte Clube",
+  "city": "Cuiabá",
+  "basis": {
+   "type": "serieb_prev_pos",
+   "pos": 10
+  }
+ },
+ "goias": {
+  "name": "Goiás",
+  "short": "GOI",
+  "country": "BRA",
+  "tier": "serie_b",
+  "strength": 62,
+  "full_name": "Goiás Esporte Clube",
+  "city": "Goiânia",
+  "basis": {
+   "type": "serieb_prev_pos",
+   "pos": 6
+  }
+ },
+ "londrina": {
+  "name": "Londrina",
+  "short": "LON",
+  "country": "BRA",
+  "tier": "serie_b",
+  "strength": 56,
+  "full_name": "Londrina Esporte Clube",
+  "city": "Londrina",
+  "basis": {
+   "type": "seriec_promoted"
+  }
+ },
+ "nautico": {
+  "name": "Náutico",
+  "short": "NAU",
+  "country": "BRA",
+  "tier": "serie_b",
+  "strength": 56,
+  "full_name": "Clube Náutico Capibaribe",
+  "city": "Recife",
+  "basis": {
+   "type": "seriec_promoted"
+  }
+ },
+ "novorizontino": {
+  "name": "Novorizontino",
+  "short": "NOV",
+  "country": "BRA",
+  "tier": "serie_b",
+  "strength": 62,
+  "full_name": "Grêmio Novorizontino",
+  "city": "Novo Horizonte",
+  "basis": {
+   "type": "serieb_prev_pos",
+   "pos": 7
+  }
+ },
+ "operario-pr": {
+  "name": "Operário-PR",
+  "short": "OPE",
+  "country": "BRA",
+  "tier": "serie_b",
+  "strength": 59,
+  "full_name": "Operário Ferroviário Esporte Clube",
+  "city": "Ponta Grossa",
+  "basis": {
+   "type": "serieb_prev_pos",
+   "pos": 12
+  }
+ },
+ "ponte-preta": {
+  "name": "Ponte Preta",
+  "short": "PON",
+  "country": "BRA",
+  "tier": "serie_b",
+  "strength": 56,
+  "full_name": "Associação Atlética Ponte Preta",
+  "city": "Campinas",
+  "basis": {
+   "type": "seriec_promoted"
+  }
+ },
+ "sao-bernardo": {
+  "name": "São Bernardo",
+  "short": "SBE",
+  "country": "BRA",
+  "tier": "serie_b",
+  "strength": 56,
+  "full_name": "São Bernardo Futebol Clube",
+  "city": "São Bernardo do Campo",
+  "basis": {
+   "type": "seriec_promoted"
+  }
+ },
+ "sport": {
+  "name": "Sport",
+  "short": "SPT",
+  "country": "BRA",
+  "tier": "serie_b",
+  "strength": 62,
+  "full_name": "Sport Club do Recife",
+  "city": "Recife",
+  "basis": {
+   "type": "seriea_relegated",
+   "pos": 20
+  }
+ },
+ "vila-nova": {
+  "name": "Vila Nova",
+  "short": "VNO",
+  "country": "BRA",
+  "tier": "serie_b",
+  "strength": 59,
+  "full_name": "Vila Nova Futebol Clube",
+  "city": "Goiânia",
+  "basis": {
+   "type": "serieb_prev_pos",
+   "pos": 13
+  }
+ }
+}

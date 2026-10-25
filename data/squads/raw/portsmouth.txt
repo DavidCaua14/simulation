@@ -1,0 +1,35 @@
+# club: portsmouth
+# source: https://en.wikipedia.org/wiki/Portsmouth_F.C.
+# accessed: 2026-10-25
+# as_of: unknown
+1|GK|AUT|Nicolas Schmid|
+2|DF|ENG|Benjamin Arthur|on loan from Brentford
+3|DF|ENG|Connor Ogilvie|
+5|DF|WAL|Regan Poole|
+6|DF|IRL|Conor Shaughnessy|
+7|MF|ENG|Marlon Pack|captain
+8|MF|ENG|John Swift|
+9|FW|ENG|Colby Bishop|
+10|FW|CRO|Adrian Segečić|
+11|FW|ENG|Abu Kamara|
+15|FW|IRL|Franco Umeh|
+16|DF|ENG|Jayden Meghoma|on loan from Brentford
+17|FW|SKN|Tyrese Shade|
+18|MF|HUN|Márk Kosznovszky|
+19|MF|EST|Rocco Shein|
+20|FW|AUS|Thomas Waddingham|
+21|FW|ENG|Keshi Anderson|
+22|DF|ENG|Zak Swanson|
+23|FW|ENG|Josh Murphy|
+24|DF|NIR|Terry Devlin|
+25|FW|ENG|Ryan Kavuma-McQueen|on loan from Chelsea
+27|MF|ENG|Odin Bailey|
+28|FW|NZL|Luke Brooke-Smith|
+29|FW|SRB|Marezi|
+30|GK|ENG|Ben Killip|
+31|GK|POL|Daniel Bielica|
+32|FW|NIR|Eoin Kenny|
+34|FW|ENG|Harvey Blair|
+37|MF|COM|Iyad Mohamed|
+38|MF|GAM|Ebou Adams|
+55|DF|SEN|Madiodio Dia|

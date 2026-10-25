@@ -1,0 +1,38 @@
+# club: fenerbahce
+# source: https://en.wikipedia.org/wiki/2026%E2%80%9327_Fenerbah%C3%A7e_S.K._season
+# accessed: 2026-10-25
+# as_of: 2026-05-17
+1|GK|TUR|Tarık Çetin|
+31|GK|BRA|Ederson|
+34|GK|TUR|Mert Günok|
+-|GK|CRO|Dominik Livaković|loan return from Dinamo Zagreb
+-|GK|TUR|İrfan Can Eğribayat|loan return from Samsunspor
+3|DF|ENG|Archie Brown|
+4|DF|TUR|Çağlar Söyüncü|vice-captain
+14|DF|TUR|Yiğit Efe Demir|
+18|DF|TUR|Mert Müldür|
+22|DF|TUR|Levent Mercan|
+24|DF|NED|Jayden Oosterwolde|
+27|DF|POR|Nélson Semedo|
+37|DF|SVK|Milan Škriniar|captain
+-|DF|BRA|Diego Carlos|loan return from Como
+-|DF|BRA|Rodrigo Becão|loan return from Kasımpaşa
+-|DF|SRB|Ognjen Mimović|loan return from Pafos
+-|DF|EGY|Omar Fayed|loan return from Arouca
+5|MF|TUR|İsmail Yüksek|
+6|MF|FRA|Mattéo Guendouzi|
+7|MF|BRA|Fred|vice-captain
+17|MF|FRA|N'Golo Kanté|
+21|MF|ESP|Marco Asensio|
+70|MF|TUR|Oğuz Aydın|
+-|MF|TUR|İrfan Can Kahveci|loan return from Kasımpaşa
+-|MF|MAR|Sofyan Amrabat|loan return from Real Betis
+-|MF|TUR|Bartuğ Elmaz|loan return from Fatih Karagümrük
+-|MF|TUR|Emre Demir|loan return from Sakaryaspor
+9|FW|TUR|Kerem Aktürkoğlu|
+20|FW|NED|Anthony Musaba|
+26|FW|FRA|Sidiki Cherif|
+45|FW|MLI|Dorgeles Nene|
+94|FW|BRA|Talisca|
+-|FW|TUR|Cengiz Ünder|loan return from Beşiktaş
+-|FW|KOS|Vedat Muriqi|

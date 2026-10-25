@@ -1,3 +1,4 @@
+import { COMPETITIONS } from './seasonUtils'
 // Textos e regras de EXIBIÇÃO do modo Carreira (treinador).
 // Os números de verdade (motor de partidas, diretoria, demissão) ficam no banco:
 // supabase/manager/03_engine.sql e 04_career.sql. Se mudar lá, ajuste os textos aqui.
@@ -174,7 +175,10 @@ export function objectiveProgress(o, leaguePlayed = null) {
     return { text: `hoje: ${o.current}º`, tone: o.status === 'met' ? 'ok' : o.status === 'failed' ? 'bad' : ok ? 'ok' : o.current <= o.target + 3 ? 'warn' : 'bad' }
   }
   const STAGES = ['—', 'grupos', 'oitavas', 'quartas', 'semifinal', 'final', 'título']
-  const cur = STAGES[o.current] || '—'
+  // rótulo da fase pela configuração da competição (ex.: FA Cup "terceira fase"); senão, o genérico
+  const phases = COMPETITIONS[o.competition]?.phases || []
+  const ph = o.current >= 1 && o.current <= 5 ? [...phases].reverse().find((p) => p.rank === o.current) : null
+  const cur = o.current === 6 ? 'título' : ph?.type === 'swiss' ? 'fase de liga' : ph && ph.type !== 'groups' ? ph.label.toLowerCase() : STAGES[o.current] || '—'
   if (o.status === 'met') return { text: 'cumprido', tone: 'ok' }
   if (o.status === 'failed') return { text: 'não cumprido', tone: 'bad' }
   return { text: o.alive === false ? `eliminado (${cur})` : `chegou: ${cur}`, tone: o.alive === false ? 'bad' : o.current >= o.target ? 'ok' : 'mid' }

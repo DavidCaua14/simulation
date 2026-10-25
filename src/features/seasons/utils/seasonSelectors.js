@@ -1,19 +1,22 @@
-import { COMP_ORDER, STAGE_RANK, roundTitle } from './seasonUtils'
+import { COMPETITIONS, COMP_ORDER, phaseIndex, roundTitle } from './seasonUtils'
 
 // Funções puras: recebem os dados já carregados e devolvem o que a tela precisa.
 // Nada aqui chama o banco, por isso trocar de aba é instantâneo.
 
-// Quantos jogos o seu clube costuma fazer em cada campeonato numa temporada.
-// Serve para intercalar os campeonatos de forma proporcional (como um calendário de verdade).
-export const EXPECTED_MATCHES = { libertadores: 13, copa_brasil: 7, brasileirao: 38 }
-const PRIORITY = ['libertadores', 'copa_brasil', 'brasileirao']
+// Quantas rodadas cada campeonato tem numa temporada (configuração: rules.calendar_rounds).
+// Serve para intercalar os campeonatos de forma proporcional (mesma regra do banco, função sim_next_event).
+const LEGACY_ROUNDS = { libertadores: 13, copa_brasil: 7, brasileirao: 38 }
+export const expectedRounds = (id) => COMPETITIONS[id]?.rules?.calendar_rounds || LEGACY_ROUNDS[id] || 38
+// compatibilidade: EXPECTED_MATCHES[id]
+export const EXPECTED_MATCHES = new Proxy({}, { get: (_, id) => expectedRounds(id) })
+const priorityOf = (id) => COMPETITIONS[id]?.rules?.calendar_priority ?? { libertadores: 1, copa_brasil: 2, brasileirao: 3 }[id] ?? 9
 
-const progress = (id, played) => played / (EXPECTED_MATCHES[id] || 38)
-const byPriority = (a, b) => PRIORITY.indexOf(a) - PRIORITY.indexOf(b)
+const progress = (id, played) => played / expectedRounds(id)
+const byPriority = (a, b) => priorityOf(a) - priorityOf(b) || a.localeCompare(b)
 export const involves = (f, club) => f.home_club === club || f.away_club === club
 
 export function flattenFixtures(byComp = {}) {
-  return COMP_ORDER.flatMap((comp) => (byComp[comp] || []).map((f) => ({ ...f, comp })))
+  return Object.keys(byComp).flatMap((comp) => (byComp[comp] || []).map((f) => ({ ...f, comp })))
 }
 
 const newestFirst = (a, b) => (b.played_at || '').localeCompare(a.played_at || '') || b.id - a.id
@@ -27,14 +30,15 @@ export const playerHistory = (flat) => flat.filter((f) => f.player_match && f.st
 export function projectCalendar(byComp, myClub, count = 14) {
   const pending = {}
   const done = {}
-  for (const comp of COMP_ORDER) {
+  const comps = COMP_ORDER.length ? COMP_ORDER : Object.keys(byComp)
+  for (const comp of comps) {
     const all = buildRounds(byComp[comp] || [])
     done[comp] = all.filter((r) => r.done).length
     pending[comp] = all.filter((r) => !r.done)
   }
   const out = []
   while (out.length < count) {
-    const ids = COMP_ORDER.filter((id) => pending[id].length)
+    const ids = comps.filter((id) => pending[id].length)
     if (!ids.length) break
     ids.sort((a, b) => progress(a, done[a]) - progress(b, done[b]) || byPriority(a, b))
     const comp = ids[0]
@@ -90,14 +94,14 @@ export function buildRounds(fixtures = []) {
   const map = new Map()
   for (const f of fixtures) {
     const key = `${f.stage}:${f.round_no}`
-    if (!map.has(key)) map.set(key, { key, stage: f.stage, round: f.round_no, matches: [] })
+    if (!map.has(key)) map.set(key, { key, stage: f.stage, round: f.round_no, comp: f.competition_id, matches: [] })
     map.get(key).matches.push(f)
   }
   return [...map.values()]
-    .sort((a, b) => STAGE_RANK[a.stage] - STAGE_RANK[b.stage] || a.round - b.round)
+    .sort((a, b) => phaseIndex(a.comp, a.stage) - phaseIndex(b.comp, b.stage) || a.round - b.round)
     .map((r) => ({
       ...r,
-      label: roundTitle(r.stage, r.round),
+      label: roundTitle(r.stage, r.round, r.comp),
       matches: r.matches.sort((x, y) => (x.group_label || '').localeCompare(y.group_label || '') || x.id - y.id),
       done: r.matches.every((m) => m.status === 'played'),
     }))

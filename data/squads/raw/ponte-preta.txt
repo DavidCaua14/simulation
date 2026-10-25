@@ -1,0 +1,37 @@
+# club: ponte-preta
+# source: https://en.wikipedia.org/wiki/Associa%C3%A7%C3%A3o_Atl%C3%A9tica_Ponte_Preta
+# accessed: 2026-10-25
+# as_of: 2026-06-07
+1|GK|BRA|Guilherme Viana|
+2|DF|BRA|Lucas Justen|on loan from Fluminense
+3|DF|BRA|Lucas Cunha|on loan from Red Bull Bragantino
+5|MF|BRA|Rodrigo Souza|
+7|FW|BRA|Diego Tavares|
+8|MF|BRA|André Lima|
+9|FW|BRA|William Pottker|
+10|MF|BRA|Élvis|
+11|FW|BRA|Luis Phelipe|on loan from Sheriff Tiraspol
+12|GK|BRA|Diogo Silva|captain
+13|DF|BRA|Diego Porfírio|on loan from Pouso Alegre
+14|DF|BRA|Danilo Barcelos|
+15|DF|BRA|Weverton|on loan from Vila Nova
+16|MF|BRA|Léo Gomes|
+17|MF|BRA|Miguel Morais|
+18|FW|BRA|David da Hora|on loan from Coritiba
+19|FW|BRA|Jonathan Cafú|
+20|MF|BRA|Murilo Cavalcante|
+21|FW|BRA|Brandão|on loan from Coritiba
+22|DF|BRA|Thalys|
+23|DF|COL|Sergio Palacios|on loan from Red Bull Bragantino
+26|FW|BRA|Daniel Baianinho|on loan from Capivariano
+30|GK|BRA|Vinicius Ferrari|
+32|DF|BRA|Kevyson|on loan from Santos
+33|DF|BRA|David Braz|
+35|MF|BRA|Gustavo Telles|
+38|MF|BRA|Tárik|
+44|DF|BRA|Márcio Silva|
+77|FW|BRA|Bruno Lopes|
+90|FW|BRA|Rodriguinho|
+-|DF|BRA|Diego Leão|
+-|DF|BRA|Júlio|
+-|FW|BRA|Vitor Ribeiro|

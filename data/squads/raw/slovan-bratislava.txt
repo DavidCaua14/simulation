@@ -1,0 +1,35 @@
+# club: slovan-bratislava
+# source: https://en.wikipedia.org/wiki/%C5%A0K_Slovan_Bratislava
+# accessed: 2026-10-25
+# as_of: unknown
+1|GK|SRB|Aleksandar Popović|
+2|DF|SVK|Samuel Kozlovský|
+3|MF|SVK|Peter Pokorný|
+5|MF|GHA|Rahim Ibrahim|
+6|DF|AUT|Kevin Wimmer|
+7|MF|SVK|Leo Hofstädter|
+8|MF|SVK|Artur Gajdoš|
+9|FW|UKR|Mykola Kukharevych|
+10|FW|SVK|Nino Marcelli|
+11|MF|ARM|Tigran Barseghyan|
+12|DF|SVN|Kenan Bajrić|
+13|FW|SVK|Roman Čerepkai|
+14|FW|GAM|Alasana Yirajang|
+15|DF|SRB|Svetozar Marković|
+17|DF|CZE|Jurij Medveděv|
+19|FW|ENG|Manasse Kianga|
+20|MF|BIH|Alen Mustafić|
+21|FW|GAM|Suleiman Camara|
+24|FW|SVK|Matúš Tomáško|
+28|DF|PAN|César Blackman|
+29|FW|SVK|Alexej Maroš|
+30|FW|SVK|Adam Griger|on loan from Hradec Králové
+44|GK|SVK|Matúš Macík|
+57|DF|ANG|Sandro Cruz|
+70|MF|PAN|Cristian Martínez|
+71|GK|SVK|Dominik Takáč|
+77|MF|UKR|Danylo Ihnatenko|
+88|MF|JPN|Daiki Matsuoka|on loan from Avispa Fukuoka
+97|FW|GHA|Kelvin Ofori|
+99|FW|SVN|Andraž Šporar|captain
+-|DF|GUI|Sahmkou Camara|on loan from Slavia Prague

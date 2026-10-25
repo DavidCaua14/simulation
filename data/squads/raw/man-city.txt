@@ -1,0 +1,30 @@
+# club: man-city
+# source: https://en.wikipedia.org/wiki/Manchester_City_F.C.
+# accessed: 2026-10-25
+# as_of: unknown
+1|GK|ITA|Gianluigi Donnarumma|vice-captain
+3|DF|POR|Rúben Dias|captain
+5|MF|ENG|Elliot Anderson|
+6|DF|ENG|Marc Guéhi|vice-captain
+7|FW|SEN|Iliman Ndiaye|
+8|MF|CRO|Mateo Kovačić|
+9|FW|NOR|Erling Haaland|vice-captain
+10|MF|FRA|Rayan Cherki|
+11|FW|BEL|Jérémy Doku|
+13|GK|ENG|Marcus Bettinelli|
+17|MF|ARG|Enzo Fernández|
+21|DF|ALG|Rayan Aït-Nouri|
+22|DF|BRA|Vitor Reis|
+24|DF|CRO|Joško Gvardiol|
+27|DF|POR|Matheus Nunes|
+28|GK|ARG|Gerónimo Rulli|
+32|MF|MAR|Ayyoub Bouaddi|
+33|MF|ENG|Nico O'Reilly|
+37|FW|BRA|Allan|
+42|FW|GHA|Antoine Semenyo|
+45|DF|UZB|Abdukodir Khusanov|
+47|MF|ENG|Phil Foden|
+56|FW|ENG|Ryan McAidoo|
+61|DF|ENG|Kaden Braithwaite|
+75|MF|FRA|Floyd Samba|
+82|DF|ENG|Rico Lewis|

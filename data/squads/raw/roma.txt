@@ -1,0 +1,29 @@
+# club: roma
+# source: https://en.wikipedia.org/wiki/2026%E2%80%9327_AS_Roma_season
+# accessed: 2026-10-25
+# as_of: 2026-10-11
+70|GK|USA|Giorgio De Marzi|
+95|GK|ITA|Pierluigi Gollini|
+99|GK|SRB|Mile Svilar|
+32|GK|COL|Devis Vásquez|
+2|RWB/LWB|NED|Devyne Rensch|
+3|CB|GRE|Konstantinos Koulierakis|
+5|CB|CIV|Evan Ndicka|
+20|RWB/LWB|ARG|Nahuel Molina|
+22|CB/LB|ESP|Mario Hermoso|
+23|CB/RB|ITA|Gianluca Mancini|
+26|CB|ARG|Leonardo Balerdi|
+43|RWB/LWB|BRA|Wesley|
+77|RWB|ITA|Emanuele Lulli|
+87|CB|ITA|Daniele Ghilardi|
+4|DM/CM/CB|ITA|Bryan Cristante|captain
+7|AM/CM|ITA|Lorenzo Pellegrini|vice-captain
+15|DM/CM|NED|Marten de Roon|
+17|CM/DM|FRA|Manu Koné|
+61|CM/AM|ITA|Niccolò Pisilli|
+86|AM/LW|POR|Rodrigo Mora|
+9|CF|ARG|Santiago Castro|
+14|CF/LW|NED|Donyell Malen|
+18|RW/SS|ARG|Matías Soulé|
+21|RW/AM/SS|ARG|Paulo Dybala|
+68|CF|ITA|Antonio Arena|

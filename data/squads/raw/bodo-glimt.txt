@@ -1,0 +1,29 @@
+# club: bodo-glimt
+# source: https://en.wikipedia.org/wiki/FK_Bod%C3%B8/Glimt
+# accessed: 2026-10-25
+# as_of: unknown
+1|GK|NOR|Julian Faye Lund|
+2|DF|DEN|Villads Nielsen|
+4|DF|NOR|Odin Bjørtuft|
+5|DF|NOR|Haitam Aleesami|
+6|DF|NOR|Jostein Gundersen|
+7|MF|NOR|Patrick Berg|captain
+8|MF|NOR|Sondre Auklend|
+9|FW|DEN|Kasper Høgh|
+10|FW|NOR|Jens Petter Hauge|
+11|FW|NOR|Ole Didrik Blomberg|
+12|GK|RUS|Nikita Haikin|
+14|MF|NOR|Ulrik Saltnes|
+15|DF|NOR|Fredrik André Bjørkan|
+16|MF|NOR|Joshua Kitolano|
+17|FW|NOR|Ola Brynhildsen|
+19|MF|NOR|Sondre Brunstad Fet|
+20|DF|NOR|Fredrik Sjøvold|
+21|FW|NOR|Andreas Helmersen|
+22|MF|DEN|Anders Klynge|
+23|MF|NOR|Magnus Riisnæs|
+24|FW|NOR|Daniel Bassi|
+25|DF|NOR|Isak Dybvik Määttä|
+26|MF|NOR|Håkon Evjen|
+45|GK|NOR|Isak Sjong|
+94|FW|NOR|August Mikkelsen|

@@ -1,0 +1,249 @@
+{
+  "about": "Configuração das competições (formato, fases, desempate, calendário e objetivos). Gerado para o banco por scripts/build-competitions.mjs -> supabase/evolution/02_reference_data.sql. Mudou o regulamento? Edite aqui (ou direto em sim_competitions.rules) — o motor lê a configuração, não há regra fixa no código.",
+  "phase_types": {
+    "league": "pontos corridos entre os participantes (legs = 1 turno, 2 = ida e volta)",
+    "groups": "grupos com pontos corridos (grupo vem de season_participants.group_label)",
+    "swiss": "fase de liga suíça (UCL): 'rounds' jogos por clube, adversários definidos por potes (season_participants.seed) e por um modelo de calendário",
+    "knockout": "mata-mata; legs 1 ou 2; extra_time; penalties; tie = 'penalties' | 'higher_seed' (empate no agregado classifica o mais bem colocado); neutral = campo neutro"
+  },
+  "pairing_modes": {
+    "fixed": "confrontos já definidos (group_label T1..Tn e seed 1/2 dos participantes)",
+    "draw": "sorteio livre",
+    "lib_r16": "1º de cada grupo x 2º de outro grupo; o 1º decide em casa",
+    "positions": "pares de posições da fase de liga indicada em 'from' (o mais bem colocado decide em casa)",
+    "champ_sf": "playoff da Championship: 3º x vencedor de pior campanha das eliminatórias, 4º x o outro",
+    "bracket": "chave fixa: vencedor do confronto k x vencedor do confronto k+1",
+    "ucl_po": "playoff da UCL: (9º/10º x 23º/24º), (11º/12º x 21º/22º), (13º/14º x 19º/20º), (15º/16º x 17º/18º)",
+    "ucl_r16": "oitavas da UCL: 1º/2º x vencedores do 15º/16º-17º/18º, 3º/4º x 13º/14º-19º/20º, 5º/6º x 11º/12º-21º/22º, 7º/8º x 9º/10º-23º/24º; 1º e 2º em lados opostos"
+  },
+  "competitions": [
+    {
+      "id": "brasileirao", "name": "Brasileirão Série A", "short_name": "Série A", "region": "BRA", "kind": "league", "division": 1,
+      "sort_order": 10, "xp_mult": 1, "ref_season": "2026",
+      "theme": { "c1": "#0f8a45", "c2": "#f7cf1e", "code": "A", "kicker": "Liga nacional" },
+      "sources": ["https://en.wikipedia.org/wiki/2026_Campeonato_Brasileiro_S%C3%A9rie_A"],
+      "rules": {
+        "format": "league", "points": { "win": 3, "draw": 1 }, "season_matches": 38,
+        "tiebreakers": ["points", "wins", "gd", "gf", "h2h_pts", "reds", "yellows"],
+        "bench": 12, "max_subs": 5, "sub_windows": 3, "yellow_limit": 3, "relegation": 4,
+        "calendar_rounds": 38, "calendar_priority": 3, "champion": "league",
+        "phases": [ { "id": "league", "type": "league", "legs": 2, "label": "Pontos corridos", "rank": 1 } ],
+        "zones": [ { "from": 1, "to": 4, "kind": "continental", "label": "Libertadores" }, { "from": 17, "to": 20, "kind": "relegation", "label": "Rebaixamento" } ],
+        "objectives": [
+          { "rank_max": 2, "target": 3, "label": "Brigar pelo título: terminar entre os 3 primeiros", "priority": 3 },
+          { "rank_max": 5, "target": 4, "label": "Terminar no G4", "priority": 3 },
+          { "rank_max": 9, "target": 8, "label": "Terminar entre os 8 primeiros", "priority": 3 },
+          { "rank_max": 14, "target": 12, "label": "Terminar até o 12º lugar", "priority": 3 },
+          { "rank_max": 99, "target": 16, "label": "Escapar do rebaixamento (fora do Z4)", "priority": 3 }
+        ]
+      }
+    },
+    {
+      "id": "serie_b", "name": "Brasileirão Série B", "short_name": "Série B", "region": "BRA", "kind": "league", "division": 2,
+      "sort_order": 11, "xp_mult": 0.8, "ref_season": "2026",
+      "theme": { "c1": "#1f6f43", "c2": "#9ad14b", "code": "B", "kicker": "Segunda divisão" },
+      "sources": ["https://en.wikipedia.org/wiki/2026_Campeonato_Brasileiro_S%C3%A9rie_B",
+                  "https://www.band.com.br/nacional/brasil/ponte-preta-e-guarani-entenda-os-regulamentos-das-series-b-e-c-de-2026"],
+      "rules": {
+        "format": "league", "points": { "win": 3, "draw": 1 }, "season_matches": 38,
+        "tiebreakers": ["points", "wins", "gd", "gf", "h2h_pts", "reds", "yellows"],
+        "bench": 12, "max_subs": 5, "sub_windows": 3, "yellow_limit": 3,
+        "calendar_rounds": 40, "calendar_priority": 4, "champion": "league",
+        "phases": [
+          { "id": "league", "type": "league", "legs": 2, "label": "Pontos corridos", "rank": 1 },
+          { "id": "po_sf", "type": "knockout", "label": "Playoff do acesso", "rank": 4, "legs": 2, "extra_time": false, "penalties": false,
+            "tie": "higher_seed", "pairing": { "mode": "positions", "from": "league", "pairs": [[3, 6], [4, 5]] } }
+        ],
+        "zones": [ { "from": 1, "to": 2, "kind": "promotion", "label": "Acesso direto" }, { "from": 3, "to": 6, "kind": "playoff", "label": "Playoff do acesso" },
+                   { "from": 17, "to": 20, "kind": "relegation", "label": "Rebaixamento (Série C)" } ],
+        "objectives": [
+          { "rank_max": 3, "target": 2, "label": "Conquistar o acesso direto (top 2)", "priority": 3 },
+          { "rank_max": 8, "target": 6, "label": "Brigar pelo acesso: terminar até o 6º (playoff)", "priority": 3 },
+          { "rank_max": 14, "target": 12, "label": "Fazer uma campanha segura (até o 12º)", "priority": 3 },
+          { "rank_max": 99, "target": 16, "label": "Escapar do rebaixamento (fora do Z4)", "priority": 3 }
+        ]
+      }
+    },
+    {
+      "id": "copa_brasil", "name": "Copa do Brasil", "short_name": "Copa do Brasil", "region": "BRA", "kind": "cup", "division": null,
+      "sort_order": 20, "xp_mult": 1.2, "ref_season": "2026",
+      "theme": { "c1": "#1747b8", "c2": "#f5b800", "code": "CB", "kicker": "Copa nacional" },
+      "sources": ["https://en.wikipedia.org/wiki/2026_Copa_do_Brasil"],
+      "rules": {
+        "format": "knockout", "away_goals": false, "tie": "penalties", "final_legs": 1, "final_extra_time": false, "legs": 2, "start_stage": "r16",
+        "bench": 12, "max_subs": 5, "sub_windows": 3, "yellow_limit": 3,
+        "calendar_rounds": 7, "calendar_priority": 2, "champion": "final",
+        "phases": [
+          { "id": "r16", "type": "knockout", "label": "Oitavas de final", "rank": 2, "legs": 2, "extra_time": false, "penalties": true, "pairing": { "mode": "fixed" } },
+          { "id": "qf", "type": "knockout", "label": "Quartas de final", "rank": 3, "legs": 2, "extra_time": false, "penalties": true, "pairing": { "mode": "draw" } },
+          { "id": "sf", "type": "knockout", "label": "Semifinal", "rank": 4, "legs": 2, "extra_time": false, "penalties": true, "pairing": { "mode": "draw" } },
+          { "id": "final", "type": "knockout", "label": "Final", "rank": 5, "legs": 1, "extra_time": false, "penalties": true, "neutral": true, "pairing": { "mode": "draw" } }
+        ],
+        "cup_objectives": [ { "min_strength": 76, "target": 4, "label": "Copa do Brasil: chegar à semifinal", "priority": 2 },
+                            { "min_strength": 0, "target": 3, "label": "Copa do Brasil: chegar às quartas", "priority": 1 } ]
+      }
+    },
+    {
+      "id": "libertadores", "name": "Copa Libertadores", "short_name": "Libertadores", "region": "BRA", "kind": "continental", "division": null,
+      "sort_order": 30, "xp_mult": 1.3, "ref_season": "2026",
+      "theme": { "c1": "#121a33", "c2": "#d4af37", "code": "LIB", "kicker": "Continental" },
+      "sources": ["https://en.wikipedia.org/wiki/2026_Copa_Libertadores"],
+      "rules": {
+        "format": "groups_knockout", "groups": 8, "group_size": 4, "qualify": 2, "legs": 2, "final_legs": 1, "final_extra_time": true,
+        "away_goals": false, "tie": "penalties",
+        "tiebreakers": ["points", "h2h_pts", "h2h_gd", "h2h_gf", "gd", "gf", "fairplay"],
+        "bench": 12, "max_subs": 5, "sub_windows": 3, "yellow_limit": 3,
+        "calendar_rounds": 13, "calendar_priority": 1, "champion": "final",
+        "qualification": { "from": "brasileirao", "region": "BRA" },
+        "phases": [
+          { "id": "group", "type": "groups", "legs": 2, "label": "Fase de grupos", "rank": 1 },
+          { "id": "r16", "type": "knockout", "label": "Oitavas de final", "rank": 2, "legs": 2, "extra_time": false, "penalties": true, "pairing": { "mode": "lib_r16" } },
+          { "id": "qf", "type": "knockout", "label": "Quartas de final", "rank": 3, "legs": 2, "extra_time": false, "penalties": true, "pairing": { "mode": "draw" } },
+          { "id": "sf", "type": "knockout", "label": "Semifinal", "rank": 4, "legs": 2, "extra_time": false, "penalties": true, "pairing": { "mode": "draw" } },
+          { "id": "final", "type": "knockout", "label": "Final", "rank": 5, "legs": 1, "extra_time": true, "penalties": true, "neutral": true, "pairing": { "mode": "draw" } }
+        ],
+        "cup_objectives": [ { "min_strength": 76, "target": 4, "label": "Libertadores: chegar à semifinal", "priority": 2 },
+                            { "min_strength": 0, "target": 2, "label": "Libertadores: passar da fase de grupos", "priority": 2 } ]
+      }
+    },
+    {
+      "id": "premier_league", "name": "Premier League", "short_name": "Premier League", "region": "ENG", "kind": "league", "division": 1,
+      "sort_order": 10, "xp_mult": 1.1, "ref_season": "2026/27",
+      "theme": { "c1": "#3d195b", "c2": "#00ff85", "code": "PL", "kicker": "Liga inglesa" },
+      "sources": ["https://en.wikipedia.org/wiki/2026%E2%80%9327_Premier_League", "https://en.wikipedia.org/wiki/2025%E2%80%9326_Premier_League"],
+      "rules": {
+        "format": "league", "points": { "win": 3, "draw": 1 }, "season_matches": 38,
+        "tiebreakers": ["points", "gd", "gf", "h2h_pts", "h2h_away_gf"],
+        "bench": 9, "max_subs": 5, "sub_windows": 3, "yellow_limit": 5,
+        "calendar_rounds": 38, "calendar_priority": 3, "champion": "league",
+        "phases": [ { "id": "league", "type": "league", "legs": 2, "label": "Pontos corridos", "rank": 1 } ],
+        "zones": [ { "from": 1, "to": 5, "kind": "continental", "label": "Champions League" }, { "from": 18, "to": 20, "kind": "relegation", "label": "Rebaixamento" } ],
+        "objectives": [
+          { "rank_max": 2, "target": 2, "label": "Brigar pelo título: terminar entre os 2 primeiros", "priority": 3 },
+          { "rank_max": 5, "target": 5, "label": "Vaga na Champions: terminar no top 5", "priority": 3 },
+          { "rank_max": 9, "target": 8, "label": "Terminar entre os 8 primeiros", "priority": 3 },
+          { "rank_max": 14, "target": 12, "label": "Fazer uma campanha tranquila (até o 12º)", "priority": 3 },
+          { "rank_max": 99, "target": 17, "label": "Escapar do rebaixamento (até o 17º)", "priority": 3 }
+        ]
+      }
+    },
+    {
+      "id": "championship", "name": "EFL Championship", "short_name": "Championship", "region": "ENG", "kind": "league", "division": 2,
+      "sort_order": 11, "xp_mult": 0.85, "ref_season": "2026/27",
+      "theme": { "c1": "#1a2b4c", "c2": "#e2b13c", "code": "CH", "kicker": "Segunda divisão inglesa" },
+      "sources": ["https://en.wikipedia.org/wiki/2026%E2%80%9327_EFL_Championship", "https://www.skysports.com/football/news/11711/13515549/championship-play-offs-efl-confirms-expansion-from-four-to-six-teams-from-2026-27-season-onwards"],
+      "rules": {
+        "format": "league", "points": { "win": 3, "draw": 1 }, "season_matches": 46,
+        "tiebreakers": ["points", "gd", "gf", "h2h_pts", "wins", "away_gf"],
+        "bench": 9, "max_subs": 5, "sub_windows": 3, "yellow_limit": 5,
+        "calendar_rounds": 50, "calendar_priority": 4, "champion": "league",
+        "phases": [
+          { "id": "league", "type": "league", "legs": 2, "label": "Pontos corridos", "rank": 1 },
+          { "id": "po_elim", "type": "knockout", "label": "Playoff: eliminatórias", "rank": 2, "legs": 1, "extra_time": true, "penalties": true,
+            "pairing": { "mode": "positions", "from": "league", "pairs": [[5, 8], [6, 7]] } },
+          { "id": "po_sf", "type": "knockout", "label": "Playoff: semifinal", "rank": 4, "legs": 2, "extra_time": true, "penalties": true,
+            "pairing": { "mode": "champ_sf", "from": "league", "seeds": [3, 4] } },
+          { "id": "po_final", "type": "knockout", "label": "Playoff: final (Wembley)", "rank": 5, "legs": 1, "extra_time": true, "penalties": true, "neutral": true,
+            "pairing": { "mode": "bracket" } }
+        ],
+        "zones": [ { "from": 1, "to": 2, "kind": "promotion", "label": "Acesso direto" }, { "from": 3, "to": 8, "kind": "playoff", "label": "Playoff" } ],
+        "objectives": [
+          { "rank_max": 3, "target": 2, "label": "Conquistar o acesso direto (top 2)", "priority": 3 },
+          { "rank_max": 9, "target": 8, "label": "Brigar pelo acesso: terminar até o 8º (playoff)", "priority": 3 },
+          { "rank_max": 16, "target": 14, "label": "Fazer uma campanha segura (até o 14º)", "priority": 3 },
+          { "rank_max": 99, "target": 21, "label": "Ficar longe da zona de rebaixamento (até o 21º)", "priority": 3 }
+        ]
+      }
+    },
+    {
+      "id": "fa_cup", "name": "FA Cup", "short_name": "FA Cup", "region": "ENG", "kind": "cup", "division": null,
+      "sort_order": 20, "xp_mult": 1.15, "ref_season": "2026/27",
+      "theme": { "c1": "#0b2a6f", "c2": "#c9a227", "code": "FA", "kicker": "Copa inglesa" },
+      "sources": ["https://en.wikipedia.org/wiki/2026%E2%80%9327_FA_Cup", "https://www.tntsports.co.uk/football/the-emirates-fa-cup/2025-2026/replays-var-extra-time-penalties-away-goal-rule_sto23235682/story.shtml"],
+      "rules": {
+        "format": "knockout", "away_goals": false, "replays": false, "tie": "penalties",
+        "bench": 9, "max_subs": 5, "sub_windows": 3, "yellow_limit": 5,
+        "calendar_rounds": 6, "calendar_priority": 2, "champion": "final",
+        "entry": { "premier_league": "r4", "championship": "r3" },
+        "phases": [
+          { "id": "r3", "type": "knockout", "label": "Terceira fase", "rank": 1, "legs": 1, "extra_time": true, "penalties": true, "pairing": { "mode": "draw" } },
+          { "id": "r4", "type": "knockout", "label": "Quarta fase", "rank": 1, "legs": 1, "extra_time": true, "penalties": true, "pairing": { "mode": "draw" } },
+          { "id": "r5", "type": "knockout", "label": "Quinta fase", "rank": 2, "legs": 1, "extra_time": true, "penalties": true, "pairing": { "mode": "draw" } },
+          { "id": "qf", "type": "knockout", "label": "Quartas de final", "rank": 3, "legs": 1, "extra_time": true, "penalties": true, "pairing": { "mode": "draw" } },
+          { "id": "sf", "type": "knockout", "label": "Semifinal (Wembley)", "rank": 4, "legs": 1, "extra_time": true, "penalties": true, "neutral": true, "pairing": { "mode": "draw" } },
+          { "id": "final", "type": "knockout", "label": "Final (Wembley)", "rank": 5, "legs": 1, "extra_time": true, "penalties": true, "neutral": true, "pairing": { "mode": "draw" } }
+        ],
+        "cup_objectives": [ { "min_strength": 84, "target": 4, "label": "FA Cup: chegar à semifinal", "priority": 1 },
+                            { "min_strength": 0, "target": 2, "label": "FA Cup: chegar à quinta fase", "priority": 1 } ]
+      }
+    },
+    {
+      "id": "efl_cup", "name": "EFL Cup (Carabao Cup)", "short_name": "EFL Cup", "region": "ENG", "kind": "cup", "division": null,
+      "sort_order": 21, "xp_mult": 1.05, "ref_season": "2026/27",
+      "theme": { "c1": "#00843d", "c2": "#f2c94c", "code": "EFL", "kicker": "Copa da Liga" },
+      "sources": ["https://en.wikipedia.org/wiki/2026%E2%80%9327_EFL_Cup"],
+      "rules": {
+        "format": "knockout", "away_goals": false, "tie": "penalties",
+        "bench": 9, "max_subs": 5, "sub_windows": 3, "yellow_limit": 5,
+        "calendar_rounds": 7, "calendar_priority": 2, "champion": "final",
+        "entry": { "premier_league": "r3", "championship": "r1" },
+        "phases": [
+          { "id": "r1", "type": "knockout", "label": "Fase preliminar", "rank": 1, "legs": 1, "extra_time": false, "penalties": true, "pairing": { "mode": "draw" } },
+          { "id": "r3", "type": "knockout", "label": "Terceira fase", "rank": 1, "legs": 1, "extra_time": false, "penalties": true, "pairing": { "mode": "draw" } },
+          { "id": "r4", "type": "knockout", "label": "Quarta fase", "rank": 2, "legs": 1, "extra_time": false, "penalties": true, "pairing": { "mode": "draw" } },
+          { "id": "qf", "type": "knockout", "label": "Quartas de final", "rank": 3, "legs": 1, "extra_time": false, "penalties": true, "pairing": { "mode": "draw" } },
+          { "id": "sf", "type": "knockout", "label": "Semifinal", "rank": 4, "legs": 2, "extra_time": false, "penalties": true, "pairing": { "mode": "draw" } },
+          { "id": "final", "type": "knockout", "label": "Final (Wembley)", "rank": 5, "legs": 1, "extra_time": true, "penalties": true, "neutral": true, "pairing": { "mode": "draw" } }
+        ],
+        "cup_objectives": [ { "min_strength": 84, "target": 4, "label": "EFL Cup: chegar à semifinal", "priority": 1 },
+                            { "min_strength": 0, "target": 2, "label": "EFL Cup: chegar à quarta fase", "priority": 1 } ]
+      }
+    },
+    {
+      "id": "ucl", "name": "UEFA Champions League", "short_name": "Champions", "region": "ENG", "kind": "continental", "division": null,
+      "sort_order": 30, "xp_mult": 1.4, "ref_season": "2026/27",
+      "theme": { "c1": "#0a1a4a", "c2": "#cfd8ff", "code": "UCL", "kicker": "Continental" },
+      "sources": ["https://en.wikipedia.org/wiki/2026%E2%80%9327_UEFA_Champions_League", "https://en.wikipedia.org/wiki/2026%E2%80%9327_UEFA_Champions_League_league_phase"],
+      "rules": {
+        "format": "swiss_knockout", "away_goals": false, "tie": "penalties",
+        "tiebreakers": ["points", "gd", "gf", "away_gf", "wins", "away_wins", "opp_pts", "opp_gd", "opp_gf", "fairplay"],
+        "bench": 12, "max_subs": 5, "sub_windows": 3, "yellow_limit": 3,
+        "calendar_rounds": 17, "calendar_priority": 1, "champion": "final",
+        "qualification": { "from": "premier_league", "region": "ENG" },
+        "zones": [ { "from": 1, "to": 8, "kind": "promotion", "label": "Oitavas de final" }, { "from": 9, "to": 24, "kind": "playoff", "label": "Playoff" },
+                   { "from": 25, "to": 36, "kind": "relegation", "label": "Eliminado" } ],
+        "phases": [
+          { "id": "league", "type": "swiss", "rounds": 8, "pots": 4, "label": "Fase de liga", "rank": 1 },
+          { "id": "po", "type": "knockout", "label": "Playoff", "rank": 1, "legs": 2, "extra_time": true, "penalties": true, "pairing": { "mode": "ucl_po", "from": "league" } },
+          { "id": "r16", "type": "knockout", "label": "Oitavas de final", "rank": 2, "legs": 2, "extra_time": true, "penalties": true, "pairing": { "mode": "ucl_r16", "from": "league" } },
+          { "id": "qf", "type": "knockout", "label": "Quartas de final", "rank": 3, "legs": 2, "extra_time": true, "penalties": true, "pairing": { "mode": "bracket", "seed_from": "league" } },
+          { "id": "sf", "type": "knockout", "label": "Semifinal", "rank": 4, "legs": 2, "extra_time": true, "penalties": true, "pairing": { "mode": "bracket", "seed_from": "league" } },
+          { "id": "final", "type": "knockout", "label": "Final", "rank": 5, "legs": 1, "extra_time": true, "penalties": true, "neutral": true, "pairing": { "mode": "bracket" } }
+        ],
+        "cup_objectives": [ { "min_strength": 86, "target": 3, "label": "Champions: chegar às quartas", "priority": 2 },
+                            { "min_strength": 0, "target": 2, "label": "Champions: chegar às oitavas", "priority": 2 } ]
+      }
+    }
+  ],
+  "participants": {
+    "serie_b": ["america-mg", "athletic-mg", "atletico-go", "avai", "botafogo-sp", "ceara", "crb", "criciuma", "cuiaba", "fortaleza",
+                "goias", "juventude", "londrina", "nautico", "novorizontino", "operario-pr", "ponte-preta", "sao-bernardo", "sport", "vila-nova"],
+    "premier_league": ["arsenal", "aston-villa", "bournemouth", "brentford", "brighton", "chelsea", "coventry", "crystal-palace", "everton", "fulham",
+                       "hull", "ipswich", "leeds", "liverpool", "man-city", "man-united", "newcastle", "nottm-forest", "sunderland", "tottenham"],
+    "championship": ["birmingham", "blackburn", "bolton", "bristol-city", "burnley", "cardiff", "charlton", "derby", "lincoln", "middlesbrough",
+                     "millwall", "norwich", "portsmouth", "preston", "qpr", "sheffield-united", "southampton", "stoke", "swansea", "watford",
+                     "west-brom", "west-ham", "wolves", "wrexham"],
+    "ucl_pots": {
+      "1": ["psg", "bayern", "real-madrid", "liverpool", "inter", "man-city", "arsenal", "barcelona", "atletico-madrid"],
+      "2": ["dortmund", "roma", "sporting", "aston-villa", "porto", "man-united", "club-brugge", "betis", "psv"],
+      "3": ["feyenoord", "lille", "bodo-glimt", "napoli", "leipzig", "villarreal", "fenerbahce", "shakhtar", "galatasaray"],
+      "4": ["slavia-praha", "slovan-bratislava", "stuttgart", "aek", "lask", "como", "lens", "viking", "sabah"]
+    }
+  },
+  "promotion": [
+    { "region": "BRA", "upper": "brasileirao", "lower": "serie_b", "relegated": 4, "promoted_direct": 2, "promoted_playoff_phase": "po_sf", "from_year": 2026,
+      "source": "https://www.band.com.br/nacional/brasil/ponte-preta-e-guarani-entenda-os-regulamentos-das-series-b-e-c-de-2026" },
+    { "region": "ENG", "upper": "premier_league", "lower": "championship", "relegated": 3, "promoted_direct": 2, "promoted_playoff_phase": "po_final", "from_year": 2026,
+      "source": "https://www.skysports.com/football/news/11711/13515549/championship-play-offs-efl-confirms-expansion-from-four-to-six-teams-from-2026-27-season-onwards" }
+  ]
+}

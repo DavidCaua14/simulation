@@ -1,0 +1,34 @@
+# club: aek
+# source: https://en.wikipedia.org/wiki/2026%E2%80%9327_AEK_Athens_F.C._season
+# accessed: 2026-10-25
+# as_of: 2026-09-02
+1|GK|ALB|Thomas Strakosha|
+41|GK|GRE|Marios Balamotis|
+91|GK|ITA|Alberto Brignoli|
+31|GK|GRE|Giorgos Sarakasidis|
+2|CB|CMR|Harold Moukoudi|vice-captain
+3|LB|ALB|Stavros Pilios|
+5|CB|GRE|Christos Alexiou|on loan from Inter Milan
+12|RB|GRE|Lazaros Rota|
+15|CB|BUL|Martin Georgiev|
+21|CB|CRO|Domagoj Vida|vice-captain
+22|LB|GRE|Charalampos Lykogiannis|
+57|RB|GRE|Spyros Christakopoulos|
+6|CM|FIN|Kaan Kairinen|
+8|AM|SRB|Mijat Gaćinović|
+14|AM|CRO|Lovro Majer|
+16|DM|HON|Kervin Arriaga|
+17|AM|GRE|Dimitris Kaloskamis|
+18|CM|ROU|Răzvan Marin|
+20|AM|GRE|Petros Mantalos|captain
+23|AM|POR|João Mário|
+27|CM|HUN|Milán Vitális|
+80|CM|RWA|Hakim Sahabo|
+7|LW|SUI|Dereck Kutesa|
+9|ST|SRB|Luka Jović|
+10|RW|UKR|Oleksandr Zubkov|
+11|LW|MTN|Aboubakary Koïta|
+19|ST|HUN|Barnabás Varga|
+39|ST|GRE|Zois Karargyris|
+90|ST|ANG|Zini|
+76|ST|GRE|Argyris Argyriou|

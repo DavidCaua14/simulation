@@ -1,0 +1,36 @@
+# club: botafogo-sp
+# source: https://en.wikipedia.org/wiki/Botafogo_Futebol_Clube_(SP)
+# accessed: 2026-10-25
+# as_of: 2026-04-15
+-|GK|BRA|Adriano|
+-|GK|BRA|Brenno|
+-|GK|BRA|Jordan|
+-|GK|BRA|Victor Souza|
+-|DF|BRA|Badaró|
+-|DF|BRA|Carlos Eduardo|
+-|DF|BRA|Darlan|
+-|DF|BRA|Ericson|
+-|DF|BRA|Gustavo Vilar|
+-|DF|BRA|Wallace|
+-|DF|BRA|Felipe Vieira|
+-|DF|BRA|Gabriel Inocêncio|
+-|DF|BRA|Henrique Teles|
+-|DF|BRA|Jonathan|
+-|DF|BRA|Patrick Brey|
+-|DF|BRA|Pedrinho|
+-|MF|BRA|Erik|
+-|MF|ARG|Leandro Maciel|
+-|MF|BRA|Matheus Sales|
+-|MF|BRA|Pedro Tortello|
+-|MF|BRA|Penha|
+-|MF|BRA|Rafael Gava|
+-|MF|BRA|Thiago Moraes|
+-|MF|BRA|Yuri Felipe|
+-|FW|BRA|Guilherme Queiróz|
+-|FW|BRA|Hygor|
+-|FW|BRA|Jefferson Nem|
+-|FW|BRA|Kelvin|
+-|FW|BRA|Luizão|
+-|FW|BRA|Ruan Pablo|
+-|FW|BRA|Thalles|
+-|FW|BRA|Wesley Santos|

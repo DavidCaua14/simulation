@@ -1,0 +1,30 @@
+# club: cuiaba
+# source: https://en.wikipedia.org/wiki/Cuiab%C3%A1_Esporte_Clube
+# accessed: 2026-10-25
+# as_of: 2026-04-15
+1|GK|BRA|João Carlos|captain
+2|DF|BRA|Nino Paraíba|
+4|DF|BRA|Vitor Mendes|
+5|MF|BRA|Calebe|
+6|DF|BRA|Marlon|
+7|FW|ARG|Yamil Asad|
+10|FW|BRA|Hernandes|
+11|FW|BRA|Eliel|
+13|DF|BRA|João Basso|
+14|DF|BRA|Eric Melo|
+17|FW|BRA|Victor Barbara|
+19|FW|BRA|Mateus Santos|
+21|FW|BRA|Gabriel Mineiro|
+29|FW|BRA|Vinicius Peixoto|
+31|GK|BRA|Marcelo Carné|
+33|DF|BRA|Alan Empereur|
+37|DF|BRA|Raylan|
+41|FW|BRA|Kauan Cristtyan|
+44|DF|BRA|Gabriel Knesowitsch|
+49|MF|BRA|João Araújo|
+53|MF|BRA|Weverson|
+77|FW|BRA|Jadson|
+88|MF|BRA|David Miguel|
+91|DF|BRA|Luis Soares|
+97|MF|BRA|Luiz Otávio|
+-|DF|BRA|Tarcísio|

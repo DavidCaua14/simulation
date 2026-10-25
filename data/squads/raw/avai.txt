@@ -1,0 +1,40 @@
+# club: avai
+# source: https://en.wikipedia.org/wiki/Ava%C3%AD_FC
+# accessed: 2026-10-25
+# as_of: 2026-04-15
+1|GK|BRA|Igor Bohn|
+2|DF|BRA|Wallison|
+3|DF|BRA|Allyson|
+4|DF|BRA|Gabriel Simples|
+5|MF|BRA|Romildo Del Piage|
+6|DF|ARG|Nicolás Cabral|
+7|FW|BRA|Rafael Bilú|
+8|MF|BRA|Luiz Henrique|
+9|FW|URU|Felipe Avenatti|
+10|MF|BRA|Jean Lucas|
+11|FW|BRA|Sorriso|on loan from Palmeiras
+14|MF|BRA|Daniel Penha|on loan from Atlético Mineiro
+15|DF|BRA|Guilherme Aquino|on loan from Coritiba
+16|MF|BRA|Jamerson|
+18|MF|BRA|Hyan|on loan from Santos
+19|MF|BRA|Vinicius Gugel|
+20|FW|BRA|Isaías|
+21|GK|BRA|Otávio Passos|
+25|MF|BRA|Paulo Vitor|on loan from Atlético Mineiro
+27|MF|BRA|Pedro Cuiabá|
+30|MF|BRA|Cristiano|
+33|GK|BRA|Léo|
+36|DF|BRA|Douglas Teixeira|on loan from Barra-SC
+38|DF|BRA|Jefferson Maciel|
+41|GK|BRA|Léo Aragão|on loan from Cruzeiro
+43|FW|BRA|Thayllon|
+50|DF|BRA|João Maistro|on loan from Atlético Goianiense
+52|DF|BRA|Wesley Gasolina|
+55|DF|BRA|Bruno Baldini|
+57|FW|BRA|Walace França|on loan from Athletico Paranaense
+66|DF|BRA|Mateus Quaresma|
+71|GK|BRA|Joaquim|
+77|MF|BRA|Zé Ricardo|captain
+90|FW|BRA|Kevin|
+91|DF|BRA|Vinicius Marques|
+95|MF|BRA|Wenderson|on loan from Elfsborg

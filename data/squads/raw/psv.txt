@@ -1,0 +1,33 @@
+# club: psv
+# source: https://en.wikipedia.org/wiki/PSV_Eindhoven
+# accessed: 2026-10-25
+# as_of: unknown
+1|GK|NED|Nick Olij|
+3|DF|ESP|Yarek Gasiorowski|
+4|DF|CUW|Armando Obispo|
+5|MF|CRO|Ivan Perišić|
+6|DF|NED|Ryan Flamingo|
+7|FW|NED|Ruben van Bommel|
+8|DF|USA|Sergiño Dest|
+9|FW|USA|Ricardo Pepi|
+10|MF|AUT|Paul Wanner|
+11|FW|NED|Sami Ouaissa|
+14|FW|FRA|Alassane Pléa|
+17|DF|BRA|Mauro Júnior|vice-captain
+18|DF|SRB|Filip Kostić|
+19|FW|BIH|Esmir Bajraktarević|
+20|MF|NED|Guus Til|
+21|MF|NED|Sven Mijnans|
+22|MF|NED|Jerdy Schouten|captain
+23|FW|DEN|Mikkel Bro Hansen|
+24|MF|JPN|Kodai Sano|
+25|DF|FRA|Kiliann Sildillia|
+27|FW|ROU|Dennis Man|
+29|FW|NED|Sam Lammers|
+31|MF|BEL|Noah Fernandez|
+32|GK|CZE|Matěj Kovář|
+35|MF|CPV|Ayoni Santos|
+37|FW|NED|Amir Bouhamdi|
+38|DF|NED|Fabian Merién|
+39|DF|BFA|Adamo Nagalo|
+51|GK|NED|Tijn Smolenaars|

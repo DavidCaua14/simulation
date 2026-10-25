@@ -1,0 +1,32 @@
+# club: bournemouth
+# source: https://en.wikipedia.org/wiki/AFC_Bournemouth
+# accessed: 2026-10-25
+# as_of: 2026-09-08
+1|GK|SRB|Đorđe Petrović|
+2|DF|MEX|Julián Araujo|
+3|DF|FRA|Adrien Truffert|
+4|MF|ENG|Lewis Cook|vice-captain
+5|DF|ENG|James Hill|
+6|DF|ARG|Julio Soler|
+7|MF|WAL|David Brooks|
+8|MF|ENG|Alex Scott|
+9|FW|BRA|Evanilson|
+10|MF|SCO|Ryan Christie|
+11|FW|SCO|Ben Gannon-Doak|
+12|MF|USA|Tyler Adams|
+14|DF|POR|António Silva|
+15|DF|ENG|Adam Smith|captain
+16|MF|ENG|Marcus Tavernier|
+17|GK|ENG|Fraser Forster|
+18|DF|FRA|Bafodé Diakité|
+19|FW|NED|Justin Kluivert|
+20|GK|ITA|Michele Di Gregorio|on loan from Juventus
+21|MF|MAR|Amine Adli|
+22|FW|FRA|Eli Junior Kroupi|
+24|DF|ESP|Juanlu Sánchez|
+27|MF|HUN|Alex Tóth|
+28|DF|ENG|Max Aarons|
+29|FW|CAN|Daniel Jebbison|
+30|FW|URU|Álvaro Rodríguez|
+37|FW|BRA|Rayan|
+44|DF|SRB|Veljko Milosavljević|

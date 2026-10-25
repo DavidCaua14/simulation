@@ -1,0 +1,31 @@
+# club: lille
+# source: https://en.wikipedia.org/wiki/Lille_OSC
+# accessed: 2026-10-25
+# as_of: 2026-09-01
+1|GK|TUR|Berke Özer|
+2|DF|SUI|Loun Srdanovic|
+3|DF|BEL|Nathan Ngoy|
+4|DF|BRA|Alexsandro|
+6|MF|ALG|Nabil Bentaleb|
+8|FW|FRA|Ethan Mbappé|
+9|FW|FRA|Olivier Giroud|vice-captain
+10|MF|ISL|Hákon Haraldsson|
+11|FW|MAR|Osame Sahraoui|
+12|GK|PAR|Orlando Gill|
+14|MF|DEN|Maurits Kjærgaard|
+15|DF|FRA|Romain Perraud|
+16|GK|BEL|Arnaud Bodart|
+17|MF|COD|Ngal'ayel Mukau|
+18|FW|JPN|Ayase Ueda|
+19|FW|TUR|Başar Önal|
+21|MF|FRA|Benjamin André|captain
+22|DF|POR|Tiago Santos|
+23|DF|FRA|Tanguy Nianzou|
+24|DF|IDN|Calvin Verdonk|
+26|DF|FRA|Isaac Cossier|
+28|FW|FRA|Gaëtan Perrin|
+29|FW|MAR|Hamza Igamane|
+35|FW|FRA|Soriba Diaoune|
+38|DF|FRA|Maxima Goffi|
+-|FW|GUI|Mohamed Bayo|
+-|FW|POR|Tiago Morais|

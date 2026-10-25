@@ -1,0 +1,36 @@
+# club: liverpool
+# source: https://en.wikipedia.org/wiki/Liverpool_F.C.
+# accessed: 2026-10-25
+# as_of: 2026-07-01
+1|GK|BRA|Alisson Becker|
+2|DF|ENG|Joe Gomez|
+3|MF|JPN|Wataru Endo|
+4|DF|NED|Virgil van Dijk|captain
+6|DF|HUN|Milos Kerkez|
+7|MF|GER|Florian Wirtz|
+8|MF|HUN|Dominik Szoboszlai|
+9|FW|SWE|Alexander Isak|
+10|MF|ARG|Alexis Mac Allister|
+12|DF|NIR|Conor Bradley|
+14|FW|ITA|Federico Chiesa|
+15|DF|ITA|Giovanni Leoni|
+17|MF|ENG|Curtis Jones|
+18|FW|NED|Cody Gakpo|
+19|MF|ENG|Harvey Elliott|
+21|DF|GRE|Kostas Tsimikas|
+22|FW|FRA|Hugo Ekitike|
+25|GK|GEO|Giorgi Mamardashvili|
+28|GK|ENG|Freddie Woodman|
+30|DF|NED|Jeremie Frimpong|
+38|MF|NED|Ryan Gravenberch|
+41|GK|HUN|Ármin Pécsi|
+42|MF|ENG|Trey Nyoni|
+43|MF|ESP|Stefan Bajcetic|
+47|DF|SCO|Calvin Ramsay|
+53|MF|ENG|James McConnell|
+56|GK|CZE|Vítězslav Jaroš|
+73|FW|ENG|Rio Ngumoha|
+95|GK|ENG|Harvey Davies|
+-|DF|FRA|Jérémy Jacquet|
+-|FW|ESP|Víctor Muñoz|
+-|DF|AUT|Ifeanyi Ndukwe|

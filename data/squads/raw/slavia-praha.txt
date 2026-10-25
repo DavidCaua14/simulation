@@ -1,0 +1,33 @@
+# club: slavia-praha
+# source: https://en.wikipedia.org/wiki/SK_Slavia_Prague
+# accessed: 2026-10-25
+# as_of: 2026-09-04
+1|GK|CZE|Ondřej Kolář|
+2|DF|CZE|Štěpán Chaloupek|
+3|DF|CZE|Tomáš Holeš|
+4|DF|CZE|David Zima|
+5|DF|NGA|Igoh Ogbu|
+6|DF|FRA|Ange N'Guessan|
+8|MF|POL|Oskar Kubiak|
+10|MF|SVN|Danijel Šturm|
+11|MF|GAM|Youssoupha Sanyang|
+13|FW|CZE|Mojmír Chytil|
+14|DF|NGA|Samuel Isife|
+15|MF|NGA|Mubarak Suleiman|
+16|MF|NGA|David Moses|
+17|MF|CZE|Lukáš Provod|
+18|FW|CAN|Adonija Ouanda|
+20|FW|NGA|Emmanuel Ayaosi|
+22|MF|CIV|Toumani Diakité|
+23|MF|CZE|Michal Sadílek|
+25|FW|CZE|Tomáš Chorý|
+26|FW|SVK|Ivan Schranz|
+27|DF|CZE|Tomáš Vlček|
+29|GK|UKR|Nazar Domchak|
+30|MF|POL|Wiktor Nowak|
+32|MF|CZE|Pavel Kačor|
+35|GK|CZE|Jakub Markovič|
+36|GK|CZE|Jindřich Staněk|
+39|DF|CZE|David Jurásek|
+42|DF|CZE|Mikuláš Konečný|
+43|DF|CZE|Eliáš Piták|

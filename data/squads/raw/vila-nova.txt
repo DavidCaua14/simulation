@@ -1,0 +1,26 @@
+# club: vila-nova
+# source: https://en.wikipedia.org/wiki/Vila_Nova_Futebol_Clube
+# accessed: 2026-10-25
+# as_of: 2026-09-14
+1|GK|BRA|Helton Leite|
+3|DF|BRA|Tiago Pagnussat|
+4|DF|BRA|Douglas Mendes|
+5|MF|BRA|João Vieira|
+6|DF|BRA|Higor Luiz|
+7|FW|BRA|André Luis|
+8|MF|BRA|Willian Maranhão|
+9|FW|BRA|Gustavo Puskas|
+10|MF|BRA|Marquinhos Gabriel|captain
+11|FW|BRA|Ryan|
+13|DF|BRA|Willian Formiga|
+14|DF|BRA|Samuel Lucas|
+15|MF|BRA|Dudu|
+18|MF|BRA|Enzo|
+21|MF|BRA|Higor Meritão|
+30|GK|BRA|Gabriel Átila|
+33|FW|BRA|Bruno Xavier|
+49|FW|BRA|Dellatorre|
+70|FW|BRA|Emerson Urso|
+99|FW|BRA|Janderson|
+-|DF|BRA|Anderson Jesus|
+-|FW|BRA|Rafa Silva|

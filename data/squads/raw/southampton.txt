@@ -1,0 +1,27 @@
+# club: southampton
+# source: https://en.wikipedia.org/wiki/Southampton_F.C.
+# accessed: 2026-10-25
+# as_of: unknown
+1|GK|ISR|Daniel Peretz|
+2|DF|DEN|Mads Roerslev|
+3|DF|IRL|Ryan Manning|
+4|MF|ENG|Flynn Downes|
+5|DF|ENG|Jack Stephens|captain
+7|MF|BRA|Léo Scienza|
+8|MF|GER|Caspar Jander|
+9|FW|CAN|Cyle Larin|
+10|MF|IRL|Finn Azaz|
+11|FW|ENG|Lewis Dobbin|
+13|DF|GER|Keven Schlotterbeck|
+14|DF|ENG|James Bree|
+15|DF|ENG|Nathan Wood|
+18|MF|ENG|Tom Fellows|
+23|MF|ENG|Samuel Edozie|
+25|GK|ENG|George Long|
+26|MF|SCO|Cam Bragg|
+27|MF|JPN|Kuryu Matsuki|
+29|MF|IRL|Romeo Akachukwu|
+30|MF|ENG|James Ward-Prowse|
+31|GK|ENG|Jamie Jones|
+32|GK|ENG|Aaron Ramsdale|
+34|DF|BRA|Welington|

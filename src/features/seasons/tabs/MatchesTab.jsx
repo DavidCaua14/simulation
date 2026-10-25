@@ -4,7 +4,7 @@ import MatchRow from '../components/MatchRow'
 import CalendarRow from '../components/CalendarRow'
 import CompEmblem from '../ui/CompEmblem'
 import { EmptyState } from '../ui/States'
-import { COMP_ORDER, COMP_SHORT } from '../utils/seasonUtils'
+import { COMP_ORDER, COMP_SHORT, seasonLabel } from '../utils/seasonUtils'
 
 // JOGOS: resultados (tudo o que você comandou, inclusive em clubes anteriores) e calendário.
 // Tocar num resultado abre a súmula da partida.
@@ -39,7 +39,7 @@ export default function MatchesTab({ ctx, onOpenReport }) {
 
       {view === 'results' && history.length > 0 && (
         <div className="mt-record" aria-label="Sua campanha nesta temporada">
-          <small>Temporada {season.year}</small>
+          <small>Temporada {seasonLabel(season.year, season.region)}</small>
           <span className="w">
             <b>{season.wins}</b> V
           </span>

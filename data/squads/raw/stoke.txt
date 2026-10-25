@@ -1,0 +1,34 @@
+# club: stoke
+# source: https://en.wikipedia.org/wiki/Stoke_City_F.C.
+# accessed: 2026-10-25
+# as_of: 2026-06-26
+1|GK|SWE|Viktor Johansson|
+3|DF|ENG|Aaron Cresswell|
+4|MF|ENG|Ben Pearson|
+7|MF|WAL|Sorba Thomas|
+10|MF|KOR|Bae Jun-ho|
+11|FW|SVK|Róbert Boženík|
+12|MF|JPN|Tatsuki Seko|
+14|FW|ENG|Ato Ampah|
+16|DF|ENG|Ben Wilmot|captain
+17|DF|FRA|Eric Bocat|
+18|MF|IRL|Bosun Lawal|
+19|MF|SVK|Tomáš Rigo|
+20|FW|ENG|Sam Gallagher|
+21|MF|SRB|Nikola Jojić|
+22|DF|CMR|Junior Tchamadeu|
+23|DF|ENG|Ben Gibson|
+29|FW|FRA|Lamine Cissé|
+34|GK|ENG|Frank Fielding|
+35|FW|ENG|Nathan Lowe|
+37|FW|ENG|Emre Tezgel|
+40|DF|UKR|Maksym Talovierov|
+42|FW|NED|Million Manhoef|
+49|FW|NED|Milan Smit|
+50|DF|KEN|Sydney Agina|
+54|DF|IRL|Raphael-Pijus Otegbayo|
+56|MF|ENG|Favour Fawunmi|
+57|DF|ENG|Jaden Mears|
+58|DF|ENG|Chinonso Chibueze|
+-|GK|ENG|Josh Griffiths|
+-|MF|SEN|Djibril Soumaré|

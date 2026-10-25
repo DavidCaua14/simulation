@@ -1,0 +1,30 @@
+# club: lens
+# source: https://en.wikipedia.org/wiki/RC_Lens
+# accessed: 2026-10-25
+# as_of: unknown
+1|GK|FRA|Régis Gurtner|
+2|DF|FRA|Ruben Aguilar|
+3|DF|POL|Maik Nawrocki|
+4|DF|BIH|Nidal Čelik|
+5|MF|MNE|Andrija Bulatović|
+6|DF|AUT|Samson Baidoo|
+7|FW|FRA|Florian Sotoca|
+8|MF|ALG|Yacine Titraoui|
+9|FW|BEL|Thorgan Hazard|
+10|MF|FRA|Florian Thauvin|captain
+11|FW|FRA|Odsonne Édouard|
+13|DF|ECU|Jhoanner Chávez|
+14|DF|FRA|Matthieu Udol|
+16|GK|FRA|Mathieu Gorgelin|
+19|FW|SEN|Abdallah Sima|
+21|MF|MLI|Amadou Haidara|
+22|MF|POL|Michał Skóraś|
+23|DF|KSA|Saud Abdulhamid|
+24|DF|FRA|Jonathan Gradit|
+25|DF|FRA|Ismaëlo Ganiou|
+27|MF|FRA|Michaël Cuisance|
+31|DF|MLI|Souleymane Sagnan|
+32|DF|FRA|Kyllian Antonio|
+38|MF|POR|Mezian Mesloub|
+40|GK|FRA|Robin Risser|
+60|GK|FRA|Ilan Jourdren|

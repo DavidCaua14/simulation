@@ -1,0 +1,28 @@
+# club: betis
+# source: https://en.wikipedia.org/wiki/Real_Betis
+# accessed: 2026-10-25
+# as_of: unknown
+1|GK|ESP|Álvaro Valles|
+2|DF|ESP|Héctor Bellerín|
+3|DF|ESP|Diego Llorente|
+4|DF|BRA|Natan|
+5|DF|ESP|Marc Bartra|vice-captain
+6|MF|URU|Facundo Bernal|
+7|FW|BRA|Antony|
+8|MF|ESP|Pablo Fornals|
+9|FW|COL|Cucho Hernández|
+10|FW|MAR|Abde Ezzalzouli|
+11|DF|ESP|Fran García|
+12|DF|ESP|Ángel Ortiz|
+14|FW|ESP|Iker Losada|
+15|MF|MEX|Álvaro Fidalgo|
+16|DF|ARG|Valentín Gómez|
+17|MF|ESP|Rodrigo Riquelme|
+18|MF|COL|Nelson Deossa|
+19|FW|IRL|Troy Parrott|
+20|MF|ARG|Giovanni Lo Celso|
+21|MF|ESP|Marc Roca|
+22|MF|ESP|Isco|captain
+23|DF|DOM|Junior Firpo|
+24|FW|ESP|Aitor Ruibal|
+25|MF|ESP|Dani Ceballos|

@@ -1,0 +1,25 @@
+# club: como
+# source: https://en.wikipedia.org/wiki/Como_1907
+# accessed: 2026-10-25
+# as_of: 2026-09-01
+1|GK|FRA|Jean Butez|
+2|DF|GER|Marc-Oliver Kempf|
+3|DF|ESP|Álex Valle|
+4|DF|ESP|Jacobo Ramón|
+5|MF|ARG|Máximo Perrone|
+6|MF|ESP|Luis Milla|
+7|MF|FRA|Lucas Da Cunha|captain
+8|MF|FRA|Maxence Caqueret|
+9|FW|GRE|Anastasios Douvikas|
+10|MF|ARG|Nico Paz|
+11|FW|SEN|Assane Diao|
+13|DF|ITA|Alberto Dossena|
+15|MF|SWE|Adrian Lahdo|
+17|FW|ESP|Jesús Rodríguez|
+18|DF|ITA|Edoardo Goldaniga|
+20|MF|CRO|Martin Baturina|
+22|GK|ITA|Mauro Vigorito|
+28|DF|CRO|Ivan Smolčić|
+30|MF|ITA|Mattia Liberali|
+42|FW|NED|Jayden Addai|
+99|DF|ENG|Trevoh Chalobah|

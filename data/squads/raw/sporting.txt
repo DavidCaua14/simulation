@@ -1,0 +1,33 @@
+# club: sporting
+# source: https://en.wikipedia.org/wiki/Sporting_CP
+# accessed: 2026-10-25
+# as_of: 2026-09-01
+1|GK|POR|Rui Silva|
+4|MF|DEN|Silas Andersen|
+5|MF|ESP|Sergi Altimira|
+6|DF|BEL|Zeno Debast|
+7|FW|GRE|Fotis Ioannidis|
+8|MF|POR|João Simões|
+9|FW|POR|Rafael Nel|
+10|FW|MOZ|Geny Catamo|
+11|DF|POR|Nuno Santos|
+13|DF|GRE|Georgios Vagiannidis|
+17|MF|URU|Rodrigo Zalazar|
+18|DF|MAR|Moncef Zekri|
+19|FW|AUS|Nestory Irankunda|
+20|FW|URU|Maximiliano Araújo|
+21|MF|BRA|Pedro Lima|
+22|DF|ESP|Iván Fresneda|
+25|DF|POR|Gonçalo Inácio|captain
+28|FW|ENG|Jesse Derry|on loan from Chelsea
+30|GK|BRA|Kaique Pereira|
+31|FW|BRA|Luis Guilherme|
+41|GK|BRA|Diego Callai|
+50|DF|POR|Rodrigo Dias|
+55|DF|SEN|Ibrahima Ba|
+58|MF|POR|Flávio Gonçalves|
+72|DF|POR|Eduardo Quaresma|vice-captain
+73|DF|POR|Eduardo Felicíssimo|
+77|MF|ITA|Issa Doumbia|
+97|FW|COL|Luis Suárez|
+99|GK|POR|Francisco Silva|

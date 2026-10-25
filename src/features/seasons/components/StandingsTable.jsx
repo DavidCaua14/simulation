@@ -1,16 +1,22 @@
 import ClubCrest from '../../club/components/ClubCrest'
 import { getClubById } from '../../club/data/clubs'
 
-// Zonas coloridas: no Brasileirão (20 clubes) G4 / G6 / Z4; nos grupos, os 2 primeiros avançam.
-function zoneOf(mode, pos, total) {
+// Zonas coloridas vindas da configuração da competição (rules.zones): vaga continental, acesso, playoff, rebaixamento.
+// Sem configuração: Brasileirão (G4 / G6 / Z4); nos grupos, os 2 primeiros avançam.
+const ZONE_CLASS = { continental: 'g4', promotion: 'qual', playoff: 'g6', relegation: 'z4' }
+function zoneOf(mode, pos, total, zones) {
   if (mode === 'group') return pos <= 2 ? 'qual' : ''
+  if (zones?.length) {
+    const z = zones.find((x) => pos >= x.from && pos <= x.to)
+    return z ? ZONE_CLASS[z.kind] || '' : ''
+  }
   if (pos <= 4) return 'g4'
   if (pos <= 6) return 'g6'
   if (pos > total - 4) return 'z4'
   return ''
 }
 
-export default function StandingsTable({ rows, myClub, mode = 'league' }) {
+export default function StandingsTable({ rows, myClub, mode = 'league', zones = null }) {
   if (!rows?.length) return <p className="sn-muted">Sem dados ainda.</p>
   return (
     <div className="sn-table-wrap">
@@ -29,7 +35,7 @@ export default function StandingsTable({ rows, myClub, mode = 'league' }) {
         </thead>
         <tbody>
           {rows.map((r) => (
-            <tr key={r.club_id} className={`${r.club_id === myClub ? 'is-mine' : ''} zone-${zoneOf(mode, r.pos, rows.length)}`}>
+            <tr key={r.club_id} className={`${r.club_id === myClub ? 'is-mine' : ''} zone-${zoneOf(mode, r.pos, rows.length, zones)}`}>
               <td className="pos">{r.pos}</td>
               <td className="left club">
                 <ClubCrest clubId={r.club_id} size={20} />
@@ -48,8 +54,14 @@ export default function StandingsTable({ rows, myClub, mode = 'league' }) {
       <p className="sn-legend">
         {mode === 'group' ? (
           <span>
-            <i className="dot qual" /> Avançam às oitavas
+            <i className="dot qual" /> Avançam ao mata-mata
           </span>
+        ) : zones?.length ? (
+          zones.map((z) => (
+            <span key={`${z.kind}-${z.from}`}>
+              <i className={`dot ${ZONE_CLASS[z.kind] || ''}`} /> {z.label}
+            </span>
+          ))
         ) : (
           <>
             <span>

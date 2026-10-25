@@ -1,0 +1,27 @@
+# club: arsenal
+# source: https://en.wikipedia.org/wiki/Arsenal_F.C.
+# accessed: 2026-10-25
+# as_of: 2026-09-15
+1|GK|ESP|David Raya|
+2|DF|FRA|William Saliba|
+3|DF|ESP|Cristhian Mosquera|
+4|DF|ENG|Ben White|
+5|DF|ECU|Piero Hincapié|
+6|DF|BRA|Gabriel Magalhães|
+7|FW|ENG|Bukayo Saka|vice-captain
+8|MF|NOR|Martin Ødegaard|captain
+10|MF|ENG|Eberechi Eze|
+12|DF|NED|Jurriën Timber|
+13|GK|ESP|Kepa Arrizabalaga|
+14|FW|SWE|Viktor Gyökeres|
+15|DF|ENG|Ezri Konsa|
+17|FW|GRE|Christos Tzolis|
+20|FW|ENG|Noni Madueke|
+23|MF|ESP|Mikel Merino|
+29|FW|GER|Kai Havertz|
+30|GK|FRA|Illan Meslier|
+33|DF|ITA|Riccardo Calafiori|
+36|MF|ESP|Martín Zubimendi|
+39|MF|BRA|Bruno Guimarães|
+41|MF|ENG|Declan Rice|
+49|DF|ENG|Myles Lewis-Skelly|

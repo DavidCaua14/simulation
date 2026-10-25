@@ -1,0 +1,34 @@
+# club: derby
+# source: https://en.wikipedia.org/wiki/Derby_County_F.C.
+# accessed: 2026-10-25
+# as_of: unknown
+1|GK|SWE|Jacob Widell Zetterström|
+2|DF|ENG|Derry Murkin|
+3|DF|SCO|Craig Forsyth|
+4|MF|ENG|David Ozoh|
+5|DF|ENG|Matt Clarke|
+6|DF|NOR|Sondre Langås|
+7|FW|USA|Patrick Agyemang|
+8|MF|ENG|Bobby Clark|
+9|FW|ENG|Carlton Morris|
+10|FW|ENG|Rhian Brewster|
+11|MF|IRL|Sammie Szmodics|on loan from Ipswich Town
+12|GK|ENG|Richard O'Donnell|
+13|MF|GER|Filip Bilbija|
+15|FW|NOR|Lars-Jørgen Salvesen|
+16|FW|GHA|Mohammed Fuseini|on loan from Union Saint-Gilloise
+18|DF|ENG|Charlie Taylor|
+19|FW|DEN|Henrik Meister|on loan from Pisa
+20|MF|ENG|Alex Mowatt|
+22|DF|SCO|Max Johnston|
+23|MF|ENG|Joe Ward|
+24|DF|NAM|Ryan Nyambe|
+26|MF|WAL|Ryan Hedges|
+27|MF|ENG|Lewis Travis|captain
+28|DF|ENG|Dion Sanderson|
+29|MF|DEN|Oscar Fraulo|
+31|GK|ENG|Josh Vickers|
+33|FW|ENG|Corey Blackett-Taylor|
+41|MF|ENG|Charlie Smith|
+44|DF|IRL|Eiran Cashin|on loan from Brighton & Hove Albion
+-|GK|AUS|Nicholas Bilokapic|

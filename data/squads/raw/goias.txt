@@ -1,0 +1,31 @@
+# club: goias
+# source: https://en.wikipedia.org/wiki/Goi%C3%A1s_Esporte_Clube
+# accessed: 2026-10-25
+# as_of: 2026-09-06
+1|GK|BRA|Thiago Rodrigues|
+2|DF|BRA|Rodrigo Soares|
+3|DF|BRA|Luiz Felipe|
+5|MF|BRA|Filipe Machado|
+6|DF|BRA|Nicolas Vichiatto|
+8|MF|BRA|Juninho|
+9|FW|BRA|Anselmo Ramon|
+10|MF|BRA|Lucas Lima|
+14|DF|BRA|Lucas Ribeiro|
+15|FW|VEN|Esli García|
+17|FW|BRA|Pedrinho|
+19|FW|BRA|Willie|
+21|FW|BRA|Jean Carlos|
+23|GK|BRA|Tadeu|captain
+28|MF|BRA|Gegê|
+29|DF|BRA|Murilo Câmara|
+32|GK|BRA|Murillo Victorio|
+35|MF|BRA|Lucas Rodrigues|
+40|FW|BRA|Kadu Souza|
+41|GK|BRA|Ezequiel Ribeiro|
+54|DF|BRA|Djalma Silva|
+55|MF|BRA|Baldória|
+63|DF|BRA|Marcos Vinícius|
+66|DF|BRA|Danilo Cunha|
+77|FW|BRA|Halerrandrio|
+88|MF|BRA|Brayann|
+97|MF|BRA|Lourenço|

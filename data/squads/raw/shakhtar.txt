@@ -1,0 +1,35 @@
+# club: shakhtar
+# source: https://en.wikipedia.org/wiki/FC_Shakhtar_Donetsk
+# accessed: 2026-10-25
+# as_of: unknown
+2|FW|BFA|Lassina Traoré|
+4|DF|BRA|Marlon Santos|
+5|DF|UKR|Valeriy Bondar|vice-captain
+6|MF|BRA|Marlon Gomes|
+7|FW|BRA|Eguinaldo|
+8|MF|UKR|Dmytro Kryskiv|
+9|FW|BRA|Kauã Elias|
+10|MF|BRA|Pedrinho|
+11|MF|BRA|Newerton|
+13|DF|BRA|Pedro Henrique|
+14|MF|BRA|Isaque|
+16|DF|GEO|Irakli Azarovi|
+17|DF|BRA|Vinicius Tobias|
+18|DF|TUN|Alaa Ghram|
+20|DF|UKR|Oleksandr Karavayev|
+22|DF|UKR|Mykola Matviyenko|captain
+23|GK|UKR|Kiril Fesyun|
+24|MF|UKR|Viktor Tsukanov|
+25|FW|BRA|Gabriel Carvalho|on loan from Al Qadsiah
+27|MF|UKR|Oleh Ocheretko|
+28|DF|URU|Alan Matturro|
+29|MF|UKR|Yehor Nazaryna|
+30|FW|BRA|Alisson|
+31|GK|UKR|Dmytro Riznyk|
+37|MF|BRA|Lucas Ferreira|
+48|GK|UKR|Denys Tvardovskyi|
+49|FW|BRA|Luca Meirelles|
+68|FW|NGA|Prosper Obah|
+71|FW|BRA|Ryan Roberto|
+77|MF|VEN|Gleiker Mendoza|
+99|FW|BRA|Bruninho|

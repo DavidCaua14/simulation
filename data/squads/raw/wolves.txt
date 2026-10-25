@@ -1,0 +1,32 @@
+# club: wolves
+# source: https://en.wikipedia.org/wiki/Wolverhampton_Wanderers_F.C.
+# accessed: 2026-10-25
+# as_of: 2026-09-12
+1|GK|POR|José Sá|vice-captain
+2|DF|ENG|Kieran Trippier|
+3|DF|ESP|Hugo Bueno|
+5|MF|ZIM|Marshall Munetsi|
+7|MF|BRA|André|
+8|MF|WAL|Jordan James|on loan from Rennes
+9|FW|MEX|Raúl Jiménez|
+10|FW|ENG|Adam Armstrong|
+11|FW|BFA|Bertrand Traoré|
+12|MF|MLI|Boubacar Traoré|
+13|GK|POR|João Virgínia|
+14|FW|ENG|Sean Neave|on loan from Newcastle United
+15|DF|COL|Yerson Mosquera|
+19|FW|COM|Rafiki Saïd|
+20|MF|ENG|Tommy Doyle|
+21|FW|POR|Rodrigo Gomes|
+23|FW|ZIM|Tawanda Chirewa|
+24|DF|POR|Toti Gomes|captain
+26|GK|ENG|John Ruddy|
+27|MF|HAI|Jean-Ricner Bellegarde|
+28|MF|ESP|Fer López|
+30|FW|PAR|Enso González|
+33|DF|CIV|Ghislain Konan|
+34|DF|BFA|Nasser Djiga|
+36|FW|POR|Mateus Mané|
+37|DF|CZE|Ladislav Krejčí|
+38|DF|CMR|Jackson Tchatchoua|
+74|MF|ENG|Tom Edozie|

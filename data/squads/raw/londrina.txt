@@ -1,0 +1,40 @@
+# club: londrina
+# source: https://en.wikipedia.org/wiki/Londrina_Esporte_Clube
+# accessed: 2026-10-25
+# as_of: 2026-04-15
+1|GK|BRA|Luan Ribeiro|
+2|DF|BRA|Weverton|
+3|DF|BRA|Yago Lincoln|
+4|DF|BRA|Wallace|captain
+5|MF|BRA|André Luiz|
+6|DF|BRA|Rafael Monteiro|
+7|FW|BRA|Vitinho Mota|on loan from Red Bull Bragantino
+8|MF|BRA|Lucas Marques|
+9|FW|BRA|Bruno Santos|
+11|FW|BRA|Iago Teles|
+12|GK|BRA|Zanella|
+13|DF|BRA|André Dhominique|
+14|DF|BRA|Yuri Lima|
+15|DF|BRA|Gabriel Lacerda|
+17|MF|BRA|André Cardoso|on loan from Red Bull Bragantino
+18|FW|BRA|Paulinho Moccelin|
+19|FW|URU|Emiliano Rodríguez|
+20|MF|BRA|Fabiano|
+27|MF|BRA|Murilo Chico|
+28|FW|BRA|Caio Maia|on loan from Atlético Mineiro
+30|GK|BRA|Maurício Kozlinski|
+32|MF|BRA|João Tavares|
+33|DF|BRA|Kevyn Lucas|
+34|DF|BRA|Heron|
+39|DF|BRA|Caio|
+53|MF|BRA|Chumbinho|
+55|MF|BRA|Caio Rafael|
+57|MF|BRA|Cainã|
+70|FW|BRA|Gilberto|
+77|FW|BRA|Juninho|
+96|MF|BRA|Thalis|
+99|FW|BRA|William Pottker|
+-|GK|BRA|Thiago Parente|
+-|GK|BRA|William Hartmann|
+-|DF|BRA|João Vitor|on loan from Linense
+-|FW|BRA|Fernando Asafe|

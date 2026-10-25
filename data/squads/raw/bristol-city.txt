@@ -1,0 +1,33 @@
+# club: bristol-city
+# source: https://en.wikipedia.org/wiki/Bristol_City_F.C.
+# accessed: 2026-10-25
+# as_of: 2026-09-03
+1|GK|ENG|Sam Tickle|
+2|DF|ROU|Lisav Eissat|
+3|DF|ENG|Cameron Pring|
+4|MF|ENG|Adam Randell|
+5|DF|ENG|Robert Atkinson|
+6|MF|BEL|Brian De Keersmaecker|on loan from Oxford United
+7|FW|JPN|Yū Hirakawa|
+8|MF|ENG|Joe Williams|
+9|FW|SUI|Lorent Tolaj|
+10|MF|ENG|Scott Twine|
+11|FW|ENG|Sam Bell|
+12|MF|IRL|Jason Knight|captain
+14|MF|SVN|Tomi Horvat|
+15|DF|IRL|Luke McNally|
+16|DF|ENG|Rob Dickie|
+17|MF|ENG|Jed Wallace|
+19|DF|ENG|George Tanner|
+20|MF|ENG|Sam Greenwood|
+21|DF|TRI|Rio Cardines|on loan from Crystal Palace
+23|FW|ENG|Dom Ballard|
+24|DF|ENG|Seb Naylor|
+27|MF|NED|Gibson Yah|
+29|MF|ENG|Leo Pecover|
+31|DF|ENG|Elijah Morrison|
+32|GK|WAL|Lewis Thomas|
+38|DF|SWE|Noah Eile|
+40|GK|ENG|Bradley Collins|
+42|MF|ITA|Daniel Ezendu|
+45|FW|ENG|Elijah Adebayo|

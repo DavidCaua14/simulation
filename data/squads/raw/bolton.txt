@@ -1,0 +1,30 @@
+# club: bolton
+# source: https://en.wikipedia.org/wiki/Bolton_Wanderers_F.C.
+# accessed: 2026-10-25
+# as_of: 2026-09-19
+1|GK|IRL|Jack Bonham|
+3|DF|LCA|Chris Forino-Joseph|vice-captain
+4|MF|ENG|Xavier Simons|
+5|DF|ENG|Lewis Brunt|
+6|DF|ENG|Ben Davies|
+7|FW|FRA|Kyliane Dong|on loan from Augsburg
+8|MF|WAL|Josh Sheehan|
+9|FW|CAN|Theo Bair|on loan from Auxerre
+10|FW|ENG|Sam Dalby|
+11|FW|BRB|Thierry Gale|
+12|MF|SCO|David Watson|
+13|GK|ENG|Nathan Broome|
+14|DF|ENG|Akin Famewo|
+16|FW|ENG|Samuel Iling-Junior|on loan from Aston Villa
+17|MF|JPN|Atsuki Itō|
+18|DF|NIR|Eoin Toal|captain
+20|MF|POR|Rúben Rodrigues|
+21|MF|SCO|Ethan Erhahon|
+22|DF|ESP|Gaizka Larrazabal|
+23|GK|IRL|David Harrington|
+25|DF|ENG|Max Conway|
+26|FW|CAN|Jayden Nelson|
+27|DF|ENG|Luca Stephenson|
+31|GK|IRL|Gavin Bazunu|
+39|FW|SCO|Ryan Hardie|on loan from Wrexham
+45|FW|ENG|John McAtee|

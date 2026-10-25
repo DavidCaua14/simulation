@@ -1,0 +1,40 @@
+# club: novorizontino
+# source: https://en.wikipedia.org/wiki/Gr%C3%AAmio_Novorizontino
+# accessed: 2026-10-25
+# as_of: unknown
+1|GK|BRA|Lucas Ribeiro|
+2|DF|BRA|Madson|
+3|DF|BRA|Carlinhos|on loan from Noroeste
+4|DF|BRA|Patrick|
+5|DF|BRA|Sander|
+6|MF|BRA|Luís Oyama|
+7|FW|BRA|Ronald Barcellos|on loan from Maringá
+8|FW|ARG|Tití Ortiz|
+9|FW|BRA|Carlão|
+10|MF|BRA|Rômulo|on loan from Palmeiras
+11|FW|BRA|Robson|captain
+12|GK|BRA|João Scapin|
+14|DF|BRA|Eduardo Brock|
+15|MF|BRA|Tavinho|
+16|FW|BRA|Vinícius Paiva|
+17|MF|BRA|Matheus Bianqui|on loan from Coritiba
+18|MF|BRA|Léo Naldi|on loan from Vitória
+19|MF|BRA|Diego Galo|
+22|DF|ARG|Iván Alvariño|on loan from Remo
+24|DF|PER|Jhilmar Lora|
+26|DF|BRA|Gabriel Bahia|on loan from Volta Redonda
+27|FW|BRA|Diego Mathias|on loan from Noroeste
+28|MF|BRA|Marlon|
+29|GK|BRA|Paulo Henrique|on loan from Vitória-ES
+30|FW|BRA|Nicolas Careca|
+31|GK|BRA|César Augusto|
+33|DF|BRA|Renato Palm|
+35|MF|BRA|Hector|
+36|MF|BRA|Miguel Contiero|
+40|FW|BRA|Jardiel|on loan from Grêmio
+41|FW|BRA|Reidiney|
+50|MF|BRA|Juninho|
+66|DF|BRA|Maykon Jesus|on loan from Atlético Mineiro
+77|FW|BRA|Hélio Borges|
+78|DF|BRA|Arthur Barbosa|
+93|GK|BRA|Jordi|

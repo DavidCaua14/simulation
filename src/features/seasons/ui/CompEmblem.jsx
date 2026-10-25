@@ -2,7 +2,7 @@ import { COMP_THEME } from '../utils/seasonUtils'
 
 // Emblema do campeonato (escudo próprio do jogo com as cores do torneio).
 export default function CompEmblem({ comp, size = 40, dim = false }) {
-  const t = COMP_THEME[comp] || COMP_THEME.brasileirao
+  const t = COMP_THEME[comp] || { c1: '#2b3445', c2: '#c9d2e3', code: '?' }
   const id = `ce-${comp}`
   return (
     <svg className={`ce ${dim ? 'is-dim' : ''}`} width={size} height={size * 1.12} viewBox="0 0 40 45" role="img" aria-hidden="true">

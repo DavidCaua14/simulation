@@ -1,0 +1,36 @@
+# club: galatasaray
+# source: https://en.wikipedia.org/wiki/Galatasaray_S.K._(football)
+# accessed: 2026-10-25
+# as_of: unknown
+1|GK|TUR|Uğurcan Çakır|
+3|DF|FRA|Chadaille Bitshiabu|on loan from RB Leipzig
+4|DF|SEN|Ismail Jakobs|
+5|MF|TUR|Eyüp Aydın|
+6|DF|COL|Davinson Sánchez|
+7|DF|HUN|Roland Sallai|
+8|MF|BRA|Gabriel Sara|
+10|FW|GER|Leroy Sané|
+11|FW|TUR|Yunus Akgün|
+17|DF|TUR|Eren Elmalı|
+18|MF|FRA|Lesley Ugochukwu|on loan from Burnley
+19|GK|TUR|Günay Güvenç|
+20|MF|GER|İlkay Gündoğan|
+21|FW|TUR|Deniz Gül|
+23|DF|TUR|Kaan Ayhan|vice-captain
+24|GK|TUR|Jankat Yılmaz|
+27|FW|POR|Rafael Leão|
+29|MF|ARG|Armando Güner|
+34|MF|URU|Lucas Torreira|
+42|DF|TUR|Abdülkerim Bardakcı|captain
+45|FW|NGA|Victor Osimhen|
+53|FW|TUR|Barış Yılmaz|
+60|GK|TUR|Arda Yılmaz|
+62|FW|TUR|Ada Yüzgeç|
+70|GK|TUR|Enes Büyük|
+73|MF|TUR|Berat Luş|
+74|MF|GNB|Renato Nhaga|
+83|MF|RUS|Aleksey Batrakov|
+88|DF|TUR|Kazımcan Karataş|
+90|DF|CIV|Wilfried Singo|
+91|DF|TUR|Arda Ünyay|
+99|MF|GAB|Mario Lemina|

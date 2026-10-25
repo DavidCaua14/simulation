@@ -1,0 +1,30 @@
+# club: napoli
+# source: https://en.wikipedia.org/wiki/2026%E2%80%9327_SSC_Napoli_season
+# accessed: 2026-10-25
+# as_of: 2026-08-23
+1|GK|ITA|Alex Meret|
+4|DF|ITA|Alessandro Buongiorno|
+5|DF|ITA|Luca Marianucci|
+6|MF|SCO|Billy Gilmour|
+7|FW|BRA|David Neres|
+8|MF|SCO|Scott McTominay|
+11|MF|BEL|Kevin De Bruyne|
+13|DF|KOS|Amir Rrahmani|
+14|GK|UKR|Nikita Contini|
+16|DF|ESP|Rafa Marín|
+17|DF|URU|Mathías Olivera|
+19|FW|DEN|Rasmus Højlund|
+20|FW|ITA|Lorenzo Lucca|
+21|MF|ITA|Matteo Politano|
+22|DF|ITA|Giovanni Di Lorenzo|captain
+23|FW|BRA|Giovane|
+26|MF|ITA|Antonio Vergara|
+27|FW|BRA|Alisson Santos|
+30|DF|ITA|Pasquale Mazzocchi|
+31|DF|NED|Sam Beukema|
+32|GK|SRB|Vanja Milinković-Savić|
+37|DF|ITA|Leonardo Spinazzola|
+68|MF|SVK|Stanislav Lobotka|
+70|FW|NED|Noa Lang|
+99|MF|CMR|André-Frank Zambo Anguissa|
+-|DF|FRA|Benoît Badiashile|on loan from Chelsea

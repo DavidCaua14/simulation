@@ -1,0 +1,32 @@
+# club: birmingham
+# source: https://en.wikipedia.org/wiki/Birmingham_City_F.C.
+# accessed: 2026-10-25
+# as_of: unknown
+1|GK|ENG|James Beadle|on loan from Brighton & Hove Albion
+2|DF|ENG|Ethan Laird|
+3|DF|ENG|Lee Buchanan|
+4|DF|AUT|Christoph Klarer|captain
+5|DF|GER|Phil Neumann|
+7|MF|ESP|Carlos Vicente|
+8|MF|KOR|Paik Seung-ho|
+9|FW|DEN|August Priske|
+10|MF|JAM|Demarai Gray|
+11|MF|SCO|Scott Wright|
+12|MF|SCO|Marc Leonard|
+14|MF|COL|Jhon Solís|
+16|FW|ENG|Patrick Roberts|
+17|FW|CAN|Liam Millar|on loan from Hull City
+18|MF|ENG|Max Bird|
+19|MF|ENG|Taylor Gardner-Hickman|
+20|DF|ENG|Alex Cochrane|
+21|GK|ENG|Ryan Allsop|
+23|DF|ENG|Dael Fry|
+24|MF|JPN|Tomoki Iwata|
+25|DF|USA|Kristoffer Lund|
+26|DF|NGA|Bright Osayi-Samuel|
+28|FW|ENG|Jay Stansfield|
+30|GK|ENG|Brad Mayo|
+32|FW|ARG|Luis Vázquez|
+33|FW|GER|Marvin Ducksch|
+40|MF|ZIM|Menzi Mazwi|
+41|MF|ENG|Cobi Maddox|

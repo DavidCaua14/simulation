@@ -1,0 +1,32 @@
+# club: nautico
+# source: https://en.wikipedia.org/wiki/Clube_N%C3%A1utico_Capibaribe
+# accessed: 2026-10-25
+# as_of: unknown
+1|GK|BRA|Muriel|
+2|DF|BRA|Arnaldo|
+3|DF|BRA|Betão|
+5|MF|BRA|Auremir|
+6|DF|BRA|Ryan Carlos|
+7|FW|BRA|Vinícius|
+8|MF|BRA|Wenderson|
+9|FW|BRA|Paulo Sérgio|
+10|MF|BRA|Jean Carlos|captain
+11|FW|BRA|Victor Andrade|
+13|DF|BRA|Índio|
+14|DF|BRA|Matheus Ribeiro|
+15|MF|BRA|Léo Oliveira|
+19|FW|BRA|Kauã Maranhão|
+21|MF|BRA|Felipe Redaelli|
+22|MF|ARG|Patricio Núñez|
+23|DF|BRA|Igor Fernandes|
+25|DF|BRA|Mateus Silva|
+27|MF|BRA|Luiz Felipe|
+29|FW|BRA|Júnior Todinho|
+34|DF|BRA|Wanderson|
+41|MF|BRA|Samuel|
+55|GK|URU|Gastón Guruceaga|
+60|DF|BRA|Luiz Paulo|
+77|MF|BRA|Juninho|
+93|DF|BRA|Reginaldo|
+-|GK|BRA|Léo Honorio|
+-|FW|BRA|Danielzinho|

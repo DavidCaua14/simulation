@@ -1,0 +1,38 @@
+# club: stuttgart
+# source: https://en.wikipedia.org/wiki/VfB_Stuttgart
+# accessed: 2026-10-25
+# as_of: unknown
+1|GK|GER|Fabian Bredlow|
+2|DF|BEL|Ameen Al-Dakhil|
+3|DF|NED|Ramon Hendriks|
+4|DF|GER|Josha Vagnoman|
+6|MF|GER|Angelo Stiller|
+7|DF|GER|Maximilian Mittelstädt|
+8|FW|POR|Tiago Tomás|
+9|FW|BIH|Ermedin Demirović|
+10|MF|GER|Chris Führich|
+11|MF|MAR|Bilal El Khannouss|
+14|DF|SUI|Luca Jaquez|
+15|DF|GER|Pascal Stenzel|
+16|MF|TUR|Atakan Karazor|captain
+17|FW|GER|Justin Diehl|
+18|FW|GER|Jamie Leweling|
+19|MF|GER|Noah Darvich|
+20|DF|SUI|Leonidas Stergiou|
+21|GK|GER|Stefan Drljača|
+22|DF|FRA|Lorenz Assignon|
+23|DF|FRA|Dan-Axel Zagadou|
+24|DF|GER|Jeff Chabot|
+25|FW|ECU|Jeremy Arévalo|
+26|FW|GER|Deniz Undav|
+27|FW|ALG|Badredine Bouanani|
+28|MF|DEN|Nikolas Nartey|
+29|DF|GER|Finn Jeltsch|
+30|MF|ESP|Chema Andrés|
+31|DF|AUT|Christopher Olivier|
+35|MF|GER|Mirza Ćatović|
+40|GK|GER|Dennis Seimen|
+44|GK|GER|Florian Hellstern|
+45|MF|SRB|Lazar Jovanović|
+-|MF|GER|Grischa Prömel|
+-|FW|SRB|Jovan Milošević|

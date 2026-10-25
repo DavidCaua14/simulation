@@ -1,0 +1,30 @@
+# club: real-madrid
+# source: https://en.wikipedia.org/wiki/2026%E2%80%9327_Real_Madrid_CF_season
+# accessed: 2026-10-25
+# as_of: 2026-09-02
+1|GK|BEL|Thibaut Courtois|
+2|DF|ESP|Raúl Asencio|
+3|DF|BRA|Éder Militão|
+4|DF|ESP|Dean Huijsen|
+5|MF|ENG|Jude Bellingham|
+6|MF|FRA|Eduardo Camavinga|
+7|FW|BRA|Vinícius Júnior|vice-captain
+8|MF|URU|Federico Valverde|captain
+9|FW|BRA|Endrick|
+10|FW|FRA|Kylian Mbappé|
+11|FW|BRA|Rodrygo|
+12|DF|ENG|Trent Alexander-Arnold|
+13|GK|UKR|Andriy Lunin|
+14|MF|FRA|Aurélien Tchouaméni|
+15|MF|TUR|Arda Güler|
+16|DF|FRA|Ibrahima Konaté|
+17|DF|ESP|Marc Cucurella|
+18|DF|ESP|Álvaro Carreras|
+19|FW|ESP|Carlos Espí|
+20|MF|POR|Bernardo Silva|
+21|FW|MAR|Brahim Díaz|
+22|DF|GER|Antonio Rüdiger|
+23|DF|FRA|Ferland Mendy|
+24|DF|NED|Denzel Dumfries|
+25|FW|CIV|Yan Diomande|
+27|MF|ESP|Thiago Pitarch|

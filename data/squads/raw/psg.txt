@@ -1,0 +1,28 @@
+# club: psg
+# source: https://en.wikipedia.org/wiki/2026%E2%80%9327_Paris_Saint-Germain_FC_season
+# accessed: 2026-10-25
+# as_of: 2026-09-04
+16|GK|ITA|Alessandro Longoni|
+30|GK|FRA|Lucas Chevalier|
+39|GK|RUS|Matvey Safonov|
+2|RB|MAR|Achraf Hakimi|vice-captain
+4|CB|BRA|Lucas Beraldo|
+5|CB|BRA|Marquinhos|captain
+6|CB|UKR|Illia Zabarnyi|
+12|LB|FRA|Lucas Digne|
+21|LB|FRA|Lucas Hernandez|
+25|LB|POR|Nuno Mendes|
+51|CB|ECU|Willian Pacho|
+8|CM|ESP|Fabián Ruiz|
+11|RW|FRA|Maghnes Akliouche|
+17|DM|POR|Vitinha|vice-captain
+24|CM|FRA|Senny Mayulu|
+27|AM|ESP|Dro Fernández|
+33|CM|FRA|Warren Zaïre-Emery|
+87|CM|POR|João Neves|
+7|LW|GEO|Khvicha Kvaratskhelia|
+9|CF|ESP|Ferran Torres|
+10|CF|FRA|Ousmane Dembélé|vice-captain
+14|RW|FRA|Désiré Doué|
+22|LW|BEL|Mika Godts|
+47|LW|FRA|Quentin Ndjantou|

@@ -1,0 +1,34 @@
+# club: sheffield-united
+# source: https://en.wikipedia.org/wiki/Sheffield_United_F.C.
+# accessed: 2026-10-25
+# as_of: 2026-09-06
+1|GK|ENG|Michael Cooper|
+2|DF|IRL|Matt Doherty|
+3|DF|ENG|Sam McCallum|
+4|MF|ENG|Ollie Arblaster|
+5|DF|ENG|Japhet Tanganga|captain
+7|MF|ENG|Joe Rothwell|
+8|MF|BAN|Hamza Choudhury|
+9|FW|IRL|Tom Cannon|
+11|FW|ENG|Romelle Donovan|on loan from Brentford
+14|DF|ENG|Harrison Burrows|
+15|DF|ENG|Liam Kitching|on loan from Coventry City
+16|DF|ENG|Jamie Shackleton|
+17|GK|WAL|Adam Davies|
+19|FW|CUW|Tahith Chong|
+21|DF|SWE|Nils Zätterström|
+22|FW|CHI|Ben Brereton Díaz|on loan from Southampton
+23|FW|ENG|Tyrese Campbell|
+25|DF|IRL|Mark McGuinness|
+26|FW|SCO|Ryan Oné|
+27|MF|ENG|Kalvin Phillips|on loan from Manchester City
+30|DF|WAL|Rhys Norrington-Davies|
+31|GK|ENG|Tommy Betts|
+33|DF|ENG|Jamal Baptiste|
+38|DF|ENG|Femi Seriki|
+42|MF|ENG|Sydie Peck|
+44|MF|NED|Jaïro Riedewald|
+45|FW|ENG|Patrick Bamford|
+-|DF|LTU|Dovydas Sasnauskas|
+-|MF|ENG|Billy Blacker|
+-|MF|NGA|Ehije Ukaki|

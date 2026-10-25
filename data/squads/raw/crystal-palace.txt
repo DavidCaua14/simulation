@@ -1,0 +1,32 @@
+# club: crystal-palace
+# source: https://en.wikipedia.org/wiki/Crystal_Palace_F.C.
+# accessed: 2026-10-25
+# as_of: 2026-09-04
+1|GK|ENG|Dean Henderson|captain
+3|DF|ENG|Tyrick Mitchell|
+4|DF|MAR|Chadi Riad|
+5|DF|FRA|Axel Disasi|on loan from Chelsea
+6|DF|FRA|Jaydee Canvot|
+7|FW|SEN|Ismaïla Sarr|
+8|MF|COL|Jefferson Lerma|
+9|FW|ENG|Eddie Nketiah|
+10|FW|ESP|Yeremy Pino|
+11|FW|ENG|Dwight McNeil|
+12|FW|USA|Zavier Gozo|
+14|FW|FRA|Jean-Philippe Mateta|
+17|DF|JPN|Takehiro Tomiyasu|
+18|MF|JPN|Daichi Kamada|
+19|MF|ENG|Will Hughes|
+20|MF|ENG|Adam Wharton|
+21|DF|ITA|Honest Ahanor|on loan from Atalanta
+22|FW|NOR|Jørgen Strand Larsen|
+23|MF|NED|Quinten Timber|
+24|FW|CHI|Darío Osorio|on loan from Midtjylland
+25|DF|ISR|Anan Khalaili|
+26|DF|USA|Chris Richards|
+28|MF|MLI|Cheick Doucouré|
+29|FW|CIV|Evann Guessand|on loan from Aston Villa
+30|DF|ESP|Óscar Mingueza|
+31|GK|ENG|Remi Matthews|
+33|DF|ENG|Ben Chilwell|
+44|GK|ARG|Walter Benítez|

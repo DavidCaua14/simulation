@@ -1,0 +1,38 @@
+# club: blackburn
+# source: https://en.wikipedia.org/wiki/2026%E2%80%9327_Blackburn_Rovers_F.C._season
+# accessed: 2026-10-25
+# as_of: 2026-05-19
+37|GK|ENG|Felix Goddard|
+1|GK|ENG|Aynsley Pears|
+38|GK|ENG|Finley Taylor|
+22|GK|HUN|Balázs Tóth|
+6|DF|NIR|Tom Atcheson|
+2|DF|NGA|Ryan Alebiosu|
+17|DF|ENG|Hayden Carter|
+27|DF|FRA|Gady Beyuku|
+46|DF|ITA|Michael Decandia|
+47|DF|ENG|Lucas Houghton|
+40|DF|ENG|Matty Litherland|
+15|DF|IRL|Sean McLoughlin|
+33|DF|AUS|Lewis Miller|
+39|DF|ENG|Harvey Pates|
+3|DF|ENG|Harry Pickering|
+4|DF|POR|Yuri Ribeiro|
+16|DF|ENG|Scott Wharton|
+24|MF|FRA|Moussa Baradji|
+10|MF|ENG|Todd Cantwell|captain
+14|MF|BEL|Dion De Neve|
+28|MF|ENG|Adam Forshaw|
+30|MF|ENG|Jake Garrett|
+42|MF|ENG|Harry Lister|
+31|MF|SCO|Kristi Montgomery|
+25|MF|JPN|Ryōya Morishita|
+8|MF|EGY|Sam Morsy|
+53|MF|ENG|Frank Vare|
+21|FW|ENG|Dapo Afolayan|
+11|FW|ENG|Jayden Fevrier|
+9|FW|ISL|Andri Guðjohnsen|
+45|FW|ENG|Harvey Higgins|
+29|FW|DEN|Mathias Jørgensen|
+7|FW|SLE|Augustus Kargbo|
+23|FW|JPN|Yūki Ōhashi|

@@ -7,7 +7,7 @@ import { compStatus } from '../utils/compStatus'
 
 // Cartão de um campeonato (Início): identidade própria, situação, progresso e próximo objetivo.
 export default function CompCard({ comp, onOpen }) {
-  const t = COMP_THEME[comp.id]
+  const t = COMP_THEME[comp.id] || { c1: '#2b3445', c2: '#c9d2e3', kicker: '' }
   const st = compStatus(comp)
   const inactive = comp.status === 'not_in' || comp.status === 'out'
   const pct = Math.min(100, (comp.played / (EXPECTED_MATCHES[comp.id] || comp.total || 1)) * 100)

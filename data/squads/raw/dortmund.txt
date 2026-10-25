@@ -1,0 +1,34 @@
+# club: dortmund
+# source: https://en.wikipedia.org/wiki/2026%E2%80%9327_Borussia_Dortmund_season
+# accessed: 2026-10-25
+# as_of: 2026-09-01
+1|GK|SUI|Gregor Kobel|
+3|DF|GER|Waldemar Anton|
+4|DF|GER|Nico Schlotterbeck|vice-captain
+5|DF|ALG|Ramy Bensebaini|
+7|MF|ENG|Jobe Bellingham|
+8|MF|GER|Felix Nmecha|
+9|FW|GUI|Serhou Guirassy|
+14|MF|GER|Maximilian Beier|
+17|MF|AUT|Carney Chukwuemeka|
+18|MF|ENG|Ethan Nwaneri|on loan from Arsenal
+19|MF|GRE|Konstantinos Karetsas|
+20|MF|AUT|Marcel Sabitzer|
+21|FW|POR|Fábio Silva|
+22|DF|FRA|Joane Gadou|
+23|DF|GER|Emre Can|captain
+24|DF|SWE|Daniel Svensson|
+25|MF|NED|Joey Veerman|
+26|DF|NOR|Julian Ryerson|
+28|MF|ECU|Justin Lerma|
+30|GK|GER|Patrick Drewes|
+31|GK|GER|Silas Ostrzinski|
+33|GK|GER|Alexander Meyer|
+36|DF|BRA|Kauã Prates|
+39|DF|ITA|Filippo Mané|
+40|FW|ITA|Samuele Inácio|
+41|FW|USA|Mathis Albert|
+44|MF|LUX|Enzo dos Santos|
+45|MF|GRE|Giannis Konstantelias|
+48|MF|GER|Mussa Kaba|
+49|DF|ITA|Luca Reggiani|

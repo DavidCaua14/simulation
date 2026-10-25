@@ -1,0 +1,42 @@
+# club: sao-bernardo
+# source: https://www.saobernardofc.com/elenco.php
+# accessed: 2026-10-25
+# as_of: 2026-10-25
+# note: o site oficial não informa nacionalidades ("?"); posições pelos títulos das seções
+1|GK|?|Alex Alves|
+12|GK|?|Junior Oliveira|
+23|GK|?|Arthur|
+22|GK|?|Léo Lang|
+2|DF|?|Rodrigo Ferreira|
+21|DF|?|Hugo Sanches|
+33|DF|?|Mário Sérgio|
+6|DF|?|Anderson Pará|
+16|DF|?|João Pedro|
+3|CB|?|Helder|
+5|CB|?|M. Salustiano|
+97|CB|?|Augusto|
+25|CB|?|W. Manzoli|
+90|CB|?|Luizão|
+35|CB|?|Jemerson|
+8|DM|?|Foguinho|
+77|DM|?|Marcão|
+42|AM|?|Hyoran|
+20|AM|?|Felipe Rodrigues|
+17|AM|?|Romisson|
+26|AM|?|Dudu Miraíma|
+31|AM|?|Lucas Fernandes|
+32|MF|?|Rodrigo Andrade|
+14|MF|?|Lucas Lima|
+30|MF|?|Breno Melo|
+36|MF|?|Galdino|
+11|FW|?|Pedro Vitor|
+29|FW|?|Pedrinho|
+27|FW|?|Echaporã|
+7|FW|?|Lucas Rian|
+37|FW|?|Daniel Davi|
+9|FW|?|Felipe Garcia|
+89|FW|?|Daniel Amorim|
+10|FW|?|Fabrício Daniel|
+39|FW|?|Hwaskar|
+70|FW|?|Lucas Reis|
+98|FW|?|Léo Jabá|

@@ -1,0 +1,28 @@
+# club: nottm-forest
+# source: https://en.wikipedia.org/wiki/2026%E2%80%9327_Nottingham_Forest_F.C._season
+# accessed: 2026-10-25
+# as_of: 2026-09-12
+12|GK|BRA|John Victor|
+26|GK|BEL|Matz Sels|
+33|GK|GER|Steven Benda|
+2|CB|CIV|Ousmane Diomande|
+3|RB|WAL|Neco Williams|
+5|CB|BRA|Murillo|
+23|CB|BRA|Jair Cunha|
+25|LB|GER|Luca Netz|
+27|RB|COL|Daniel Muñoz|
+31|CB|SRB|Nikola Milenković|
+34|RB|NGA|Ola Aina|
+37|RB|ITA|Nicolò Savona|
+6|CM|CIV|Ibrahim Sangaré|
+8|CM|ARG|Nicolás Domínguez|
+10|AM|ENG|Morgan Gibbs-White|
+21|CM|AUT|Xaver Schlager|
+22|CM|ENG|Ryan Yates|
+24|AM|ENG|James McAtee|
+7|LW|ENG|Callum Hudson-Odoi|
+9|CF|NZL|Chris Wood|
+11|CF|BRA|Igor Jesus|
+14|RW|SUI|Dan Ndoye|
+15|CF|FRA|Arnaud Kalimuendo|
+19|CF|ENG|Liam Delap|
