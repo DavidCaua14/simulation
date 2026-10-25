@@ -1,0 +1,31 @@
+# club: fulham
+# source: https://en.wikipedia.org/wiki/Fulham_F.C.
+# accessed: 2026-10-25
+# as_of: 2026-09-02
+1|GK|GER|Bernd Leno|
+2|DF|NED|Kenny Tete|
+3|DF|NGA|Calvin Bassey|
+4|DF|ESP|Jorge Cuenca|
+5|DF|DEN|Joachim Andersen|
+6|MF|ENG|Harrison Reed|
+7|FW|ESP|Gonzalo García|
+8|MF|ESP|César Palacios|
+9|FW|BRA|Rodrigo Muniz|
+10|MF|SCO|Tom Cairney|captain
+11|FW|BRA|Kevin|
+14|FW|NOR|Oscar Bobb|
+15|MF|SWE|Hugo Larsson|on loan from Eintracht Frankfurt
+16|MF|NOR|Sander Berge|
+17|MF|NGA|Alex Iwobi|
+18|FW|SWE|Jonah Kusi-Asare|
+19|MF|NIR|Shea Charles|
+20|MF|ESP|Manuel Ángel|
+21|DF|BEL|Timothy Castagne|
+22|DF|AUT|David Affengruber|
+23|GK|FRA|Benjamin Lecomte|
+24|MF|ENG|Josh King|
+30|MF|ENG|Ryan Sessegnon|
+32|MF|ENG|Emile Smith Rowe|
+33|DF|USA|Antonee Robinson|
+36|GK|USA|Alex Borto|
+44|DF|CAN|Luc de Fougerolles|

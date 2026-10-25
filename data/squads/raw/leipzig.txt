@@ -1,0 +1,34 @@
+# club: leipzig
+# source: https://en.wikipedia.org/wiki/2026%E2%80%9327_RB_Leipzig_season
+# accessed: 2026-10-25
+# as_of: 2026-09-03
+1|GK|NOR|Ørjan Nyland|
+2|DF|FRA|Abdoul Koné|
+3|DF|FRA|Maxime Estève|
+4|DF|HUN|Willi Orbán|
+6|MF|NED|Ezechiel Banzuzi|
+7|FW|NOR|Antonio Nusa|
+8|MF|GER|Assan Ouédraogo|
+9|FW|ESP|Marc Guiu|
+10|MF|GER|Brajan Gruda|on loan from Brighton & Hove Albion
+11|FW|BEL|Johan Bakayoko|
+13|MF|AUT|Nicolas Seiwald|
+14|MF|AUT|Christoph Baumgartner|
+16|DF|GER|Lukas Klostermann|
+17|DF|GER|Ridle Baku|
+18|FW|NGA|Suleman Sani|
+20|MF|GER|Rocco Reitz|vice-captain
+21|MF|MAR|Neil El Aynaoui|on loan from Roma
+22|DF|GER|David Raum|captain
+23|DF|FRA|Castello Lukeba|
+25|GK|GER|Leopold Zingerle|
+26|GK|BEL|Maarten Vandevoordt|
+27|FW|FRA|Tidiam Gomis|
+28|FW|FRA|Christopher Nkunku|on loan from Milan
+30|MF|SRB|Andrija Maksimović|
+35|DF|GER|Max Finkgräfe|
+37|MF|GER|Benno Kaltefleiter|
+39|DF|GER|Benjamin Henrichs|
+40|FW|BRA|Rômulo|
+45|FW|FRA|Samba Konaté|
+47|MF|GER|Viggo Gebel|

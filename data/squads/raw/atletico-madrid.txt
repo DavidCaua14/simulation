@@ -1,0 +1,28 @@
+# club: atletico-madrid
+# source: https://en.wikipedia.org/wiki/Atl%C3%A9tico_Madrid
+# accessed: 2026-10-25
+# as_of: 2026-09-02
+1|GK|ARG|Juan Musso|
+3|MF|MEX|Obed Vargas|
+4|MF|ESP|Rodrigo Mendoza|
+5|MF|USA|Johnny Cardoso|
+6|MF|ESP|Koke|captain
+7|MF|KOR|Lee Kang-in|
+8|MF|ESP|Pablo Barrios|
+9|FW|NOR|Alexander Sørloth|
+10|MF|ESP|Álex Baena|
+11|MF|NGA|Ademola Lookman|
+13|GK|SVN|Jan Oblak|vice-captain
+14|MF|ESP|Marcos Llorente|
+15|FW|CAN|Jonathan David|on loan from Juventus
+16|MF|ESP|Arnau Ortiz|
+17|DF|SVK|Dávid Hancko|
+18|DF|ESP|Marc Pubill|
+19|FW|ARG|Julián Alvarez|
+20|FW|ARG|Giuliano Simeone|
+21|DF|ARG|Cristian Romero|
+22|DF|ESP|Alejandro Grimaldo|
+23|MF|DEN|Morten Hjulmand|
+24|DF|ESP|Robin Le Normand|
+25|GK|ESP|Salvi Esquivel|
+30|DF|ESP|Dani Martínez|

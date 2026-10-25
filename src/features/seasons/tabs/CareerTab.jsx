@@ -8,7 +8,7 @@ import CompEmblem from '../ui/CompEmblem'
 import { EmptyState } from '../ui/States'
 import { fetchHistory } from '../services/managerApi'
 import { END_REASON, reputationTier, winRate } from '../utils/managerUtils'
-import { COMP_SHORT, fmt } from '../utils/seasonUtils'
+import { COMP_SHORT, fmt, seasonLabel } from '../utils/seasonUtils'
 
 const VIEWS = [
   { id: 'profile', label: 'Perfil' },
@@ -308,7 +308,7 @@ export default function CareerTab({ ctx, initialView, actions }) {
               {hist.seasons.map((s) => (
                 <li key={s.id} className="sy">
                   <header>
-                    <b>Temporada {s.year}</b>
+                    <b>Temporada {seasonLabel(s.year, s.region)}</b>
                     <span className="sy-clubs">
                       {(s.clubs || []).map((id) => (
                         <ClubCrest key={id} clubId={id} size={20} />

@@ -2,7 +2,7 @@ import { ArrowLeftRight, CircleCheck, CircleX, PartyPopper, Play, Trophy } from 
 import ClubCrest from '../../club/components/ClubCrest'
 import { getClubById } from '../../club/data/clubs'
 import CompEmblem from '../ui/CompEmblem'
-import { COMP_NAME } from '../utils/seasonUtils'
+import { COMP_NAME, seasonLabel } from '../utils/seasonUtils'
 
 // FIM DE TEMPORADA: campeões, a campanha do seu time, objetivos e o caminho para a próxima.
 export default function SeasonEnd({ season, coach, objectives = [], starting, onStartNext, offers = 0, onOffers }) {
@@ -14,7 +14,7 @@ export default function SeasonEnd({ season, coach, objectives = [], starting, on
       <header className="se-head">
         <span className="se-icon">{titles.length ? <PartyPopper size={22} /> : <Trophy size={22} />}</span>
         <div>
-          <small>Temporada {season.year} encerrada</small>
+          <small>Temporada {seasonLabel(season.year, season.region)} encerrada</small>
           <h2>{titles.length ? `${titles.length} título${titles.length > 1 ? 's' : ''} na temporada!` : 'Fim da temporada'}</h2>
         </div>
       </header>
@@ -74,7 +74,7 @@ export default function SeasonEnd({ season, coach, objectives = [], starting, on
           </button>
         )}
         <button type="button" className="gx-btn" disabled={starting} onClick={onStartNext}>
-          {starting ? <span className="nm-spin" /> : <Play size={18} fill="currentColor" />} Começar temporada {season.year + 1}
+          {starting ? <span className="nm-spin" /> : <Play size={18} fill="currentColor" />} Começar a próxima temporada
         </button>
       </div>
     </section>

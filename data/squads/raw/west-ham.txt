@@ -1,0 +1,31 @@
+# club: west-ham
+# source: https://en.wikipedia.org/wiki/2026%E2%80%9327_West_Ham_United_F.C._season
+# accessed: 2026-10-25
+# as_of: 2026-06-20
+1|GK|DEN|Mads Hermansen|
+23|GK|FRA|Alphonse Areola|
+2|RB|ENG|Kyle Walker-Peters|
+3|CB|ENG|Maximilian Kilman|
+12|LB/LWB|SEN|El Hadji Malick Diouf|
+15|CB/RB|GRE|Konstantinos Mavropanos|
+42|CB|ENG|Kaelan Casey|
+25|CB|FRA|Jean-Clair Todibo|
+29|RB|COD|Aaron Wan-Bissaka|
+30|LB|ENG|Oliver Scarles|
+63|DF|ENG|Ezra Mayers|
+8|CM|ENG|James Ward-Prowse|
+4|DM|MEX|Edson Álvarez|
+18|MF|POR|Mateus Fernandes|
+21|LM/LW|VEN|Keiber Lamadrid|
+27|DM|FRA|Soungoutou Magassa|
+28|DM/CM|CZE|Tomáš Souček|
+32|CM|ENG|Freddie Potts|
+44|AM/RM|ENG|George Earthy|
+55|MF|FRA|Mohamadou Kanté|
+61|MF|ENG|Lewis Orford|
+7|LW/RW|NED|Crysencio Summerville|
+9|ST|ENG|Callum Wilson|
+11|FW|ARG|Taty Castellanos|
+19|FW|BRA|Pablo|
+20|RW/FW|ENG|Jarrod Bowen|captain
+22|FW|CIV|Maxwel Cornet|

@@ -1,0 +1,34 @@
+# club: viking
+# source: https://en.wikipedia.org/wiki/Viking_FK
+# accessed: 2026-10-25
+# as_of: unknown
+1|GK|NOR|Arild Østbø|
+2|DF|NOR|Herman Haugen|
+3|DF|NOR|Viljar Vevatne|vice-captain
+4|DF|NOR|Martin Ove Roseth|
+5|DF|NOR|Henrik Heggheim|
+6|DF|AUS|Gianni Stensness|
+7|MF|NOR|Kristoffer Askildsen|
+8|MF|NZL|Joe Bell|vice-captain
+9|FW|AUS|Nicholas D'Agostino|
+10|FW|NOR|Zlatko Tripić|captain
+11|FW|NED|Romano Postema|
+12|GK|NOR|Erlend Jacobsen|
+14|FW|NOR|Veton Berisha|
+16|MF|NOR|Henrik Bjørdal|
+17|DF|NED|Essiën Bassey|
+18|DF|NOR|Sondre Bjørshol|
+19|FW|ISL|Amin Ćosić|
+20|FW|DEN|Peter Christiansen|
+21|DF|DEN|Anders Bærtelsen|
+22|FW|NOR|Erik Botheim|
+23|FW|NOR|Niklas Fuglestad|
+24|DF|NOR|Vetle Auklend|
+25|DF|NOR|Henrik Falchener|
+26|MF|NOR|Simen Kvia-Egeskog|
+27|DF|NOR|Jesper Daland|on loan from Cardiff City
+28|DF|NOR|Kristoffer Haugen|
+29|MF|NOR|Tobias Moi|
+30|GK|SVK|Ľubomír Belko|
+33|MF|NOR|Jakob Segadal Hansen|
+42|FW|GHA|Kelvin Frimpong|

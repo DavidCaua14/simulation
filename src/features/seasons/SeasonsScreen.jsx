@@ -175,7 +175,7 @@ export default function SeasonsScreen({ onBack }) {
           {ctx && tab === 'team' && <TeamTab hub={hub} notify={notify} onSaved={() => refresh({ silent: true })} />}
           {ctx && tab === 'matches' && <MatchesTab ctx={ctx} onOpenReport={actions.openReport} />}
           {ctx && tab === 'comps' && (
-            <CompetitionsTab ctx={ctx} selected={compSel || ctx.nextEvent?.competition || 'brasileirao'} onSelect={setCompSel} onOpenReport={actions.openReport} />
+            <CompetitionsTab ctx={ctx} selected={compSel || ctx.nextEvent?.competition || hub?.competitions?.[0]?.id} onSelect={setCompSel} onOpenReport={actions.openReport} />
           )}
           {ctx && tab === 'career' && <CareerTab ctx={ctx} initialView={careerView} actions={actions} />}
         </div>

@@ -1,0 +1,31 @@
+# club: qpr
+# source: https://en.wikipedia.org/wiki/Queens_Park_Rangers_F.C.
+# accessed: 2026-10-25
+# as_of: 2026-09-01
+1|GK|NIR|Pierce Charles|on loan from Manchester City
+2|DF|AUS|Kealey Adamson|
+3|DF|IRL|Jimmy Dunne|captain
+4|DF|SCO|Liam Morrison|
+5|DF|ENG|Ronnie Edwards|
+6|DF|ENG|Jake Clarke-Salter|
+7|MF|ENG|Karamoko Dembélé|
+10|MF|MAR|Ilias Chair|
+11|MF|NIR|Paul Smyth|
+12|DF|NED|Boy Kemper|
+13|GK|ENG|Calum Ward|
+14|MF|JPN|Kōki Saitō|
+15|FW|ENG|Alfie Lloyd|
+16|FW|JAM|Rumarn Burrell|
+17|MF|GHA|Kwame Poku|
+18|MF|FIN|Glen Kamara|on loan from Stade Rennais
+19|DF|LVA|Dennis Cirkin|
+20|MF|IRL|Harvey Vale|
+22|FW|CIV|Richard Kone|
+23|MF|SWE|Isak Alemayehu|
+24|MF|DEN|Nicolas Madsen|
+25|FW|TRI|Justin Obikwu|
+26|FW|ALG|Rayan Kolli|
+27|DF|SEN|Amadou Mbengue|
+32|GK|ENG|Matteo Salamon|
+40|MF|MTQ|Jonathan Varane|
+48|DF|GHA|Tariq Lamptey|

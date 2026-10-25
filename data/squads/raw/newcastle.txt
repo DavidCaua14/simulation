@@ -1,0 +1,29 @@
+# club: newcastle
+# source: https://en.wikipedia.org/wiki/Newcastle_United_F.C.
+# accessed: 2026-10-25
+# as_of: unknown
+1|GK|ENG|Nick Pope|
+2|DF|ENG|Tino Livramento|
+3|DF|ENG|Lewis Hall|
+4|DF|NED|Sven Botman|
+5|DF|SUI|Fabian Schär|
+6|MF|ESP|Nico González|
+7|FW|BRA|Joelinton|vice-captain
+8|MF|FRA|Aladji Bamba|
+9|FW|COD|Yoane Wissa|
+10|FW|DEN|William Osula|
+11|FW|ENG|Harvey Barnes|
+12|DF|GER|Malick Thiaw|vice-captain
+14|MF|NED|Sean Steur|
+17|FW|CIV|Bazoumana Touré|
+19|FW|SWE|Anthony Elanga|
+20|FW|BEL|Matias Fernandez-Pardo|
+21|GK|CZE|Lukáš Horníček|
+23|MF|ENG|Jacob Murphy|
+24|GK|FRA|Ewen Jaouen|
+28|MF|ENG|Joe Willock|
+29|GK|ENG|Mark Gillespie|
+33|DF|ENG|Dan Burn|captain
+37|DF|BIH|Amar Dedić|
+41|MF|ENG|Jacob Ramsey|
+67|MF|ENG|Lewis Miley|

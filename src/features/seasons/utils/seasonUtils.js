@@ -12,14 +12,53 @@ export const STAGE_LABEL = {
 }
 export const STAGE_ORDER = ['group', 'r16', 'qf', 'sf', 'final']
 
-// "Rodada 12", "Grupo B · Rodada 3", "Oitavas · Ida", "Final · jogo único"
+// ---------------------------------------------------------------------------
+// CATÁLOGO DE COMPETIÇÕES (vem do banco: sim_competitions). Formato, fases, rótulos, tema e calendário de
+// cada competição ficam na configuração — o app não tem regra fixa por campeonato.
+// registerCompetitions() preenche os mapas abaixo (COMP_NAME, COMP_SHORT, COMP_THEME) sem trocar as referências.
+export const COMPETITIONS = {}
+export function registerCompetitions(list = []) {
+  for (const c of list) {
+    const { swiss_templates: _omit, ...rules } = c.rules || {}
+    COMPETITIONS[c.id] = { ...c, rules, phases: rules.phases || [] }
+    COMP_NAME[c.id] = c.name
+    COMP_SHORT[c.id] = c.short_name
+    if (c.theme?.c1) COMP_THEME[c.id] = { kicker: '', code: '', ...c.theme }
+  }
+}
+// competições da temporada atual, na ordem do calendário (Brasil ou Inglaterra)
+export function setSeasonCompetitions(ids = []) {
+  COMP_ORDER.splice(0, COMP_ORDER.length, ...ids)
+}
+const LEGACY_RANK = { league: 0, group: 1, r16: 2, qf: 3, sf: 4, final: 5 }
+export const phaseOf = (comp, stage) => COMPETITIONS[comp]?.phases?.find((p) => p.id === stage) || null
+export function phaseIndex(comp, stage) {
+  const list = COMPETITIONS[comp]?.phases
+  const i = list ? list.findIndex((p) => p.id === stage) : -1
+  return i >= 0 ? i : LEGACY_RANK[stage] ?? 99
+}
+export const stageLabel = (comp, stage) => phaseOf(comp, stage)?.label || STAGE_LABEL[stage] || stage
+const legsOf = (comp, stage) => {
+  const ph = phaseOf(comp, stage)
+  return ph ? ph.legs || 1 : stage === 'final' ? 1 : 2
+}
+export const isSwiss = (comp) => COMPETITIONS[comp]?.phases?.some((p) => p.type === 'swiss')
+export const knockoutPhases = (comp) => {
+  const list = COMPETITIONS[comp]?.phases
+  return list ? list.filter((p) => p.type === 'knockout').map((p) => p.id) : ['r16', 'qf', 'sf', 'final']
+}
+// "2026" (Brasil) ou "2026/27" (Inglaterra/Europa)
+export const seasonLabel = (year, region) => (region === 'ENG' ? `${year}/${String((year + 1) % 100).padStart(2, '0')}` : `${year}`)
+
+// "Rodada 12", "Grupo B · Rodada 3", "Fase de liga · Rodada 4", "Oitavas · Ida", "Quarta fase", "Final · jogo único"
 export function describeMatch(m) {
   if (!m) return ''
-  if (m.stage === 'league') return `Rodada ${m.round}`
+  const comp = m.competition || m.comp || m.competition_id
+  if (m.stage === 'league') return isSwiss(comp) ? `Fase de liga · Rodada ${m.round}` : `Rodada ${m.round}`
   if (m.stage === 'group') return `Grupo ${m.group} · Rodada ${m.round}`
-  if (m.stage === 'final') return 'Final · jogo único'
-  const leg = m.leg === 1 ? 'Ida' : 'Volta'
-  return `${STAGE_LABEL[m.stage]} · ${leg}`
+  const label = stageLabel(comp, m.stage)
+  if (legsOf(comp, m.stage) === 1) return m.stage === 'final' ? `${label} · jogo único` : label
+  return `${label} · ${m.leg === 1 ? 'Ida' : 'Volta'}`
 }
 
 export const VENUE_LABEL = { home: 'Em casa', away: 'Fora de casa' }
@@ -68,22 +107,24 @@ export const ordinal = (n) => `${n}º`
 export const COMP_NAME = { brasileirao: 'Brasileirão Série A', copa_brasil: 'Copa do Brasil', libertadores: 'Copa Libertadores' }
 export const COMP_SHORT = { brasileirao: 'Brasileirão', copa_brasil: 'Copa do Brasil', libertadores: 'Libertadores' }
 export const COMP_ORDER = ['brasileirao', 'copa_brasil', 'libertadores']
-export const STAGE_RANK = { league: 0, group: 1, r16: 2, qf: 3, sf: 4, final: 5 }
 
 // Título de uma rodada: "Rodada 12", "Fase de grupos · Rodada 3", "Oitavas de final · Ida", "Final"
-export function roundTitle(stage, round) {
-  if (stage === 'league') return `Rodada ${round}`
+export function roundTitle(stage, round, comp) {
+  if (stage === 'league') return isSwiss(comp) ? `Fase de liga · Rodada ${round}` : `Rodada ${round}`
   if (stage === 'group') return `Fase de grupos · Rodada ${round}`
-  if (stage === 'final') return 'Final'
-  return `${STAGE_LABEL[stage]} · ${round === 1 ? 'Ida' : 'Volta'}`
+  const label = stageLabel(comp, stage)
+  if (legsOf(comp, stage) === 1) return label
+  return `${label} · ${round === 1 ? 'Ida' : 'Volta'}`
 }
 
 // Rótulo curto de um jogo cru (linha da tabela season_fixtures)
 export function fixtureLabel(f) {
-  if (f.stage === 'league') return `Rodada ${f.round_no}`
+  const comp = f.comp || f.competition_id
+  if (f.stage === 'league') return isSwiss(comp) ? `Fase de liga · Rodada ${f.round_no}` : `Rodada ${f.round_no}`
   if (f.stage === 'group') return `Grupo ${f.group_label} · Rodada ${f.round_no}`
-  if (f.stage === 'final') return 'Final'
-  return `${STAGE_LABEL[f.stage]} · ${f.leg === 1 ? 'Ida' : 'Volta'}`
+  const label = stageLabel(comp, f.stage)
+  if (legsOf(comp, f.stage) === 1) return label
+  return `${label} · ${f.leg === 1 ? 'Ida' : 'Volta'}`
 }
 
 // ---------------------------------------------------------------------------

@@ -42,7 +42,7 @@ export const fetchStandings = (seasonId, competitionId, group = null) =>
   rpc('season_standings', { p_season: seasonId, p_comp: competitionId, p_group: group })
 
 const FIXTURE_COLS =
-  'id, stage, round_no, group_label, tie_no, leg, home_club, away_club, home_goals, away_goals, home_pens, away_pens, tie_winner, status, player_match, coach_club, played_at, day_no, extra_time'
+  'id, competition_id, stage, round_no, group_label, tie_no, leg, home_club, away_club, home_goals, away_goals, home_pens, away_pens, tie_winner, status, player_match, coach_club, played_at, day_no, extra_time'
 
 export const fetchFixtures = (seasonId, competitionId) =>
   unwrap(
@@ -54,3 +54,22 @@ export const fetchFixtures = (seasonId, competitionId) =>
       .order('round_no')
       .order('id'),
   )
+
+// Catálogo de competições (formato, fases, tema, calendário). Carregado uma vez por sessão.
+let compsPromise = null
+export function fetchCompetitions() {
+  if (!compsPromise) {
+    compsPromise = unwrap(
+      supabase
+        .from('sim_competitions')
+        .select('id, name, short_name, kind, division, region, theme, sort_order, xp_mult, ref_season, rules')
+        .eq('active', true)
+        .order('sort_order'),
+    ).catch((e) => {
+      compsPromise = null
+      throw e
+    })
+  }
+  return compsPromise
+}
+

@@ -1,0 +1,33 @@
+# club: wrexham
+# source: https://en.wikipedia.org/wiki/Wrexham_A.F.C.
+# accessed: 2026-10-25
+# as_of: unknown
+2|DF|ENG|Callum Doyle|
+3|DF|GAB|Jacques Ekomié|
+4|DF|ENG|Max Cleworth|
+5|DF|SCO|Dominic Hyam|captain
+6|DF|ENG|Joe Worrall|
+8|MF|ENG|Ben Whiteman|
+10|MF|ENG|Josh Windass|
+11|FW|JAM|Bailey Cadamarteri|
+12|DF|BFA|Issa Kaboré|
+13|DF|NZL|Liberato Cacace|
+14|MF|ENG|George Thomason|
+15|MF|ENG|George Dobson|
+17|MF|ENG|Callum O'Hare|
+18|MF|ENG|Ben Sheaf|
+19|FW|WAL|Kieffer Moore|
+20|MF|ENG|Oliver Rathbone|
+21|GK|WAL|Danny Ward|
+22|GK|ENG|Anthony Patterson|
+23|DF|ENG|Sebastian Revan|
+25|GK|ENG|Callum Burton|
+26|DF|KEN|Zak Vyner|
+27|MF|ENG|Lewis O'Brien|
+28|FW|ENG|Sam Smith|
+30|DF|ENG|Danny Imray|
+33|FW|WAL|Nathan Broadhead|
+34|DF|ENG|Aaron James|
+37|MF|ENG|Matty James|
+47|MF|ENG|Ryan Longman|
+50|FW|PHI|Samuel Chesworth|

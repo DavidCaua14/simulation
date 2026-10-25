@@ -1,0 +1,35 @@
+# club: criciuma
+# source: https://en.wikipedia.org/wiki/Crici%C3%BAma_Esporte_Clube
+# accessed: 2026-10-25
+# as_of: 2026-09-22
+1|GK|BRA|Alisson|
+3|DF|BRA|Rodrigo|captain
+4|DF|BRA|Luciano Castán|
+5|MF|BRA|Eduardo|
+6|DF|BRA|Marcinho|
+7|MF|BRA|Fellipe Mateus|
+8|MF|BRA|Guilherme Lobo|
+9|FW|BRA|Nicolas|
+10|FW|BRA|Jhonata Robert|
+11|FW|BRA|Romarinho|
+13|FW|BRA|Waguininho|
+15|DF|BRA|Octávio Henrique|
+18|MF|GHA|Steven Nufour|
+19|FW|BRA|Thales|
+21|FW|BRA|João Carlos|
+22|DF|BRA|Marcelo Hermes|
+31|DF|BRA|Hiago Alves|
+32|GK|BRA|Airton|
+33|FW|BRA|Yuri Tanque|
+34|DF|BRA|Bruno Alves|
+36|DF|BRA|Heitor Roca|
+37|DF|BRA|César Martins|
+41|MF|BRA|Jean Irmer|
+43|DF|BRA|Ruan Carvalho|
+50|MF|BRA|Thiaguinho|
+70|GK|BRA|Pedro Santos|
+73|GK|BRA|Kauã Moroso|
+77|FW|BRA|Diego Gonçalves|
+88|FW|BRA|Cauê|
+-|DF|BRA|Erick|
+-|MF|BRA|Eliel Costa|

@@ -1,0 +1,36 @@
+# club: millwall
+# source: https://en.wikipedia.org/wiki/Millwall_F.C.
+# accessed: 2026-10-25
+# as_of: 2026-09-02
+1|GK|DEN|Lukas Jensen|
+2|DF|ENG|Jordi Osei-Tutu|
+3|DF|ENG|Zak Sturge|
+4|DF|FRA|Tristan Crama|vice-captain
+5|DF|ENG|Jake Cooper|captain
+6|DF|ENG|Caleb Taylor|
+7|FW|GLP|Taïryk Arconte|
+8|MF|BEL|Mathis Servais|
+9|FW|SRB|Mihailo Ivanović|
+10|MF|ALG|Camiel Neghli|
+11|FW|ENG|Romain Esse|on loan from Crystal Palace
+12|DF|IDN|Elkan Baggott|
+13|FW|SCO|Lyndon Dykes|
+14|MF|ENG|Jenson Metcalfe|
+15|GK|NZL|Max Crocombe|
+16|MF|SCO|Daniel Kelly|
+17|MF|IRL|Mark Sykes|
+18|DF|ENG|Ryan Leonard|
+19|FW|ENG|Josh Coburn|
+21|MF|AUS|Massimo Luongo|
+22|FW|ENG|Kyrell Lisbie|
+23|DF|ENG|Danny Batth|
+24|MF|BEL|Casper De Norre|
+25|MF|ENG|Luke Cundle|
+26|FW|ENG|Benicio Baker|
+29|FW|ENG|Zak Lovelace|
+34|GK|ENG|Filip Marschall|
+35|FW|FRA|Yanis Issoufou|
+41|GK|ENG|George Evans|
+43|GK|ENG|Joel Coleman|
+45|DF|ENG|Alfie Doughty|
+49|MF|FRA|Derek Mazou-Sacko|

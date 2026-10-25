@@ -1,0 +1,30 @@
+# club: cardiff
+# source: https://en.wikipedia.org/wiki/Cardiff_City_F.C.
+# accessed: 2026-10-25
+# as_of: 2026-09-19
+1|GK|ENG|Nathan Trott|
+2|DF|ENG|Will Fish|
+3|DF|IRL|Joel Bagan|
+4|DF|NGA|Gabriel Osho|
+5|DF|POL|Krystian Bielik|
+8|MF|IRL|Jack Moylan|
+9|FW|DEN|Yousef Salech|
+10|MF|WAL|Rubin Colwill|vice-captain
+11|FW|ENG|Ollie Tanner|
+12|DF|ENG|Calum Chambers|captain
+14|MF|SCO|David Turnbull|
+16|MF|ENG|Chris Willock|
+18|MF|AUS|Alex Robertson|
+23|DF|ENG|Calum Scanlon|on loan from Liverpool
+27|MF|WAL|Joel Colwill|
+30|GK|ENG|Harry Tyrer|
+33|MF|WAL|Rob Tankiewicz|
+38|DF|SGP|Perry Ng|
+39|FW|WAL|Isaak Davies|
+40|DF|WAL|Noah Anyadike|
+41|GK|WAL|Matthew Turner|
+43|MF|WAL|Paul Moreno|
+44|DF|WAL|Ronan Kpakio|
+45|MF|WAL|Cian Ashford|
+47|FW|IRL|Callum Robinson|
+48|DF|WAL|Dylan Lawlor|

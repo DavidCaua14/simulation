@@ -1,0 +1,33 @@
+# club: porto
+# source: https://en.wikipedia.org/wiki/FC_Porto
+# accessed: 2026-10-25
+# as_of: unknown
+4|DF|POL|Jakub Kiwior|
+5|DF|POL|Jan Bednarek|
+6|DF|ENG|Chris Smalling|
+7|FW|BRA|William Gomes|
+8|MF|DEN|Victor Froholdt|
+9|FW|ESP|Samu Aghehowa|
+10|MF|ESP|Gabri Veiga|
+11|FW|BRA|Pepê|
+12|DF|NGA|Zaidu Sanusi|
+13|MF|DOM|Pablo Rosario|
+14|GK|POR|Cláudio Ramos|
+15|MF|POR|Vasco Sousa|
+16|MF|KOR|Hwang In-beom|
+17|FW|ESP|Borja Sainz|
+18|DF|ARG|Nehuén Pérez|
+19|FW|POR|André Silva|
+20|DF|POR|Alberto Costa|
+21|DF|CRO|Dominik Prpić|
+22|MF|ARG|Alan Varela|vice-captain
+24|GK|POR|João Costa|
+29|FW|MEX|Santiago Giménez|on loan from AC Milan
+33|DF|BRA|Souza|on loan from Tottenham Hotspur
+37|FW|BRA|Gabriel Mec|
+42|MF|CIV|Seko Fofana|on loan from Rennes
+50|GK|POR|João Afonso|
+52|DF|POR|Martim Fernandes|
+74|DF|POR|Francisco Moura|
+77|FW|POL|Oskar Pietuszewski|
+99|GK|POR|Diogo Costa|captain

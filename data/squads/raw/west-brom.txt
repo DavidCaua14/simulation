@@ -1,0 +1,26 @@
+# club: west-brom
+# source: https://en.wikipedia.org/wiki/West_Bromwich_Albion_F.C.
+# accessed: 2026-10-25
+# as_of: 2026-09-03
+1|GK|IRL|Max O'Leary|
+2|DF|WAL|Chris Mepham|
+3|DF|ENG|Nat Phillips|
+4|DF|HUN|Callum Styles|
+6|DF|USA|George Campbell|captain
+7|MF|NOR|Felix Horn Myhre|
+8|MF|IRL|Jayson Molumby|
+9|FW|SCO|Barney Stewart|
+10|FW|IRL|Mikey Johnston|
+11|FW|ENG|Jimmy-Jay Morgan|
+13|GK|ENG|Matt Ingram|
+15|MF|ENG|Toby Collyer|
+17|MF|MLI|Ousmane Diakité|
+18|DF|FRA|Brayann Pereira|
+19|FW|NOR|Aune Heggebø|
+20|MF|FRA|Rabby Nzingoula|
+21|MF|NIR|Isaac Price|
+22|DF|ENG|Conor Townsend|
+23|FW|JOR|Tammer Bany|
+25|DF|FRA|Nolan Galves|
+26|FW|ESP|Kareem Tunde|
+29|MF|ENG|Harry Whitwell|

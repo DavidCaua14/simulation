@@ -1,0 +1,33 @@
+# club: brentford
+# source: https://en.wikipedia.org/wiki/Brentford_F.C.
+# accessed: 2026-10-25
+# as_of: 2026-08-21
+1|GK|IRL|Caoimhín Kelleher|
+2|DF|SCO|Aaron Hickey|
+3|DF|JAM|Rico Henry|
+4|DF|NED|Sepp van den Berg|
+6|MF|UKR|Yehor Yarmolyuk|
+7|FW|GER|Kevin Schade|
+8|MF|DEN|Mathias Jensen|
+9|FW|BRA|Igor Thiago|
+10|MF|ENG|Josh Dasilva|
+11|FW|BFA|Dango Ouattara|
+12|GK|ISL|Hákon Valdimarsson|
+13|FW|ENG|Callum Wilson|
+14|MF|POR|Fábio Carvalho|
+17|MF|NED|Antoni Milambo|
+18|MF|MLI|Mamadou Sangaré|
+19|FW|ENG|Jaidon Anthony|
+20|DF|NOR|Kristoffer Ajer|
+22|DF|IRL|Nathan Collins|captain
+23|MF|ENG|Keane Lewis-Potter|
+24|MF|DEN|Mikkel Damsgaard|
+25|DF|SEN|El Hadji Malick Diouf|
+27|MF|GER|Vitaly Janelt|
+31|GK|ENG|Ellery Balcombe|
+33|DF|ITA|Michael Kayode|
+36|DF|KOR|Kim Ji-soo|
+39|FW|BRA|Gustavo Nunes|
+44|DF|AUT|Jannik Schuster|
+47|FW|BEL|Kaye Furo|
+48|DF|NGR|Benjamin Fredrick|

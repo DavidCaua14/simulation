@@ -1,0 +1,33 @@
+# club: coventry
+# source: https://en.wikipedia.org/wiki/Coventry_City_F.C.
+# accessed: 2026-10-25
+# as_of: 2026-09-16
+2|DF|JAM|Ethan Pinnock|
+3|DF|WAL|Jay Dasilva|
+4|DF|ENG|Bobby Thomas|
+5|MF|ENG|Jack Rudoni|
+6|MF|ENG|Matt Grimes|captain
+7|FW|JPN|Tatsuhiro Sakamoto|
+8|MF|GHA|Caleb Yirenkyi|
+9|FW|ENG|Ellis Simms|
+10|FW|JAM|Ephron Mason-Clark|
+11|FW|USA|Haji Wright|
+12|DF|ENG|Stephen Mfuni|on loan from Manchester City
+13|GK|ENG|Ben Wilson|
+14|FW|NGA|Taiwo Awoniyi|
+16|MF|NGA|Frank Onyeka|
+17|FW|FRA|Loum Tchaouna|
+19|GK|ENG|Carl Rushworth|
+20|DF|ENG|Kaine Kesler-Hayden|
+21|DF|ENG|Jake Bidwell|
+22|DF|JAM|Joel Latibeaudiere|
+23|FW|GHA|Brandon Thomas-Asante|
+24|DF|SUI|Aurèle Amenda|
+25|GK|ENG|Dan Bentley|
+26|DF|ENG|Luke Woolfenden|
+27|DF|NED|Milan van Ewijk|
+28|MF|ENG|Josh Eccles|
+29|MF|DEN|Victor Torp|
+34|FW|FRA|Yann Gboho|
+38|MF|NED|Gustavo Hamer|
+49|FW|GUI|Sidiki Cherif|

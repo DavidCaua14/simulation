@@ -1,0 +1,34 @@
+# club: brighton
+# source: https://en.wikipedia.org/wiki/Brighton_%26_Hove_Albion_F.C.
+# accessed: 2026-10-25
+# as_of: unknown
+1|GK|NED|Bart Verbruggen|
+3|DF|ALG|Jaouen Hadjam|
+4|DF|NED|Pascal Struijk|
+5|DF|ENG|Lewis Dunk|captain
+7|MF|JPN|Kaoru Mitoma|
+8|MF|ENG|Jack Hinshelwood|
+9|FW|GRE|Stefanos Tzimas|
+10|FW|FRA|Georginio Rutter|
+11|MF|GAM|Yankuba Minteh|
+12|FW|CAN|Promise David|on loan from Union Saint-Gilloise
+13|MF|GER|Pascal Groß|vice-captain
+14|MF|ESP|Chema Andrés|
+15|MF|GHA|Ibrahim Osman|
+19|FW|GRE|Charalampos Kostoulas|
+20|DF|POR|Costinha|
+21|DF|FRA|Olivier Boscagli|
+23|GK|ENG|Jason Steele|
+24|DF|TUR|Ferdi Kadıoğlu|
+25|MF|PAR|Diego Gómez|
+26|MF|SWE|Yasin Ayari|
+27|DF|NED|Mats Wieffer|
+28|FW|IRL|Evan Ferguson|
+29|DF|BEL|Maxim De Cuyper|
+30|DF|AUT|Michael Svoboda|
+33|MF|DEN|Matt O'Riley|
+35|MF|CIV|Malick Yalcouyé|
+36|MF|NGR|Zadok Yohanna|
+38|GK|CAN|Tom McGill|
+39|MF|NGR|Femi Azeez|
+44|DF|CRO|Luka Vušković|

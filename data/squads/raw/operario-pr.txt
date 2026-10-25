@@ -1,0 +1,31 @@
+# club: operario-pr
+# source: https://en.wikipedia.org/wiki/Oper%C3%A1rio_Ferrovi%C3%A1rio_Esporte_Clube
+# accessed: 2026-10-25
+# as_of: unknown
+1|GK|BRA|Elias Curzel|
+5|MF|BRA|Índio|
+8|MF|COL|Juan Zuluaga|
+9|FW|BRA|Vinícius Mingotti|
+10|MF|BRA|Gabriel Boschilia|captain
+11|FW|BRA|Aylon|
+12|GK|BRA|Talles|
+14|FW|CPV|Berto|
+16|DF|BRA|Miranda|
+20|MF|BRA|Vinícius Diniz|
+22|DF|COL|José Cuenú|
+23|DF|BRA|João Gabriel|
+26|DF|BRA|Maguinho|
+27|DF|BRA|Gabriel Feliciano|
+28|MF|BRA|Dudu Mosconi|
+29|FW|COL|Edwin Torres|
+30|MF|BRA|Pedro Vilhena|
+32|MF|BRA|Charles Raphael|
+33|GK|BRA|Vagner|
+34|DF|BRA|Renan Gustavo|
+39|MF|BRA|Matheus Trindade|
+43|DF|BRA|Joseph|
+44|DF|BRA|William Klaus|
+77|FW|BRA|Maxwell|
+88|MF|BRA|Neto Paraíba|
+92|FW|BRA|Pablo|
+99|FW|BRA|Caio Dantas|

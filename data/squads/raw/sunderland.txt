@@ -1,0 +1,33 @@
+# club: sunderland
+# source: https://en.wikipedia.org/wiki/Sunderland_A.F.C.
+# accessed: 2026-10-25
+# as_of: 2026-09-03
+4|DF|AUT|Kevin Danso|on loan from Tottenham Hotspur
+5|DF|NIR|Daniel Ballard|
+6|DF|FRA|Dayann Methalie|
+7|FW|MAR|Chemsdine Talbi|
+8|MF|IRL|Alan Browne|
+9|FW|NED|Brian Brobbey|
+10|FW|ECU|Nilson Angulo|
+11|MF|ENG|Chris Rigg|
+12|DF|BEL|Thomas Meunier|
+13|MF|ENG|Luke O'Nien|
+14|FW|ENG|Romaine Mundle|
+15|DF|PAR|Omar Alderete|
+17|DF|MOZ|Reinildo|
+18|FW|HAI|Wilson Isidor|
+19|MF|SEN|Habib Diarra|
+20|DF|FRA|Nordi Mukiele|
+21|GK|ENG|Simon Moore|
+22|GK|NED|Robin Roefs|
+27|MF|COD|Noah Sadiki|
+28|MF|FRA|Enzo Le Fée|
+29|MF|COD|Jules Ahoka|
+31|GK|SWE|Melker Ellborg|
+32|DF|NIR|Trai Hume|
+34|MF|SUI|Granit Xhaka|captain
+37|FW|CIV|Jocelin Ta Bi|
+39|FW|BEL|Malick Fofana|
+42|DF|ENG|Aji Alese|
+46|MF|FRA|Abdoullah Ba|
+-|FW|ECU|Juan Riquelme Angulo|

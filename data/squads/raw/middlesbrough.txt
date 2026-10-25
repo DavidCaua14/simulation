@@ -1,0 +1,31 @@
+# club: middlesbrough
+# source: https://en.wikipedia.org/wiki/Middlesbrough_F.C.
+# accessed: 2026-10-25
+# as_of: 2026-08-30
+1|GK|CZE|Radek Vítek|
+2|DF|ENG|Callum Brittain|
+4|DF|ENG|Ashley Phillips|
+5|DF|CAN|Alfie Jones|
+6|MF|USA|Sebastian Berhalter|
+7|FW|ENG|Will Lankshear|
+8|MF|AUS|Riley McGree|
+9|FW|SCO|Tommy Conway|
+10|MF|USA|Aidan Morris|
+11|FW|ENG|Morgan Whittaker|
+12|DF|ENG|Luke Ayling|captain
+13|FW|SVK|David Strelec|
+14|MF|ENG|Myles Peart-Harris|
+16|MF|ECU|Jeremy Sarmiento|
+17|DF|USA|Max Arfsten|
+19|MF|ENG|Leo Castledine|
+22|FW|SCO|Kyle Joseph|
+25|DF|ENG|George Edmundson|
+28|MF|ENG|Law McCabe|
+29|DF|FRA|Adilson Malanda|
+30|DF|BRA|Neto Borges|
+31|GK|ENG|Sol Brynn|
+40|MF|ENG|Fin Cartwright|
+44|MF|ENG|Cruz Ibeh|
+-|DF|SLE|Alex Bangura|
+-|DF|ENG|Sam Byram|
+-|MF|ENG|Micah Hamilton|

@@ -1,0 +1,30 @@
+# club: swansea
+# source: https://en.wikipedia.org/wiki/Swansea_City_A.F.C.
+# accessed: 2026-10-25
+# as_of: 2026-09-11
+1|GK|ENG|Andy Fisher|
+2|DF|ENG|Joshua Key|
+3|DF|NED|Jenson Seelt|on loan from Sunderland
+4|MF|SCO|Jay Fulton|
+5|DF|WAL|Ben Cabango|captain
+6|MF|NZL|Marko Stamenić|
+7|MF|SWE|Melker Widell|
+8|MF|NZL|Elijah Just|
+9|FW|SVN|Žan Vipotnik|
+10|FW|KOR|Eom Ji-sung|
+12|FW|ENG|Jeremy Monga|on loan from Manchester City
+14|DF|ENG|Josh Tymon|
+15|DF|AUS|Cameron Burgess|
+16|MF|ENG|Tom Iorpenda|
+17|MF|POR|Gonçalo Franco|
+20|DF|POR|Tiago Parente|on loan from Benfica
+22|GK|CHI|Lawrence Vigouroux|
+23|DF|SCO|Stephen Welsh|
+26|DF|CZE|Filip Lissah|
+29|GK|ENG|Paul Farman|
+30|FW|GHA|Joseph Opoku|
+31|FW|SCO|Ross Stewart|
+33|FW|IRL|Adam Idah|
+35|FW|BRA|Ronald|
+46|MF|CAN|Stephen Eustáquio|
+49|MF|MLI|Moussa Yeo|

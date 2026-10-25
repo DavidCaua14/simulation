@@ -88,6 +88,19 @@ export const CLUBS = [
   { id: 'u-central', country: 'Venezuela', name: 'Universidad Central', wiki: 'Universidad Central de Venezuela F.C.', search: 'Universidad Central football club', aliases: ['Universidad Central', 'Universidad Central de Venezuela'] },
 ]
 
+// Clubes da evolução (Premier League, Championship, Champions League e Série B) — lidos de data/clubs/clubs_evolution.json
+const COUNTRY_EN = { BRA: 'Brazil', ENG: 'England', WAL: 'Wales', FRA: 'France', GER: 'Germany', ESP: 'Spain', ITA: 'Italy', POR: 'Portugal',
+  BEL: 'Belgium', NED: 'Netherlands', NOR: 'Norway', TUR: 'Turkey', UKR: 'Ukraine', CZE: 'Czech Republic', SVK: 'Slovakia', GRE: 'Greece',
+  AUT: 'Austria', AZE: 'Azerbaijan' }
+{
+  const { readFile } = await import('node:fs/promises')
+  const evo = JSON.parse(await readFile(path.join(ROOT, 'data', 'clubs', 'clubs_evolution.json'), 'utf8'))
+  for (const [id, name, , country, , , , , , full] of evo.clubs) {
+    if (CLUBS.some((c) => c.id === id)) continue
+    CLUBS.push({ id, country: COUNTRY_EN[country] || country, name, wiki: full, search: `${full}`, aliases: [name, full] })
+  }
+}
+
 const enc = encodeURIComponent
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
 

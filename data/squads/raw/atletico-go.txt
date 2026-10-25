@@ -1,0 +1,38 @@
+# club: atletico-go
+# source: https://en.wikipedia.org/wiki/Atl%C3%A9tico_Clube_Goianiense
+# accessed: 2026-10-25
+# as_of: 2026-09-12
+-|GK|BRA|Léo Rosa|
+-|GK|BRA|Paulo Henrique|
+-|GK|BRA|Paulo Vítor|
+-|GK|BRA|Vladimir|
+-|DF|PAR|Junior Barreto|on loan from Olimpia
+-|DF|BRA|Natã Felipe|on loan from Juventude
+-|DF|BRA|Adriano Martins|
+-|DF|BRA|Tito|
+-|DF|BRA|Gustavo Daniel|
+-|DF|BRA|Ewerthon|
+-|DF|BRA|Felipe Guimarães|on loan from Coritiba
+-|DF|BRA|Guilherme Lopes|on loan from Red Bull Bragantino
+-|DF|BRA|Warley|
+-|DF|BRA|Yuri|
+-|MF|BRA|Cristiano|on loan from Noroeste
+-|MF|BRA|Henrique Freitas|
+-|MF|BRA|Geovane|
+-|MF|BRA|Igor Henrique|
+-|MF|BRA|Cauã Marley|
+-|MF|BRA|Guilherme Marques|captain
+-|MF|BRA|Matheusinho|
+-|MF|BRA|Netinho|
+-|MF|BRA|Daniel Peixoto|on loan from Noroeste
+-|MF|URU|David Terans|on loan from Fluminense
+-|MF|BRA|Leandro Vilela|
+-|FW|BRA|Gustavo Coutinho|on loan from Sport Recife
+-|FW|BRA|Bruno José|
+-|FW|PAN|Kahiser Lenis|
+-|FW|BRA|Daniel Lima|
+-|FW|BRA|Gustavo Maia|
+-|FW|BRA|Marrony|on loan from Remo
+-|FW|GNB|João Pedro|
+-|FW|BRA|Geovany Soares|on loan from Tubarão
+-|FW|BRA|Léo Tocantins|on loan from Noroeste

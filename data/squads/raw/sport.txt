@@ -1,0 +1,36 @@
+# club: sport
+# source: https://en.wikipedia.org/wiki/Sport_Club_do_Recife
+# accessed: 2026-10-25
+# as_of: unknown
+3|DF|BRA|Marcelo Ajul|
+5|DF|BRA|Marcelo Benevenuto|
+6|MF|BRA|Biel|on loan from Brusque
+7|MF|BRA|Patrick de Paula|
+8|MF|BRA|Juan Alano|
+9|FW|BRA|Pedro Perotti|on loan from Chapecoense
+10|FW|URU|Carlos de Pena|
+12|GK|BRA|Denis|
+15|MF|BRA|Murilo Rhikman|on loan from Cruzeiro
+19|FW|BRA|Neto Pessoa|
+20|FW|URU|Diego Hernández|
+21|GK|BRA|Brenno|
+23|MF|BRA|Zé Gabriel|
+25|FW|BRA|Clayson|
+26|GK|BRA|Thiago Couto|
+27|DF|BRA|Claudinho|on loan from Vitória
+28|DF|BRA|Habraão|on loan from Athletico Paranaense
+29|MF|BRA|Willian Oliveira|
+30|FW|BRA|Chrystian Barletta|
+31|FW|BRA|Marlon Douglas|
+33|DF|BRA|Kayky Almeida|on loan from Fluminense
+42|GK|BRA|Adriano|
+47|MF|BRA|Fábio Matheus|
+48|MF|BRA|Pedro Martins|
+60|DF|BRA|Felipinho|
+63|DF|BRA|Patrick|
+68|DF|BRA|Augusto Pucci|
+76|DF|BRA|Raí Lopes|
+77|FW|BRA|Dudu Teodora|
+88|MF|BRA|Fernando Sobral|
+96|DF|BRA|Edson Lucas|on loan from Ferroviária
+-|MF|VEN|Kervin Andrade|on loan from Maccabi Tel Aviv

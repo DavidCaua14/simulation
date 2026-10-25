@@ -1,0 +1,29 @@
+# club: ceara
+# source: https://en.wikipedia.org/wiki/Cear%C3%A1_Sporting_Club
+# accessed: 2026-10-25
+# as_of: 2026-06-18
+1|GK|BRA|Richard Costa|
+2|DF|POR|Rafael Ramos|
+4|DF|BRA|Luizão|
+8|MF|BRA|Matheus Araújo|
+10|MF|BRA|Juan Alano|
+11|FW|BRA|Fernandinho|
+12|DF|BRA|Sanchez|
+13|DF|BRA|Luiz Otávio|captain
+17|DF|BRA|Fernando|
+18|DF|BRA|Júlio César|
+19|DF|GHA|Stanley Boateng|
+21|DF|BRA|Alex Silva|
+23|GK|BRA|Jorge Meurer|
+25|MF|BRA|Vinicius Zanocelo|
+26|MF|BRA|Richardson|
+29|MF|BRA|Vina|
+31|MF|BRA|Lucas Lima|
+33|DF|BRA|Éder|
+35|FW|BRA|Giulio|
+40|FW|BRA|Melk|
+41|GK|BRA|Gustavo Martins|
+63|DF|BRA|Pedro Gilmar|
+81|MF|BRA|João Gabriel|
+94|GK|BRA|Bruno Ferreira|
+99|FW|BRA|Lucca|

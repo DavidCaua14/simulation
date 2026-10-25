@@ -1,0 +1,31 @@
+# club: burnley
+# source: https://en.wikipedia.org/wiki/Burnley_F.C.
+# accessed: 2026-10-25
+# as_of: 2026-09-06
+1|GK|GER|Max Weiß|
+2|DF|ENG|Kyle Walker|vice-captain
+3|DF|ENG|Max Alleyne|on loan from Manchester City
+5|MF|JPN|Reo Hatate|
+7|FW|DEN|Jacob Bruun Larsen|
+8|MF|FRA|Ugo Raghouber|
+9|FW|ENG|Jamie Vardy|
+10|FW|CYP|Marcus Edwards|
+11|FW|SUI|Zeki Amdouni|
+12|FW|KAZ|Dastan Satpayev|on loan from Chelsea
+14|DF|WAL|Connor Roberts|
+15|DF|BIH|Anel Ahmedhodžić|
+17|FW|BEN|Andréas Hountondji|
+18|DF|SWE|Hjalmar Ekdal|
+19|FW|BEL|Largie Ramazani|on loan from Leeds United
+21|MF|ENG|Aaron Ramsey|
+22|DF|PER|Oliver Sonne|
+23|DF|BRA|Lucas Pires|
+24|MF|IRL|Josh Cullen|captain
+27|FW|ALB|Armando Broja|
+28|MF|TUN|Hannibal Mejbri|
+29|MF|ENG|Josh Laurent|
+30|FW|ESP|Lluc Castell|
+34|FW|NED|Jaydon Banel|
+37|GK|FRA|Grégoire Coudert|
+44|DF|BRA|Igor Julio|
+48|FW|BEL|Enock Agyei|

@@ -1,5 +1,5 @@
 import { ChevronLeft, Coins, Zap } from 'lucide-react'
-import { FREE_ENERGY, XP_PER_LEVEL, fmt, formatRemaining } from '../utils/seasonUtils'
+import { FREE_ENERGY, XP_PER_LEVEL, fmt, formatRemaining, seasonLabel } from '../utils/seasonUtils'
 
 // Cabeçalho padrão dos modos de jogo (Temporadas, Palpites): voltar discreto, título esportivo e recursos (energia/moedas).
 // A borda de baixo é a barra de XP do nível atual. Sem botão de tema (fica no Perfil).
@@ -16,7 +16,7 @@ export default function SeasonHeader({ title, career, season, remaining, onBack,
 
       <div className="sh-title">
         <small>
-          {kicker ?? (season ? `Temporada ${season.year}` : 'Carreira')}
+          {kicker ?? (season ? `Temporada ${seasonLabel(season.year, season.region)}` : 'Carreira')}
           {!kicker && season?.status === 'active' && season.day_no != null ? ` · dia ${season.day_no}` : ''}
           {career ? <b> · NV {career.level}</b> : null}
         </small>

@@ -1,0 +1,31 @@
+# club: club-brugge
+# source: https://en.wikipedia.org/wiki/Club_Brugge_KV
+# accessed: 2026-10-25
+# as_of: 2026-08-31
+1|GK|SUI|Yann Sommer|
+3|DF|KOR|Lee Han-beom|
+4|DF|ECU|Joel Ordóñez|
+7|FW|GER|Nicolò Tresoldi|
+8|MF|ENG|Freddie Potts|
+9|FW|POR|Carlos Forbs|
+10|MF|NOR|Hugo Vetlesen|
+11|FW|ESP|Jan Virgili|
+16|MF|SUI|Cheveyo Tsawa|
+17|FW|BEL|Romeo Vermant|
+20|MF|BEL|Hans Vanaken|captain
+27|FW|GER|Wisdom Mike|
+29|GK|BEL|Nordin Jackers|
+32|DF|BEL|Matteo Dams|
+41|DF|BEL|Hugo Siquet|
+44|DF|BEL|Brandon Mechele|
+58|DF|BEL|Jorne Spileers|
+62|MF|BEL|Lynnt Audoor|
+64|DF|BEL|Kyriani Sabbe|
+65|DF|BEL|Joaquin Seys|
+67|FW|SEN|Mamadou Diakhon|
+70|MF|ESP|Alejandro Granados|
+77|FW|SUI|Andrej Vasovic|
+80|MF|FRA|Félix Lemaréchal|
+81|GK|BEL|Argus Vanden Driessche|
+85|MF|SVN|Tian Nai Koren|
+86|MF|ITA|Gianluca Okon|

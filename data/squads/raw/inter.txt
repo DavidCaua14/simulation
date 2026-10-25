@@ -1,0 +1,28 @@
+# club: inter
+# source: https://en.wikipedia.org/wiki/2026%E2%80%9327_Inter_Milan_season
+# accessed: 2026-10-25
+# as_of: 2026-09-05
+1|GK|ESP|Josep Martínez|
+12|GK|ITA|Raffaele Di Gennaro|
+49|GK|ITA|Ivan Provedel|
+6|CB/DM|ENG|John Stones|
+25|CB|SUI|Manuel Akanji|
+28|CB/RB|FRA|Benjamin Pavard|
+30|LWB/LB/CB|BRA|Carlos Augusto|
+31|CB/RB|GER|Yann Aurel Bisseck|
+32|LWB/LM/LB|ITA|Federico Dimarco|
+95|CB|ITA|Alessandro Bastoni|
+99|RB/LB|ENG|Djed Spence|
+5|DM/CM/CB|SRB|Aleksandar Stanković|
+7|CM/AM/DM|POL|Piotr Zieliński|
+8|CM/DM|CRO|Petar Sučić|
+11|RW/LW|BRA|Luis Henrique|
+17|CM/RM/AM|FRA|Andy Diouf|
+20|DM/CM/AM|TUR|Hakan Çalhanoğlu|
+21|CM/AM/DM|ENG|Curtis Jones|
+22|CM/AM|ARM|Henrikh Mkhitaryan|
+23|CM|ITA|Nicolò Barella|vice-captain
+9|ST|FRA|Marcus Thuram|
+10|ST|ARG|Lautaro Martínez|captain
+14|ST|CIV|Ange-Yoan Bonny|
+94|ST|ITA|Pio Esposito|

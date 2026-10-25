@@ -1,0 +1,32 @@
+# club: tottenham
+# source: https://en.wikipedia.org/wiki/Tottenham_Hotspur_F.C.
+# accessed: 2026-10-25
+# as_of: unknown
+3|DF|SCO|Andy Robertson|
+4|DF|ENG|Tosin Adarabioyo|
+5|DF|ARG|Marcos Senesi|
+6|DF|NED|Jan Paul van Hecke|
+7|MF|NED|Xavi Simons|
+8|MF|ENG|Conor Gallagher|
+9|FW|BRA|Richarlison|
+10|MF|ENG|James Maddison|
+11|FW|FRA|Mathys Tel|
+13|DF|ITA|Destiny Udogie|
+14|MF|ENG|Archie Gray|
+15|MF|SWE|Lucas Bergvall|
+16|MF|ITA|Sandro Tonali|
+17|FW|BRA|Sávio|
+18|MF|POR|Mateus Fernandes|
+19|FW|ENG|Dominic Solanke|
+20|FW|GHA|Mohammed Kudus|
+21|FW|SWE|Dejan Kulusevski|
+22|FW|EGY|Omar Marmoush|on loan from Manchester City
+23|DF|ESP|Pedro Porro|vice-captain
+27|FW|UKR|Mykhailo Mudryk|on loan from Chelsea
+28|FW|FRA|Wilson Odobert|
+30|MF|URU|Rodrigo Bentancur|
+31|GK|CZE|Antonín Kinský|
+33|DF|WAL|Ben Davies|
+37|DF|NED|Micky van de Ven|captain
+39|GK|SVK|Martin Dúbravka|
+40|GK|USA|Brandon Austin|

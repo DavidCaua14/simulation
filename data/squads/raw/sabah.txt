@@ -1,0 +1,35 @@
+# club: sabah
+# source: https://en.wikipedia.org/wiki/2026%E2%80%9327_Sabah_FC_season
+# accessed: 2026-10-25
+# as_of: 2026-09-19
+1|GK|AZE|Amin Ramazanov|youth
+92|GK|KAZ|Stas Pokatilov|
+94|GK|AZE|Ravan Mirzammadov|youth
+3|DF|GLP|Steve Solvet|
+4|DF|RSA|Aden McCarthy|
+5|DF|AZE|Rahman Dashdamirov|
+17|DF|AZE|Tellur Mutallimov|
+27|DF|POL|Tymoteusz Puchacz|
+33|DF|BRA|Erivaldo Almeida|
+35|DF|NGA|Japhet Dungus|youth
+36|DF|BEL|Godfred Boakye|
+80|DF|ALG|Akim Zedadka|
+6|MF|AZE|Abdulakh Khaybulayev|youth
+7|MF|UZB|Umarali Rakhmonaliev|
+9|MF|AZE|Khayal Aliyev|youth
+10|MF|AZE|Aleksey Isayev|
+11|MF|JAM|Kaheem Parris|
+13|MF|CRO|Ivan Lepinjica|
+16|MF|AZE|Rauf Rustamli|
+20|MF|RWA|Joy-Lance Mickels|
+21|MF|SRB|Veljko Simić|
+22|MF|FRA|Zinédine Ould Khaled|
+23|MF|FRA|Younes Lachaab|on loan from Lille
+34|MF|CUW|Xander Severina|
+37|MF|BRA|Du Queiroz|on loan from Zenit St. Petersburg
+88|MF|POR|Rodrigo Fernandes|
+89|MF|AZE|Cafar Mukhtarov|
+8|FW|NGA|Christian Nwachukwu|
+18|FW|BRA|Carlos Eduardo|on loan from Gil Vicente
+90|FW|NGA|Timilehin Oluwaseun|
+99|FW|GAB|Orphé Mbina|

@@ -1,0 +1,28 @@
+# club: barcelona
+# source: https://en.wikipedia.org/wiki/2026%E2%80%9327_FC_Barcelona_season
+# accessed: 2026-10-25
+# as_of: 2026-08-29
+1|GK|ESP|Joan Garcia|
+13|GK|POL|Wojciech Szczęsny|
+25|GK|CRO|Dominik Livaković|
+2|DF|POR|João Cancelo|
+3|DF|ESP|Alejandro Balde|
+5|DF|ESP|Pau Cubarsí|
+12|DF|ESP|Xavi Espart|
+15|DF|DEN|Andreas Christensen|
+18|DF|ESP|Gerard Martín|
+23|DF|FRA|Jules Koundé|
+24|DF|ESP|Eric García|
+6|MF|ESP|Gavi|
+7|MF|ESP|Fermín López|
+8|MF|ESP|Pedri|vice-captain
+16|MF|ESP|Rodri|
+20|MF|ESP|Dani Olmo|
+21|MF|NED|Frenkie de Jong|
+22|MF|ESP|Marc Bernal|
+-|MF|ESP|Marc Casadó|
+10|FW|ESP|Lamine Yamal|
+11|FW|BRA|Raphinha|captain
+14|FW|GER|Karim Adeyemi|
+17|FW|ENG|Anthony Gordon|
+19|FW|SWE|Roony Bardghji|

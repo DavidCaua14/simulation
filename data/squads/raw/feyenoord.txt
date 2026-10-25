@@ -1,0 +1,34 @@
+# club: feyenoord
+# source: https://en.wikipedia.org/wiki/2026%E2%80%9327_Feyenoord_season
+# accessed: 2026-10-25
+# as_of: 2026-10-10
+1|GK|GER|Tjark Ernst|
+2|DF|NED|Bart Nieuwkoop|
+3|DF|NED|Thomas Beelen|
+4|DF|JPN|Tsuyoshi Watanabe|
+5|DF|NED|Gijs Smal|
+6|DF|NED|Jeremiah St. Juste|
+7|MF|POL|Jakub Moder|
+8|MF|NED|Gjivai Zechiël|
+10|MF|NED|Luciano Valente|captain
+11|FW|POR|Gonçalo Borges|
+14|MF|NED|Sem Steijn|
+15|DF|AUS|Jordan Bos|
+16|DF|ESP|Javi López|on loan from Real Sociedad
+17|FW|ENG|Reiss Nelson|
+19|FW|ESP|Nacho Ferri|
+20|DF|NED|Mats Deijl|
+22|MF|NED|Tobias van den Elshout|
+23|FW|ALG|Anis Hadj Moussa|
+24|MF|NED|Thijs Kraaijeveld|
+26|DF|NED|Givairo Read|
+27|FW|MLI|Gaoussou Diarra|
+28|MF|MAR|Oussama Targhalline|
+32|DF|NED|Tijme Wessels|
+33|GK|GER|Florian Kastenmeier|
+34|MF|BEL|Charles Vanhoutte|
+35|DF|ESP|Mika Mármol|
+36|FW|NED|Jivayno Zinhagel|
+37|GK|NED|Manou Berger|
+39|GK|IRL|Liam Bossin|
+49|FW|NED|Shaqueel van Persie|

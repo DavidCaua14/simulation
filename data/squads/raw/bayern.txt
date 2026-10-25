@@ -1,0 +1,34 @@
+# club: bayern
+# source: https://en.wikipedia.org/wiki/2026%E2%80%9327_FC_Bayern_Munich_season
+# accessed: 2026-10-25
+# as_of: 2026-10-13
+1|GK|GER|Manuel Neuer|captain
+2|DF|FRA|Dayot Upamecano|
+3|DF|KOR|Kim Min-jae|
+4|DF|GER|Jonathan Tah|
+6|MF|GER|Joshua Kimmich|vice-captain
+7|FW|GER|Serge Gnabry|
+8|MF|GER|Tom Bischof|
+9|FW|ENG|Harry Kane|
+10|MF|GER|Jamal Musiala|
+11|DF|GER|Nathaniel Brown|
+14|FW|COL|Luis Díaz|
+17|FW|FRA|Michael Olise|
+19|DF|CAN|Alphonso Davies|
+21|DF|JPN|Hiroki Itō|
+23|DF|FRA|Sacha Boey|
+26|GK|GER|Sven Ulreich|
+27|MF|AUT|Konrad Laimer|
+30|DF|GER|Cassiano Kiala|
+34|MF|MAR|Ismael Saibari|
+35|GK|GER|Jannis Bärtl|
+39|MF|SEN|Bara Sapoko Ndiaye|
+40|GK|GER|Jonas Urbig|
+42|MF|GER|Lennart Karl|
+43|DF|CRO|Filip Pavić|
+44|DF|CRO|Josip Stanišić|
+45|MF|GER|Aleksandar Pavlović|
+46|FW|GER|Tim Binder|
+47|MF|POR|David Santos Daiber|
+48|FW|GER|Bastian Assomo|
+49|FW|BRA|Maycon Cardozo|

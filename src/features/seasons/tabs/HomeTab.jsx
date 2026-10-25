@@ -22,7 +22,7 @@ export default function HomeTab({ ctx, actions }) {
   const free = nextEvent?.kind === 'free' ? nextEvent : null
   const myTable = useMemo(() => hub.competitions.find((c) => c.id === mine?.competition)?.table, [hub.competitions, mine])
   const myPos = myTable?.played ? myTable.pos : null
-  const leaguePlayed = hub.competitions.find((c) => c.id === 'brasileirao')?.table?.played ?? null
+  const leaguePlayed = hub.competitions.find((c) => c.kind === 'league' && c.table)?.table?.played ?? null
 
   const last = history[0]
   const upcoming = finished ? [] : calendar.slice(mine ? 1 : 0, mine ? 4 : 3)
@@ -86,7 +86,7 @@ export default function HomeTab({ ctx, actions }) {
           </h2>
           <ul className="ob-list">
             {hub.objectives.map((o) => {
-              const pr = objectiveProgress(o, o.competition === 'brasileirao' ? leaguePlayed : null)
+              const pr = objectiveProgress(o, o.kind === 'league_pos' ? hub.competitions.find((c) => c.id === o.competition)?.table?.played ?? leaguePlayed : null)
               return (
                 <li key={o.id} className={`ob is-${o.status} t-${pr.tone}`}>
                   <span className="ob-prio" title="Importância">

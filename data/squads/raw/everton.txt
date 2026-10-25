@@ -1,0 +1,28 @@
+# club: everton
+# source: https://en.wikipedia.org/wiki/Everton_F.C.
+# accessed: 2026-10-25
+# as_of: 2026-08-14
+1|GK|ENG|Jordan Pickford|vice-captain
+2|DF|SCO|Nathan Patterson|
+4|DF|ENG|Jarrad Branthwaite|
+5|DF|ENG|Michael Keane|
+6|DF|ENG|James Tarkowski|captain
+8|MF|ENG|Kiernan Dewsbury-Hall|
+9|FW|GNB|Beto|
+10|FW|SEN|Iliman Ndiaye|
+11|FW|FRA|Thierno Barry|
+12|GK|IRL|Mark Travers|
+15|DF|IRL|Jake O'Brien|
+16|DF|UKR|Vitalii Mykolenko|
+19|FW|ENG|Tyrique George|
+20|FW|ENG|Tyler Dibling|
+22|FW|WAL|Brennan Johnson|
+23|MF|DEN|Christian Nørgaard|
+24|MF|ARG|Charly Alcaraz|
+30|MF|ENG|Hayden Hackney|
+31|GK|WAL|Tom King|
+34|MF|GER|Merlin Röhl|
+37|MF|ENG|James Garner|
+39|DF|MAR|Adam Aznou|
+42|MF|ENG|Tim Iroegbunam|
+45|MF|ENG|Harrison Armstrong|

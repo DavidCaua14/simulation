@@ -1,0 +1,32 @@
+# club: lincoln
+# source: https://en.wikipedia.org/wiki/Lincoln_City_F.C.
+# accessed: 2026-10-25
+# as_of: 2026-08-30
+1|GK|ENG|George Wickens|
+2|DF|ZIM|Tendayi Darikwa|captain
+3|DF|ENG|Adam Reach|
+4|DF|ROU|Andrei Coubiș|
+5|DF|ENG|Adam Jackson|
+6|DF|ENG|Ryley Towler|
+7|MF|LCA|Reeco Hackett|
+8|MF|ENG|Tom Bayliss|
+9|FW|IRL|James Collins|
+10|FW|IRL|Mason Melia|on loan from Tottenham Hotspur
+11|FW|DEN|Mikkel Ladefoged|
+14|MF|SCO|Conor McGrandles|
+15|DF|ENG|Sonny Bradley|
+16|MF|WAL|Dom Jefferies|
+17|FW|ENG|Rob Street|
+18|FW|SCO|Ben House|
+19|FW|ENG|Tanto Olaofe|on loan from Charlton Athletic
+20|DF|AUS|Callum Elder|
+21|GK|ENG|Jamie Pardington|
+22|DF|ENG|Tom Hamer|
+23|DF|IRL|Josh Honohan|
+24|MF|UKR|Ivan Varfolomeev|
+25|DF|ENG|Deji Elerewe|
+26|MF|TUR|Yunus Konak|on loan from Brentford
+29|FW|ENG|Ethan Wheatley|on loan from Manchester United
+34|FW|ENG|Freddie Draper|
+39|DF|ENG|Charlie Parks|
+46|GK|AUS|Joe Gauci|on loan from Aston Villa

@@ -163,6 +163,11 @@ begin
       perform public.mgr_advance(false);
     end if;
   end loop;
+  -- não deixa partida pela metade para os próximos testes
+  h := public.mgr_hub();
+  if h ->> 'live_match' is not null then
+    perform public.mgr_match_step((h ->> 'live_match')::bigint, 0, 120, null, true, 0);
+  end if;
 end $$;
 reset role;
 

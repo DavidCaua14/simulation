@@ -1,0 +1,28 @@
+# club: preston
+# source: https://en.wikipedia.org/wiki/Preston_North_End_F.C.
+# accessed: 2026-10-25
+# as_of: 2026-08-29
+1|GK|DEN|Daniel Iversen|
+2|DF|ESP|Pol Valentín|
+3|DF|MNE|Andrija Vukčević|
+4|DF|ENG|Harry Clarke|
+6|DF|SCO|Liam Lindsay|
+7|MF|ENG|Alfie Devine|
+8|MF|NIR|Ali McCann|captain
+9|FW|SWE|Jusef Erabi|on loan from KRC Genk
+10|FW|ENG|Callum Lang|
+11|DF|ENG|Thierry Small|
+12|DF|USA|Caleb Wiley|on loan from Chelsea
+14|DF|ENG|Jordan Storey|
+15|MF|NIR|Jordan Thompson|
+16|DF|WAL|Andrew Hughes|
+17|MF|ENG|Stanley Mills|
+19|DF|ENG|Lewis Gibson|
+20|MF|ENG|Theo Carroll|
+21|GK|ENG|Lee Nicholls|
+23|MF|IRL|Andrew Moran|
+24|DF|ENG|Odel Offiah|
+27|MF|FRA|Léo Leroy|
+30|FW|ENG|George Gryba|
+37|FW|NED|Delano Burgzorg|on loan from Middlesbrough
+44|MF|ENG|Brad Potts|

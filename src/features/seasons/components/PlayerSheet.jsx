@@ -1,6 +1,7 @@
 import { Activity, Ambulance, Ban, Crown, Info, Shirt } from 'lucide-react'
 import Sheet from '../ui/Sheet'
 import { ATTR_GROUPS, POS_NAME, POS_ORDER, condTone, ovrTone } from '../utils/managerUtils'
+import { COMP_SHORT } from '../utils/seasonUtils'
 
 const attrTone = (v) => (v >= 80 ? 'a-elite' : v >= 70 ? 'a-good' : v >= 55 ? 'a-mid' : 'a-low')
 
@@ -51,7 +52,7 @@ export default function PlayerSheet({ player, onClose, clubName }) {
                 </b>
               ) : p.suspended > 0 ? (
                 <b className="bad">
-                  <Ban size={13} /> Suspenso ({Object.entries(p.susp || {}).map(([k, v]) => `${v} jogo${v > 1 ? 's' : ''} · ${k === 'brasileirao' ? 'Brasileirão' : k === 'copa_brasil' ? 'Copa do Brasil' : 'Libertadores'}`).join(' / ')})
+                  <Ban size={13} /> Suspenso ({Object.entries(p.susp || {}).map(([k, v]) => `${v} jogo${v > 1 ? 's' : ''} · ${COMP_SHORT[k] || k}`).join(' / ')})
                 </b>
               ) : (
                 <b className="ok">Disponível</b>
