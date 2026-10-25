@@ -62,7 +62,10 @@ const used = new Set(cards.map((c) => c.image || `${c.id}.webp`))
 const orphan = [...files].filter((f) => !used.has(f))
 if (orphan.length) console.warn(`ℹ imagens em public/cards sem carta no JSON: ${orphan.join(', ')}`)
 
-if (process.exitCode) {
+if (!process.exitCode && rows.length === 0) {
+  await writeFile(SQL_FILE, '-- GERADO por scripts/build-cards.mjs: nenhuma carta manual em supabase/cards/cards.json.\n-- As cartas do jogo são geradas por scripts/build-auto-cards.mjs (03_auto_cards.sql).\n')
+  console.log('✔ nenhuma carta manual (as automáticas ficam em 03_auto_cards.sql)')
+} else if (process.exitCode) {
   console.error('Nada foi gerado. Corrija os erros acima.')
 } else {
   const sql = `-- GERADO por scripts/build-cards.mjs a partir de supabase/cards/cards.json — não edite à mão.

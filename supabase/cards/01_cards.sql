@@ -305,7 +305,8 @@ begin
     'coins', v_coins, 'energy', v_en, 'diamonds', v_dia,
     'card', case when v_card.id is null then null else jsonb_build_object(
         'id', v_card.id, 'name', v_card.name, 'tier', v_card.tier, 'overall', v_card.overall,
-        'position', v_card.position, 'club_id', v_card.club_id, 'image', v_card.image) end,
+        'position', v_card.position, 'club_id', v_card.club_id, 'image', v_card.image,
+        'player_key', v_card.player_key, 'meta', v_card.meta) end,
     'card_new', v_new, 'card_qty', v_qty);
 
   update public.reward_boxes set status = 'opened', opened_at = now(), prize = v_prize where id = v_b.id;

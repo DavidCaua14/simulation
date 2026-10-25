@@ -1,11 +1,1 @@
-[
-  { "id": "arrascaeta-78",       "name": "Arrascaeta",          "tier": "basica",   "overall": 78, "position": "MEI", "club": "flamengo", "player": "arrascaeta" },
-  { "id": "arrascaeta-86",       "name": "Arrascaeta",          "tier": "destaque", "overall": 86, "position": "MEI", "club": "flamengo", "player": "arrascaeta" },
-  { "id": "arrascaeta-92",       "name": "Arrascaeta",          "tier": "lenda",    "overall": 92, "position": "MEI", "club": "flamengo", "player": "arrascaeta" },
-  { "id": "arrascaeta-98",       "name": "Arrascaeta",          "tier": "epica",    "overall": 98, "position": "MEI", "club": "flamengo", "player": "arrascaeta" },
-  { "id": "gabriel-86",          "name": "Gabriel",             "tier": "destaque", "overall": 86, "position": "ATA", "club": "flamengo", "player": "gabriel" },
-  { "id": "juninho-96",          "name": "Juninho Pernambucano","tier": "lenda",    "overall": 96, "position": "MEI", "club": "vasco",    "player": "juninho-pernambucano" },
-  { "id": "ribamar-58",          "name": "Ribamar",             "tier": "basica",   "overall": 58, "club": "vasco",    "player": "ribamar" },
-  { "id": "igor-bahia-51",       "name": "Igor Bahia",          "tier": "basica",   "overall": 51, "player": "igor-bahia" },
-  { "id": "flavio-caca-rato-51", "name": "Flávio Caça-Rato",    "tier": "basica",   "overall": 51, "player": "flavio-caca-rato" }
-]
+[]
