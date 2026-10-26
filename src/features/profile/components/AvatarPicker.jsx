@@ -19,7 +19,7 @@ export default function AvatarPicker({ currentSrc, originalSrc, onChange, onClos
     setError('')
     setBusy(true)
     try {
-      onChange(await fileToAvatar(file))
+      await onChange(await fileToAvatar(file))
     } catch (err) {
       setError(err.message)
     } finally {
@@ -46,7 +46,14 @@ export default function AvatarPicker({ currentSrc, originalSrc, onChange, onClos
                   key={p.id ?? i}
                   type="button"
                   className={`pf-photo ${on ? 'is-on' : ''}`}
-                  onClick={() => onChange(p.src)}
+                  onClick={async () => {
+                    setError('')
+                    try {
+                      await onChange(`preset:${p.id}`)
+                    } catch (err) {
+                      setError(err.message)
+                    }
+                  }}
                   aria-label={p.name ?? `Foto ${i + 1}`}
                   aria-pressed={on}
                 >
@@ -70,7 +77,7 @@ export default function AvatarPicker({ currentSrc, originalSrc, onChange, onClos
           {busy ? 'Enviando...' : 'Enviar da galeria'}
         </button>
         {originalSrc && currentSrc !== originalSrc && (
-          <button type="button" className="pf-btn ghost" onClick={() => onChange(null)}>
+          <button type="button" className="pf-btn ghost" onClick={() => Promise.resolve(onChange(null)).catch((err) => setError(err.message))}>
             Voltar à foto original
           </button>
         )}

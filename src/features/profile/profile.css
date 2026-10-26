@@ -166,3 +166,12 @@
 @media (prefers-reduced-motion: reduce) {
   .pf-sheet, .pf-sheet-backdrop, .pf-eq.is-playing i, .pf-card::before { animation: none; }
 }
+
+/* ---------- som: faixas, efeitos e partida ---------- */
+.pf-tracks { margin-top: 10px; justify-content: center; flex-wrap: wrap; }
+.pf-vol-label { margin: 2px 0 0 46px; font-size: 0.68rem; color: var(--text-secondary); }
+.pf-match-audio { margin-top: 14px; gap: 8px; flex-wrap: wrap; }
+.pf-seg3 { display: inline-flex; padding: 3px; gap: 2px; border-radius: 999px; background: var(--surface-alt); border: 1px solid var(--border); }
+.pf-seg3 button { height: 28px; padding: 0 10px; border: 0; border-radius: 999px; background: transparent; color: var(--text-secondary); font: 800 0.72rem var(--font-body); cursor: pointer; }
+.pf-seg3 button.is-on { background: var(--primary); color: var(--primary-contrast); }
+.pf-match-audio + .pf-visibility { margin-top: 10px; }

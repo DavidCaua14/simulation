@@ -10,7 +10,7 @@ set local client_min_messages = notice;
 -- usuário/carreira de teste
 insert into auth.users (id) values ('7e57c0de-0000-0000-0000-000000000001') on conflict do nothing;
 insert into public.careers (id, user_id, nickname, club_id, country, bonus_energy)
-values ('7e57c0de-0000-0000-0000-0000000000ca', '7e57c0de-0000-0000-0000-000000000001', 'teste', 'palmeiras', 'BRA', 500);
+values ('7e57c0de-0000-0000-0000-0000000000ca', '7e57c0de-0000-0000-0000-000000000001', 'teste', 'palmeiras', 'BR', 500);
 
 -- ---------------------------------------------------------------------
 -- T0. Dados: elencos importados, sem jogador repetido em dois clubes, atributos na faixa

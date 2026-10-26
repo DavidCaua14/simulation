@@ -200,8 +200,8 @@ export function FreeDayHero({ event, calendar, advancing, onAdvance }) {
             </>
           ) : (
             <>
-              <FastForward size={20} fill="currentColor" /> Avançar até o próximo jogo
-              <span className="nm-cost free">sem energia</span>
+              <FastForward size={20} fill="currentColor" /> Próximo jogo
+              <span className="nm-cost free">não gasta energia</span>
             </>
           )}
         </button>

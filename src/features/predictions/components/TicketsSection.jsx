@@ -4,6 +4,8 @@ import { formatMult } from '../data/predictionRules'
 import { formatDateTime, resultLabel, withLiveStatus } from '../utils/matchUtils'
 import { useNow } from '../hooks/useMatches'
 import { Amount, PickStatusIcon } from './PredIcons'
+import { EmptyState, Notice, Skeleton } from '../../../components/ui/feedback'
+import { Ticket as TicketIcon } from 'lucide-react'
 
 const STATUS = {
   pending: { label: 'Em andamento', cls: 'pending' },
@@ -109,12 +111,11 @@ export default function TicketsSection({ onWalletChange }) {
         <button type="button" className={tab === 'done' ? 'is-on' : ''} onClick={() => setTab('done')}>Finalizados</button>
       </div>
       <div className="pred-list">
-        {loading && <p className="pred-empty">Carregando…</p>}
-        {!loading && error && <p className="pred-empty">{error}</p>}
+        {loading && <Skeleton rows={3} />}
+        {!loading && error && <Notice kind="error">{error}</Notice>}
         {!loading && !error && list.length === 0 && (
-          <p className="pred-empty">
-            {tab === 'open' ? 'Você não tem bilhetes em andamento. Escolha seus palpites na aba Jogos.' : 'Nenhum bilhete finalizado ainda.'}
-          </p>
+          <EmptyState icon={TicketIcon} title={tab === 'open' ? 'Nenhum bilhete em jogo' : 'Nenhum bilhete finalizado'}
+            text={tab === 'open' ? 'Escolha seus palpites na aba Jogos e acompanhe aqui.' : 'Quando seus bilhetes forem decididos, o resultado aparece aqui.'} />
         )}
         {list.map((t) => <Ticket key={t.id} t={t} now={now} />)}
       </div>

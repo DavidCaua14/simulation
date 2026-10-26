@@ -8,6 +8,7 @@ import useCatalog from '../hooks/useCatalog'
 import { fetchSquad, stepMatch } from '../services/managerApi'
 import { MAJOR_EVENTS, condTone, eventText, isGoal } from '../utils/managerUtils'
 import { COMP_NAME, describeMatch } from '../utils/seasonUtils'
+import useMatchAudio from '../../audio/useMatchAudio'
 
 const SPEEDS = [
   { id: 1, label: '1x', ms: 700 },
@@ -88,6 +89,9 @@ export default function MatchLive({ initial, myClub, onFinished, notify }) {
     }
     return { sc, pens, shots, sot, yel, red, so }
   }, [visible])
+
+  // som sincronizado com os lances revelados (apitos, gols, cartões, torcida)
+  useMatchAudio({ visible, userSide: side, score: live.sc, minute: shownMinute })
 
   // GOL! (efeito ao revelar)
   useEffect(() => {

@@ -5,17 +5,20 @@ import ClubCrest from '../../club/components/ClubCrest'
 import { getClubById } from '../../club/data/clubs'
 import { tierOf } from '../data/tiers'
 import { discardCard } from '../services/cardsApi'
+import { ConfirmSheet } from '../../../components/ui/feedback'
 
-// Detalhe de uma carta: quantas cópias, e descarte das REPETIDAS (sempre fica 1).
-export default function CardDetail({ entry, tier, onClose, onChanged }) {
+// Detalhe de uma carta: quantas cópias, descarte das REPETIDAS (sempre fica 1) e atalho para vender no mercado.
+export default function CardDetail({ entry, tier, onClose, onChanged, onSell }) {
   const { card, qty } = entry
   const t = tierOf(card.tier)
   const club = card.club_id ? getClubById(card.club_id) : null
   const spare = qty - 1
   const [busy, setBusy] = useState(false)
   const [msg, setMsg] = useState('')
+  const [ask, setAsk] = useState(null) // quantas descartar (aguardando confirmação)
 
   async function discard(n) {
+    setAsk(null)
     setBusy(true)
     setMsg('')
     try {
@@ -70,11 +73,11 @@ export default function CardDetail({ entry, tier, onClose, onChanged }) {
         <div className="cx-actions">
           {spare > 0 ? (
             <>
-              <button type="button" className="bx-btn ghost" disabled={busy} onClick={() => discard(1)}>
+              <button type="button" className="bx-btn ghost" disabled={busy} onClick={() => (t.rank >= 3 ? setAsk(1) : discard(1))}>
                 Descartar 1 repetida · {worth(1)}
               </button>
               {spare > 1 && (
-                <button type="button" className="bx-btn" disabled={busy} onClick={() => discard(spare)}>
+                <button type="button" className="bx-btn" disabled={busy} onClick={() => setAsk(spare)}>
                   Descartar {spare} repetidas · {worth(spare)}
                 </button>
               )}
@@ -82,12 +85,26 @@ export default function CardDetail({ entry, tier, onClose, onChanged }) {
           ) : (
             <p className="cx-hint">Sem repetidas. Quando vier outra igual, você poderá descartar ou vender.</p>
           )}
-          <button type="button" className="bx-btn ghost" disabled>
-            <Store size={14} /> Vender no mercado · em breve
-          </button>
+          {card.tier === 'basica' ? (
+            <p className="cx-hint">Cartas Básicas não entram no mercado.</p>
+          ) : (
+            <button type="button" className="bx-btn ghost" disabled={!onSell || qty < 1} onClick={() => onSell?.(card.id)}>
+              <Store size={14} /> Vender no mercado
+            </button>
+          )}
         </div>
         {msg && <p className="cx-msg">{msg}</p>}
       </div>
+      {ask && (
+        <ConfirmSheet
+          title={ask === 1 ? 'Descartar 1 repetida?' : `Descartar ${ask} repetidas?`}
+          text={<>Você recebe {worth(ask)} e continua com 1 cópia de {card.name}. O descarte não pode ser desfeito.</>}
+          confirmLabel="Descartar"
+          busy={busy}
+          onCancel={() => setAsk(null)}
+          onConfirm={() => discard(ask)}
+        />
+      )}
     </div>
   )
 }

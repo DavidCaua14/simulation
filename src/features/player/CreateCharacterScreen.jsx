@@ -8,6 +8,7 @@ import { PROFILE_PHOTOS, getProfilePhotoById } from './data/profilePhotos'
 import { COUNTRIES, getCountryById } from './data/countries'
 import { MIN_AGE, MAX_AGE, STARTING_LEVEL, XP_PER_LEVEL } from './data/gameConstants'
 import { createPlayer, isNicknameTaken } from './playerService'
+import { fetchStartRules } from '../club/clubService'
 import stageBg from '../home/assets/temporadas.webp'
 import './create-character.css'
 
@@ -22,6 +23,17 @@ export default function CreateCharacterScreen({ userId, onCreated }) {
   const [submitting, setSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState('')
   const [created, setCreated] = useState(null)
+  // regra de início de cada nacionalidade (null = ainda carregando / sem acesso: mostra a lista local)
+  const [startRules, setStartRules] = useState(null)
+  useEffect(() => {
+    let alive = true
+    fetchStartRules().then((r) => alive && setStartRules(r))
+    return () => {
+      alive = false
+    }
+  }, [])
+  // só oferece nacionalidades que têm regra de início configurada no banco
+  const countries = startRules ? COUNTRIES.filter((c) => startRules[c.id]) : COUNTRIES
 
   // 'idle' | 'checking' | 'available' | 'taken'
   const [nicknameStatus, setNicknameStatus] = useState('idle')
@@ -250,7 +262,7 @@ export default function CreateCharacterScreen({ userId, onCreated }) {
                     <NationalityIcon size={13} /> Nacionalidade
                   </span>
                   <div className="ca-seg" role="radiogroup" aria-labelledby="country-label">
-                    {COUNTRIES.map((c) => (
+                    {countries.map((c) => (
                       <button
                         type="button"
                         key={c.id}
@@ -266,6 +278,9 @@ export default function CreateCharacterScreen({ userId, onCreated }) {
                       </button>
                     ))}
                   </div>
+                  {startRules?.[country] && (
+                    <p className="ca-msg ca-start-hint">{startRules[country].summary}</p>
+                  )}
                 </div>
               </div>
               {ageError && (

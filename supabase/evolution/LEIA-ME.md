@@ -17,7 +17,17 @@ supabase/cards/01..04
 supabase/manager/06_cards_coach.sql
 supabase/evolution/03_engine.sql            <- motor de competições configurável
 supabase/evolution/04_manager.sql           <- carreira do treinador no motor configurável
-supabase/evolution/05+ ...                  <- próximas etapas
+supabase/evolution/05_career_start.sql      <- clube inicial pela nacionalidade + perfis de dificuldade
+supabase/evolution/06_economy_shop.sql      <- livro de transações, idempotência e loja de cartas
+supabase/evolution/07_shop_price_range.sql  <- preço pela faixa de notas (converte bancos com a 06 antiga; num banco novo não muda nada)
+supabase/evolution/08_wheel.sql             <- roleta de cartas por diamantes
+supabase/evolution/09_market.sql            <- mercado entre jogadores
+supabase/evolution/10_energy_packs.sql      <- pacotes de energia (diamantes → energia bônus, com limite)
+supabase/evolution/11_profile.sql           <- perfil no servidor, carta em destaque, insígnias e cosméticos
+supabase/evolution/12_friends.sql           <- amigos e convites (com tempo real)
+supabase/evolution/13_events.sql            <- eventos recorrentes, sequência diária e painel de administração
+supabase/evolution/14_security.sql          <- origem de toda movimentação, funções internas fora da API, limites de requisição
+supabase/evolution/15+ ...                  <- próximas etapas
 ```
 
 Banco que já estava no ar: rode só `evolution/01`, `evolution/02`, `manager/02_players_seed.sql` (gerado de novo) e
@@ -38,15 +48,65 @@ Edite `data/competitions/competitions.json` (fases, mando, prorrogação, pênal
 objetivos, rodadas do calendário) e rode `node scripts/build-competitions.mjs`. Acesso e rebaixamento por ano ficam em
 `promotion` (tabela `sim_promotion_rules`, com `from_year`/`to_year`). O motor lê a configuração; não há regra fixa no código.
 
+## Clube inicial por nacionalidade
+
+Tabela `sim_start_rules` (uma linha por nacionalidade, mesmo código de `careers.country`) e `sim_difficulty_profiles`.
+Nova nacionalidade = inserir uma linha em `sim_start_rules` + a bandeira em `src/features/player/components/flags.jsx` e
+`src/features/player/data/countries.js`. A tela de criação só mostra nacionalidades que têm regra ativa no banco, e o
+banco recusa (`careers_country_fkey`) carreira com nacionalidade sem regra.
+
 ## Testes
 
 ```
 psql -v ON_ERROR_STOP=1 -f supabase/evolution/tests/competitions_tests.sql
 psql -v ON_ERROR_STOP=1 -f supabase/manager/tests/manager_tests.sql
+psql -v ON_ERROR_STOP=1 -f supabase/evolution/tests/career_start_tests.sql
+psql -v ON_ERROR_STOP=1 -f supabase/evolution/tests/economy_shop_tests.sql
+psql -v ON_ERROR_STOP=1 -f supabase/evolution/tests/wheel_tests.sql
+psql -v ON_ERROR_STOP=1 -f supabase/evolution/tests/market_tests.sql
+psql -v ON_ERROR_STOP=1 -f supabase/evolution/tests/energy_tests.sql
+psql -v ON_ERROR_STOP=1 -f supabase/evolution/tests/profile_tests.sql
+psql -v ON_ERROR_STOP=1 -f supabase/evolution/tests/friends_tests.sql
+psql -v ON_ERROR_STOP=1 -f supabase/evolution/tests/events_tests.sql
+psql -v ON_ERROR_STOP=1 -f supabase/evolution/tests/security_tests.sql
+PSQL="psql ..." bash supabase/evolution/tests/market_concurrency.sh      # compradores simultâneos e compras cruzadas
+PSQL="psql ..." bash supabase/evolution/tests/economy_concurrency.sh     # duas conexões ao mesmo tempo
+PSQL="psql ..." bash supabase/evolution/tests/events_concurrency.sh      # resgates de evento/sequência simultâneos
 ```
+
+## Economia e loja
+
+* Saldos continuam em `careers` (coins, diamonds, energy, bonus_energy). Toda alteração vira uma linha em `wallet_ledger`
+  (gatilho), com motivo e referência quando a função informa (`econ_apply` / `econ_tag`).
+* Compras novas: `econ_apply(carreira, moeda, delta, motivo, ref)` (recusa saldo insuficiente) + `econ_request_get/save`
+  (idempotência por `request_id`).
+* Loja: `shop_sections` (raridades à venda, cartas por vitrine, rodízio em horas UTC, limite por usuário) e
+  `shop_prices` (por raridade e moeda: `base` = carta mais fraca da raridade, `top` = mais forte). Ajuste com UPDATE, sem código.
+* Roleta: `wheel_config` (custo, garantia) e `wheel_segments` (fatias: raridade, faixa de nota, chance em %). Mude as chances
+  numa transação só (`begin; update ...; update ...; commit;`): o banco confere no COMMIT que as fatias ativas somam 100%.
+* Perfil: `cosmetics` (catálogo visual; `price_diamonds = 0` = grátis para todos) e `badges` (regras: `kind` + `threshold`,
+  calculadas em `badge_metric`). Nova insígnia de um tipo existente = uma linha em `badges`.
+* Mercado: `market_config` (taxa %, validade em horas, máximo de anúncios por jogador, liga/desliga) e
+  `market_price_limits` (preço mínimo/máximo por raridade; raridade fora da tabela não pode ser vendida).
 
 ## Desfazer
 
 `evolution/99_rollback.sql` remove as tabelas novas e as competições novas (as temporadas antigas continuam).
 As funções voltam ao comportamento anterior rodando de novo `supabase/seasons/03_engine.sql`, `04_features.sql`
 e `supabase/manager/03_engine.sql`, `04_career.sql`.
+
+## Eventos (evolução 13)
+
+* Evento = linhas em `events` + `event_objectives` + `event_rewards`. Criar/editar pelo painel **Eventos → Admin** (só quem
+  está em `admins`). Para dar acesso: `insert into public.admins (user_id) values ('<id do usuário em auth.users>');`
+* Tipos de objetivo possíveis: tabela `event_objective_kinds` (cada um com os filtros aceitos). Tipo novo exige gatilho
+  novo no banco — o painel não aceita código livre.
+* Detalhes, regras de período/fuso e limitações: `docs/EVOLUCAO_12_EVENTOS.md`.
+
+## Segurança (evolução 14)
+
+* Funções novas nascem SEM permissão para `anon`/PUBLIC e tabelas novas sem escrita para `anon`/`authenticated`
+  (privilégios padrão). Toda migração deve terminar com `grant execute ... to authenticated` só no que o app chama.
+* Limites por usuário: tabela `rate_limit_rules` (ajuste `max_hits`/`window_seconds` sem mexer em código).
+* Função antiga nova que mexa na carteira sem `econ_apply`/`econ_tag`: registre-a em `econ_reason_map` para o extrato
+  mostrar a origem. Detalhes: `docs/EVOLUCAO_13_SEGURANCA.md`.

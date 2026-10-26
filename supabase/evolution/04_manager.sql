@@ -48,8 +48,10 @@ declare
   v_rank int;
   c      record;
   v_band jsonb;
+  v_shift int;
 begin
   select strength into v_str from public.sim_clubs where id = p_club;
+  v_shift := (public.mgr_difficulty(p_career)).objective_shift;   -- perfil de dificuldade (evolução 05): meta da liga mais folgada
   for c in
     select comp.* from public.season_participants sp join public.sim_competitions comp on comp.id = sp.competition_id
      where sp.season_id = p_season and sp.club_id = p_club order by comp.sort_order
@@ -61,7 +63,11 @@ begin
        where (b ->> 'rank_max')::int >= v_rank order by (b ->> 'rank_max')::int limit 1;
       continue when v_band is null;
       insert into public.mgr_objectives (career_id, season_id, spell_id, club_id, competition_id, kind, target, label, priority)
-      values (p_career, p_season, p_spell, p_club, c.id, 'league_pos', (v_band ->> 'target')::int, v_band ->> 'label',
+      values (p_career, p_season, p_spell, p_club, c.id, 'league_pos',
+              least((v_band ->> 'target')::int + v_shift,
+                    (select count(*) from public.season_participants sp3 where sp3.season_id = p_season and sp3.competition_id = c.id)::int),
+              case when v_shift > 0 and (v_band ->> 'target')::int + v_shift < (select count(*) from public.season_participants sp3 where sp3.season_id = p_season and sp3.competition_id = c.id)
+                   then format('Terminar até o %sº lugar (meta do início acessível)', (v_band ->> 'target')::int + v_shift) else v_band ->> 'label' end,
               coalesce((v_band ->> 'priority')::int, 3))
       on conflict do nothing;
     elsif public.sim_club_alive(p_season, c.id, p_club) then
@@ -632,6 +638,7 @@ declare
   v_m     public.mgr_matches;
   v_s     public.career_seasons;
   v_c     public.mgr_coach;
+  v_dp    record;   -- perfil de dificuldade em vigor (evolução 05: public.mgr_difficulty)
   v_comp  public.sim_competitions;
   v_side  char;
   v_my    int;
@@ -719,6 +726,12 @@ begin
 
   v_dr := 1.0 * (v_as - v_es) + case when v_res = 'win' then 0.12 else 0 end + case when v_res = 'win' and v_d < -5 then 0.3 else 0 end;
 
+  -- perfil de dificuldade (evolução 05): só suaviza QUEDAS de confiança/humor e acelera a reputação; o placar não muda
+  v_dp := public.mgr_difficulty(v_c.career_id);
+  if v_db < 0 then v_db := v_db * v_dp.board_loss_mult; end if;
+  if v_df < 0 then v_df := v_df * v_dp.fan_loss_mult; end if;
+  if v_dr > 0 then v_dr := v_dr * v_dp.rep_gain_mult; end if;
+
   update public.mgr_coach
      set board_confidence = round(greatest(0, least(100, board_confidence + v_db + (55 - board_confidence) * 0.02)), 2),
          fan_mood = round(greatest(0, least(100, fan_mood + v_df + (55 - fan_mood) * 0.04)), 2),
@@ -787,7 +800,7 @@ begin
 
   -- DEMISSÃO: desempenho muito ruim ou pressão da torcida (depois de pelo menos 6 jogos no clube)
   if (select matches from public.mgr_spells where id = v_c.spell_id) >= 6 then
-    if v_c.board_confidence <= 12 then v_fire := 'resultados muito abaixo do esperado';
+    if v_c.board_confidence <= v_dp.fire_threshold then v_fire := 'resultados muito abaixo do esperado';
     elsif v_c.board_confidence <= 25 and v_c.fan_mood <= 15 then v_fire := 'pressão da torcida';
     end if;
   end if;
@@ -853,6 +866,7 @@ declare
   v_fail  int := 0;
   v_major boolean := false;
   v_db    numeric := 0;
+  v_dp    record;   -- perfil de dificuldade em vigor (evolução 05: public.mgr_difficulty)
   v_dr    numeric := 0;
   v_n     int;
   v_i     int;
@@ -905,13 +919,15 @@ begin
   -- acesso, rebaixamento e vagas continentais da próxima temporada (aplicado uma única vez)
   v_sum := v_sum || jsonb_build_object('transition', public.sim_season_transition(p_season));
   update public.career_seasons set status = 'finished', finished_at = now(), summary = v_sum where id = p_season;
+  v_dp := public.mgr_difficulty(v_s.career_id);   -- lido ANTES de contar a temporada (o perfil vale até o fim dela)
+  if v_db < 0 then v_db := v_db * v_dp.board_loss_mult; end if;
   update public.mgr_coach set seasons = seasons + 1,
          board_confidence = round(greatest(0, least(100, board_confidence + v_db)), 2),
          reputation = round(greatest(0, least(100, reputation + v_dr)), 2)
    where career_id = v_s.career_id returning * into v_c;
 
   if v_c.status = 'employed' then
-    if v_major and v_c.board_confidence < 35 then
+    if v_major and v_c.board_confidence < v_dp.season_fire_threshold then
       perform public.mgr_fire(v_s.career_id, 'objetivo da temporada não cumprido');
     else
       perform public.mgr_msg(v_s.career_id, p_season, v_s.day_no, 'board', 'Balanço da temporada ' || v_s.year,

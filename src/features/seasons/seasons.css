@@ -85,7 +85,7 @@
 .sh-title small b { color: var(--gx-gold-hi); font-weight: 800; }
 .sh-title h1 {
   margin: 0;
-  font: 800 1.45rem/1 var(--font-display);
+  font: 800 1.45rem/1.12 var(--font-display); /* altura de linha > 1: acentos em maiúsculas (INÍCIO) não são cortados */
   letter-spacing: 0.04em;
   text-transform: uppercase;
   white-space: nowrap;
@@ -585,7 +585,8 @@ button.mr:active { transform: scale(0.99); }
 .ce.is-dim { filter: grayscale(0.85) brightness(0.75); }
 
 /* ---------- Torneios ---------- */
-.ct-picker { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.ct-picker { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(max-content, 1fr); gap: 6px; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; } /* todos os campeonatos numa linha (desliza se não couber) */
+.ct-picker::-webkit-scrollbar { display: none; }
 .ct-picker button {
   display: flex;
   flex-direction: column;
@@ -871,3 +872,5 @@ button.mr:active { transform: scale(0.99); }
 @media (prefers-reduced-motion: reduce) {
   .sn-scroll, .nm-lights, .nm-crest, .nm-play.is-ready, .st-sk, .sn-levelup, .sn-boxwin, .pm-live::before, .sn-board-score b, .sn-banner, .sn-rewards span { animation: none !important; }
 }
+
+.ct-picker button { padding-left: 10px; padding-right: 10px; white-space: nowrap; } /* nome do campeonato nunca cortado */

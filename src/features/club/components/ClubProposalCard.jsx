@@ -1,8 +1,9 @@
-import { Check, Coins } from 'lucide-react'
+import { Check, Coins, Sparkles } from 'lucide-react'
 import ClubCrest from './ClubCrest'
 import { getClubById } from '../data/clubs'
 
-const LEAGUE = { serie_a: 'Série A', br_other: 'Brasil', foreign: 'Exterior' }
+// rótulo da liga quando a proposta não traz o da regra de início (propostas antigas)
+const LEAGUE = { serie_a: 'Série A', serie_b: 'Série B', premier_league: 'Premier League', championship: 'Championship', br_other: 'Brasil', foreign: 'Exterior' }
 
 // Proposta inicial = "contrato": faixa com as cores do clube, escudo grande, o que prometem
 // e as luvas de assinatura (moedas que entram ao assinar).
@@ -24,7 +25,7 @@ export default function ClubProposalCard({ offer, selected, onSelect, style }) {
           <ClubCrest clubId={offer.club_id} size={50} />
         </span>
         <span className="of-card-id">
-          <small>{LEAGUE[club?.tier] || 'Proposta'}</small>
+          <small>{offer.option_label || LEAGUE[club?.tier] || 'Proposta'}</small>
           <strong>{club?.name}</strong>
         </span>
         <span className="of-card-pick" aria-hidden="true">
@@ -33,6 +34,12 @@ export default function ClubProposalCard({ offer, selected, onSelect, style }) {
       </span>
       <span className="of-card-pitch">“{offer.pitch}”
       </span>
+      {offer.difficulty && offer.difficulty !== 'standard' && (
+        <span className="of-card-diff" title={offer.difficulty_text}>
+          <Sparkles size={14} /> <strong>{offer.difficulty_label}</strong>
+          <small>{offer.difficulty_text}</small>
+        </span>
+      )}
       <span className="of-card-foot">
         <span className="of-card-bonus">
           <Coins size={14} /> +{Number(offer.bonus_coins).toLocaleString('pt-BR')}

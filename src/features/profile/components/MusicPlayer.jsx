@@ -52,6 +52,14 @@ export default function MusicPlayer() {
               <NextIcon size={18} />
             </button>
           </div>
+
+          <div className="pf-chips pf-tracks" role="listbox" aria-label="Escolher faixa">
+            {a.tracks.map((t, i) => (
+              <button key={t.url} type="button" role="option" aria-selected={i === a.index} className={i === a.index ? 'is-on' : ''} onClick={() => a.selectTrack(i)}>
+                {t.title}
+              </button>
+            ))}
+          </div>
         </>
       )}
 
@@ -71,6 +79,42 @@ export default function MusicPlayer() {
         />
         <output className="pf-vol-value">{shown}%</output>
       </div>
+      <p className="pf-vol-label">Música</p>
+
+      <div className="pf-volume">
+        <button type="button" className="pf-icon-btn" onClick={() => a.playSfx('reward')} aria-label="Testar efeitos sonoros" title="Testar efeitos">
+          <VolumeLowIcon size={18} />
+        </button>
+        <input
+          type="range"
+          min="0"
+          max="100"
+          step="1"
+          value={a.muted ? 0 : a.sfxVolume}
+          style={{ '--fill': `${a.muted ? 0 : a.sfxVolume}%` }}
+          onChange={(e) => a.setSfxVolume(Number(e.target.value))}
+          onPointerUp={() => a.playSfx('click')}
+          aria-label="Volume dos efeitos sonoros"
+          disabled={a.muted}
+        />
+        <output className="pf-vol-value">{a.muted ? 0 : a.sfxVolume}%</output>
+      </div>
+      <p className="pf-vol-label">Efeitos (cliques, compras, recompensas, partida){a.muted ? ' · jogo silenciado' : ''}</p>
+
+      <div className="pf-row pf-match-audio">
+        <span>Música durante a partida</span>
+        <div className="pf-seg3" role="radiogroup" aria-label="Música durante a partida">
+          {[['pause', 'Pausar'], ['duck', 'Abaixar'], ['keep', 'Manter']].map(([id, label]) => (
+            <button key={id} type="button" role="radio" aria-checked={a.matchMusic === id} className={a.matchMusic === id ? 'is-on' : ''} onClick={() => a.setMatchMusic(id)}>
+              {label}
+            </button>
+          ))}
+        </div>
+      </div>
+      <button type="button" role="switch" aria-checked={a.ambience} className={`pf-visibility ${a.ambience ? 'is-on' : ''}`} onClick={() => a.setAmbience(!a.ambience)}>
+        <span><strong>Torcida e estádio nas partidas</strong>Ambientação, apitos, gols e cartões sincronizados com os lances.</span>
+        <i className="pf-switch" aria-hidden="true" />
+      </button>
     </section>
   )
 }

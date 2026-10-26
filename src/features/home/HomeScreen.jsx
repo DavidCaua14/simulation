@@ -11,6 +11,8 @@ import MatchdayHero from './components/MatchdayHero'
 import PlayModeCard from './components/PlayModeCard'
 import CardsHub from './components/CardsHub'
 import QuickTile from './components/QuickTile'
+import useEventsBadge from '../events/useEventsBadge'
+import EventsStrip from '../events/EventsStrip'
 import BottomTabBar from './components/BottomTabBar'
 import useCollectionSummary from './hooks/useCollectionSummary'
 import { GAME_MODES } from './data/gameModes'
@@ -18,7 +20,7 @@ import './home.css'
 import '../cards/cards.css'
 
 const modeById = (id) => GAME_MODES.find((m) => m.id === id)
-const QUICK = ['ranking', 'events', 'messages', 'invites']
+const QUICK = ['ranking', 'events', 'messages', 'friends']
 
 // Tela inicial, em ordem de importância:
 //   1. topo (HUD): atleta, nível/XP e moedas/energia/diamantes
@@ -37,6 +39,7 @@ export default function HomeScreen({ career, onNavigate }) {
   // Ao chegar na Home o banco entrega as caixas de boas-vindas (1ª vez) e as diárias (1x por dia).
   const inbox = useInbox({ claim: true })
   const collection = useCollectionSummary()
+  const events = useEventsBadge() // recompensas de evento/sequência prontas + evento especial em destaque
 
   const seasons = modeById('seasons')
   const tips = modeById('tips')
@@ -50,6 +53,8 @@ export default function HomeScreen({ career, onNavigate }) {
           <MatchdayHero club={club} player={player} onPlay={() => !seasons?.locked && onNavigate?.('seasons')} />
 
           <RankingTicker me={player.nickname} onOpen={() => onNavigate?.('tips')} />
+
+          <EventsStrip count={events.count} feature={events.feature} onOpen={() => onNavigate?.('events')} />
 
           <section className="hm-section">
             <h2 className="gx-title">Modos de jogo</h2>
@@ -70,7 +75,7 @@ export default function HomeScreen({ career, onNavigate }) {
             <h2 className="gx-title">Mais</h2>
             <div className="hm-quick-grid">
               {QUICK.map((id) => modeById(id)).filter(Boolean).map((m) => (
-                <QuickTile key={m.id} mode={m} onSelect={onNavigate} />
+                <QuickTile key={m.id} mode={m} onSelect={onNavigate} badge={m.id === 'events' ? events.count : 0} />
               ))}
             </div>
           </section>

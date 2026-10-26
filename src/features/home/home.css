@@ -341,3 +341,23 @@
 @media (prefers-reduced-motion: reduce) {
   .hm-hero, .hm-rank-inner, .hm-inbox-glow, .hm-inbox-pack img { animation: none !important; }
 }
+
+/* indicador discreto na Home */
+.hm-quick { position: relative; }
+.hm-quick-dot { position: absolute; top: 6px; right: 10px; min-width: 16px; height: 16px; padding: 0 4px; border-radius: 999px; background: var(--danger); color: #fff; font: 900 0.6rem var(--font-body); display: grid; place-items: center; }
+
+/* faixa de eventos (Etapa 14): recompensa pronta ou evento especial */
+.hm-events {
+  position: relative; overflow: hidden; width: 100%; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 12px;
+  padding: 12px 14px; border-radius: var(--gx-radius); border: 1px solid rgba(255, 255, 255, 0.14); color: #fff; text-align: left; cursor: pointer;
+  background-size: cover; box-shadow: var(--gx-shadow); animation: gx-rise 0.3s ease-out both;
+}
+.hm-events::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: repeating-linear-gradient(115deg, rgba(255, 255, 255, 0.05) 0 2px, transparent 2px 14px); }
+.hm-events > * { position: relative; z-index: 1; }
+.hm-events.is-ready { border-color: var(--gx-gold); box-shadow: 0 0 0 1px var(--gx-gold), 0 10px 26px -10px color-mix(in srgb, var(--gx-gold) 70%, transparent); }
+.hm-events-icon { width: 44px; height: 50px; display: grid; place-items: center; color: #2b1a00; background: linear-gradient(180deg, var(--gx-gold-hi), var(--gx-gold)); clip-path: polygon(50% 0, 100% 14%, 100% 58%, 50% 100%, 0 58%, 0 14%); }
+.hm-events-main { min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.hm-events-main small { font: 800 0.6rem var(--font-body); letter-spacing: 0.12em; text-transform: uppercase; opacity: 0.85; }
+.hm-events-main strong { font: 900 1.05rem/1.1 var(--font-display); letter-spacing: 0.03em; text-transform: uppercase; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.hm-events-main em { font: 700 0.72rem var(--font-body); font-style: normal; opacity: 0.9; }
+@media (prefers-reduced-motion: reduce) { .hm-events { animation: none; } }

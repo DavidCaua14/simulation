@@ -11,12 +11,16 @@ import PredictionsScreen from './features/predictions/PredictionsScreen'
 import SeasonsScreen from './features/seasons/SeasonsScreen'
 import CardsScreen from './features/cards/CardsScreen'
 import ProfileScreen from './features/profile/ProfileScreen'
-import { AudioProvider } from './features/audio/AudioContext'
+import StoreScreen from './features/store/StoreScreen'
+import FriendsScreen from './features/friends/FriendsScreen'
+import EventsScreen from './features/events/EventsScreen'
+import { AudioProvider, useAudio } from './features/audio/AudioContext'
 import { getActiveCareer } from './features/player/playerService'
 import './styles/theme.css'
 
 function Gate() {
   const { status, user } = useAuth()
+  const { playSfx } = useAudio()
   const [career, setCareer] = useState(null)
   const [checkingCareer, setCheckingCareer] = useState(true)
   // Navegação simples entre as telas do jogo depois do onboarding.
@@ -70,9 +74,10 @@ function Gate() {
 
   // Só estas telas estão construídas; os demais ids da barra/menu ainda não fazem nada.
   const navigate = (id, params = null) => {
-    if (id === 'home' || id === 'tips' || id === 'profile' || id === 'seasons' || id === 'cards') {
+    if (id === 'home' || id === 'tips' || id === 'profile' || id === 'seasons' || id === 'cards' || id === 'store' || id === 'friends' || id === 'events') {
       setScreenParams(params)
       setScreen(id)
+      if (id !== 'home') playSfx('open') // abrir telas relevantes (som curto e discreto)
     }
   }
 
@@ -91,7 +96,19 @@ function Gate() {
   }
 
   if (screen === 'cards') {
-    return <CardsScreen career={career} params={screenParams} onBack={backHome} />
+    return <CardsScreen career={career} params={screenParams} onBack={backHome} onNavigate={navigate} />
+  }
+
+  if (screen === 'friends') {
+    return <FriendsScreen onBack={backHome} />
+  }
+
+  if (screen === 'events') {
+    return <EventsScreen career={career} onBack={backHome} onNavigate={navigate} />
+  }
+
+  if (screen === 'store') {
+    return <StoreScreen key={JSON.stringify(screenParams)} career={career} params={screenParams} onBack={backHome} onNavigate={navigate} />
   }
 
   if (screen === 'profile') {
