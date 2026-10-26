@@ -353,3 +353,19 @@ button.mk-row:active { transform: scale(0.99); }
 .vs-btn.is-short { color: var(--text-secondary); }
 .vs-sheet .ph { width: 100%; border-radius: 14px; }
 .vs-meta { margin: 0; font-size: 0.74rem; color: var(--text-secondary); text-align: center; }
+
+/* Extrato (evolução 14) */
+.wh-open { cursor: pointer; font-size: 0.76rem; }
+.wh-sheet { align-items: stretch; }
+.wh-sheet h3 { display: flex; align-items: center; justify-content: center; gap: 6px; }
+.wh-sheet > .cx-hint { text-align: center; }
+.wh-list { list-style: none; margin: 6px 0 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.wh-list li { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 12px; background: var(--surface-alt); border: 1px solid var(--border); }
+.wh-ic { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; background: var(--surface); }
+.wh-ic.coins { color: var(--gold); } .wh-ic.gems { color: #38bdf8; } .wh-ic.energy { color: var(--primary); }
+.wh-main { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.wh-main strong { font: 800 0.84rem var(--font-heading); }
+.wh-main small, .wh-amt small { font-size: 0.68rem; color: var(--text-secondary); overflow: hidden; text-overflow: ellipsis; }
+.wh-amt { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; white-space: nowrap; }
+.wh-amt b { font: 900 0.9rem var(--font-body); font-variant-numeric: tabular-nums; }
+.wh-amt b.is-in { color: var(--gx-green); } .wh-amt b.is-out { color: var(--danger); }

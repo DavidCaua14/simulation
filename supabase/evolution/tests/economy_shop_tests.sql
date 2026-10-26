@@ -36,8 +36,8 @@ begin
     'E1: saldo insuficiente alterou algo';
   -- alteração feita por função antiga (sem motivo) também entra no livro
   update public.careers set bonus_energy = bonus_energy + 3 where id = v_car;
-  assert exists (select 1 from public.wallet_ledger where career_id = v_car and currency = 'bonus_energy' and delta = 3 and reason = 'other'),
-    'E1: alteração de saldo fora das funções novas não entrou no livro';
+  assert exists (select 1 from public.wallet_ledger where career_id = v_car and currency = 'bonus_energy' and delta = 3 and reason in ('other', 'manual_adjustment')),  -- evolução 14: SQL avulso = manual_adjustment
+    'E1: alteração de saldo fora das funções novas não entrou no livro: ' || (select string_agg(reason, ',') from public.wallet_ledger where career_id = v_car and currency = 'bonus_energy');
   -- o livro sempre fecha com o saldo atual
   assert (select bool_and(l.balance_after = (to_jsonb(c) ->> l.currency)::int)
             from public.careers c cross join lateral (

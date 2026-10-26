@@ -26,7 +26,8 @@ supabase/evolution/10_energy_packs.sql      <- pacotes de energia (diamantes →
 supabase/evolution/11_profile.sql           <- perfil no servidor, carta em destaque, insígnias e cosméticos
 supabase/evolution/12_friends.sql           <- amigos e convites (com tempo real)
 supabase/evolution/13_events.sql            <- eventos recorrentes, sequência diária e painel de administração
-supabase/evolution/14+ ...                  <- próximas etapas
+supabase/evolution/14_security.sql          <- origem de toda movimentação, funções internas fora da API, limites de requisição
+supabase/evolution/15+ ...                  <- próximas etapas
 ```
 
 Banco que já estava no ar: rode só `evolution/01`, `evolution/02`, `manager/02_players_seed.sql` (gerado de novo) e
@@ -67,6 +68,7 @@ psql -v ON_ERROR_STOP=1 -f supabase/evolution/tests/energy_tests.sql
 psql -v ON_ERROR_STOP=1 -f supabase/evolution/tests/profile_tests.sql
 psql -v ON_ERROR_STOP=1 -f supabase/evolution/tests/friends_tests.sql
 psql -v ON_ERROR_STOP=1 -f supabase/evolution/tests/events_tests.sql
+psql -v ON_ERROR_STOP=1 -f supabase/evolution/tests/security_tests.sql
 PSQL="psql ..." bash supabase/evolution/tests/market_concurrency.sh      # compradores simultâneos e compras cruzadas
 PSQL="psql ..." bash supabase/evolution/tests/economy_concurrency.sh     # duas conexões ao mesmo tempo
 PSQL="psql ..." bash supabase/evolution/tests/events_concurrency.sh      # resgates de evento/sequência simultâneos
@@ -100,3 +102,11 @@ e `supabase/manager/03_engine.sql`, `04_career.sql`.
 * Tipos de objetivo possíveis: tabela `event_objective_kinds` (cada um com os filtros aceitos). Tipo novo exige gatilho
   novo no banco — o painel não aceita código livre.
 * Detalhes, regras de período/fuso e limitações: `docs/EVOLUCAO_12_EVENTOS.md`.
+
+## Segurança (evolução 14)
+
+* Funções novas nascem SEM permissão para `anon`/PUBLIC e tabelas novas sem escrita para `anon`/`authenticated`
+  (privilégios padrão). Toda migração deve terminar com `grant execute ... to authenticated` só no que o app chama.
+* Limites por usuário: tabela `rate_limit_rules` (ajuste `max_hits`/`window_seconds` sem mexer em código).
+* Função antiga nova que mexa na carteira sem `econ_apply`/`econ_tag`: registre-a em `econ_reason_map` para o extrato
+  mostrar a origem. Detalhes: `docs/EVOLUCAO_13_SEGURANCA.md`.

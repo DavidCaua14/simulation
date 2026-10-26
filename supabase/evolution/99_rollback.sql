@@ -1,9 +1,22 @@
 -- =====================================================================
--- DESFAZ a evolução 01–13 (competições, clube inicial, livro de transações, loja, roleta, mercado, energia, perfil, amigos e eventos). Use só se precisar voltar atrás.
+-- DESFAZ a evolução 01–14 (competições, clube inicial, livro de transações, loja, roleta, mercado, energia, perfil, amigos, eventos e segurança).
+-- A evolução 14 só RESTRINGE permissões; desfazê-la não devolve os acessos amplos antigos (reaplique-os à mão se precisar). Use só se precisar voltar atrás.
 -- Depois de rodar, reaplique supabase/seasons/03_engine.sql, 04_features.sql (get_initial_offers antiga), supabase/manager/03_engine.sql e 04_career.sql
 -- para restaurar as funções antigas. Temporadas criadas na Inglaterra ou com Série B são apagadas (não existem no modelo antigo).
 -- =====================================================================
 begin;
+-- evolução 14 (limites de requisição e origem das movimentações)
+drop trigger if exists rl_economy on public.econ_requests;
+drop trigger if exists rl_avatar on public.player_profiles;
+drop trigger if exists rl_market_list on public.market_listings;
+drop trigger if exists rl_admin_events on public.events;
+do $$ begin
+  if to_regclass('public.tickets') is not null then execute 'drop trigger if exists rl_prediction on public.tickets'; end if;
+end $$;
+drop function if exists public.rl_trg();
+drop function if exists public.rl_hit(text);
+drop table if exists public.rate_limit_hits;
+drop table if exists public.rate_limit_rules;
 -- evolução 13 (eventos, sequência diária, administração)
 drop trigger if exists event_on_fixture on public.season_fixtures;
 drop trigger if exists event_on_box on public.reward_boxes;
@@ -123,6 +136,7 @@ drop function if exists public.econ_apply(uuid, text, int, text, text);
 drop function if exists public.econ_request_save(uuid, uuid, text, jsonb);
 drop function if exists public.econ_request_get(uuid, uuid, text);
 drop function if exists public.econ_ledger_trg();
+drop table if exists public.econ_reason_map;
 drop function if exists public.econ_tag(text, text);
 drop table if exists public.shop_purchases;
 drop table if exists public.shop_prices;

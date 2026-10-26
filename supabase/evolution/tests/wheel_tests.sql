@@ -107,6 +107,8 @@ end $$;
 reset role;
 update public.wheel_config set pity_enabled = false;
 update public.careers set diamonds = 20000 where id = '7ee17ee1-0000-0000-0000-0000000000c1';
+-- medição estatística: o limite de requisições (evolução 14) é suspenso só dentro deste teste
+do $$ begin if to_regclass('public.rate_limit_rules') is not null then update public.rate_limit_rules set max_hits = 1000000 where action = 'economy'; end if; end $$;
 set local role authenticated;
 do $$
 declare i int; t0 timestamptz := clock_timestamp(); s record; n int; lo numeric; hi numeric; sd numeric; v_before uuid[];

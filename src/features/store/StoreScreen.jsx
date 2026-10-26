@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { ArrowLeftRight, CircleDot, Coins, Crown, Gem, Hourglass, Lock, Palette, Sparkles, Zap } from 'lucide-react'
+import { ArrowLeftRight, CircleDot, Coins, Crown, Gem, Hourglass, Lock, Palette, Receipt, Sparkles, Zap } from 'lucide-react'
 import AppShell from '../../components/layout/AppShell'
 import { BackIcon } from '../../components/ui/icons'
 import useWallet from '../predictions/hooks/useWallet'
@@ -11,6 +11,7 @@ import WheelTab from './components/WheelTab'
 import MarketTab from './components/MarketTab'
 import EnergyTab from './components/EnergyTab'
 import VisualTab from './components/VisualTab'
+import WalletHistory from './components/WalletHistory'
 import '../cards/cards.css'
 import './store.css'
 
@@ -43,6 +44,7 @@ export default function StoreScreen({ career, params, onBack, onNavigate }) {
   const [error, setError] = useState('')
   const [tab, setTab] = useState(params?.tab || 'destaque')
   const [buying, setBuying] = useState(null) // { item, currency }
+  const [history, setHistory] = useState(false)
 
   const load = useCallback(async () => {
     try {
@@ -84,6 +86,7 @@ export default function StoreScreen({ career, params, onBack, onNavigate }) {
           <span className="cx-pill coins"><Coins size={14} /> {fmt(balance.coins)}</span>
           <span className="cx-pill gems"><Gem size={14} /> {fmt(balance.diamonds)}</span>
           <span className="cx-pill energy"><Zap size={14} fill="currentColor" /> {fmt(wallet.energy)}</span>
+          <button type="button" className="cx-pill wh-open" onClick={() => setHistory(true)} aria-label="Ver extrato"><Receipt size={14} /> Extrato</button>
         </div>
 
         <nav className="sh-tabs" role="tablist" aria-label="Seções da loja">
@@ -135,6 +138,8 @@ export default function StoreScreen({ career, params, onBack, onNavigate }) {
 
           {tab === 'diamonds' && <DiamondsSoon />}
         </div>
+
+        {history && <WalletHistory onClose={() => setHistory(false)} />}
 
         {buying && (
           <BuyConfirm
