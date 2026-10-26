@@ -25,7 +25,8 @@ supabase/evolution/09_market.sql            <- mercado entre jogadores
 supabase/evolution/10_energy_packs.sql      <- pacotes de energia (diamantes → energia bônus, com limite)
 supabase/evolution/11_profile.sql           <- perfil no servidor, carta em destaque, insígnias e cosméticos
 supabase/evolution/12_friends.sql           <- amigos e convites (com tempo real)
-supabase/evolution/13+ ...                  <- próximas etapas
+supabase/evolution/13_events.sql            <- eventos recorrentes, sequência diária e painel de administração
+supabase/evolution/14+ ...                  <- próximas etapas
 ```
 
 Banco que já estava no ar: rode só `evolution/01`, `evolution/02`, `manager/02_players_seed.sql` (gerado de novo) e
@@ -65,8 +66,10 @@ psql -v ON_ERROR_STOP=1 -f supabase/evolution/tests/market_tests.sql
 psql -v ON_ERROR_STOP=1 -f supabase/evolution/tests/energy_tests.sql
 psql -v ON_ERROR_STOP=1 -f supabase/evolution/tests/profile_tests.sql
 psql -v ON_ERROR_STOP=1 -f supabase/evolution/tests/friends_tests.sql
+psql -v ON_ERROR_STOP=1 -f supabase/evolution/tests/events_tests.sql
 PSQL="psql ..." bash supabase/evolution/tests/market_concurrency.sh      # compradores simultâneos e compras cruzadas
 PSQL="psql ..." bash supabase/evolution/tests/economy_concurrency.sh     # duas conexões ao mesmo tempo
+PSQL="psql ..." bash supabase/evolution/tests/events_concurrency.sh      # resgates de evento/sequência simultâneos
 ```
 
 ## Economia e loja
@@ -89,3 +92,11 @@ PSQL="psql ..." bash supabase/evolution/tests/economy_concurrency.sh     # duas 
 `evolution/99_rollback.sql` remove as tabelas novas e as competições novas (as temporadas antigas continuam).
 As funções voltam ao comportamento anterior rodando de novo `supabase/seasons/03_engine.sql`, `04_features.sql`
 e `supabase/manager/03_engine.sql`, `04_career.sql`.
+
+## Eventos (evolução 13)
+
+* Evento = linhas em `events` + `event_objectives` + `event_rewards`. Criar/editar pelo painel **Eventos → Admin** (só quem
+  está em `admins`). Para dar acesso: `insert into public.admins (user_id) values ('<id do usuário em auth.users>');`
+* Tipos de objetivo possíveis: tabela `event_objective_kinds` (cada um com os filtros aceitos). Tipo novo exige gatilho
+  novo no banco — o painel não aceita código livre.
+* Detalhes, regras de período/fuso e limitações: `docs/EVOLUCAO_12_EVENTOS.md`.

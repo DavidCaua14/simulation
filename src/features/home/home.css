@@ -341,3 +341,7 @@
 @media (prefers-reduced-motion: reduce) {
   .hm-hero, .hm-rank-inner, .hm-inbox-glow, .hm-inbox-pack img { animation: none !important; }
 }
+
+/* indicador discreto na Home */
+.hm-quick { position: relative; }
+.hm-quick-dot { position: absolute; top: 6px; right: 10px; min-width: 16px; height: 16px; padding: 0 4px; border-radius: 999px; background: var(--danger); color: #fff; font: 900 0.6rem var(--font-body); display: grid; place-items: center; }

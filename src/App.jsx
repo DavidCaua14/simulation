@@ -13,6 +13,7 @@ import CardsScreen from './features/cards/CardsScreen'
 import ProfileScreen from './features/profile/ProfileScreen'
 import StoreScreen from './features/store/StoreScreen'
 import FriendsScreen from './features/friends/FriendsScreen'
+import EventsScreen from './features/events/EventsScreen'
 import { AudioProvider, useAudio } from './features/audio/AudioContext'
 import { getActiveCareer } from './features/player/playerService'
 import './styles/theme.css'
@@ -73,7 +74,7 @@ function Gate() {
 
   // Só estas telas estão construídas; os demais ids da barra/menu ainda não fazem nada.
   const navigate = (id, params = null) => {
-    if (id === 'home' || id === 'tips' || id === 'profile' || id === 'seasons' || id === 'cards' || id === 'store' || id === 'friends') {
+    if (id === 'home' || id === 'tips' || id === 'profile' || id === 'seasons' || id === 'cards' || id === 'store' || id === 'friends' || id === 'events') {
       setScreenParams(params)
       setScreen(id)
       if (id !== 'home') playSfx('open') // abrir telas relevantes (som curto e discreto)
@@ -100,6 +101,10 @@ function Gate() {
 
   if (screen === 'friends') {
     return <FriendsScreen onBack={backHome} />
+  }
+
+  if (screen === 'events') {
+    return <EventsScreen career={career} onBack={backHome} onNavigate={navigate} />
   }
 
   if (screen === 'store') {

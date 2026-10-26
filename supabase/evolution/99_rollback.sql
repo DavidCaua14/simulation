@@ -1,9 +1,46 @@
 -- =====================================================================
--- DESFAZ a evolução 01–12 (competições, clube inicial, livro de transações, loja, roleta, mercado, energia, perfil e amigos). Use só se precisar voltar atrás.
+-- DESFAZ a evolução 01–13 (competições, clube inicial, livro de transações, loja, roleta, mercado, energia, perfil, amigos e eventos). Use só se precisar voltar atrás.
 -- Depois de rodar, reaplique supabase/seasons/03_engine.sql, 04_features.sql (get_initial_offers antiga), supabase/manager/03_engine.sql e 04_career.sql
 -- para restaurar as funções antigas. Temporadas criadas na Inglaterra ou com Série B são apagadas (não existem no modelo antigo).
 -- =====================================================================
 begin;
+-- evolução 13 (eventos, sequência diária, administração)
+drop trigger if exists event_on_fixture on public.season_fixtures;
+drop trigger if exists event_on_box on public.reward_boxes;
+drop trigger if exists event_on_new_card on public.user_cards;
+drop trigger if exists event_on_market_sale on public.market_listings;
+do $$ begin
+  if to_regclass('public.tickets') is not null then execute 'drop trigger if exists event_on_ticket on public.tickets'; end if;
+end $$;
+drop function if exists public.admin_events_list();
+drop function if exists public.admin_event_set_status(uuid, text);
+drop function if exists public.admin_event_save(jsonb);
+drop function if exists public.admin_assert();
+drop function if exists public.streak_claim();
+drop function if exists public.streak_status_for(uuid);
+drop function if exists public.streak_active_today(uuid, text);
+drop function if exists public.event_claim(uuid);
+drop function if exists public.event_grant(uuid, public.event_rewards, text);
+drop function if exists public.events_overview();
+drop function if exists public.event_json(public.events, uuid);
+drop function if exists public.event_on_ticket();
+drop function if exists public.event_on_market_sale();
+drop function if exists public.event_on_new_card();
+drop function if exists public.event_on_box();
+drop function if exists public.event_on_fixture();
+drop function if exists public.event_track(uuid, text, int, jsonb);
+drop function if exists public.event_period(public.events, timestamptz);
+drop table if exists public.player_streaks;
+drop table if exists public.streak_rewards;
+drop table if exists public.streak_config;
+drop table if exists public.event_completions;
+drop table if exists public.event_progress;
+drop table if exists public.event_rewards;
+drop table if exists public.event_objectives;
+drop table if exists public.events;
+drop table if exists public.event_objective_kinds;
+drop function if exists public.is_admin();
+drop table if exists public.admins;
 -- evolução 12 (amigos)
 do $$ begin
   if exists (select 1 from pg_publication_tables where pubname = 'supabase_realtime' and tablename = 'friendships') then

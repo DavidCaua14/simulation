@@ -56,10 +56,10 @@ export const GAME_MODES = [
   {
     id: 'events',
     title: 'Eventos',
-    desc: 'Participe de eventos especiais e ganhe recompensas únicas!',
+    desc: 'Desafios diários, semanais e especiais com recompensas — e a sequência diária.',
     Icon: EventsIcon,
     image: eventos,
-    locked: true,
+    locked: false,
   },
   {
     id: 'store',

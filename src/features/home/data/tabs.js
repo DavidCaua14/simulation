@@ -15,6 +15,6 @@ export const TAB_ITEMS = [
   { id: 'online-match', label: 'Partida', Icon: OnlineMatchIcon, locked: true },
   { id: 'seasons', label: 'Temporadas', Icon: SeasonsIcon, locked: false },
   { id: 'store', label: 'Loja', Icon: StoreIcon, locked: false },
-  { id: 'events', label: 'Eventos', Icon: EventsIcon, locked: true },
+  { id: 'events', label: 'Eventos', Icon: EventsIcon, locked: false },
   { id: 'profile', label: 'Perfil', Icon: UserIcon, locked: false },
 ]
