@@ -2,12 +2,14 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { BatteryLow, Check, CircleAlert, Gem, X, Zap } from 'lucide-react'
 import { buyEnergy, fetchEnergy, newRequestId } from '../services/storeApi'
 import { fmt } from './marketUtils'
+import { useAudio } from '../../audio/AudioContext'
 
 const hhmm = (iso) => new Date(iso).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
 
 function ConfirmPack({ pack, data, onClose, onDone }) {
   const requestId = useRef(newRequestId()).current
   const [busy, setBusy] = useState(false)
+  const { playSfx } = useAudio()
   const [error, setError] = useState('')
   const [result, setResult] = useState(null)
   const short = data.diamonds < pack.price
@@ -18,6 +20,7 @@ function ConfirmPack({ pack, data, onClose, onDone }) {
     try {
       const r = await buyEnergy(pack.id, requestId)
       setResult(r)
+      playSfx('purchase')
       onDone?.()
     } catch (e) {
       setError(e.message)

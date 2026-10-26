@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Ambulance, ArrowDown, ArrowLeftRight, ArrowUp, Ban, Building2, Coins, Crown, Megaphone, Sparkles, Star, Trophy, UserX } from 'lucide-react'
 import ClubCrest from '../../club/components/ClubCrest'
 import { tierOf } from '../../cards/data/tiers'
@@ -11,6 +11,7 @@ import MatchStats from './MatchStats'
 import useStandings from '../hooks/useStandings'
 import { boardMood, fansMood } from '../utils/managerUtils'
 import { COMP_NAME, RESULT_LABEL, describeMatch } from '../utils/seasonUtils'
+import { useAudio } from '../../audio/AudioContext'
 
 function Delta({ v, suffix = '' }) {
   const n = Number(v) || 0
@@ -44,6 +45,10 @@ function headline(s) {
 // a rodada completa e a classificação atualizada.
 export default function PostMatch({ summary: s, seasonId, byComp, onClose, onOffers, box, onOpenBox }) {
   const [tab, setTab] = useState('summary')
+  const { playSfx } = useAudio()
+  useEffect(() => {
+    if (s.level_up) playSfx('levelup')
+  }, [s.level_up, playSfx])
   const home = getClubById(s.home)
   const away = getClubById(s.away)
   const mineIsHome = s.home === s.my_club

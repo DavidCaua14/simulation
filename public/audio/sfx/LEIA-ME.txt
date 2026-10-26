@@ -1,0 +1,10 @@
+Gravações OPCIONAIS dos efeitos sonoros.
+
+Hoje todos os efeitos são sintetizados pelo próprio jogo (src/features/audio/sfx.js) e não precisam de arquivo.
+Para usar uma gravação no lugar de um efeito:
+  1. coloque aqui o arquivo (.mp3/.ogg) — SÓ com licença que permita uso no jogo (CC0, comprada, gravação própria);
+  2. aponte o caminho em src/features/audio/sfxConfig.js, ex.:  goal_for: 'audio/sfx/goal_for.mp3'
+Se o arquivo não abrir, o jogo volta sozinho ao som sintetizado.
+
+Ids: click, select, open, notify, purchase, reward, levelup, kickoff, whistle_half, whistle_end, foul,
+     card_yellow, card_red, goal_for, goal_against, chance

@@ -5,11 +5,13 @@ import { tierOf } from '../../cards/data/tiers'
 import { buyListing, newRequestId } from '../services/storeApi'
 import { cardFacts } from './cardFacts'
 import { fmt, timeLeft } from './marketUtils'
+import { useAudio } from '../../audio/AudioContext'
 
 // Confirmação de compra no mercado. O preço exibido é o do anúncio; o servidor confere tudo de novo na compra.
 export default function MarketBuySheet({ listing, coins, onClose, onBought, onOpenCollection }) {
   const requestId = useRef(newRequestId()).current
   const [busy, setBusy] = useState(false)
+  const { playSfx } = useAudio()
   const [error, setError] = useState('')
   const [result, setResult] = useState(null)
   const { card } = listing
@@ -23,6 +25,7 @@ export default function MarketBuySheet({ listing, coins, onClose, onBought, onOp
     try {
       const r = await buyListing(listing.id, requestId)
       setResult(r)
+      playSfx('purchase')
       onBought?.(r)
     } catch (e) {
       setError(e.message)

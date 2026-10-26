@@ -4,10 +4,12 @@ import ProfileHero from '../../profile/components/ProfileHero'
 import { CosmeticSwatch, KINDS, RARITY_LABEL } from '../../profile/components/cosmeticsUi'
 import { buyCosmetic, equipCosmetic, fetchCosmetics, fetchMyProfile } from '../../profile/services/profileApi'
 import { newRequestId } from '../services/storeApi'
+import { useAudio } from '../../audio/AudioContext'
 
 function BuySheet({ item, diamonds, profile, onClose, onDone }) {
   const requestId = useRef(newRequestId()).current
   const [busy, setBusy] = useState(false)
+  const { playSfx } = useAudio()
   const [error, setError] = useState('')
   const [done, setDone] = useState(null)
   const short = diamonds < item.price
@@ -19,6 +21,7 @@ function BuySheet({ item, diamonds, profile, onClose, onDone }) {
       const r = done || (await buyCosmetic(item.id, requestId))
       if (andEquip) await equipCosmetic(item.kind, item.id)
       setDone({ ...r, equipped: andEquip })
+      playSfx('purchase')
       onDone?.()
     } catch (e) {
       setError(e.message)

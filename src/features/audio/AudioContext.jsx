@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { PLAYLIST, DEFAULT_VOLUME } from './playlist'
+import * as sfx from './sfx'
 
 /**
  * Música de fundo com arquivos locais (<audio>).
@@ -10,6 +11,10 @@ import { PLAYLIST, DEFAULT_VOLUME } from './playlist'
  *
  * Limitação dos navegadores: som só pode começar depois de um toque do usuário.
  * O provider tenta tocar ao abrir e, se for bloqueado, começa no primeiro toque.
+ *
+ * Efeitos sonoros e ambientação de partida (sfx.js): volume próprio, respeitam o "silenciar" geral e só
+ * existem depois do primeiro gesto. Na partida, a música é pausada, abaixada ou mantida conforme a preferência
+ * (matchMusic) e volta ao normal no fim.
  */
 
 const STORAGE_KEY = 'fc:audio'
@@ -28,9 +33,12 @@ function readSettings() {
       volume: Number.isFinite(raw.volume) ? Math.max(0, Math.min(100, raw.volume)) : DEFAULT_VOLUME,
       muted: !!raw.muted,
       enabled: raw.enabled !== false, // false = jogador pausou de propósito
+      sfxVolume: Number.isFinite(raw.sfxVolume) ? Math.max(0, Math.min(100, raw.sfxVolume)) : 60,
+      matchMusic: ['pause', 'duck', 'keep'].includes(raw.matchMusic) ? raw.matchMusic : 'duck',
+      ambience: raw.ambience !== false,
     }
   } catch {
-    return { volume: DEFAULT_VOLUME, muted: false, enabled: true }
+    return { volume: DEFAULT_VOLUME, muted: false, enabled: true, sfxVolume: 60, matchMusic: 'duck', ambience: true }
   }
 }
 
@@ -44,12 +52,18 @@ export function AudioProvider({ children }) {
   const [enabled, setEnabled] = useState(initial.enabled)
   const [index, setIndex] = useState(0)
   const [playing, setPlaying] = useState(false)
+  const [sfxVolume, setSfxVolumeState] = useState(initial.sfxVolume)
+  const [matchMusic, setMatchMusic] = useState(initial.matchMusic)
+  const [ambience, setAmbience] = useState(initial.ambience)
+  const [inMatch, setInMatch] = useState(false)
 
   // Valores mais recentes para usar dentro dos eventos do <audio> (registrados uma vez só)
   const live = useRef({})
-  live.current = { volume, muted, enabled, index }
+  live.current = { volume, muted, enabled, index, matchMusic, ambience, inMatch }
 
   const tryPlay = useCallback(() => {
+    // Partida com "pausar música": nada de voltar a tocar no meio do jogo (nem pelo toque que destrava o som)
+    if (live.current.inMatch && live.current.matchMusic === 'pause') return
     // O navegador pode recusar antes do primeiro toque; o toque seguinte destrava (efeito abaixo).
     audioRef.current?.play()?.catch(() => {})
   }, [])
@@ -115,22 +129,49 @@ export function AudioProvider({ children }) {
     }
   }, [goTo, tryPlay])
 
-  // Aplica volume / mudo
+  // Aplica volume / mudo (na partida com "abaixar", a música fica a 25% do volume escolhido)
   useEffect(() => {
     const audio = audioRef.current
     if (!audio) return
-    audio.volume = volume / 100
+    audio.volume = (volume / 100) * (inMatch && matchMusic === 'duck' ? 0.25 : 1)
     audio.muted = muted
-  }, [volume, muted])
+  }, [volume, muted, inMatch, matchMusic])
+
+  // Efeitos: volume próprio + silenciar geral
+  useEffect(() => {
+    sfx.setSfxVolume(sfxVolume / 100)
+    sfx.setSfxMuted(muted)
+  }, [sfxVolume, muted])
+
+  // O primeiro gesto destrava o motor de efeitos (o navegador não deixa antes)
+  useEffect(() => {
+    const events = ['pointerdown', 'keydown', 'touchend']
+    const go = () => {
+      if (sfx.unlock()) events.forEach((ev) => document.removeEventListener(ev, go))
+    }
+    events.forEach((ev) => document.addEventListener(ev, go))
+    return () => events.forEach((ev) => document.removeEventListener(ev, go))
+  }, [])
+
+  // Clique em botões importantes (.gx-btn) e em elementos marcados com data-sfx="<som>" — não em tudo
+  useEffect(() => {
+    const onClick = (e) => {
+      const el = e.target.closest?.('[data-sfx], .gx-btn')
+      if (!el || el.disabled || el.getAttribute('aria-disabled') === 'true') return
+      sfx.play(el.dataset.sfx || 'click')
+    }
+    document.addEventListener('click', onClick, true)
+    return () => document.removeEventListener('click', onClick, true)
+  }, [])
 
   // Guarda preferências
   useEffect(() => {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({ volume, muted, enabled }))
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ volume, muted, enabled, sfxVolume, matchMusic, ambience }))
     } catch {
       /* ignore */
     }
-  }, [volume, muted, enabled])
+  }, [volume, muted, enabled, sfxVolume, matchMusic, ambience])
 
   // Se o navegador bloqueou o início automático, o primeiro toque do usuário libera o som
   useEffect(() => {
@@ -170,6 +211,34 @@ export function AudioProvider({ children }) {
 
   const toggleMute = useCallback(() => setMuted((m) => !m), [])
 
+  const selectTrack = useCallback(
+    (i) => {
+      setEnabled(true)
+      goTo(i)
+    },
+    [goTo],
+  )
+
+  const setSfxVolume = useCallback((v) => setSfxVolumeState(Math.max(0, Math.min(100, Math.round(v)))), [])
+  const playSfx = useCallback((id) => sfx.play(id), [])
+
+  // Partida: entra/sai da ambientação. A música só é pausada pelo jogo (não muda a preferência "tocar").
+  const startMatch = useCallback(() => {
+    if (live.current.inMatch) return
+    live.current.inMatch = true
+    setInMatch(true)
+    if (live.current.matchMusic === 'pause') audioRef.current?.pause()
+    if (live.current.ambience) sfx.ambienceStart(0.35)
+  }, [])
+  const stopMatch = useCallback(() => {
+    if (!live.current.inMatch) return
+    live.current.inMatch = false
+    setInMatch(false)
+    sfx.ambienceStop()
+    if (live.current.matchMusic === 'pause' && live.current.enabled) tryPlay()
+  }, [tryPlay])
+  const matchIntensity = useCallback((level) => sfx.ambienceLevel(level), [])
+
   const value = useMemo(
     () => ({
       tracks: TRACKS,
@@ -185,8 +254,21 @@ export function AudioProvider({ children }) {
       togglePlay,
       next,
       prev,
+      selectTrack,
+      sfxVolume,
+      setSfxVolume,
+      playSfx,
+      matchMusic,
+      setMatchMusic,
+      ambience,
+      setAmbience,
+      inMatch,
+      startMatch,
+      stopMatch,
+      matchIntensity,
     }),
-    [index, playing, volume, muted, setVolume, toggleMute, togglePlay, next, prev],
+    [index, playing, volume, muted, setVolume, toggleMute, togglePlay, next, prev, selectTrack, sfxVolume, setSfxVolume, playSfx,
+      matchMusic, ambience, inMatch, startMatch, stopMatch, matchIntensity],
   )
 
   return <AudioCtx.Provider value={value}>{children}</AudioCtx.Provider>

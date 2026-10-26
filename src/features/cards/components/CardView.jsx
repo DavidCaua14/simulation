@@ -20,6 +20,7 @@ export default function CardView({ card, width = 140, qty, hidden = false, shine
       className={`cv ${hidden ? 'is-hidden' : ''} ${shine ? 'has-shine' : ''} ${className}`}
       style={style}
       onClick={onClick}
+      data-sfx={onClick ? 'select' : undefined}
       aria-label={hidden ? 'Carta ainda não conquistada' : `${card?.name}, ${t.label}, nota ${card?.overall}`}
     >
       {auto ? (

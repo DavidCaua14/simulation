@@ -23,6 +23,7 @@ import Sheet from './components/Sheet'
 import { LogOutIcon, PencilIcon } from './components/ProfileIcons'
 import { getProfilePhotoById } from '../player/data/profilePhotos'
 import './profile.css'
+import { useAudio } from '../audio/AudioContext'
 
 // Perfil = página de identidade do jogador. Tudo vem do servidor (avatar, carta em destaque, insígnias, títulos,
 // estatísticas, visual e privacidade); o som e o tema continuam aqui.
@@ -37,6 +38,7 @@ export default function ProfileScreen({ career, onNavigate }) {
   const [sheet, setSheet] = useState(null) // 'avatar' | 'customize' | 'logout'
   const [leaving, setLeaving] = useState(false)
   const migrated = useRef(false)
+  const { playSfx } = useAudio()
 
   const load = useCallback(async () => {
     try {
@@ -50,6 +52,7 @@ export default function ProfileScreen({ career, onNavigate }) {
         p = { ...fresh, new_badges: [...(p.new_badges || []), ...(fresh.new_badges || [])] } // não perde o aviso de insígnia nova
       }
       setProfile(p)
+      if (p.new_badges?.length) playSfx('levelup')
       updatePrefs({ avatarUrl: avatarSrcOf(p) })
       setError('')
     } catch (e) {

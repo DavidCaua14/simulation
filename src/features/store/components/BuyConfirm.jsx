@@ -4,6 +4,7 @@ import CardView from '../../cards/components/CardView'
 import { tierOf } from '../../cards/data/tiers'
 import { buyCard, newRequestId } from '../services/storeApi'
 import { cardFacts } from './cardFacts'
+import { useAudio } from '../../audio/AudioContext'
 
 const fmt = (n) => Number(n ?? 0).toLocaleString('pt-BR')
 const CUR = {
@@ -16,6 +17,7 @@ const CUR = {
 export default function BuyConfirm({ item, currency, wallet, onClose, onBought, onOpenCollection }) {
   const requestId = useRef(newRequestId()).current
   const [busy, setBusy] = useState(false)
+  const { playSfx } = useAudio()
   const [error, setError] = useState('')
   const [result, setResult] = useState(null)
   const { card } = item
@@ -32,6 +34,7 @@ export default function BuyConfirm({ item, currency, wallet, onClose, onBought, 
     try {
       const r = await buyCard(card.id, currency, requestId)
       setResult(r)
+      playSfx('purchase')
       onBought?.(r)
     } catch (e) {
       setError(e.message)

@@ -13,12 +13,13 @@ import CardsScreen from './features/cards/CardsScreen'
 import ProfileScreen from './features/profile/ProfileScreen'
 import StoreScreen from './features/store/StoreScreen'
 import FriendsScreen from './features/friends/FriendsScreen'
-import { AudioProvider } from './features/audio/AudioContext'
+import { AudioProvider, useAudio } from './features/audio/AudioContext'
 import { getActiveCareer } from './features/player/playerService'
 import './styles/theme.css'
 
 function Gate() {
   const { status, user } = useAuth()
+  const { playSfx } = useAudio()
   const [career, setCareer] = useState(null)
   const [checkingCareer, setCheckingCareer] = useState(true)
   // Navegação simples entre as telas do jogo depois do onboarding.
@@ -75,6 +76,7 @@ function Gate() {
     if (id === 'home' || id === 'tips' || id === 'profile' || id === 'seasons' || id === 'cards' || id === 'store' || id === 'friends') {
       setScreenParams(params)
       setScreen(id)
+      if (id !== 'home') playSfx('open') // abrir telas relevantes (som curto e discreto)
     }
   }
 

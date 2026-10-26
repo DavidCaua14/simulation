@@ -3,6 +3,7 @@ import { Coins, Gem, X, Zap } from 'lucide-react'
 import CardView from './CardView'
 import { isRare, sourceLabel, tierOf } from '../data/tiers'
 import { openBox } from '../services/cardsApi'
+import { useAudio } from '../../audio/AudioContext'
 
 const SPARKS = 18
 const SHAKE_MS = 800 // duração mínima da "tremida" da caixa (a resposta do banco chega junto)
@@ -38,6 +39,7 @@ export default function BoxOpener({ boxes, onOpened, onClose }) {
   const [result, setResult] = useState(null)
   const [error, setError] = useState('')
   const results = useRef([])
+  const { playSfx } = useAudio()
   const sparks = useMemo(makeSparks, [])
   const box = boxes[idx]
   const t = tierOf(box?.tier)
@@ -68,6 +70,7 @@ export default function BoxOpener({ boxes, onOpened, onClose }) {
     if (phase === 'idle') doOpen()
     else if (phase === 'ready') {
       setPhase('reveal')
+      playSfx(isRare(result?.card?.tier) ? 'levelup' : 'reward')
       if (isRare(result?.card?.tier)) buzz([40, 60, 40, 60, 80])
     }
   }

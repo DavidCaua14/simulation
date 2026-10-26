@@ -5,6 +5,7 @@ import { tierOf } from '../../cards/data/tiers'
 import { feeOf, listCard, newRequestId } from '../services/storeApi'
 import { cardFacts } from './cardFacts'
 import { fmt } from './marketUtils'
+import { useAudio } from '../../audio/AudioContext'
 
 // Anunciar uma carta: preço (dentro do limite da raridade), taxa e valor líquido mostrados ANTES de confirmar.
 export default function MarketSellSheet({ entry, rules, onClose, onListed }) {
@@ -12,6 +13,7 @@ export default function MarketSellSheet({ entry, rules, onClose, onListed }) {
   const { card, qty, min, max } = entry
   const [price, setPrice] = useState(String(min))
   const [busy, setBusy] = useState(false)
+  const { playSfx } = useAudio()
   const [error, setError] = useState('')
   const [result, setResult] = useState(null)
   const t = tierOf(card.tier)
@@ -26,6 +28,7 @@ export default function MarketSellSheet({ entry, rules, onClose, onListed }) {
     try {
       const r = await listCard(card.id, n, requestId)
       setResult(r)
+      playSfx('purchase')
       onListed?.(r)
     } catch (e) {
       setError(e.message)

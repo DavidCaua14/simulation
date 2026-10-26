@@ -4,6 +4,7 @@ import CardView from '../../cards/components/CardView'
 import { tierOf } from '../../cards/data/tiers'
 import { fetchWheel, newRequestId, spinWheel } from '../services/storeApi'
 import { cardFacts } from './cardFacts'
+import { useAudio } from '../../audio/AudioContext'
 
 const SPIN_MS = 4200
 const reduceMotion = () => typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
@@ -65,6 +66,7 @@ export default function WheelTab({ onSpent, onOpenCollection }) {
   const [rotation, setRotation] = useState(0)
   const [spinning, setSpinning] = useState(false)
   const [result, setResult] = useState(null)
+  const { playSfx } = useAudio()
   const requestRef = useRef(null) // reaproveitado se a chamada falhar (tentar de novo não cobra duas vezes)
 
   const load = useCallback(async () => {
@@ -105,6 +107,7 @@ export default function WheelTab({ onSpent, onOpenCollection }) {
     const next = base + ((((-target - base) % 360) + 360) % 360)
     if (reduceMotion()) {
       setRotation(next)
+      playSfx(r.tier === 'epica' ? 'levelup' : 'reward')
       setResult(r)
       load()
       return
@@ -113,6 +116,7 @@ export default function WheelTab({ onSpent, onOpenCollection }) {
     setRotation(next)
     setTimeout(() => {
       setSpinning(false)
+      playSfx(r.tier === 'epica' ? 'levelup' : 'reward')
       setResult(r)
       load()
     }, SPIN_MS + 150)
