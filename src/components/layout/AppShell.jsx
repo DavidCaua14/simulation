@@ -1,5 +1,3 @@
-import { useTheme } from '../../context/ThemeContext'
-import { SunIcon, MoonIcon } from '../ui/icons'
 import './AppShell.css'
 
 /**
@@ -7,14 +5,15 @@ import './AppShell.css'
  * sem cantos arredondados e sem barra de rolagem — em qualquer tamanho de
  * tela deve parecer um celular real, nunca um cartão flutuando no desktop.
  *
- * `header` -> topo próprio (ex: <PlayerHeader />). Quando existe, substitui a
- *             barra padrão (voltar + título + tema).
+ * `header` -> topo próprio (ex: <PlayerHeader />). Quando existe, substitui a barra padrão.
  * `left`   -> conteúdo à esquerda da barra padrão (ex: botão voltar)
  * `center` -> conteúdo central da barra padrão (ex: título ou pontos de etapa)
+ * `right`  -> ação opcional à direita (o lado vazio mantém o título centralizado)
+ *
+ * O tema claro/escuro não fica mais no topo das telas: a escolha está no Perfil → Conta
+ * (e no menu do avatar na Home).
  */
-export default function AppShell({ header, left, center, title, children }) {
-  const { theme, toggleTheme } = useTheme()
-
+export default function AppShell({ header, left, center, right, title, children }) {
   return (
     <div className="app-viewport">
       <div className="app-frame">
@@ -24,17 +23,7 @@ export default function AppShell({ header, left, center, title, children }) {
             <div className="app-topbar-slot app-topbar-center">
               {center ?? <span className="app-topbar-title">{title}</span>}
             </div>
-            <div className="app-topbar-slot app-topbar-right">
-              <button
-                type="button"
-                className="icon-btn"
-                onClick={toggleTheme}
-                aria-label="Alternar tema"
-                title={theme === 'light' ? 'Ativar modo escuro' : 'Ativar modo claro'}
-              >
-                {theme === 'light' ? <MoonIcon size={17} /> : <SunIcon size={17} />}
-              </button>
-            </div>
+            <div className="app-topbar-slot app-topbar-right">{right}</div>
           </header>
         )}
         <main className="app-content">{children}</main>

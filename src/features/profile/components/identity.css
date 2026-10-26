@@ -113,3 +113,21 @@
 @media (prefers-reduced-motion: reduce) {
   .ph-rain, .pa-ring, .pa-sparks, .pa-sparks i, .cs-frame, .cs-fx i, .cs-fx::after, .cs-fx.fx-rain { animation: none !important; }
 }
+
+/* Etapa 14: identidade — linhas de campo e o escudo do clube ao fundo, inicial no avatar sem foto */
+.ph-pitch {
+  position: absolute; inset: 0; z-index: -1; pointer-events: none; opacity: 0.18;
+  background:
+    radial-gradient(circle at 50% 100%, transparent 62px, rgba(255, 255, 255, 0.9) 63px, rgba(255, 255, 255, 0.9) 65px, transparent 66px),
+    linear-gradient(rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.9)) 50% 100% / 100% 2px no-repeat,
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.12) 0 34px, transparent 34px 68px);
+  mask: linear-gradient(180deg, transparent, #000 45%); -webkit-mask: linear-gradient(180deg, transparent, #000 45%);
+}
+.ph-crest { position: absolute; right: -28px; top: 38px; z-index: -1; opacity: 0.16; transform: rotate(-12deg); pointer-events: none; filter: saturate(0.6); }
+.ph.is-compact .ph-crest { transform: rotate(-12deg) scale(0.7); right: -40px; top: 10px; }
+.pa-initial { font-family: var(--font-display); font-weight: 900; line-height: 1; color: #fff; text-shadow: 0 3px 10px rgba(0, 0, 0, 0.45); }
+.pa-img:has(.pa-initial) { background: radial-gradient(circle at 30% 25%, color-mix(in srgb, var(--pf-accent, var(--primary)) 85%, #fff), var(--pf-accent, var(--primary)) 55%, #3a0d02); }
+.pf-featured-empty { width: 100%; display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 12px; padding: 4px 0 0; border: 0; background: none; color: var(--text-secondary); text-align: left; font: 500 0.8rem/1.4 var(--font-body); cursor: pointer; }
+.pf-featured-empty:disabled { cursor: default; }
+.pf-featured-empty b { display: block; color: var(--text-primary); font: 800 0.9rem var(--font-heading); }
+.pf-card-ghost { width: 62px; height: 86px; display: grid; place-items: center; border-radius: 10px; color: var(--gold); border: 2px dashed color-mix(in srgb, var(--gold) 55%, var(--border)); background: repeating-linear-gradient(135deg, color-mix(in srgb, var(--gold) 6%, transparent) 0 6px, transparent 6px 12px); }

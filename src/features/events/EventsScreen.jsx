@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Check, CircleAlert, Gift, History } from 'lucide-react'
+import { CalendarClock, Gift, History } from 'lucide-react'
 import AppShell from '../../components/layout/AppShell'
 import { BackIcon } from '../../components/ui/icons'
+import { EmptyState, Notice, Skeleton } from '../../components/ui/feedback'
+import RewardReveal from '../../components/ui/RewardReveal'
 import { useAudio } from '../audio/AudioContext'
 import { claimEvent, claimStreak, fetchEvents } from './eventsApi'
 import { RewardChip, fmtDate, useNow } from './eventsUi'
@@ -22,7 +24,8 @@ export default function EventsScreen({ career, onBack, onNavigate }) {
   const [error, setError] = useState('')
   const [tab, setTab] = useState('events')
   const [busy, setBusy] = useState(null)
-  const [msg, setMsg] = useState(null) // { kind, text, rewards? }
+  const [msg, setMsg] = useState(null) // erro: { kind: 'error', text }
+  const [won, setWon] = useState(null) // recompensa conquistada: { title, subtitle, rewards }
 
   const load = useCallback(async () => {
     try {
@@ -48,7 +51,7 @@ export default function EventsScreen({ career, onBack, onNavigate }) {
     try {
       const r = await claimEvent(completionId)
       playSfx('reward')
-      setMsg({ kind: 'ok', text: `${r.event || ev.name}: recompensa entregue!`, rewards: r.rewards })
+      setWon({ subtitle: r.event || ev.name, rewards: r.rewards || [] })
       await load()
     } catch (e) {
       setMsg({ kind: 'error', text: e.message })
@@ -64,7 +67,8 @@ export default function EventsScreen({ career, onBack, onNavigate }) {
       const r = await claimStreak()
       playSfx('reward')
       const rewards = [{ kind: 'coins', amount: r.coins }, r.diamonds > 0 && { kind: 'diamonds', amount: r.diamonds }, r.box_tier && { kind: 'box', amount: 1, ref: r.box_tier }].filter(Boolean)
-      setMsg({ kind: 'ok', text: r.replayed ? 'Recompensa de hoje já resgatada.' : `Sequência: dia ${r.day} resgatado!`, rewards: r.replayed ? null : rewards })
+      if (r.replayed) setMsg({ kind: 'info', text: 'A recompensa de hoje já foi resgatada.' })
+      else setWon({ title: `Dia ${r.day} conquistado!`, subtitle: `Sequência diária · ${r.current} ${r.current === 1 ? 'dia seguido' : 'dias seguidos'}`, rewards })
       await load()
     } catch (e) {
       setMsg({ kind: 'error', text: e.message })
@@ -78,7 +82,7 @@ export default function EventsScreen({ career, onBack, onNavigate }) {
   const ended = data?.ended || []
   const history = data?.history || []
   const tabs = [['events', 'Eventos'], ['history', 'Histórico'], ...(data?.is_admin ? [['admin', 'Admin']] : [])]
-  const hasBox = msg?.rewards?.some((r) => r.kind === 'box')
+  const hasBox = won?.rewards?.some((r) => r.kind === 'box')
 
   return (
     <AppShell
@@ -94,36 +98,32 @@ export default function EventsScreen({ career, onBack, onNavigate }) {
           ))}
         </div>
 
-        {msg && (
-          <div className={`ev-msg is-${msg.kind}`} role="status">
-            <p>{msg.kind === 'ok' ? <Check size={14} /> : <CircleAlert size={14} />} {msg.text}</p>
-            {msg.rewards?.length > 0 && <div className="ev-chips">{msg.rewards.map((r, i) => <RewardChip key={i} r={r} />)}</div>}
-            {hasBox && <button type="button" className="ev-link" onClick={() => onNavigate?.('cards', { tab: 'inbox' })}><Gift size={13} /> Abrir caixas</button>}
-          </div>
-        )}
-        {error && <p className="fr-msg is-error"><CircleAlert size={14} /> {error}</p>}
+        {msg && <Notice kind={msg.kind} onClose={() => setMsg(null)}>{msg.text}</Notice>}
+        {error && <Notice kind="error">{error}</Notice>}
 
         <div className="fr-scroll">
-          {!data && !error && <p className="cx-hint center">Carregando eventos…</p>}
+          {!data && !error && <><Skeleton rows={1} variant="tall" /><div style={{ height: 12 }} /><Skeleton rows={2} variant="tall" /></>}
 
           {data && tab === 'events' && (
             <>
               <StreakPanel streak={data.streak} now={now} busy={busy === 'streak'} onClaim={claimDaily} />
-              <h4 className="mk-h">Acontecendo agora</h4>
-              {active.length === 0 ? <p className="cx-hint">Nenhum evento ativo no momento.</p> : (
+              <h4 className="gx-subtitle">Acontecendo agora <small>{active.length} {active.length === 1 ? 'evento' : 'eventos'}</small></h4>
+              {active.length === 0 ? (
+                <EmptyState compact icon={CalendarClock} title="Sem eventos agora" text={upcoming.length ? 'Confira abaixo o que vem por aí.' : 'Novos desafios aparecem aqui assim que começarem.'} />
+              ) : (
                 <div className="ev-list">
                   {active.map((ev) => <EventCard key={ev.id} ev={ev} now={now} busy={busy === ev.id} onClaim={claim} playerLevel={career?.player?.level} />)}
                 </div>
               )}
               {upcoming.length > 0 && (
                 <>
-                  <h4 className="mk-h">Em breve</h4>
+                  <h4 className="gx-subtitle">Em breve</h4>
                   <div className="ev-list">{upcoming.map((ev) => <EventCard key={ev.id} ev={ev} now={now} playerLevel={career?.player?.level} />)}</div>
                 </>
               )}
               {ended.length > 0 && (
                 <>
-                  <h4 className="mk-h">Encerrados recentemente</h4>
+                  <h4 className="gx-subtitle">Encerrados recentemente</h4>
                   <div className="ev-list">{ended.map((ev) => <EventCard key={ev.id} ev={ev} now={now} busy={busy === ev.id} onClaim={claim} />)}</div>
                 </>
               )}
@@ -132,7 +132,7 @@ export default function EventsScreen({ career, onBack, onNavigate }) {
           )}
 
           {data && tab === 'history' && (history.length === 0 ? (
-            <p className="cx-hint center"><History size={14} /> Nenhuma recompensa de evento resgatada ainda.</p>
+            <EmptyState icon={History} title="Nenhuma recompensa ainda" text="Complete os objetivos de um evento e resgate: tudo o que você ganhar fica registrado aqui." action="Ver eventos" onAction={() => setTab('events')} />
           ) : (
             <div className="fr-list">
               {history.map((h, i) => (
@@ -146,6 +146,19 @@ export default function EventsScreen({ career, onBack, onNavigate }) {
 
           {data && tab === 'admin' && data.is_admin && <AdminEvents onChanged={load} />}
         </div>
+
+        {won && (
+          <RewardReveal
+            title={won.title}
+            subtitle={won.subtitle}
+            rewards={won.rewards.map((r, i) => <RewardChip key={i} r={r} />)}
+            onClose={() => setWon(null)}
+            actions={<>
+              {hasBox && <button type="button" className="gx-btn" onClick={() => onNavigate?.('cards', { tab: 'inbox' })}><Gift size={16} /> Abrir caixas</button>}
+              <button type="button" className={hasBox ? 'gx-btn-ghost' : 'gx-btn'} onClick={() => setWon(null)}>Continuar</button>
+            </>}
+          />
+        )}
       </div>
     </AppShell>
   )

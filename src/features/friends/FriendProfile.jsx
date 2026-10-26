@@ -9,6 +9,7 @@ import { fetchCompetitions } from '../seasons/services/managerApi'
 import { fetchFriendProfile } from './friendsApi'
 import '../cards/cards.css'
 import '../profile/profile.css'
+import { Skeleton } from '../../components/ui/feedback'
 
 // Perfil de um amigo: SOMENTE LEITURA (o servidor só devolve o que o dono deixou público).
 export default function FriendProfile({ username, onClose, onRemove }) {
@@ -25,7 +26,7 @@ export default function FriendProfile({ username, onClose, onRemove }) {
       <button type="button" className="fr-close" onClick={onClose} aria-label="Fechar"><X size={18} /></button>
       <div className="fr-profile-scroll">
         {error && <p className="pf-error" style={{ padding: 20 }}>{error}</p>}
-        {!p && !error && <p className="pf-hint" style={{ textAlign: 'center', padding: 40 }}>Carregando…</p>}
+        {!p && !error && <div style={{ padding: 14 }}><Skeleton rows={1} variant="tall" /><div style={{ height: 10 }} /><Skeleton rows={3} variant="line" /></div>}
         {p && (
           <>
             <ProfileHero profile={p} />

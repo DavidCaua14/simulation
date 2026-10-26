@@ -5,6 +5,7 @@ import { tierOf } from '../../cards/data/tiers'
 import { fetchWheel, newRequestId, spinWheel } from '../services/storeApi'
 import { cardFacts } from './cardFacts'
 import { useAudio } from '../../audio/AudioContext'
+import { Skeleton } from '../../../components/ui/feedback'
 
 const SPIN_MS = 4200
 const reduceMotion = () => typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
@@ -122,7 +123,7 @@ export default function WheelTab({ onSpent, onOpenCollection }) {
     }, SPIN_MS + 150)
   }
 
-  if (!data && !error) return <p className="cx-hint center">Preparando a roleta…</p>
+  if (!data && !error) return <Skeleton rows={2} variant="tall" />
 
   return (
     <section className="wh" aria-label="Roleta de cartas">

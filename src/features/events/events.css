@@ -4,7 +4,7 @@
 .ev-card { border-radius: 16px; overflow: hidden; background: var(--surface); border: 1px solid var(--border); }
 .ev-card.is-claimable { border-color: var(--gold); box-shadow: 0 0 0 1px var(--gold), 0 6px 18px rgba(224, 168, 46, 0.18); }
 .ev-card.is-scheduled .ev-body, .ev-card.is-ended .ev-body { opacity: 0.85; }
-.ev-banner { display: grid; grid-template-columns: auto 1fr; grid-template-rows: auto auto; align-items: center; column-gap: 10px; row-gap: 4px; padding: 12px; color: #fff; background-size: cover; }
+.ev-banner { position: relative; overflow: hidden; display: grid; grid-template-columns: auto 1fr; grid-template-rows: auto auto; align-items: center; column-gap: 10px; row-gap: 4px; padding: 12px; color: #fff; background-size: cover; }
 .ev-banner-icon { grid-row: 1 / span 2; width: 42px; height: 42px; border-radius: 12px; display: grid; place-items: center; background: rgba(255, 255, 255, 0.16); border: 1px solid rgba(255, 255, 255, 0.25); }
 .ev-banner-main { min-width: 0; display: flex; flex-direction: column; }
 .ev-banner-main small { font: 800 0.66rem var(--font-body); letter-spacing: 0.1em; text-transform: uppercase; opacity: 0.85; }
@@ -87,3 +87,17 @@
 .ev-form-banner select { flex: 1; min-width: 100px; }
 .ev-add { align-self: flex-start; display: inline-flex; align-items: center; gap: 4px; padding: 6px 10px; border-radius: 999px; border: 1px dashed var(--border); background: none; color: var(--primary); font: 800 0.76rem var(--font-body); cursor: pointer; }
 .ev-claim { margin-top: 2px; font-size: 1.05rem; }
+
+/* Etapa 14: faixa de destaque, recompensa em evidência e brilho só quando há algo para resgatar */
+.ev-banner::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: repeating-linear-gradient(115deg, rgba(255, 255, 255, 0.05) 0 2px, transparent 2px 14px); }
+.ev-banner > * { position: relative; z-index: 1; }
+.ev-ribbon { position: absolute !important; top: 10px; right: -1px; display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px 4px 12px; border-radius: 999px 0 0 999px; background: linear-gradient(180deg, var(--gx-gold-hi), var(--gx-gold)); color: #241700; font: 900 0.6rem var(--font-body); letter-spacing: 0.08em; text-transform: uppercase; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3); }
+.ev-ribbon.is-soon { background: rgba(8, 12, 22, 0.6); color: #e6ebf5; backdrop-filter: blur(4px); }
+.ev-banner:has(.ev-ribbon) .ev-when { margin-top: 2px; }
+.ev-rewards { padding: 10px; border-radius: 12px; background: color-mix(in srgb, var(--gx-gold) 8%, var(--surface-alt)); border: 1px solid color-mix(in srgb, var(--gx-gold) 30%, var(--border)); }
+.ev-rewards-label { color: var(--gx-gold); }
+.ev-card.is-claimable { animation: ev-glow 2.4s ease-in-out infinite; }
+@keyframes ev-glow { 50% { box-shadow: 0 0 0 1px var(--gold), 0 6px 26px rgba(224, 168, 46, 0.35); } }
+.ev-card { animation: gx-rise 0.3s ease-out both; }
+.ev-list .ev-card:nth-child(2) { animation-delay: 0.05s; } .ev-list .ev-card:nth-child(3) { animation-delay: 0.1s; } .ev-list .ev-card:nth-child(n+4) { animation-delay: 0.15s; }
+@media (prefers-reduced-motion: reduce) { .ev-card, .ev-card.is-claimable { animation: none; } }

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { fetchLeaderboard, fetchMyRank } from '../services/predictionsApi'
 import { formatMult } from '../data/predictionRules'
 import { MedalIcon } from './PredIcons'
+import { Skeleton } from '../../../components/ui/feedback'
 
 export default function LeaderboardSection({ nickname }) {
   const [rows, setRows] = useState([])
@@ -39,7 +40,7 @@ export default function LeaderboardSection({ nickname }) {
       <p className="pred-hint">
         Ranking por pontos de palpites. Só aparece quem já ganhou algum bilhete, e odds maiores valem mais pontos.
       </p>
-      {loading && <p className="pred-empty">Carregando…</p>}
+      {loading && <Skeleton rows={5} variant="line" />}
       {!loading && error && <p className="pred-empty">{error}</p>}
       {!loading && !error && rows.length === 0 && <p className="pred-empty">Ninguém pontuou ainda. Seja o primeiro!</p>}
       {rows.map((r) => {

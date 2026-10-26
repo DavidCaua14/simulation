@@ -297,7 +297,6 @@ button.mk-row:active { transform: scale(0.99); }
 .mk-hist { font: 800 0.86rem var(--font-body); }
 .mk-hist.is-in { color: var(--gx-green); }
 .mk-hist.is-out { color: var(--danger); }
-.mk-h { margin: 8px 0 2px; font: 800 0.86rem var(--font-heading); }
 .mk-price { width: 100%; display: flex; flex-direction: column; gap: 6px; margin-top: 8px; font-size: 0.78rem; color: var(--text-secondary); }
 .mk-price-input {
   display: flex; align-items: center; gap: 8px; height: 46px; padding: 0 12px; border-radius: 12px;
@@ -369,3 +368,67 @@ button.mk-row:active { transform: scale(0.99); }
 .wh-amt { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; white-space: nowrap; }
 .wh-amt b { font: 900 0.9rem var(--font-body); font-variant-numeric: tabular-nums; }
 .wh-amt b.is-in { color: var(--gx-green); } .wh-amt b.is-out { color: var(--danger); }
+
+/* Mercado — Etapa 14: comparação de ofertas e de cartas */
+.mk-item { position: relative; animation: gx-rise 0.25s ease-out both; }
+.mk-row .gx-rarity { align-self: flex-start; margin-top: 2px; }
+.mk-cmp-toggle {
+  position: absolute; left: 4px; bottom: 4px; z-index: 2; width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; cursor: pointer;
+  border: 1px solid var(--border); background: color-mix(in srgb, var(--surface) 88%, transparent); color: var(--text-secondary); backdrop-filter: blur(4px);
+}
+.mk-cmp-toggle[aria-pressed='true'] { background: var(--gold); border-color: var(--gold); color: #241700; }
+.mk-cmp-toggle:disabled { opacity: 0.35; cursor: default; }
+.mk-item.is-cmp .mk-row { border-color: var(--gold); box-shadow: 0 0 0 1px var(--gold); }
+.mk-deal { font: 800 0.62rem var(--font-body); letter-spacing: 0.04em; text-transform: uppercase; color: var(--text-secondary); }
+.mk-deal.is-best { color: var(--gx-green); }
+.mk-cmp-bar {
+  position: sticky; bottom: 8px; z-index: 5; display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 8px;
+  padding: 8px 8px 8px 12px; border-radius: 16px; background: var(--surface-strong); border: 1px solid var(--gold);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.35); animation: gx-rise 0.25s ease-out;
+}
+.mk-cmp-bar > span { display: inline-flex; align-items: center; gap: 6px; font: 800 0.76rem var(--font-body); }
+.mk-cmp-bar .gx-btn { width: auto; height: 38px; padding: 0 14px; font-size: 0.95rem; }
+.mk-cmp-bar .gx-btn-ghost { height: 38px; }
+.mk-cmp-sheet { align-items: stretch; }
+.mk-cmp-sheet h3 { text-transform: uppercase; letter-spacing: 0.05em; font-family: var(--font-display); }
+.mk-cmp-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.mk-cmp-col { display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center; }
+.mk-cmp-col strong { font: 800 0.86rem var(--font-heading); line-height: 1.2; }
+.mk-cmp-table { width: 100%; border-collapse: separate; border-spacing: 0 4px; font-size: 0.8rem; }
+.mk-cmp-table th { padding: 0 4px; font: 800 0.6rem var(--font-body); letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-secondary); text-align: center; white-space: nowrap; }
+.mk-cmp-table td { width: 38%; padding: 7px 6px; text-align: center; font-weight: 700; background: var(--surface-alt); border-radius: 8px; overflow: hidden; text-overflow: ellipsis; }
+.mk-cmp-table td svg { vertical-align: -2px; color: var(--gold); }
+.mk-cmp-table td.is-best { color: var(--gx-green); background: color-mix(in srgb, var(--gx-green) 12%, var(--surface-alt)); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--gx-green) 45%, transparent); }
+.mk-cmp-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.mk-cmp-actions .gx-btn { height: 44px; font-size: 1rem; }
+.sh-bill .is-best dd { color: var(--gx-green); }
+@media (prefers-reduced-motion: reduce) { .mk-item, .mk-cmp-bar { animation: none; } }
+
+/* Loja — Etapa 14: vitrine com sensação de coleção e descoberta */
+.sh-head {
+  --tier: #38bdf8;
+  display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 10px;
+  padding: 12px; border-radius: 16px; position: relative; overflow: hidden;
+  background: radial-gradient(120% 140% at 0% 0%, color-mix(in srgb, var(--tier) 26%, transparent), transparent 60%), var(--surface);
+  border: 1px solid color-mix(in srgb, var(--tier) 40%, var(--border));
+}
+.sh-head-lenda { --tier: #fbbf24; }
+.sh-head-icon { width: 40px; height: 46px; display: grid; place-items: center; color: #0b1222; background: linear-gradient(180deg, color-mix(in srgb, var(--tier) 70%, #fff), var(--tier)); clip-path: polygon(50% 0, 100% 14%, 100% 58%, 50% 100%, 0 58%, 0 14%); }
+.sh-head-main { min-width: 0; }
+.sh-head-main strong { display: block; font: 900 1.05rem/1.1 var(--font-display); letter-spacing: 0.05em; text-transform: uppercase; }
+.sh-head-main p { margin: 2px 0 0; font-size: 0.74rem; line-height: 1.35; }
+.sh-head-meta { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+.sh-head .sh-timer { align-self: auto; }
+.sh-new-count { font: 800 0.62rem var(--font-body); letter-spacing: 0.05em; text-transform: uppercase; color: var(--gx-green); white-space: nowrap; }
+.sh-owned.is-new { background: linear-gradient(180deg, #4ade80, #16a34a); border-color: transparent; color: #04210f; letter-spacing: 0.1em; text-transform: uppercase; }
+.sh-item { animation: gx-rise 0.3s ease-out both; transition: transform 0.15s ease; }
+.sh-grid .sh-item:nth-child(2) { animation-delay: 0.04s; } .sh-grid .sh-item:nth-child(3) { animation-delay: 0.08s; } .sh-grid .sh-item:nth-child(4) { animation-delay: 0.12s; } .sh-grid .sh-item:nth-child(n+5) { animation-delay: 0.16s; }
+@media (hover: hover) { .sh-item:hover { transform: translateY(-2px); } }
+@media (max-width: 370px) { .sh-head { grid-template-columns: auto 1fr; } .sh-head-meta { grid-column: 1 / -1; flex-direction: row; justify-content: space-between; align-items: center; } }
+@media (prefers-reduced-motion: reduce) { .sh-item { animation: none; } }
+/* avisos da loja com o mesmo desenho do .gx-notice */
+.sh-msg.is-error { padding: 9px 11px; border-radius: 12px; text-align: left; font-weight: 700; color: var(--gx-ink); border: 1px solid color-mix(in srgb, var(--danger) 55%, transparent); background: color-mix(in srgb, var(--danger) 8%, var(--gx-panel)); animation: gx-rise 0.25s ease-out; }
+.sh-msg.is-error svg { color: var(--danger); }
+.sh-msg.is-ok { padding: 9px 11px; border-radius: 12px; border: 1px solid color-mix(in srgb, var(--gx-green) 55%, transparent); background: color-mix(in srgb, var(--gx-green) 9%, var(--gx-panel)); animation: gx-pop 0.35s cubic-bezier(0.2, 1.4, 0.4, 1); }
+.mk-views button { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+@media (max-width: 380px) { .mk-views button { font-size: 0.74rem; padding-left: 4px; padding-right: 4px; } }

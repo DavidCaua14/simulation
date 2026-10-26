@@ -12,6 +12,7 @@ import MarketTab from './components/MarketTab'
 import EnergyTab from './components/EnergyTab'
 import VisualTab from './components/VisualTab'
 import WalletHistory from './components/WalletHistory'
+import { Notice, Skeleton } from '../../components/ui/feedback'
 import '../cards/cards.css'
 import './store.css'
 
@@ -61,8 +62,10 @@ export default function StoreScreen({ career, params, onBack, onNavigate }) {
   const sections = shop?.sections || []
   const section = sections.find((s) => s.tier === tab)
   const countdown = useCountdown(section?.ends_at, load)
+  const newCount = section ? section.items.filter((it) => !it.owned).length : 0
   const tabs = [
-    ...sections.map((s) => ({ id: s.tier, label: s.label, Icon: SECTION_ICON[s.tier] || Sparkles })),
+    // antes da loja carregar, as duas vitrines já ocupam o lugar delas (as abas não "pulam")
+    ...(shop ? sections : [{ tier: 'destaque', label: 'Destaques' }, { tier: 'lenda', label: 'Lendas' }]).map((s) => ({ id: s.tier, label: s.label, Icon: SECTION_ICON[s.tier] || Sparkles })),
     { id: 'wheel', label: 'Roleta', Icon: CircleDot },
     { id: 'market', label: 'Mercado', Icon: ArrowLeftRight },
     { id: 'energy', label: 'Energia', Icon: Zap },
@@ -98,16 +101,23 @@ export default function StoreScreen({ career, params, onBack, onNavigate }) {
           ))}
         </nav>
 
-        {error && <p className="cx-error">{error}</p>}
+        {error && <Notice kind="error">{error}</Notice>}
 
         <div className="cx-scroll">
-          {!shop && !error && <p className="cx-hint center">Abrindo a loja…</p>}
+          {!shop && !error && (tab === 'destaque' || tab === 'lenda') && <Skeleton rows={4} variant="grid" />}
 
           {section && (
             <>
-              <header className="sh-head">
-                <p>{section.description}</p>
-                <span className="sh-timer"><Hourglass size={13} /> Nova vitrine em {countdown}</span>
+              <header className={`sh-head sh-head-${section.tier}`}>
+                <span className="sh-head-icon" aria-hidden="true">{section.tier === 'lenda' ? <Crown size={20} /> : <Sparkles size={20} />}</span>
+                <div className="sh-head-main">
+                  <strong>{section.label}</strong>
+                  <p>{section.description}</p>
+                </div>
+                <div className="sh-head-meta">
+                  <span className="sh-timer"><Hourglass size={13} /> {countdown}</span>
+                  {newCount > 0 && <span className="sh-new-count">{newCount} {newCount === 1 ? 'nova' : 'novas'} p/ coleção</span>}
+                </div>
               </header>
               <div className="sh-grid">
                 {section.items.map((it) => (

@@ -1,21 +1,20 @@
 import { useRef, useState } from 'react'
 import { Check, CircleAlert, Coins, X } from 'lucide-react'
 import CardView from '../../cards/components/CardView'
-import { tierOf } from '../../cards/data/tiers'
 import { buyListing, newRequestId } from '../services/storeApi'
 import { cardFacts } from './cardFacts'
 import { fmt, timeLeft } from './marketUtils'
 import { useAudio } from '../../audio/AudioContext'
+import { RarityBadge } from '../../../components/ui/feedback'
 
 // Confirmação de compra no mercado. O preço exibido é o do anúncio; o servidor confere tudo de novo na compra.
-export default function MarketBuySheet({ listing, coins, onClose, onBought, onOpenCollection }) {
+export default function MarketBuySheet({ listing, coins, offers, onClose, onBought, onOpenCollection }) {
   const requestId = useRef(newRequestId()).current
   const [busy, setBusy] = useState(false)
   const { playSfx } = useAudio()
   const [error, setError] = useState('')
   const [result, setResult] = useState(null)
   const { card } = listing
-  const t = tierOf(card.tier)
   const f = cardFacts(card)
   const short = coins < listing.price
 
@@ -40,7 +39,7 @@ export default function MarketBuySheet({ listing, coins, onClose, onBought, onOp
         <button type="button" className="cx-sheet-x" onClick={onClose} disabled={busy} aria-label="Fechar"><X size={18} /></button>
         <CardView card={card} width={150} shine />
         <h3>{card.name}</h3>
-        <p className="sh-confirm-tier" style={{ color: t.color }}>{t.label}</p>
+        <RarityBadge tier={card.tier} />
         <p className="sh-item-facts">Nota <b>{f.overall}</b> · {f.position} · {f.club} · {f.nationality}</p>
         {!result ? (
           <>
@@ -50,6 +49,12 @@ export default function MarketBuySheet({ listing, coins, onClose, onBought, onOp
               <div><dt>Seu saldo</dt><dd>{fmt(coins)}</dd></div>
               <div className={short ? 'is-short' : ''}><dt>Depois da compra</dt><dd>{short ? `faltam ${fmt(listing.price - coins)}` : fmt(coins - listing.price)}</dd></div>
               <div><dt>Anúncio termina em</dt><dd>{timeLeft(listing.expires_at)}</dd></div>
+              {offers?.count > 1 && (
+                <div className={listing.price === offers.min ? 'is-best' : ''}>
+                  <dt>Outras ofertas desta carta</dt>
+                  <dd>{offers.count - 1} · {listing.price === offers.min ? 'esta é a mais barata' : `menor: ${fmt(offers.min)}`}</dd>
+                </div>
+              )}
             </dl>
             {short && <p className="sh-msg is-error"><CircleAlert size={14} /> Saldo insuficiente: você tem {fmt(coins)} moedas e a carta custa {fmt(listing.price)}.</p>}
             {error && <p className="sh-msg is-error"><CircleAlert size={14} /> {error}</p>}

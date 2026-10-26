@@ -24,6 +24,7 @@ import { LogOutIcon, PencilIcon } from './components/ProfileIcons'
 import { getProfilePhotoById } from '../player/data/profilePhotos'
 import './profile.css'
 import { useAudio } from '../audio/AudioContext'
+import { Notice, Skeleton } from '../../components/ui/feedback'
 
 // Perfil = página de identidade do jogador. Tudo vem do servidor (avatar, carta em destaque, insígnias, títulos,
 // estatísticas, visual e privacidade); o som e o tema continuam aqui.
@@ -87,7 +88,12 @@ export default function ProfileScreen({ career, onNavigate }) {
       <div className="pf-shell">
         <div className="pf-scroll">
           {!profile ? (
-            error ? <p className="pf-error">{error}</p> : <p className="pf-hint" style={{ textAlign: 'center', padding: 40 }}>Carregando perfil…</p>
+            error ? <div style={{ padding: 14 }}><Notice kind="error">{error}</Notice></div> : (
+              <div style={{ padding: 14, display: 'flex', flexDirection: 'column', gap: 12 }}>
+                <Skeleton rows={1} variant="tall" />
+                <Skeleton rows={3} variant="line" />
+              </div>
+            )
           ) : (
             <>
               <ProfileHero

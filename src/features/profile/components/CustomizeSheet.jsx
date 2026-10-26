@@ -4,6 +4,7 @@ import { equipCosmetic, fetchCosmetics } from '../services/profileApi'
 import ProfileHero from './ProfileHero'
 import { KINDS, CosmeticSwatch } from './cosmeticsUi'
 import Sheet from './Sheet'
+import { Skeleton } from '../../../components/ui/feedback'
 
 // Personalizar: equipar/desequipar os itens que o jogador TEM. Comprar outros fica na Loja → Visual.
 export default function CustomizeSheet({ profile, onClose, onChanged, onOpenStore }) {
@@ -44,7 +45,7 @@ export default function CustomizeSheet({ profile, onClose, onChanged, onOpenStor
         ))}
       </div>
       {error && <p className="pf-error">{error}</p>}
-      {!data ? <p className="pf-hint">Carregando…</p> : (
+      {!data ? <Skeleton rows={2} variant="tall" /> : (
         <>
           <div className="cz-grid">
             {kind !== 'background' && (

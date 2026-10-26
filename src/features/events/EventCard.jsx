@@ -24,6 +24,8 @@ export default function EventCard({ ev, now, busy, onClaim, playerLevel }) {
           <strong>{ev.name}</strong>
         </span>
         <span className="ev-when">{when}</span>
+        {comp?.claimable && <span className="ev-ribbon"><Gift size={11} /> Recompensa pronta</span>}
+        {ev.state === 'scheduled' && <span className="ev-ribbon is-soon">Começa {fmtDate(ev.starts_at)}</span>}
       </header>
 
       <div className="ev-body">

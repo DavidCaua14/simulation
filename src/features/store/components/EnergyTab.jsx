@@ -3,6 +3,7 @@ import { BatteryLow, Check, CircleAlert, Gem, X, Zap } from 'lucide-react'
 import { buyEnergy, fetchEnergy, newRequestId } from '../services/storeApi'
 import { fmt } from './marketUtils'
 import { useAudio } from '../../audio/AudioContext'
+import { Skeleton } from '../../../components/ui/feedback'
 
 const hhmm = (iso) => new Date(iso).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
 
@@ -82,7 +83,7 @@ export default function EnergyTab({ onChanged }) {
     load()
   }, [load])
 
-  if (!data) return error ? <p className="sh-msg is-error"><CircleAlert size={14} /> {error}</p> : <p className="cx-hint center">Carregando…</p>
+  if (!data) return error ? <p className="sh-msg is-error"><CircleAlert size={14} /> {error}</p> : <Skeleton rows={3} variant="tall" />
   const pct = Math.min(100, (data.bonus_energy / data.bonus_cap) * 100)
 
   return (

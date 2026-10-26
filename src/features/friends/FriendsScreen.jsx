@@ -1,7 +1,8 @@
 import { useState } from 'react'
-import { Check, CircleAlert, Clock, UserPlus, UserX, X } from 'lucide-react'
+import { Check, Clock, Inbox, Send, UserPlus, Users, UserX, X } from 'lucide-react'
 import AppShell from '../../components/layout/AppShell'
 import { BackIcon } from '../../components/ui/icons'
+import { ConfirmSheet, EmptyState, Notice, Skeleton } from '../../components/ui/feedback'
 import ProfileAvatar from '../profile/components/ProfileAvatar'
 import { CountryFlag } from '../player/components/flags'
 import { getClubById } from '../club/data/clubs'
@@ -35,6 +36,7 @@ export default function FriendsScreen({ onBack }) {
   const [msg, setMsg] = useState(null) // { kind: 'ok' | 'error' | 'info', text }
   const [busy, setBusy] = useState(null)
   const [open, setOpen] = useState(null)
+  const [unfriend, setUnfriend] = useState(null) // id da amizade a desfazer (pede confirmação)
 
   async function invite(e) {
     e.preventDefault()
@@ -87,13 +89,9 @@ export default function FriendsScreen({ onBack }) {
           <div className="fr-add-row">
             <span className="fr-at">@</span>
             <input id="fr-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="username do jogador" autoComplete="off" autoCapitalize="off" spellCheck="false" maxLength={32} />
-            <button type="submit" className="gx-btn fr-send" disabled={busy === 'invite'}><UserPlus size={16} /> {busy === 'invite' ? '…' : 'Convidar'}</button>
+            <button type="submit" className="gx-btn fr-send" disabled={busy === 'invite'} aria-label="Convidar"><UserPlus size={17} /><span>{busy === 'invite' ? '…' : 'Convidar'}</span></button>
           </div>
-          {msg && (
-            <p className={`fr-msg is-${msg.kind}`}>
-              {msg.kind === 'ok' ? <Check size={14} /> : <CircleAlert size={14} />} {msg.text}
-            </p>
-          )}
+          {msg && <Notice kind={msg.kind} onClose={() => setMsg(null)}>{msg.text}</Notice>}
         </form>
 
         <div className="mk-views fr-tabs" role="tablist">
@@ -105,12 +103,12 @@ export default function FriendsScreen({ onBack }) {
           </button>
         </div>
 
-        {error && <p className="fr-msg is-error"><CircleAlert size={14} /> {error}</p>}
+        {error && <Notice kind="error">{error}</Notice>}
         <div className="fr-scroll">
-          {!data && !error && <p className="cx-hint center">Carregando…</p>}
+          {!data && !error && <Skeleton rows={4} variant="line" />}
 
           {data && tab === 'friends' && (friends.length === 0 ? (
-            <p className="cx-hint center">Você ainda não tem amigos no jogo. Convide alguém pelo username!</p>
+            <EmptyState icon={Users} title="Monte seu time de amigos" text="Convide outros treinadores pelo username exato. Amigos veem o perfil um do outro — conquistas, carta em destaque e coleção." />
           ) : (
             <div className="fr-list">
               {friends.map((f) => (
@@ -123,8 +121,8 @@ export default function FriendsScreen({ onBack }) {
 
           {data && tab === 'invites' && (
             <>
-              <h4 className="mk-h">Recebidos</h4>
-              {incoming.length === 0 ? <p className="cx-hint">Nenhum convite recebido.</p> : (
+              <h4 className="gx-subtitle">Recebidos</h4>
+              {incoming.length === 0 ? <EmptyState compact icon={Inbox} text="Nenhum convite recebido por enquanto." /> : (
                 <div className="fr-list">
                   {incoming.map((f) => (
                     <Person key={f.id} p={f}>
@@ -136,8 +134,8 @@ export default function FriendsScreen({ onBack }) {
                   ))}
                 </div>
               )}
-              <h4 className="mk-h">Enviados</h4>
-              {outgoing.length === 0 && declined.length === 0 ? <p className="cx-hint">Nenhum convite enviado.</p> : (
+              <h4 className="gx-subtitle">Enviados</h4>
+              {outgoing.length === 0 && declined.length === 0 ? <EmptyState compact icon={Send} text="Nenhum convite enviado." /> : (
                 <div className="fr-list">
                   {outgoing.map((f) => (
                     <Person key={f.id} p={f}>
@@ -161,7 +159,18 @@ export default function FriendsScreen({ onBack }) {
           <FriendProfile
             username={open}
             onClose={() => setOpen(null)}
-            onRemove={(id) => act(id, () => removeFriend(id), `Amizade com ${open} desfeita.`).then(() => setOpen(null))}
+            onRemove={(id) => setUnfriend(id)}
+          />
+        )}
+        {unfriend && (
+          <ConfirmSheet
+            danger
+            title="Desfazer amizade?"
+            text={`Você e ${open} deixam de ver o perfil um do outro. Dá para convidar de novo depois.`}
+            confirmLabel="Desfazer"
+            busy={busy === unfriend}
+            onCancel={() => setUnfriend(null)}
+            onConfirm={() => act(unfriend, () => removeFriend(unfriend), `Amizade com ${open} desfeita.`).then(() => { setUnfriend(null); setOpen(null) })}
           />
         )}
       </div>

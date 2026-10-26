@@ -5,6 +5,8 @@ import { fetchCollection } from '../../cards/services/cardsApi'
 import { setFeaturedCard } from '../services/profileApi'
 import Sheet from './Sheet'
 import '../../cards/cards.css'
+import { Plus } from 'lucide-react'
+import { Skeleton } from '../../../components/ui/feedback'
 
 // Carta em destaque: o jogador escolhe uma carta que TEM (o servidor confere). Se ela for vendida,
 // anunciada ou descartada, o servidor tira o destaque sozinho.
@@ -51,12 +53,15 @@ export default function FeaturedCardPanel({ card, editable, onChanged }) {
           </div>
         </div>
       ) : (
-        <p className="pf-hint">{editable ? 'Escolha uma carta da sua coleção para mostrar no perfil.' : 'Nenhuma carta em destaque.'}</p>
+        <button type="button" className="pf-featured-empty" disabled={!editable} onClick={() => editable && setPicking(true)}>
+          <span className="pf-card-ghost" aria-hidden="true"><Plus size={22} /></span>
+          <span>{editable ? <><b>Mostre sua melhor carta</b>Escolha uma carta da coleção para exibir no seu perfil.</> : 'Nenhuma carta em destaque.'}</span>
+        </button>
       )}
       {picking && (
         <Sheet title="Escolher carta em destaque" onClose={() => setPicking(false)}>
           {error && <p className="pf-error">{error}</p>}
-          {!owned ? <p className="pf-hint">Carregando sua coleção…</p> : owned.length === 0 ? (
+          {!owned ? <Skeleton rows={1} variant="tall" /> : owned.length === 0 ? (
             <p className="pf-hint">Você ainda não tem cartas. Abra caixas ou visite a Loja.</p>
           ) : (
             <div className="pf-pick-grid">

@@ -5,6 +5,7 @@ import { CosmeticSwatch, KINDS, RARITY_LABEL } from '../../profile/components/co
 import { buyCosmetic, equipCosmetic, fetchCosmetics, fetchMyProfile } from '../../profile/services/profileApi'
 import { newRequestId } from '../services/storeApi'
 import { useAudio } from '../../audio/AudioContext'
+import { Skeleton } from '../../../components/ui/feedback'
 
 function BuySheet({ item, diamonds, profile, onClose, onDone }) {
   const requestId = useRef(newRequestId()).current
@@ -103,7 +104,7 @@ export default function VisualTab({ onChanged }) {
     }
   }
 
-  if (!data || !profile) return error ? <p className="sh-msg is-error"><CircleAlert size={14} /> {error}</p> : <p className="cx-hint center">Carregando…</p>
+  if (!data || !profile) return error ? <p className="sh-msg is-error"><CircleAlert size={14} /> {error}</p> : <Skeleton rows={3} variant="tall" />
 
   return (
     <section className="vs" aria-label="Itens visuais do perfil">

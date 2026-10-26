@@ -25,6 +25,8 @@ export const SOURCE_LABEL = {
   welcome: 'Boas-vindas',
   daily: 'Diária',
   season_win: 'Vitória',
+  event: 'Evento',
+  streak: 'Sequência diária',
 }
 export const sourceLabel = (s) => SOURCE_LABEL[s] || 'Prêmio'
 

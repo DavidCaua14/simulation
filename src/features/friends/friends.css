@@ -5,13 +5,16 @@
 .fr-add-row { display: flex; align-items: center; gap: 6px; }
 .fr-at { font: 900 1.1rem var(--font-heading); color: var(--gold); }
 .fr-add-row input { flex: 1; min-width: 0; height: 40px; padding: 0 10px; border-radius: 10px; border: 1px solid var(--border); background: var(--surface-alt); color: var(--text-primary); font: 700 0.9rem var(--font-body); }
-.fr-add-row .fr-send { flex: 0 0 auto; width: auto; min-width: 0; height: 40px; padding: 0 14px; font-size: 0.85rem; }
+.fr-add-row .fr-send { flex: 0 0 auto; width: auto; min-width: 0; height: 40px; padding: 0 12px; font-size: 0.85rem; letter-spacing: 0.04em; box-shadow: none; }
+@media (max-width: 380px) { .fr-add-row .fr-send span { display: none; } .fr-add-row .fr-send { width: 44px; padding: 0; } }
 .fr-msg { margin: 0; display: flex; align-items: flex-start; gap: 6px; font-size: 0.8rem; line-height: 1.35; font-weight: 700; }
 .fr-msg svg { flex-shrink: 0; margin-top: 2px; }
 .fr-msg.is-ok { color: var(--gx-green); }
 .fr-msg.is-error { color: var(--danger); }
 .fr-msg.is-info { color: var(--gold); }
 .fr-tabs { grid-template-columns: 1fr 1fr; }
+.fr-person { animation: gx-rise 0.25s ease-out both; }
+@media (prefers-reduced-motion: reduce) { .fr-person { animation: none; } }
 .fr-scroll { flex: 1; min-height: 0; overflow-y: auto; padding-bottom: 20px; scrollbar-width: none; }
 .fr-list { display: flex; flex-direction: column; gap: 6px; }
 .fr-person { width: 100%; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 14px; background: var(--surface); border: 1px solid var(--border); color: var(--text-primary); text-align: left; font: inherit; }

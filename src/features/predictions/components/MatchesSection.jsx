@@ -6,6 +6,8 @@ import MatchCard from './MatchCard'
 import MatchDetailsSheet from './MatchDetailsSheet'
 import { BetSlipBar, BetSlipSheet } from './BetSlip'
 import { TrophyIcon } from './PredIcons'
+import { EmptyState, Skeleton } from '../../../components/ui/feedback'
+import { CalendarX, WifiOff } from 'lucide-react'
 
 export default function MatchesSection({ slip, now, balance, notify, onWalletChange }) {
   const today = dayKeyOf(new Date(now))
@@ -89,20 +91,14 @@ export default function MatchesSection({ slip, now, balance, notify, onWalletCha
       </div>
 
       <div className="pred-list">
-        {loading && <p className="pred-empty">Carregando jogos…</p>}
+        {loading && <Skeleton rows={4} />}
         {!loading && error && (
-          <div className="pred-empty">
-            <p>{error}</p>
-            <button type="button" className="gx-btn-ghost" onClick={reload}>Tentar de novo</button>
-          </div>
+          <EmptyState icon={WifiOff} title="Jogos indisponíveis" text={error} action="Tentar de novo" onAction={reload} />
         )}
         {!loading && !error && matches.length === 0 && (
-          <div className="pred-empty">
-            <p>{view === 'live' ? 'Nenhum jogo em andamento agora.' : 'Nenhum jogo neste dia.'}</p>
-            {view === 'live' && (
-              <button type="button" className="gx-btn-ghost" onClick={() => setView(today)}>Ver jogos de hoje</button>
-            )}
-          </div>
+          <EmptyState icon={CalendarX} title={view === 'live' ? 'Nada ao vivo agora' : 'Sem jogos neste dia'}
+            text={view === 'live' ? 'Nenhum jogo em andamento. Os palpites abrem antes do apito inicial.' : 'Escolha outro dia na faixa acima.'}
+            action={view === 'live' ? 'Ver jogos de hoje' : undefined} onAction={view === 'live' ? () => setView(today) : undefined} />
         )}
 
         {!loading &&

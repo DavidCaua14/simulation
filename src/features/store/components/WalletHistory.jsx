@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
-import { CircleAlert, Coins, Gem, Receipt, X, Zap } from 'lucide-react'
+import { Coins, Gem, Receipt, X, Zap } from 'lucide-react'
 import { fetchWalletHistory } from '../services/storeApi'
+import { EmptyState, Notice, Skeleton } from '../../../components/ui/feedback'
 
 // Extrato: cada entrada/saída da carteira com a origem (o servidor registra tudo em wallet_ledger).
 const REASON = {
@@ -56,9 +57,9 @@ export default function WalletHistory({ onClose }) {
         <button type="button" className="cx-sheet-x" onClick={onClose} aria-label="Fechar"><X size={16} /></button>
         <h3><Receipt size={18} /> Extrato</h3>
         <p className="cx-hint">Últimas 100 movimentações de moedas, diamantes e energia.</p>
-        {error && <p className="cx-error"><CircleAlert size={14} /> {error}</p>}
-        {!rows && !error && <p className="cx-hint center">Carregando…</p>}
-        {rows && rows.length === 0 && <p className="cx-hint center">Nenhuma movimentação ainda.</p>}
+        {error && <Notice kind="error">{error}</Notice>}
+        {!rows && !error && <Skeleton rows={5} variant="line" />}
+        {rows && rows.length === 0 && <EmptyState compact icon={Receipt} title="Extrato vazio" text="Compras, prêmios e recompensas aparecem aqui assim que acontecerem." />}
         {rows && rows.length > 0 && (
           <ul className="wh-list">
             {rows.map((e) => {

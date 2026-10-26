@@ -24,7 +24,11 @@ export default function ProfileAvatar({ profile, frame, effect, size = 108, xpPc
   return (
     <span className={`pa ${ring ? 'has-frame' : ''} ${frame?.style?.spin ? 'is-spin' : ''} ${fx ? `fx-${fx}` : ''}`} style={style}>
       <span className="pa-ring" aria-hidden="true" />
-      <span className="pa-img">{src ? <img src={src} alt="" /> : <UserIcon size={Math.round(size / 3)} />}</span>
+      <span className="pa-img">
+        {src ? <img src={src} alt="" /> : profile?.nickname ? (
+          <b className="pa-initial" style={{ fontSize: Math.round(size * 0.42) }}>{profile.nickname.charAt(0).toUpperCase()}</b>
+        ) : <UserIcon size={Math.round(size / 3)} />}
+      </span>
       {fx === 'sparks' && (
         <span className="pa-sparks" aria-hidden="true">
           <i /><i /><i /><i /><i /><i />

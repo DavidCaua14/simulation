@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { CircleAlert, Coins, Search } from 'lucide-react'
+import { ArrowLeftRight, Check, Coins, History, Search, Store, Tag } from 'lucide-react'
 import CardView from '../../cards/components/CardView'
 import { tierOf } from '../../cards/data/tiers'
 import { cancelListing, fetchMarket, fetchMyMarket, fetchSellable } from '../services/storeApi'
@@ -7,6 +7,8 @@ import { cardFacts } from './cardFacts'
 import { fmt, STATUS_LABEL, timeLeft } from './marketUtils'
 import MarketBuySheet from './MarketBuySheet'
 import MarketSellSheet from './MarketSellSheet'
+import MarketCompare from './MarketCompare'
+import { ConfirmSheet, EmptyState, Notice, RarityBadge, Skeleton } from '../../../components/ui/feedback'
 
 const VIEWS = [
   { id: 'buy', label: 'Comprar' },
@@ -20,20 +22,41 @@ const SORTS = [
   { id: 'overall', label: 'Maior nota' },
 ]
 
-function Row({ card, children, onClick }) {
+function Row({ card, children, onClick, compare }) {
   const t = tierOf(card.tier)
   const f = cardFacts(card)
-  const Tag = onClick ? 'button' : 'div'
+  const El = onClick ? 'button' : 'div'
   return (
-    <Tag type={onClick ? 'button' : undefined} className="mk-row" style={{ '--tier': t.color }} onClick={onClick}>
-      <CardView card={card} width={58} />
-      <span className="mk-row-main">
-        <strong>{card.name}</strong>
-        <small><b>{f.overall}</b> {f.position} · {t.label} · {f.club}</small>
-      </span>
-      <span className="mk-row-side">{children}</span>
-    </Tag>
+    <div className={`mk-item ${compare?.on ? 'is-cmp' : ''}`}>
+      <El type={onClick ? 'button' : undefined} className="mk-row" style={{ '--tier': t.color }} onClick={onClick}>
+        <CardView card={card} width={58} />
+        <span className="mk-row-main">
+          <strong>{card.name}</strong>
+          <small><b>{f.overall}</b> {f.position} · {f.club}</small>
+          <RarityBadge tier={card.tier} small />
+        </span>
+        <span className="mk-row-side">{children}</span>
+      </El>
+      {compare && (
+        <button type="button" className="mk-cmp-toggle" aria-pressed={compare.on} onClick={compare.toggle}
+          aria-label={compare.on ? `Tirar ${card.name} da comparação` : `Comparar ${card.name}`} disabled={!compare.on && compare.full}>
+          {compare.on ? <Check size={12} /> : <ArrowLeftRight size={12} />}
+        </button>
+      )}
+    </div>
   )
+}
+
+// Para cada carta anunciada: menor preço e quantas ofertas existem entre os anúncios carregados.
+function priceStats(items) {
+  const m = new Map()
+  for (const it of items) {
+    const s = m.get(it.card.id) || { min: Infinity, count: 0 }
+    s.min = Math.min(s.min, it.price)
+    s.count += 1
+    m.set(it.card.id, s)
+  }
+  return m
 }
 
 // Mercado entre jogadores: anúncios reais de cartas de outros usuários. Comprar / Vender / Meus anúncios.
@@ -47,6 +70,9 @@ export default function MarketTab({ wallet, onChanged, onOpenCollection, initial
   const [buying, setBuying] = useState(null)
   const [selling, setSelling] = useState(null)
   const [busyId, setBusyId] = useState(null)
+  const [cmp, setCmp] = useState([]) // até 2 anúncios para comparar
+  const [comparing, setComparing] = useState(false)
+  const [toCancel, setToCancel] = useState(null)
 
   const loadBuy = useCallback(async (f) => {
     try {
@@ -86,6 +112,8 @@ export default function MarketTab({ wallet, onChanged, onOpenCollection, initial
   }, [initialSell, sellable])
 
   const rules = market?.rules || mine?.rules
+  const stats = priceStats(market?.items || [])
+  const cmpItems = cmp.map((id) => market?.items.find((x) => x.id === id)).filter(Boolean)
   const set = (k) => (e) => setFilters((f) => ({ ...f, [k]: e.target.value }))
 
   async function cancel(id) {
@@ -117,7 +145,7 @@ export default function MarketTab({ wallet, onChanged, onOpenCollection, initial
           Taxa de {Number(rules.fee_pct).toLocaleString('pt-BR')}% descontada do vendedor · anúncios valem {rules.listing_hours} h · até {rules.max_active_listings} anúncios por jogador
         </p>
       )}
-      {error && <p className="sh-msg is-error"><CircleAlert size={14} /> {error}</p>}
+      {error && <Notice kind="error" onClose={() => setError('')}>{error}</Notice>}
 
       {view === 'buy' && (
         <>
@@ -135,16 +163,30 @@ export default function MarketTab({ wallet, onChanged, onOpenCollection, initial
             <input type="number" inputMode="numeric" placeholder="Preço mín." value={filters.min} onChange={set('min')} aria-label="Preço mínimo" />
             <input type="number" inputMode="numeric" placeholder="Preço máx." value={filters.max} onChange={set('max')} aria-label="Preço máximo" />
           </div>
-          {!market ? <p className="cx-hint center">Carregando anúncios…</p> : market.items.length === 0 ? (
-            <p className="cx-hint center">Nenhum anúncio {filters.q || filters.tier || filters.min || filters.max ? 'com esses filtros' : 'no momento'}. Que tal anunciar uma carta repetida?</p>
+          {!market ? <Skeleton rows={4} /> : market.items.length === 0 ? (
+            filters.q || filters.tier || filters.min || filters.max ? (
+              <EmptyState icon={Search} title="Nada com esses filtros" text="Tente outra raridade, outro nome ou uma faixa de preço maior."
+                action="Limpar filtros" onAction={() => setFilters({ q: '', tier: '', min: '', max: '', sort: filters.sort })} />
+            ) : (
+              <EmptyState icon={Store} title="Mercado vazio por enquanto" text="Ninguém anunciou cartas ainda. Seja o primeiro: anuncie uma carta repetida e receba moedas quando alguém comprar."
+                action="Anunciar uma carta" onAction={() => setView('sell')} />
+            )
           ) : (
             <div className="mk-list">
-              {market.items.map((it) => (
-                <Row key={it.id} card={it.card} onClick={it.mine ? undefined : () => setBuying(it)}>
-                  <b className="mk-price-tag"><Coins size={13} /> {fmt(it.price)}</b>
-                  <small>{it.mine ? 'seu anúncio' : it.seller} · {timeLeft(it.expires_at)}</small>
-                </Row>
-              ))}
+              {market.items.map((it) => {
+                const st = stats.get(it.card.id)
+                const diff = st && st.count > 1 ? Math.round(((it.price - st.min) / st.min) * 100) : null
+                const on = cmp.includes(it.id)
+                return (
+                  <Row key={it.id} card={it.card} onClick={it.mine ? undefined : () => setBuying(it)}
+                    compare={{ on, full: cmp.length >= 2, toggle: () => setCmp((c) => (on ? c.filter((x) => x !== it.id) : [...c, it.id].slice(-2))) }}>
+                    <b className="mk-price-tag"><Coins size={13} /> {fmt(it.price)}</b>
+                    {diff === 0 && <span className="mk-deal is-best">menor preço</span>}
+                    {diff > 0 && <span className="mk-deal">+{diff}% que o menor</span>}
+                    <small>{it.mine ? 'seu anúncio' : it.seller} · {timeLeft(it.expires_at)}</small>
+                  </Row>
+                )
+              })}
               {market.total > market.items.length && <p className="cx-hint center">Mostrando {market.items.length} de {market.total}. Use os filtros para achar mais.</p>}
             </div>
           )}
@@ -152,8 +194,9 @@ export default function MarketTab({ wallet, onChanged, onOpenCollection, initial
       )}
 
       {view === 'sell' && (
-        !sellable ? <p className="cx-hint center">Carregando sua coleção…</p> : sellable.length === 0 ? (
-          <p className="cx-hint center">Você ainda não tem cartas Destaque, Lenda ou Épica para vender. Básicas não entram no mercado.</p>
+        !sellable ? <Skeleton rows={3} /> : sellable.length === 0 ? (
+          <EmptyState icon={Tag} title="Nada para vender ainda" text="Só cartas Destaque, Lenda e Épica entram no mercado. Abra caixas, gire a roleta ou compre na loja para conseguir as suas."
+            action="Ver minha coleção" onAction={onOpenCollection} />
         ) : (
           <div className="mk-list">
             <p className="cx-hint">Escolha uma carta da sua coleção (Destaque, Lenda ou Épica):</p>
@@ -168,24 +211,24 @@ export default function MarketTab({ wallet, onChanged, onOpenCollection, initial
       )}
 
       {view === 'mine' && (
-        !mine ? <p className="cx-hint center">Carregando…</p> : (
+        !mine ? <Skeleton rows={3} /> : (
           <>
-            <h4 className="mk-h">À venda agora</h4>
-            {mine.active.length === 0 ? <p className="cx-hint">Nenhum anúncio ativo.</p> : (
+            <h4 className="gx-subtitle">À venda agora <small>{mine.active.length} de {rules?.max_active_listings ?? 10}</small></h4>
+            {mine.active.length === 0 ? <EmptyState compact icon={Tag} text="Nenhum anúncio ativo." action="Anunciar uma carta" onAction={() => setView('sell')} /> : (
               <div className="mk-list">
                 {mine.active.map((l) => (
                   <Row key={l.id} card={l.card}>
                     <b className="mk-price-tag"><Coins size={13} /> {fmt(l.price)}</b>
                     <small>recebe {fmt(l.seller_receives)} · {timeLeft(l.expires_at)}</small>
-                    <button type="button" className="mk-cancel" disabled={busyId === l.id} onClick={() => cancel(l.id)}>
+                    <button type="button" className="mk-cancel" disabled={busyId === l.id} onClick={() => setToCancel(l)}>
                       {busyId === l.id ? '…' : 'Cancelar'}
                     </button>
                   </Row>
                 ))}
               </div>
             )}
-            <h4 className="mk-h">Histórico</h4>
-            {mine.history.length === 0 ? <p className="cx-hint">Nenhuma venda ou compra ainda.</p> : (
+            <h4 className="gx-subtitle">Histórico</h4>
+            {mine.history.length === 0 ? <EmptyState compact icon={History} text="Nenhuma venda ou compra ainda." /> : (
               <div className="mk-list">
                 {mine.history.map((h) => (
                   <Row key={`${h.id}-${h.role}`} card={h.card}>
@@ -204,8 +247,30 @@ export default function MarketTab({ wallet, onChanged, onOpenCollection, initial
         )
       )}
 
+      {view === 'buy' && cmp.length > 0 && (
+        <div className="mk-cmp-bar" role="region" aria-label="Comparação">
+          <span><ArrowLeftRight size={14} /> {cmp.length === 1 ? 'Escolha mais 1 anúncio' : '2 anúncios escolhidos'}</span>
+          <button type="button" className="gx-btn-ghost" onClick={() => setCmp([])}>Limpar</button>
+          <button type="button" className="gx-btn" disabled={cmpItems.length < 2} onClick={() => setComparing(true)}>Comparar</button>
+        </div>
+      )}
+      {comparing && cmpItems.length === 2 && (
+        <MarketCompare listings={cmpItems} onClose={() => setComparing(false)} onBuy={(l) => { setComparing(false); setBuying(l) }} />
+      )}
+      {toCancel && (
+        <ConfirmSheet
+          title="Cancelar anúncio?"
+          text={`${toCancel.card.name} sai do mercado e volta para a sua coleção. Nada é cobrado.`}
+          confirmLabel="Cancelar anúncio"
+          cancelLabel="Manter"
+          busy={busyId === toCancel.id}
+          onCancel={() => setToCancel(null)}
+          onConfirm={() => cancel(toCancel.id).then(() => setToCancel(null))}
+        />
+      )}
       {buying && (
         <MarketBuySheet
+          offers={stats.get(buying.card.id)}
           listing={buying}
           coins={wallet.coins ?? 0}
           onClose={() => { setBuying(null); loadBuy(filters); loadMine() }}

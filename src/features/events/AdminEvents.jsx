@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
-import { CircleAlert, Pencil, Plus, Send, Trash2, X, XCircle } from 'lucide-react'
+import { Pencil, Plus, Send, Trash2, X, XCircle } from 'lucide-react'
 import { adminList, adminSave, adminSetStatus } from './eventsApi'
+import { ConfirmSheet, Notice, Skeleton } from '../../components/ui/feedback'
 import { BANNER_ICONS, CATEGORY_LABEL, fmtDate, rewardText } from './eventsUi'
 
 // Painel de eventos (só administradores — o servidor confere de novo em cada chamada).
@@ -162,7 +163,7 @@ function EventForm({ initial, meta, onCancel, onSaved }) {
       ))}
       <button type="button" className="ev-add" onClick={() => set('rewards', [...f.rewards, { kind: 'coins', amount: 50, ref: '' }])}><Plus size={14} /> recompensa</button>
 
-      {err && <p className="fr-msg is-error"><CircleAlert size={14} /> {err}</p>}
+      {err && <Notice kind="error">{err}</Notice>}
       <button type="submit" className="gx-btn" disabled={busy}>{busy ? 'Salvando…' : 'Salvar como rascunho'}</button>
       <p className="ev-note">Depois de salvo, publique na lista. Evento publicado que já começou não pode ser alterado (cancele e crie outro).</p>
     </form>
@@ -174,6 +175,7 @@ export default function AdminEvents({ onChanged }) {
   const [err, setErr] = useState('')
   const [editing, setEditing] = useState(null)
   const [busy, setBusy] = useState(null)
+  const [confirm, setConfirm] = useState(null) // evento a cancelar
 
   const load = useCallback(async () => {
     try {
@@ -198,8 +200,8 @@ export default function AdminEvents({ onChanged }) {
     }
   }
 
-  if (err && !meta) return <p className="fr-msg is-error"><CircleAlert size={14} /> {err}</p>
-  if (!meta) return <p className="cx-hint center">Carregando…</p>
+  if (err && !meta) return <Notice kind="error">{err}</Notice>
+  if (!meta) return <Skeleton rows={4} />
   if (editing) {
     return <EventForm initial={editing} meta={meta} onCancel={() => setEditing(null)} onSaved={() => { setEditing(null); load(); onChanged?.() }} />
   }
@@ -207,7 +209,7 @@ export default function AdminEvents({ onChanged }) {
   return (
     <div className="ev-admin">
       <button type="button" className="gx-btn" onClick={() => setEditing(blank())}><Plus size={16} /> Novo evento</button>
-      {err && <p className="fr-msg is-error"><CircleAlert size={14} /> {err}</p>}
+      {err && <Notice kind="error" onClose={() => setErr('')}>{err}</Notice>}
       {meta.events.map((ev) => {
         const started = new Date(ev.starts_at).getTime() <= now
         const ended = new Date(ev.ends_at).getTime() <= now
@@ -224,11 +226,22 @@ export default function AdminEvents({ onChanged }) {
                 <button type="button" onClick={() => setEditing({ ...ev, starts_at: toLocal(ev.starts_at), ends_at: toLocal(ev.ends_at), max_completions: ev.max_completions ?? '' })} aria-label="Editar"><Pencil size={14} /></button>
               )}
               {ev.status === 'draft' && !ended && <button type="button" disabled={busy === ev.id} onClick={() => setStatus(ev, 'published')} aria-label="Publicar"><Send size={14} /></button>}
-              {ev.status === 'published' && !ended && <button type="button" disabled={busy === ev.id} onClick={() => setStatus(ev, 'cancelled')} aria-label="Cancelar" className="is-danger"><XCircle size={14} /></button>}
+              {ev.status === 'published' && !ended && <button type="button" disabled={busy === ev.id} onClick={() => setConfirm(ev)} aria-label="Cancelar" className="is-danger"><XCircle size={14} /></button>}
             </span>
           </div>
         )
       })}
+      {confirm && (
+        <ConfirmSheet
+          danger
+          title="Cancelar evento?"
+          text={`"${confirm.name}" sai do ar para todos os jogadores agora. O progresso para de contar e recompensas ainda não resgatadas deixam de poder ser resgatadas. Não dá para desfazer.`}
+          confirmLabel="Cancelar evento"
+          busy={busy === confirm.id}
+          onCancel={() => setConfirm(null)}
+          onConfirm={() => setStatus(confirm, 'cancelled').then(() => setConfirm(null))}
+        />
+      )}
     </div>
   )
 }

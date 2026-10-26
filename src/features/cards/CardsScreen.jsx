@@ -12,6 +12,7 @@ import DiamondExchange from './components/DiamondExchange'
 import InboxTab from './tabs/InboxTab'
 import CollectionTab from './tabs/CollectionTab'
 import './cards.css'
+import { Skeleton } from '../../components/ui/feedback'
 
 const fmt = (n) => (n == null ? '—' : Number(n).toLocaleString('pt-BR'))
 
@@ -113,7 +114,7 @@ export default function CardsScreen({ career, params, onBack, onNavigate }) {
         <div className="cx-scroll">
           {tab === 'inbox' &&
             (inbox.loading ? (
-              <p className="cx-hint center">Carregando…</p>
+              <Skeleton rows={4} variant="line" />
             ) : (
               <InboxTab
                 boxes={inbox.boxes}
@@ -124,7 +125,7 @@ export default function CardsScreen({ career, params, onBack, onNavigate }) {
               />
             ))}
           {tab === 'collection' &&
-            (loadingCol ? <p className="cx-hint center">Carregando…</p> : <CollectionTab catalog={catalog} owned={owned} onSelect={setDetail} />)}
+            (loadingCol ? <Skeleton rows={4} variant="line" /> : <CollectionTab catalog={catalog} owned={owned} onSelect={setDetail} />)}
         </div>
 
         {opener && <BoxOpener boxes={opener} onOpened={afterOpen} onClose={closeOpener} />}

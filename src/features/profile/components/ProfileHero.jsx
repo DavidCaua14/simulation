@@ -26,6 +26,8 @@ export default function ProfileHero({ profile, preview = {}, actions = null, com
   return (
     <section className={`ph ${compact ? 'is-compact' : ''} ${eq.effect?.style?.type === 'rain' ? 'fx-rain' : ''}`} style={style} aria-label={`Perfil de ${profile?.nickname || ''}`}>
       <div className="ph-bg" style={{ backgroundImage: bg?.css || DEFAULT_BG, backgroundSize: bg?.size || 'cover' }} aria-hidden="true" />
+      <div className="ph-pitch" aria-hidden="true" />
+      {club && <div className="ph-crest" aria-hidden="true"><ClubCrest clubId={club.id} size={150} /></div>}
       {eq.effect?.style?.type === 'rain' && <div className="ph-rain" style={{ '--fx-color': eq.effect.style.color }} aria-hidden="true" />}
       {actions && <div className="ph-actions">{actions}</div>}
       <div className="ph-body">

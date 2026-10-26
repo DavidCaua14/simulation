@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react'
 import CardView from '../components/CardView'
 import { TIER_ORDER, tierOf } from '../data/tiers'
+import { EmptyState } from '../../../components/ui/feedback'
+import { Layers, Search } from 'lucide-react'
 
 // Coleção: todas as cartas do jogo; as que você ainda não tem aparecem como silhueta.
 export default function CollectionTab({ catalog, owned, onSelect }) {
@@ -58,8 +60,8 @@ export default function CollectionTab({ catalog, owned, onSelect }) {
         ))}
       </div>
 
-      {rows.length === 0 && <p className="cx-hint center">Nenhuma carta cadastrada ainda.</p>}
-      {rows.length > 0 && list.length === 0 && <p className="cx-hint center">Nada por aqui com esses filtros.</p>}
+      {rows.length === 0 && <EmptyState icon={Layers} title="Catálogo vazio" text="Nenhuma carta cadastrada ainda." />}
+      {rows.length > 0 && list.length === 0 && <EmptyState compact icon={Search} text="Nada por aqui com esses filtros." />}
 
       <div className="cx-grid">
         {list.map(({ card, qty }) => (

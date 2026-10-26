@@ -13,7 +13,7 @@ export default function ShopItem({ item, wallet, onBuy }) {
     <article className={`sh-item t-${card.tier} ${soldOut ? 'is-out' : ''}`}>
       <div className="sh-item-card">
         <CardView card={card} width={128} shine={card.tier === 'lenda'} />
-        {owned > 0 && <span className="sh-owned">Você tem {owned}</span>}
+        {owned > 0 ? <span className="sh-owned">Você tem {owned}</span> : !soldOut && <span className="sh-owned is-new">Nova</span>}
       </div>
       <h4 className="sh-item-name">{card.name}</h4>
       <p className="sh-item-facts">
