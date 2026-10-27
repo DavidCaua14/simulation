@@ -8,6 +8,10 @@ import { BetSlipBar, BetSlipSheet } from './BetSlip'
 import { TrophyIcon } from './PredIcons'
 import { EmptyState, Skeleton } from '../../../components/ui/feedback'
 import { CalendarX, WifiOff } from 'lucide-react'
+import { PREDICTION_EMBLEMS } from '../../club/data/competitionEmblems'
+
+// emblema: o que vier do banco; senão o logo oficial guardado no jogo (public/competitions)
+const emblemOf = (comp) => comp?.emblem || (PREDICTION_EMBLEMS[comp?.name] ? `${import.meta.env.BASE_URL}competitions/${PREDICTION_EMBLEMS[comp.name]}` : null)
 
 export default function MatchesSection({ slip, now, balance, notify, onWalletChange }) {
   const today = dayKeyOf(new Date(now))
@@ -106,7 +110,7 @@ export default function MatchesSection({ slip, now, balance, notify, onWalletCha
             <section key={g.id} className="pred-group">
               <header className="pred-group-head">
                 <span className="pred-group-logo">
-                  {g.comp?.emblem ? <img src={g.comp.emblem} alt="" loading="lazy" /> : <TrophyIcon />}
+                  {emblemOf(g.comp) ? <img src={emblemOf(g.comp)} alt="" loading="lazy" /> : <TrophyIcon />}
                 </span>
                 <h4 className="gx-title">{nameOf(g.id)}</h4>
                 <small>{g.list.length} {g.list.length === 1 ? 'jogo' : 'jogos'}</small>

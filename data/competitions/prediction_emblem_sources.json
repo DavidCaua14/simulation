@@ -1,0 +1,17 @@
+{
+ "Brasileirão Série A": "@brasileirao",
+ "Brasileirão Série B": "@serie_b",
+ "Brasileirão Série C": "brazil/Brazilian_Serie_C.svg",
+ "Copa Libertadores": "@libertadores",
+ "UEFA Champions League": "@ucl",
+ "Premier League": "@premier_league",
+ "Championship": "@championship",
+ "La Liga": "spain/La_Liga.svg",
+ "Serie A (Itália)": "italy/Serie_A.svg",
+ "Bundesliga": "germany/Bundesliga.svg",
+ "Ligue 1": "france/Ligue_1.svg",
+ "Primeira Liga": "portugal/Primeira_Liga.svg",
+ "Eredivisie": "netherlands/Eredivisie.svg",
+ "Eurocopa": "tournaments/UEFA_Euro_2028.svg",
+ "Copa do Mundo": "tournaments/FIFA_World_Cup_2026.svg"
+}

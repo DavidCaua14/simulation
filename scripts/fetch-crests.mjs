@@ -1,5 +1,9 @@
 #!/usr/bin/env node
 /**
+ * (LEGADO) Baixa escudos da internet. Desde a coleção de SVGs enviada pelo dono do projeto, a fonte principal é
+ * scripts/import-crests.mjs (mapa em data/clubs/crest_sources.json). Use este só para um clube novo que ainda
+ * não exista na coleção — ele não sobrescreve escudos que já estão em public/crests.
+ *
  * Baixa o ESCUDO REAL de todos os clubes cadastrados — automaticamente, sem baixar um por um.
  *
  *   node scripts/fetch-crests.mjs              -> baixa só o que ainda não existe (rode de novo para completar)
