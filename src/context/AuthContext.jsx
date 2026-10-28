@@ -95,7 +95,7 @@ export function AuthProvider({ children }) {
 
   async function signOut() {
     if (!isSupabaseConfigured) return
-    await supabase.auth.signOut()
+    return await supabase.auth.signOut()
   }
 
   return (

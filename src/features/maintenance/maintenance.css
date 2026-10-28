@@ -5,3 +5,8 @@
 .maintenance-card h1 { font-size: clamp(24px, 5vw, 32px); line-height: 1.2; margin: 0 0 20px; }
 .maintenance-card p { font-size: 16px; line-height: 1.7; color: #d7deea; }
 .maintenance-card .maintenance-note { font-size: 13px; color: #a3afc2; margin-top: 28px; }
+
+.maintenance-logout { display: block; width: 100%; min-height: 48px; margin-top: 24px; padding: 12px 24px; border: 1px solid #f6c86a; border-radius: 12px; background: #f6c86a; color: #171d29; font: inherit; font-weight: 700; cursor: pointer; }
+.maintenance-logout:hover:not(:disabled) { background: #ffda91; }
+.maintenance-logout:focus-visible { outline: 3px solid #f5f7fa; outline-offset: 4px; }
+.maintenance-logout:disabled { opacity: .6; cursor: wait; }
