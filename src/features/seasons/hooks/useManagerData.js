@@ -1,3 +1,4 @@
+import { isSessionError } from '../../../lib/sessionRecovery'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { fetchCompetitions, fetchFixtures, fetchHub } from '../services/managerApi'
 import { registerCompetitions, setSeasonCompetitions } from '../utils/seasonUtils'
@@ -29,6 +30,7 @@ export default function useManagerData() {
       setError('')
       return h
     } catch (e) {
+      if (isSessionError(e)) return null
       if (alive.current && mine === reqId.current) setError(e.message)
       return null
     } finally {

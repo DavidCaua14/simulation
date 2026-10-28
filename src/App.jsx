@@ -24,6 +24,9 @@ function Gate() {
   const { playSfx } = useAudio()
   const [career, setCareer] = useState(null)
   const [checkingCareer, setCheckingCareer] = useState(true)
+  const [careerUserId, setCareerUserId] = useState(null)
+  const [careerError, setCareerError] = useState(false)
+  const [careerAttempt, setCareerAttempt] = useState(0)
   // Navegação simples entre as telas do jogo depois do onboarding.
   // 'home' | 'tips' (palpites esportivos) | 'profile'
   const [screen, setScreen] = useState('home')
@@ -34,6 +37,7 @@ function Gate() {
   useEffect(() => {
     if (status === 'signed-out') {
       setCareer(null)
+      setCareerUserId(null)
       setScreen('home')
       setCheckingCareer(false)
       return undefined
@@ -42,15 +46,21 @@ function Gate() {
 
     let cancelled = false
     setCheckingCareer(true)
+    setCareerError(false)
     getActiveCareer(user.id).then((found) => {
       if (cancelled) return
       setCareer(found)
+      setCareerUserId(user.id)
+      setCheckingCareer(false)
+    }).catch(() => {
+      if (cancelled) return
+      setCareerError(true)
       setCheckingCareer(false)
     })
     return () => {
       cancelled = true
     }
-  }, [status, user?.id]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [status, user?.id, careerAttempt]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // 'loading': checando se já existe sessão (ex.: acabou de voltar do Google)
   if (status === 'loading') {
@@ -62,6 +72,22 @@ function Gate() {
   }
 
   if (checkingCareer) {
+    return <AppLoadingScreen label="Carregando sua carreira..." />
+  }
+
+  if (careerError) {
+    return (
+      <main className="app-error" role="alert">
+        <h2>Não foi possível carregar sua carreira</h2>
+        <p>Tente novamente para continuar de onde parou.</p>
+        <button type="button" className="btn-primary" onClick={() => setCareerAttempt((attempt) => attempt + 1)}>
+          Tentar novamente
+        </button>
+      </main>
+    )
+  }
+
+  if (careerUserId !== user?.id) {
     return <AppLoadingScreen label="Carregando sua carreira..." />
   }
 
@@ -84,7 +110,7 @@ function Gate() {
 
   // Nível, XP, moedas e clube mudam no banco enquanto se joga: ao voltar, recarrega a carreira.
   const backHome = () => {
-    getActiveCareer(user.id).then((fresh) => fresh && setCareer(fresh))
+    getActiveCareer(user.id).then((fresh) => fresh && setCareer(fresh)).catch(() => setCareerError(true))
     setScreen('home')
   }
 

@@ -1,9 +1,11 @@
 import { supabase } from '../../../lib/supabaseClient'
+import { isSessionError } from '../../../lib/sessionRecovery'
 
 // Modo Carreira (treinador): tudo é calculado no banco (supabase/manager/*.sql).
 // O app só chama as funções abaixo — nenhum resultado é decidido no navegador.
 async function unwrap(promise) {
   const { data, error } = await promise
+  if (isSessionError(error)) throw error
   if (error) throw new Error(error.message || 'Erro inesperado. Tente novamente.')
   return data
 }

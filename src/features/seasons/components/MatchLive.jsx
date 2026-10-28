@@ -1,3 +1,4 @@
+import { isSessionError } from '../../../lib/sessionRecovery'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Ambulance, ChevronsRight, FastForward, Pause, Play, Repeat2, Settings2, Square, Users } from 'lucide-react'
 import ClubCrest from '../../club/components/ClubCrest'
@@ -133,6 +134,7 @@ export default function MatchLive({ initial, myClub, onFinished, notify }) {
         setPending(EMPTY)
         stopRef.current = STOPS.has(r.stop) ? { kind: r.stop, minute: r.minute } : null
       } catch (e) {
+        if (isSessionError(e)) return
         notify?.(e.message, 'alert')
         setPending(EMPTY)
       } finally {

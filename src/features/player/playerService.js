@@ -27,8 +27,7 @@ export async function getActiveCareer(userId) {
     .maybeSingle()
 
   if (error) {
-    console.error('[getActiveCareer]', error)
-    return null
+    throw error
   }
   return data ? mapRowToCareer(data) : null
 }

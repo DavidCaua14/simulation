@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useRef, useState } from 'react'
 import { supabase, isSupabaseConfigured } from '../lib/supabaseClient'
+import { onSessionExpired, resetSessionRecovery } from '../lib/sessionRecovery'
 
 const AuthContext = createContext(null)
 
@@ -38,33 +39,49 @@ export function AuthProvider({ children }) {
     const urlError = readOAuthErrorFromUrl()
     if (urlError) setAuthError(urlError)
 
-    // Ao voltar do Google, o Supabase lê o token da própria URL e resolve a
-    // sessão aqui — sem precisarmos fazer nada manual com a URL.
-    // Os console.log ficam de propósito: se algo travar em produção, é o
-    // primeiro lugar pra olhar (DevTools → Console).
-    supabase.auth.getSession().then(({ data, error }) => {
-      if (error) {
-        console.error('[auth] erro ao checar sessão:', error.message)
-        setAuthError(error.message)
-      }
-      console.log('[auth] sessão inicial:', data.session ? `logado como ${data.session.user.email}` : 'nenhuma sessão encontrada')
-      setUser(data.session?.user ?? null)
-      setStatus(data.session?.user ? 'signed-in' : 'signed-out')
+    let alive = true
+    let revision = 0
+    let expired = false
+    const applySession = (session) => {
+      if (!alive || (expired && session)) return
+      setUser(session?.user ?? null)
+      setStatus(session?.user ? 'signed-in' : 'signed-out')
+      if (session) resetSessionRecovery()
+    }
+    const unsubscribeExpired = onSessionExpired(() => {
+      expired = true
+      revision++
+      setUser(null)
+      setStatus('signed-out')
+      setAuthError('')
+      signingIn.current = false
+      // Fora de callbacks/locks do SDK. Não revoga sessões de outros aparelhos.
+      queueMicrotask(() => { void supabase.auth.signOut({ scope: 'local' }).catch(() => {}) })
+    })
+    const { data: subscription } = supabase.auth.onAuthStateChange((event, session) => {
+      revision++
+      if (event === 'SIGNED_IN') expired = false
+      if (event === 'SIGNED_OUT') signingIn.current = false
+      applySession(session)
+    })
 
-      // Limpa o #access_token=... da barra de endereço depois de lido —
-      // só estética/segurança, não é necessário pra sessão funcionar.
+    const initialRevision = revision
+    supabase.auth.getSession().then(({ data, error }) => {
+      if (!alive || revision !== initialRevision) return
+      // Erros de autenticação não são exibidos como erros técnicos no login.
+      applySession(error ? null : data.session)
       if (window.location.hash.includes('access_token')) {
         window.history.replaceState(null, '', window.location.pathname + window.location.search)
       }
+    }).catch(() => {
+      if (alive && revision === initialRevision) applySession(null)
     })
 
-    const { data: subscription } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log('[auth] evento:', event, session ? `usuário ${session.user.email}` : '(sem sessão)')
-      setUser(session?.user ?? null)
-      setStatus(session?.user ? 'signed-in' : 'signed-out')
-    })
-
-    return () => subscription.subscription.unsubscribe()
+    return () => {
+      alive = false
+      unsubscribeExpired()
+      subscription.subscription.unsubscribe()
+    }
   }, [])
 
   async function signInWithGoogle() {

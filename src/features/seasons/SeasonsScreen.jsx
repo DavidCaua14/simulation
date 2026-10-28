@@ -1,3 +1,4 @@
+import { isSessionError } from '../../lib/sessionRecovery'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import AppShell from '../../components/layout/AppShell'
 import { getClubById } from '../club/data/clubs'
@@ -78,6 +79,7 @@ export default function SeasonsScreen({ onBack }) {
     try {
       return await fn()
     } catch (e) {
+      if (isSessionError(e)) return null
       notify(e.message, 'alert')
       refresh({ silent: true })
       return null
