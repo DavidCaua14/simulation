@@ -72,3 +72,9 @@ Não usar os antigos `99_rollback.sql` para esta atualização: eles removem est
 ## Evidência desta alteração
 
 PostgreSQL 17: pacote transacional aplicado sobre carreira legada, reaplicação das seis migrações, continuidade v1, suítes existentes do treinador/competições, integridade/RLS/histórico, 105 certificados e 300 partidas de calibração passaram. Duas conexões simultâneas criaram exatamente uma temporada. O navegador validou análise pré-jogo, plano adversário ao vivo, instruções de entradas e compatibilidade com backend antigo em 390/1280 px. Build aprovado. O lint geral ainda aponta 57 erros preexistentes; os novos componentes e serviços verificados isoladamente passaram. Nenhuma migração foi aplicada ao Supabase real nesta etapa.
+
+## Execução manual e erro de SQL incompleto
+
+O pacote completo também está versionado em [supabase/releases/temporadas_v2.sql](../supabase/releases/temporadas_v2.sql). É gerado por `node scripts/build-seasons-release.mjs` e termina em `commit;`. No GitHub, use **Raw** ou **Download raw file** para obter o conteúdo inteiro; a prévia de um link/arquivo pode estar truncada.
+
+No SQL Editor do Supabase, abra uma nova consulta, cole o arquivo inteiro e execute sem selecionar apenas uma parte. Uma seleção que termine dentro de uma função `AS $$ ... $$` produz `unterminated dollar-quoted string`. Adicionar apenas um fechamento `$$` ao trecho cortado não restaura o restante da migração. Rode primeiro o preflight e mantenha a manutenção ativa conforme as instruções acima.
