@@ -43,7 +43,7 @@ export default function CreatePlayerScreen({ onCreated }) {
       const career = await createPlayer({ nickname, avatarId, position, jerseyNumber })
       onCreated?.(career)
     } catch (err) {
-      setError(err.message || 'Não foi possível criar o jogador.')
+      setError(err.message || 'Não foi possível criar o técnico.')
     } finally {
       setLoading(false)
     }
@@ -51,10 +51,10 @@ export default function CreatePlayerScreen({ onCreated }) {
 
   return (
     <div className="create-player">
-      <LoadingOverlay show={loading} label="Criando jogador..." />
+      <LoadingOverlay show={loading} label="Criando técnico..." />
 
       <div className="create-player-intro">
-        <h1 className="heading">Novo Jogador</h1>
+        <h1 className="heading">Novo Técnico</h1>
         <p>
           Configure sua primeira temporada. Você começa aos {FIXED_AGE} anos, com
           atributos baixos, e evolui treinando e jogando.
@@ -102,7 +102,7 @@ export default function CreatePlayerScreen({ onCreated }) {
               <AlertIcon /> {nicknameError}
             </p>
           )}
-          <p className="field-hint">Único no jogo — será usado nos duelos 1x1.</p>
+          <p className="field-hint">Único no jogo — identifica seu técnico.</p>
         </section>
 
         <section className="card form-section">

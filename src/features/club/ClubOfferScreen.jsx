@@ -13,10 +13,10 @@ import './club-offer.css'
 
 function buildScript(nickname) {
   return [
-    `Fala, ${nickname}! Seja bem-vindo ao futebol profissional.`,
-    'Sou seu empresário — a partir de agora cuido da sua carreira.',
-    'Boa notícia: dois clubes já mandaram proposta depois de ver seu potencial.',
-    'Todo mundo começa de baixo. Joga bem, que as propostas melhores vêm depois. Escolhe onde você quer começar:',
+    `Fala, ${nickname}! Seja bem-vindo à carreira de técnico.`,
+    'Sou seu empresário — vou ajudar na sua carreira como técnico.',
+    'Boa notícia: dois clubes já mandaram proposta para você assumir o comando.',
+    'Todo mundo começa de baixo. Comande bem seu time, que as propostas melhores vêm depois. Escolhe onde você quer começar:',
   ]
 }
 

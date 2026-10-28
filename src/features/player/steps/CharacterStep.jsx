@@ -27,8 +27,8 @@ export default function CharacterStep({ value, onChange, onNext }) {
   return (
     <div className="step-screen">
       <div className="step-heading">
-        <h1 className="heading">Crie seu personagem</h1>
-        <p>Monte a aparência do seu jogador — dá para adicionar acessórios da loja depois.</p>
+        <h1 className="heading">Crie seu técnico</h1>
+        <p>Monte a aparência do seu técnico — dá para adicionar acessórios da loja depois.</p>
       </div>
 
       <div className="step-body character-step-body">

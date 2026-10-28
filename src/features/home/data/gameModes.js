@@ -32,7 +32,7 @@ export const GAME_MODES = [
   {
     id: 'online-match',
     title: 'Partida Online',
-    desc: 'Desafie outros jogadores e mostre seu talento!',
+    desc: 'Desafie outros técnicos e mostre sua estratégia!',
     Icon: OnlineMatchIcon,
     image: confronto,
     locked: true,
@@ -48,7 +48,7 @@ export const GAME_MODES = [
   {
     id: 'ranking',
     title: 'Ranking',
-    desc: 'Veja sua posição entre os melhores jogadores!',
+    desc: 'Veja sua posição entre os melhores técnicos!',
     Icon: RankingIcon,
     image: ranking,
     locked: true,

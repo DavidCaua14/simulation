@@ -8,7 +8,7 @@ export default function AvatarStep({ value, onChange, onNext }) {
     <div className="step-screen">
       <div className="step-heading">
         <h1 className="heading">Escolha seu avatar</h1>
-        <p>Esse é o rosto do seu jogador dentro do jogo. Dá para trocar depois na loja.</p>
+        <p>Esse é o rosto do seu técnico dentro do jogo. Dá para trocar depois na loja.</p>
       </div>
 
       <div className="step-body">

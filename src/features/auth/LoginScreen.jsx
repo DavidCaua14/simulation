@@ -5,10 +5,10 @@ import loginBg from './assets/login-bg.webp'
 import './login-screen.css'
 
 const FEATURES = [
-  { Icon: EvolveIcon, top: 'EVOLUA', bottom: 'SEU PERSONAGEM' },
-  { Icon: TeamIcon, top: 'DEFENDA', bottom: 'SEU TIME' },
-  { Icon: RankIcon, top: 'CONQUISTE', bottom: 'NOVOS NÍVEIS' },
-  { Icon: SoccerBallIcon, top: 'VIVA ESSA', bottom: 'JORNADA' },
+  { Icon: EvolveIcon, top: 'EVOLUA', bottom: 'SEU TÉCNICO' },
+  { Icon: TeamIcon, top: 'COMANDE', bottom: 'SEU TIME' },
+  { Icon: RankIcon, top: 'CONQUISTE', bottom: 'TÍTULOS' },
+  { Icon: SoccerBallIcon, top: 'FAÇA', bottom: 'HISTÓRIA' },
 ]
 
 export default function LoginScreen() {
@@ -29,20 +29,20 @@ export default function LoginScreen() {
               <SoccerBallIcon size={26} className="brand-ball" />
             </div>
             <h1 className="brand-title">
-              <span className="brand-line-1">SEU JOGADOR</span>
-              <span className="brand-line-2">SUA JORNADA</span>
+              <span className="brand-line-1">SEU CLUBE</span>
+              <span className="brand-line-2">SUA HISTÓRIA</span>
             </h1>
             <div className="brand-tagline">
               <span className="tagline-rule" />
-              <span>RPG + FUTEBOL</span>
+              <span>GESTÃO + FUTEBOL</span>
               <span className="tagline-rule" />
             </div>
           </div>
 
           <div className="login-bottom">
-            <h2 className="login-headline">ENTRE EM CAMPO</h2>
+            <h2 className="login-headline">ASSUMA O COMANDO</h2>
             <p className="login-subline">
-              EVOLUA <strong>SEU JOGADOR</strong>. CONQUISTE <strong>SEU TIME</strong>.
+              COMANDE <strong>SEU TIME</strong>. CONQUISTE <strong>TÍTULOS</strong>.
             </p>
 
             <div className="feature-row">

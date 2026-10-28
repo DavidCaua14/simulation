@@ -9,7 +9,7 @@ export default function PlayerCard({ appearance, nickname, countryId, positionLa
       </div>
       <div className="player-card-info">
         <strong>
-          {nickname || 'Seu jogador'}
+          {nickname || 'Seu técnico'}
           {countryId && <CountryFlag countryId={countryId} className="player-card-flag" />}
         </strong>
         <span>

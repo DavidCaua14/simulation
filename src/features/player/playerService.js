@@ -1,4 +1,4 @@
-// Camada de dados do jogador/carreira — agora gravando de verdade no
+// Camada de dados do técnico/carreira — agora gravando de verdade no
 // Supabase (tabela public.careers, ver supabase/schema.sql), não mais em
 // localStorage. Todas as funções são assíncronas por causa disso.
 import { supabase } from '../../lib/supabaseClient'
@@ -13,7 +13,7 @@ export async function hasActiveCareer(userId) {
 }
 
 // Busca a carreira ativa do usuário logado — é com isso que o app sabe em
-// qual tela retomar (criar personagem / escolher clube / início) toda vez
+// qual tela retomar (criar técnico / escolher clube / início) toda vez
 // que carrega, inclusive depois de um F5. A "memória" de verdade é o banco,
 // nunca o estado do React.
 export async function getActiveCareer(userId) {
@@ -52,7 +52,7 @@ export async function isNicknameTaken(nickname) {
 
 export async function createPlayer({ userId, nickname, photoId, country, age }) {
   if (!userId) {
-    throw new Error('Você precisa estar logado para criar um personagem.')
+    throw new Error('Você precisa estar logado para criar um técnico.')
   }
 
   const ageNumber = Number(age)
@@ -82,7 +82,7 @@ export async function createPlayer({ userId, nickname, photoId, country, age }) 
       throw new Error('Você já tem uma carreira ativa.')
     }
     console.error('[createPlayer]', error)
-    throw new Error('Não foi possível criar o personagem. Tente novamente.')
+    throw new Error('Não foi possível criar o técnico. Tente novamente.')
   }
 
   return mapRowToCareer(data)

@@ -235,7 +235,7 @@ export default function AdminEvents({ onChanged }) {
         <ConfirmSheet
           danger
           title="Cancelar evento?"
-          text={`"${confirm.name}" sai do ar para todos os jogadores agora. O progresso para de contar e recompensas ainda não resgatadas deixam de poder ser resgatadas. Não dá para desfazer.`}
+          text={`"${confirm.name}" sai do ar para todos os técnicos agora. O progresso para de contar e recompensas ainda não resgatadas deixam de poder ser resgatadas. Não dá para desfazer.`}
           confirmLabel="Cancelar evento"
           busy={busy === confirm.id}
           onCancel={() => setConfirm(null)}

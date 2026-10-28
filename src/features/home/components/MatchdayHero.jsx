@@ -64,7 +64,7 @@ export default function MatchdayHero({ club: initialClub, player, onPlay }) {
           )}
         </p>
         <button type="button" className="gx-btn hm-hero-btn" onClick={onPlay}>
-          {unemployed ? <Briefcase size={18} /> : <Play size={18} fill="currentColor" />} {unemployed ? 'Carreira' : 'Jogar'}
+          {unemployed ? <Briefcase size={18} /> : <Play size={18} fill="currentColor" />} {unemployed ? 'Carreira' : 'Comandar'}
         </button>
       </div>
     </section>

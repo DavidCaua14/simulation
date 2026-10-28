@@ -28,7 +28,7 @@ export default function CharacterCard({ photo, nickname, countryId, age, level, 
 
       <div className="nameplate">
         <div className={`nameplate-name ${nickname ? '' : 'is-placeholder'}`}>
-          <span>{nickname || 'Novo jogador'}</span>
+          <span>{nickname || 'Novo técnico'}</span>
           {countryId && <CountryFlag countryId={countryId} />}
         </div>
         {subtitle && <div className="nameplate-sub">{subtitle}</div>}

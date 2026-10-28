@@ -37,8 +37,8 @@ const CUR = {
 function detailText(e) {
   const d = e.detail
   if (!d) return null
-  if (e.reason === 'market_buy') return `${d.card} · de ${d.other || 'jogador'}`
-  if (e.reason === 'market_sale') return `${d.card} · para ${d.other || 'jogador'} (taxa descontada)`
+  if (e.reason === 'market_buy') return `${d.card} · de ${d.other || 'técnico'}`
+  if (e.reason === 'market_sale') return `${d.card} · para ${d.other || 'técnico'} (taxa descontada)`
   if (d.card) return d.card
   if (d.event) return d.event
   return null

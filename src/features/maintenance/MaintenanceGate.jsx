@@ -72,7 +72,7 @@ export default function MaintenanceGate({ children }) {
   return (
     <main className="maintenance-page">
       <section className="maintenance-card" aria-labelledby="maintenance-title">
-        <span className="maintenance-badge">SEU JOGADOR · SUA JORNADA</span>
+        <span className="maintenance-badge">SEU CLUBE · SUA HISTÓRIA</span>
         <span className="maintenance-symbol" aria-hidden="true">⚽</span>
         <h1 id="maintenance-title">Estamos em manutenção</h1>
         <p role="status">{maintenance.message}</p>

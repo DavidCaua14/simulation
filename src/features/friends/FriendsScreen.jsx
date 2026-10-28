@@ -88,7 +88,7 @@ export default function FriendsScreen({ onBack }) {
           <label htmlFor="fr-name">Adicionar amigo pelo username</label>
           <div className="fr-add-row">
             <span className="fr-at">@</span>
-            <input id="fr-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="username do jogador" autoComplete="off" autoCapitalize="off" spellCheck="false" maxLength={32} />
+            <input id="fr-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="username do técnico" autoComplete="off" autoCapitalize="off" spellCheck="false" maxLength={32} />
             <button type="submit" className="gx-btn fr-send" disabled={busy === 'invite'} aria-label="Convidar"><UserPlus size={17} /><span>{busy === 'invite' ? '…' : 'Convidar'}</span></button>
           </div>
           {msg && <Notice kind={msg.kind} onClose={() => setMsg(null)}>{msg.text}</Notice>}

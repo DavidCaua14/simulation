@@ -23,7 +23,7 @@ export default function NicknameStep({ value, onChange, onNext, onBack }) {
     <div className="step-screen">
       <div className="step-heading">
         <h1 className="heading">Nickname e país</h1>
-        <p>O nickname é único no jogo e usado nos duelos 1x1. O país define os times disponíveis na carreira.</p>
+        <p>O nickname é único no jogo e identifica seu técnico. O país define os times disponíveis na carreira.</p>
       </div>
 
       <div className="step-body">

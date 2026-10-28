@@ -47,7 +47,7 @@ export default function CreatePlayerWizard({ onCreated }) {
       const career = await createPlayer(form)
       onCreated?.(career)
     } catch (err) {
-      setSubmitError(err.message || 'Não foi possível criar o jogador.')
+      setSubmitError(err.message || 'Não foi possível criar o técnico.')
     } finally {
       setSubmitting(false)
     }
@@ -66,7 +66,7 @@ export default function CreatePlayerWizard({ onCreated }) {
       }
       center={<StepDots total={STEPS.length} current={stepIndex} />}
     >
-      <LoadingOverlay show={submitting} label="Criando jogador..." />
+      <LoadingOverlay show={submitting} label="Criando técnico..." />
 
       {step === 'character' && <CharacterStep value={form} onChange={updateForm} onNext={goNext} />}
       {step === 'nickname' && (

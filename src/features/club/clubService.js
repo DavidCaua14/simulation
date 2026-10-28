@@ -36,7 +36,7 @@ export async function chooseClub({ careerId, offerId }) {
 }
 
 // Regras de início por nacionalidade (tabela sim_start_rules — editável sem mexer no código).
-// Usado na criação do personagem para explicar o que cada nacionalidade recebe.
+// Usado na criação do técnico para explicar o que cada nacionalidade recebe.
 export async function fetchStartRules() {
   const { data, error } = await supabase.from('sim_start_rules').select('country, name, summary').eq('active', true)
   if (error) {

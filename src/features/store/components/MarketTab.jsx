@@ -59,7 +59,7 @@ function priceStats(items) {
   return m
 }
 
-// Mercado entre jogadores: anúncios reais de cartas de outros usuários. Comprar / Vender / Meus anúncios.
+// Mercado entre técnicos: anúncios reais de cartas de outros usuários. Comprar / Vender / Meus anúncios.
 export default function MarketTab({ wallet, onChanged, onOpenCollection, initialSell }) {
   const [view, setView] = useState(initialSell ? 'sell' : 'buy')
   const [filters, setFilters] = useState({ q: '', tier: '', min: '', max: '', sort: 'newest' })
@@ -131,7 +131,7 @@ export default function MarketTab({ wallet, onChanged, onOpenCollection, initial
   }
 
   return (
-    <section className="mk" aria-label="Mercado entre jogadores">
+    <section className="mk" aria-label="Mercado entre técnicos">
       <div className="mk-views" role="tablist">
         {VIEWS.map((v) => (
           <button key={v.id} type="button" role="tab" aria-selected={view === v.id} className={view === v.id ? 'is-on' : ''} onClick={() => setView(v.id)}>
@@ -142,7 +142,7 @@ export default function MarketTab({ wallet, onChanged, onOpenCollection, initial
       </div>
       {rules && (
         <p className="mk-rules">
-          Taxa de {Number(rules.fee_pct).toLocaleString('pt-BR')}% descontada do vendedor · anúncios valem {rules.listing_hours} h · até {rules.max_active_listings} anúncios por jogador
+          Taxa de {Number(rules.fee_pct).toLocaleString('pt-BR')}% descontada do vendedor · anúncios valem {rules.listing_hours} h · até {rules.max_active_listings} anúncios por técnico
         </p>
       )}
       {error && <Notice kind="error" onClose={() => setError('')}>{error}</Notice>}

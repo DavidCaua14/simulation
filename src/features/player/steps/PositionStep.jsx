@@ -7,7 +7,7 @@ export default function PositionStep({ value, onChange, onNext, onBack }) {
     <div className="step-screen">
       <div className="step-heading">
         <h1 className="heading">Posição em campo</h1>
-        <p>Toque na escalação para escolher onde seu jogador vai atuar na carreira.</p>
+        <p>Toque na escalação para conhecer as posições dos atletas do seu time.</p>
       </div>
 
       <div className="step-body position-step-body">

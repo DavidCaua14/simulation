@@ -12,7 +12,7 @@ import { fetchStartRules } from '../club/clubService'
 import stageBg from '../home/assets/temporadas.webp'
 import './create-character.css'
 
-// Criação do treinador: o personagem fica no centro (palco iluminado), a ficha logo abaixo
+// Criação do treinador: o perfil fica no centro (palco iluminado), a ficha logo abaixo
 // e o botão de iniciar a carreira fixo no rodapé. A lógica (validação, checagem do username
 // no banco, criação da carreira) é a mesma de antes.
 export default function CreateCharacterScreen({ userId, onCreated }) {
@@ -100,7 +100,7 @@ export default function CreateCharacterScreen({ userId, onCreated }) {
       setCreated(career)
       onCreated?.(career)
     } catch (err) {
-      setSubmitError(err.message || 'Não foi possível criar o personagem.')
+      setSubmitError(err.message || 'Não foi possível criar o técnico.')
     } finally {
       setSubmitting(false)
     }
@@ -118,7 +118,7 @@ export default function CreateCharacterScreen({ userId, onCreated }) {
       <span className="ca-beam left" aria-hidden="true" />
       <span className="ca-beam right" aria-hidden="true" />
 
-      <span className="ca-kicker">{created ? 'Contrato de estreia' : 'Sua carreira começa aqui'}</span>
+      <span className="ca-kicker">{created ? 'Contrato de estreia' : 'Sua carreira de técnico começa aqui'}</span>
 
       <div className="ca-avatar">
         <span className="ca-avatar-glow" aria-hidden="true" />
@@ -184,7 +184,7 @@ export default function CreateCharacterScreen({ userId, onCreated }) {
           <div className="ca-scroll">
             {stage}
             <p className="ca-success">
-              <CheckIcon /> Sua carreira começou. Bem-vindo, {created.player.nickname}!
+              <CheckIcon /> Sua carreira como técnico começou. Bem-vindo, {created.player.nickname}!
             </p>
           </div>
         </div>
@@ -201,7 +201,7 @@ export default function CreateCharacterScreen({ userId, onCreated }) {
               {/* Username */}
               <div className="ca-field">
                 <label className="ca-label" htmlFor="username">
-                  Username <em>usado nos duelos 1x1</em>
+                  Username <em>identifica seu técnico</em>
                 </label>
                 <div className={`ca-input ${usernameError ? 'is-error' : usernameValid ? 'is-ok' : ''}`}>
                   <span className="ca-input-at" aria-hidden="true">
