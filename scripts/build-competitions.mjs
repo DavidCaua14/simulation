@@ -50,6 +50,7 @@ async function main() {
   const clubsJson = JSON.parse(await readFile(P('data/clubs/clubs_evolution.json'), 'utf8'))
   const comps = JSON.parse(await readFile(P('data/competitions/competitions.json'), 'utf8'))
   const tpl = JSON.parse(await readFile(P('data/competitions/ucl_swiss_templates.json'), 'utf8'))
+  const certificates = JSON.parse(await readFile(P('data/competitions/ucl_draw_certificates.json'), 'utf8'))
   const oldSeed = await readFile(P('supabase/seasons/02_seed.sql'), 'utf8')
   const oldIds = new Set([...oldSeed.matchAll(/^\('([a-z0-9-]+)',/gm)].map((m) => m[1]))
 
@@ -112,7 +113,10 @@ update public.sim_clubs set tier = 'serie_b' where id in ('fortaleza', 'juventud
 `
   for (const c of comps.competitions) {
     const rules = { ...c.rules }
-    if (c.id === 'ucl') rules.swiss_templates = tpl.templates
+    if (c.id === 'ucl') {
+      rules.swiss_templates = tpl.templates
+      rules.swiss_certificates = certificates.certificates
+    }
     sql += `insert into public.sim_competitions (id, name, short_name, sort_order, xp_mult, rules, region, kind, division, ref_season, sources, theme, active)
 values (${[q(c.id), q(c.name), q(c.short_name), c.sort_order, c.xp_mult, j(rules), q(c.region), q(c.kind), c.division ?? 'null', q(c.ref_season), j(c.sources), j(c.theme), 'true'].join(', ')})
 on conflict (id) do update set name = excluded.name, short_name = excluded.short_name, sort_order = excluded.sort_order, xp_mult = excluded.xp_mult,

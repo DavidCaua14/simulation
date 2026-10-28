@@ -1,0 +1,2 @@
+# Apenas para gerar certificados; não é dependência do jogo nem dos testes SQL.
+ortools==9.15.6755

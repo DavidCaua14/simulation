@@ -27,7 +27,12 @@ supabase/evolution/11_profile.sql           <- perfil no servidor, carta em dest
 supabase/evolution/12_friends.sql           <- amigos e convites (com tempo real)
 supabase/evolution/13_events.sql            <- eventos recorrentes, sequência diária e painel de administração
 supabase/evolution/14_security.sql          <- origem de toda movimentação, funções internas fora da API, limites de requisição
-supabase/evolution/15+ ...                  <- próximas etapas
+supabase/evolution/15_season_integrity.sql  <- chaves compostas, resultados protegidos e calendário
+supabase/evolution/16_match_simulation.sql  <- motor versionado, IA e disciplina
+supabase/evolution/17_season_draws.sql      <- tabelas finais e classificação por mérito
+supabase/evolution/18_swiss_certificates.sql <- certificados dos sorteios suíços
+supabase/evolution/19_opponent_analysis.sql <- análise do rival e histórico
+supabase/evolution/20_pending_calendar_repair.sql <- somente rodadas futuras; snapshots legados
 ```
 
 Banco que já estava no ar: rode só `evolution/01`, `evolution/02`, `manager/02_players_seed.sql` (gerado de novo) e
@@ -110,3 +115,7 @@ e `supabase/manager/03_engine.sql`, `04_career.sql`.
 * Limites por usuário: tabela `rate_limit_rules` (ajuste `max_hits`/`window_seconds` sem mexer em código).
 * Função antiga nova que mexa na carteira sem `econ_apply`/`econ_tag`: registre-a em `econ_reason_map` para o extrato
   mostrar a origem. Detalhes: `docs/EVOLUCAO_13_SEGURANCA.md`.
+
+## Reestruturação do Modo Temporadas
+
+Ver [TEMPORADAS_V2.md](../../docs/TEMPORADAS_V2.md) para causas, critérios, testes isolados, limitações dos formatos e implantação transacional com backup e preflight. Não executar os scripts de suporte/teste no banco dos usuários.

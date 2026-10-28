@@ -108,7 +108,7 @@ create policy "select_own_stats" on public.prediction_stats for select to authen
 
 -- Ranking público (só quem tem pontos > 0), sem expor dados sensíveis
 create or replace function public.get_prediction_leaderboard(p_limit int default 50)
-returns table (position bigint, career_id uuid, nickname text, photo_id text, level int,
+returns table ("position" bigint, career_id uuid, nickname text, photo_id text, level int,
                points int, tickets_won int)
 language sql security definer set search_path = public as $$
   select row_number() over (order by s.points desc, s.tickets_won desc, c.nickname),

@@ -1,3 +1,4 @@
+import { OpponentTactics } from './OpponentScout'
 import { isSessionError } from '../../../lib/sessionRecovery'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Ambulance, ChevronsRight, FastForward, Pause, Play, Repeat2, Settings2, Square, Users } from 'lucide-react'
@@ -290,6 +291,7 @@ export default function MatchLive({ initial, myClub, onFinished, notify }) {
           </div>
         )}
 
+        {data.engine_version === 1 && <p className="sn-hint">Esta partida começou antes da atualização e mantém as regras de simulação anteriores até terminar.</p>}
         {tab === 'lineups' && (
           <div className="ml-lineups">
             {['h', 'a'].map((sd) => (
@@ -298,6 +300,7 @@ export default function MatchLive({ initial, myClub, onFinished, notify }) {
                   <ClubCrest clubId={sd === 'h' ? data.home : data.away} size={18} /> {getClubById(sd === 'h' ? data.home : data.away)?.name}
                   <small>{data.formation?.[sd === 'h' ? 0 : 1]}</small>
                 </h4>
+                {sd === oside && <OpponentTactics formation={data.formation?.[sd === 'h' ? 0 : 1]} tactics={data.tactics?.[sd]} live />}
                 <ul>
                   {players
                     .filter((p) => p.side === sd && p.status !== 'bench')
@@ -417,6 +420,7 @@ export default function MatchLive({ initial, myClub, onFinished, notify }) {
 
       {panel && (
         <MatchLineupEditor
+          engineVersion={data.engine_version ?? 1}
           catalog={catalog}
           players={players}
           squadById={squadById}

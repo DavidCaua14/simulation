@@ -75,3 +75,6 @@ export function fetchCompetitions() {
   return compsPromise
 }
 
+
+// Leitura do rival sempre limitada à temporada da conta autenticada.
+export const fetchOpponentReport = (fixtureId) => rpc('mgr_opponent_report', { p_fixture: fixtureId })

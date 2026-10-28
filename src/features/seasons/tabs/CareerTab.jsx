@@ -1,3 +1,4 @@
+import StandingsTable from '../components/StandingsTable'
 import { useEffect, useRef, useState } from 'react'
 import { Briefcase, CalendarRange, Coins, DoorOpen, Flag, History, Target, Trophy } from 'lucide-react'
 import ClubCrest from '../../club/components/ClubCrest'
@@ -330,6 +331,15 @@ export default function CareerTab({ ctx, initialView, actions }) {
                         ))}
                     </ul>
                   )}
+                  {Object.entries(s.final_tables || {}).map(([competition, rows]) => (
+                    <details className="sn-sec" key={competition}>
+                      <summary>Classificação final · {COMP_SHORT[competition] || competition}</summary>
+                      <StandingsTable rows={rows} myClub={s.club_id} zones={[]} mode="history" />
+                    </details>
+                  ))}
+                  {s.summary?.transition?.qualified && Object.entries(s.summary.transition.qualified).map(([competition, clubs]) => (
+                    <p className="sn-hint" key={competition}>Classificados · {COMP_SHORT[competition] || competition}: {clubs.map((id) => getClubById(id)?.name || id).join(', ')}</p>
+                  ))}
                   {s.objectives?.length > 0 && (
                     <ul className="sy-objs">
                       {s.objectives

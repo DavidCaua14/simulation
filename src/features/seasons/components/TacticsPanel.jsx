@@ -1,7 +1,7 @@
 import { DEFAULT_TACTICS, MENTALITY, MENTALITY_EFFECT, TACTIC_GROUPS } from '../utils/managerUtils'
 
 // Instruções do time. Cada escolha mostra o efeito principal — o mesmo que o motor aplica na partida.
-export default function TacticsPanel({ tactics, onChange, compact = false }) {
+export default function TacticsPanel({ tactics, onChange, compact = false, engineVersion = 1 }) {
   const t = { ...DEFAULT_TACTICS, ...(tactics || {}) }
   const set = (k, v) => onChange({ ...t, [k]: v })
   const ment = MENTALITY.find((m) => m.v === Number(t.mentality)) || MENTALITY[2]
@@ -29,7 +29,7 @@ export default function TacticsPanel({ tactics, onChange, compact = false }) {
         {!compact && <p>{MENTALITY_EFFECT}</p>}
       </section>
 
-      {TACTIC_GROUPS.map((g) => {
+      {TACTIC_GROUPS.filter((g) => engineVersion >= 2 || g.id !== 'tackles').map((g) => {
         const cur = g.options.find((o) => o.v === t[g.id]) || g.options[1]
         return (
           <section key={g.id} className="tp-group">

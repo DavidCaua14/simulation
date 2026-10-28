@@ -22,7 +22,7 @@ export const ATTR_GROUPS = [
 ]
 
 // ---- Táticas: mesmas opções e efeitos do motor (03_engine.sql) ----
-export const DEFAULT_TACTICS = { mentality: 0, pressing: 'medium', line: 'medium', tempo: 'normal', build: 'mixed', width: 'mixed', manage: 'normal' }
+export const DEFAULT_TACTICS = { mentality: 0, pressing: 'medium', line: 'medium', tempo: 'normal', build: 'mixed', width: 'mixed', manage: 'normal', tackles: 'normal' }
 
 export const MENTALITY = [
   { v: -2, label: 'Retranca', short: 'Retranca' },
@@ -33,6 +33,15 @@ export const MENTALITY = [
 ]
 
 export const TACTIC_GROUPS = [
+  {
+    id: 'tackles',
+    label: 'Entradas',
+    options: [
+      { v: 'cautious', label: 'Cautelosas', effect: 'Menos faltas e risco disciplinar. Útil para proteger atletas já advertidos.' },
+      { v: 'normal', label: 'Normais', effect: 'Disputa equilibrada. Técnica, disciplina, cansaço e rigor da arbitragem influenciam os cartões.' },
+      { v: 'aggressive', label: 'Firmes', effect: 'Mais contato e faltas, com maior risco de cartões e expulsões. Use com cuidado.' },
+    ],
+  },
   {
     id: 'pressing',
     label: 'Pressão na saída de bola',

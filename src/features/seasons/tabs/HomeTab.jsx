@@ -46,6 +46,7 @@ export default function HomeTab({ ctx, actions }) {
   else if (mine)
     hero = (
       <MatchdayHero
+        engineVersion={hub.simulation_version ?? 1}
         next={mine}
         myClub={myClub}
         myPos={myPos}

@@ -1,3 +1,4 @@
+import OpponentScout from './OpponentScout'
 import { CalendarClock, FastForward, Hourglass, Lock, Play, Radio, ShieldAlert, Shirt, TriangleAlert, Trophy, Zap } from 'lucide-react'
 import ClubCrest from '../../club/components/ClubCrest'
 import { getClubById } from '../../club/data/clubs'
@@ -25,7 +26,7 @@ function Side({ clubId, mine, pos, form, align, knockout }) {
 }
 
 // DIA DE JOGO do seu clube: confronto, situação da escalação e o botão para entrar em campo.
-export function MatchdayHero({ next, myClub, myPos, lineup, canPlay, blockedText, busy, onPlay, onLineup }) {
+export function MatchdayHero({ next, myClub, myPos, lineup, canPlay, blockedText, busy, onPlay, onLineup, engineVersion = 1 }) {
   const m = next.match
   const t = COMP_THEME[next.competition]
   const venue = venueLabel(m)
@@ -64,6 +65,8 @@ export function MatchdayHero({ next, myClub, myPos, lineup, canPlay, blockedText
           <small>{firstIssue ? firstIssue.text : 'Toque para revisar titulares, banco e táticas'}</small>
         </span>
       </button>
+
+      {engineVersion >= 2 && <OpponentScout fixtureId={next.fixture_id} />}
 
       <div className="nm-cta">
         <button type="button" className={`gx-btn nm-play ${canPlay && !errors ? 'is-ready' : ''}`} disabled={busy || !canPlay || errors > 0} onClick={onPlay}>

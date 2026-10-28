@@ -39,6 +39,7 @@ export function draftFromMatch(players, side, formation) {
 // MEXER NO TIME DURANTE O JOGO: o mesmo campo da escalação. Arraste (ou toque em um e depois no outro):
 // reserva → titular = substituição; titular ↔ titular = troca de posição. Formação e táticas também mudam aqui.
 export default function MatchLineupEditor({
+  engineVersion = 1,
   catalog,
   players,
   squadById,
@@ -282,7 +283,7 @@ export default function MatchLineupEditor({
               )}
             </div>
           )}
-          {view === 'tactics' && <TacticsPanel compact tactics={tactics} onChange={setTactics} />}
+          {view === 'tactics' && <TacticsPanel compact engineVersion={engineVersion} tactics={tactics} onChange={setTactics} />}
         </div>
 
         {drag && ghost && (

@@ -1,0 +1,8 @@
+.opponent-scout { position: relative; z-index: 1; margin: 12px 0; padding: 12px; border: 1px solid #ffffff25; border-radius: 12px; background: #101827e6; color: #eef2ff; }
+.opponent-scout > summary { cursor: pointer; font-weight: 700; padding: 4px; }
+.opponent-scout > summary:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
+.opponent-analysis { padding: 4px; font-size: 12px; line-height: 1.6; }
+.opponent-analysis dl { display: grid; grid-template-columns: repeat(auto-fit,minmax(125px,1fr)); gap: 8px; margin: 10px 0; }
+.opponent-analysis dt { opacity: .7; }
+.opponent-analysis dd { margin: 0; font-weight: 700; }
+.opponent-analysis ul { padding-left: 18px; }

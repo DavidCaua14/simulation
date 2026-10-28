@@ -334,7 +334,7 @@ export default function TeamTab({ hub, onSaved, notify }) {
 
       {view === 'tactics' && (
         <>
-          <TacticsPanel tactics={draft.tactics} onChange={(tactics) => update({ tactics })} />
+          <TacticsPanel engineVersion={hub.simulation_version ?? 1} tactics={draft.tactics} onChange={(tactics) => update({ tactics })} />
           <p className="sn-hint">As táticas valem a partir do próximo jogo. Durante a partida você ainda pode ajustá-las.</p>
         </>
       )}

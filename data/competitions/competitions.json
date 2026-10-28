@@ -71,10 +71,11 @@
       "sources": ["https://en.wikipedia.org/wiki/2026_Copa_do_Brasil"],
       "rules": {
         "format": "knockout", "away_goals": false, "tie": "penalties", "final_legs": 1, "final_extra_time": false, "legs": 2, "start_stage": "r16",
+        "qualification": { "from": "brasileirao", "region": "BRA", "slots": 16 },
         "bench": 12, "max_subs": 5, "sub_windows": 3, "yellow_limit": 3,
         "calendar_rounds": 7, "calendar_priority": 2, "champion": "final",
         "phases": [
-          { "id": "r16", "type": "knockout", "label": "Oitavas de final", "rank": 2, "legs": 2, "extra_time": false, "penalties": true, "pairing": { "mode": "fixed" } },
+          { "id": "r16", "type": "knockout", "label": "Oitavas de final", "rank": 2, "legs": 2, "extra_time": false, "penalties": true, "pairing": { "mode": "draw", "first_season": "reference" } },
           { "id": "qf", "type": "knockout", "label": "Quartas de final", "rank": 3, "legs": 2, "extra_time": false, "penalties": true, "pairing": { "mode": "draw" } },
           { "id": "sf", "type": "knockout", "label": "Semifinal", "rank": 4, "legs": 2, "extra_time": false, "penalties": true, "pairing": { "mode": "draw" } },
           { "id": "final", "type": "knockout", "label": "Final", "rank": 5, "legs": 1, "extra_time": false, "penalties": true, "neutral": true, "pairing": { "mode": "draw" } }
@@ -94,7 +95,7 @@
         "tiebreakers": ["points", "h2h_pts", "h2h_gd", "h2h_gf", "gd", "gf", "fairplay"],
         "bench": 12, "max_subs": 5, "sub_windows": 3, "yellow_limit": 3,
         "calendar_rounds": 13, "calendar_priority": 1, "champion": "final",
-        "qualification": { "from": "brasileirao", "region": "BRA" },
+        "qualification": { "from": "brasileirao", "region": "BRA", "slots": 6 },
         "phases": [
           { "id": "group", "type": "groups", "legs": 2, "label": "Fase de grupos", "rank": 1 },
           { "id": "r16", "type": "knockout", "label": "Oitavas de final", "rank": 2, "legs": 2, "extra_time": false, "penalties": true, "pairing": { "mode": "lib_r16" } },
@@ -209,7 +210,7 @@
         "tiebreakers": ["points", "gd", "gf", "away_gf", "wins", "away_wins", "opp_pts", "opp_gd", "opp_gf", "fairplay"],
         "bench": 12, "max_subs": 5, "sub_windows": 3, "yellow_limit": 3,
         "calendar_rounds": 17, "calendar_priority": 1, "champion": "final",
-        "qualification": { "from": "premier_league", "region": "ENG" },
+        "qualification": { "from": "premier_league", "region": "ENG", "slots": 5 },
         "zones": [ { "from": 1, "to": 8, "kind": "promotion", "label": "Oitavas de final" }, { "from": 9, "to": 24, "kind": "playoff", "label": "Playoff" },
                    { "from": 25, "to": 36, "kind": "relegation", "label": "Eliminado" } ],
         "phases": [

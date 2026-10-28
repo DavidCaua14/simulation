@@ -5,6 +5,7 @@ import { getClubById } from '../../club/data/clubs'
 // Sem configuração: Brasileirão (G4 / G6 / Z4); nos grupos, os 2 primeiros avançam.
 const ZONE_CLASS = { continental: 'g4', promotion: 'qual', playoff: 'g6', relegation: 'z4' }
 function zoneOf(mode, pos, total, zones) {
+  if (mode === 'history') return ''
   if (mode === 'group') return pos <= 2 ? 'qual' : ''
   if (zones?.length) {
     const z = zones.find((x) => pos >= x.from && pos <= x.to)
@@ -52,7 +53,7 @@ export default function StandingsTable({ rows, myClub, mode = 'league', zones = 
         </tbody>
       </table>
       <p className="sn-legend">
-        {mode === 'group' ? (
+        {mode === 'history' ? <span>Classificação registrada no encerramento da temporada</span> : mode === 'group' ? (
           <span>
             <i className="dot qual" /> Avançam ao mata-mata
           </span>
