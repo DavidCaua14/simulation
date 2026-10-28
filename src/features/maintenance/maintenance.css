@@ -1,0 +1,7 @@
+.maintenance-page { min-height: 100dvh; display: grid; place-items: center; padding: 24px; box-sizing: border-box; background: radial-gradient(ellipse at top, #263344, #10141c 70%); color: #f5f7fa; font-family: Inter, system-ui, sans-serif; }
+.maintenance-card { width: 100%; max-width: 480px; box-sizing: border-box; text-align: center; padding: 40px 24px; border: 1px solid #ffffff24; border-radius: 24px; background: #171d29; box-shadow: 0 20px 60px #0005; }
+.maintenance-badge { display: block; color: #f6c86a; font-size: 12px; letter-spacing: .12em; font-weight: 700; }
+.maintenance-symbol { display: block; font-size: 48px; margin: 30px 0 20px; }
+.maintenance-card h1 { font-size: clamp(24px, 5vw, 32px); line-height: 1.2; margin: 0 0 20px; }
+.maintenance-card p { font-size: 16px; line-height: 1.7; color: #d7deea; }
+.maintenance-card .maintenance-note { font-size: 13px; color: #a3afc2; margin-top: 28px; }

@@ -16,6 +16,7 @@ import FriendsScreen from './features/friends/FriendsScreen'
 import EventsScreen from './features/events/EventsScreen'
 import { AudioProvider, useAudio } from './features/audio/AudioContext'
 import { getActiveCareer } from './features/player/playerService'
+import MaintenanceGate from './features/maintenance/MaintenanceGate'
 import './styles/theme.css'
 
 function Gate() {
@@ -124,9 +125,11 @@ function App() {
       <ErrorBoundary>
         <AuthProvider>
           {/* Acima do Gate: a música não para em telas de loading nem em trocas de tela */}
-          <AudioProvider>
-            <Gate />
-          </AudioProvider>
+          <MaintenanceGate>
+            <AudioProvider>
+              <Gate />
+            </AudioProvider>
+          </MaintenanceGate>
         </AuthProvider>
       </ErrorBoundary>
     </ThemeProvider>
