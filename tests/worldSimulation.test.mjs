@@ -34,6 +34,20 @@ test('drains bounded parallel batches, including more=true at match day', async 
   assert.deepEqual(trace, [0, 3, 0])
 })
 
+test('a sync-only call right after a match continues to the next match in the same click', async () => {
+  const hub = career(), trace = []
+  hub.world.needs_sync = true
+  const sim = createWorldSimulation({ requestId: () => String(trace.length), refresh: async () => structuredClone(hub), advance: async days => {
+    trace.push(days)
+    if (days === 0) { hub.world.needs_sync = false; return { days: 0, matches: 0, more: false } }
+    hub.next_event.days_until -= days
+    return { days, matches: 4, more: false }
+  } })
+  const ready = await sim.prepare(hub)
+  assert.deepEqual(trace, [0, 3])
+  assert.equal(ready.next_event.days_until, 0)
+})
+
 test('pauses for live matches, legacy careers and the new-season boundary', () => {
   const hub = career()
   assert.equal(worldAdvanceDays({ ...hub, live_match: { id: 1 } }), null)

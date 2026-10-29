@@ -49,8 +49,10 @@ export function createWorldSimulation({ advance, refresh, peek = refresh, reques
     // An ambiguous write retries its UUID; a failed read retries only the read.
     const next = await peek({ silent: true })
     if (!next) throw new Error('Não foi possível consultar a carreira atualizada. Toque novamente para continuar.')
+    const asked = pending.days
     pending = null
-    if (!result?.matches && !result?.days && worldAdvanceDays(next) !== null) {
+    // Pedido de 0 dias só sincroniza o mundo (ex.: logo após a sua partida): sem jogos nem dias é normal, segue o avanço.
+    if (asked > 0 && !result?.matches && !result?.days && worldAdvanceDays(next) !== null) {
       throw new Error('O calendário não avançou. Toque novamente para continuar a preparação.')
     }
     return { hub: next, next: undefined, result }
