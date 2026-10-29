@@ -34,7 +34,7 @@ export default function HomeTab({ ctx, actions }) {
 
   let hero
   if (hub.live_match) hero = <LiveHero busy={busy === 'start'} onResume={actions.play} />
-  else if (finished) hero = <SeasonEnd season={hub.season} coach={coach} objectives={hub.objectives} starting={busy === 'next'} nextStartsOn={waitNext ? nextStart : null} onStartNext={waitNext ? () => actions.goTab('world') : actions.startNext} onOffers={() => actions.goTab('career')} offers={hub.offers.length} />
+  else if (finished) hero = <SeasonEnd season={hub.season} coach={coach} objectives={hub.objectives} starting={busy === 'next'} nextStartsOn={waitNext ? nextStart : null} onStartNext={actions.startNext} onOffers={() => actions.goTab('career')} offers={hub.offers.length} />
   else if (unemployed)
     hero = (
       <UnemployedHero
@@ -46,10 +46,11 @@ export default function HomeTab({ ctx, actions }) {
         onOffers={() => actions.goTab('career', 'offers')}
       />
     )
-  else if (hub.world && (hub.world.needs_sync || !mine || mine.days_until > 0)) hero = <section className="sn-sec"><h2 className="gx-title">{hub.world.needs_sync ? 'O mundo está em movimento' : mine ? `Próxima partida em ${mine.days_until} dia(s)` : 'Preparando a próxima partida'}</h2><p className="sn-hint" role="status">{ctx.worldStatus === 'retrying' ? 'Aguardando conexão para continuar automaticamente…' : 'Os outros jogos e o calendário estão avançando automaticamente até a sua próxima partida.'}</p></section>
   else if (mine)
     hero = (
       <MatchdayHero
+        needsAdvance={!!hub.world && (hub.world.needs_sync || mine.days_until > 0)}
+        onAdvance={actions.prepareNext}
         engineVersion={hub.simulation_version ?? 1}
         next={mine}
         myClub={myClub}
@@ -57,11 +58,12 @@ export default function HomeTab({ ctx, actions }) {
         lineup={hub.lineup}
         canPlay={canPlay}
         blockedText={blockedText}
-        busy={busy === 'start'}
+        busy={busy === 'start' || busy === 'prepare'}
         onPlay={actions.play}
         onLineup={() => actions.goTab('team')}
       />
     )
+  else if (hub.world) hero = <section className="sn-sec"><h2 className="gx-title">Preparar a próxima partida</h2><p className="sn-hint">As outras competições avançam junto com a sua carreira.</p><button type="button" className="gx-btn" disabled={!!busy} onClick={actions.prepareNext}>{busy === 'prepare' ? 'Avançando…' : 'Avançar para a próxima partida'}</button></section>
   else if (free) hero = <FreeDayHero event={free} calendar={calendar} advancing={busy === 'advance'} onAdvance={() => actions.advance(false)} />
   else hero = <EmptyState icon={CalendarDays} title="Nenhum jogo pendente agora" text="Acompanhe os campeonatos na aba Torneios." />
 

@@ -1,10 +1,11 @@
 import { isSessionError } from '../../lib/sessionRecovery'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import AppShell from '../../components/layout/AppShell'
 import { getClubById } from '../club/data/clubs'
 import useManagerData from './hooks/useManagerData'
 import useCountdown from './hooks/useCountdown'
-import useWorldSimulation from './hooks/useWorldSimulation'
+import { createWorldSimulation } from './utils/worldSimulation'
+import { advanceWorld, requestId } from './services/careerWorldApi'
 import WorldPanel from './world/WorldPanel'
 import { advanceDays, markMessagesRead, resign, respondOffer, startMatch, startNextSeason } from './services/managerApi'
 import { flattenFixtures, playerHistory, projectCalendar } from './utils/seasonSelectors'
@@ -29,7 +30,7 @@ import './manager.css'
 const TITLES = { home: 'Início', team: 'Time', matches: 'Jogos', comps: 'Torneios', career: 'Carreira', world: 'Mundo' }
 
 // MODO CARREIRA (treinador): você comanda um clube real. Tudo é decidido no banco (supabase/manager/*.sql);
-// a tela envia decisões e acompanha automaticamente as partidas do mundo entre os jogos do treinador.
+// O avanço até a próxima partida processa as competições paralelas no mesmo calendário.
 export default function SeasonsScreen({ onBack }) {
   const { hub, byComp, loading, error, refresh } = useManagerData()
   const [tab, setTab] = useState('home')
@@ -43,7 +44,11 @@ export default function SeasonsScreen({ onBack }) {
   const [inbox, setInbox] = useState(null)
   const [toast, setToast] = useState(null)
 
-  const worldStatus = useWorldSimulation({ hub, refresh, paused: !!busy || !!live })
+  const actionLock = useRef(false)
+  const mounted = useRef(true)
+  useEffect(() => { mounted.current = true; return () => { mounted.current = false } }, [])
+  const simulation = useMemo(() => createWorldSimulation({ advance: advanceWorld, refresh, requestId }), [refresh])
+  const worldStatus = busy === 'prepare' || busy === 'next' ? 'syncing' : 'idle'
 
   const notify = useCallback((text, kind = 'info') => setToast({ text, kind, id: Date.now() }), [])
   useEffect(() => {
@@ -75,7 +80,8 @@ export default function SeasonsScreen({ onBack }) {
 
   // ---- ações ----
   async function run(kind, fn) {
-    if (busy || worldStatus === 'syncing') return null
+    if (actionLock.current) return null
+    actionLock.current = true
     setBusy(kind)
     try {
       return await fn()
@@ -85,12 +91,22 @@ export default function SeasonsScreen({ onBack }) {
       refresh({ silent: true })
       return null
     } finally {
-      setBusy(null)
+      actionLock.current = false
+      if (mounted.current) setBusy(null)
     }
   }
 
+  const prepareNext = () => run('prepare', async () => {
+    const next = await simulation.prepare(hub, { isActive: () => mounted.current })
+    if (next && next.season.status === 'finished') notify('Temporada encerrada. Veja o balanço no Início.', 'ok')
+  })
+
   const play = () =>
     run('start', async () => {
+      if (hub.world && !hub.live_match) {
+        const ready = await simulation.prepare(hub, { isActive: () => mounted.current })
+        if (!ready || ready.season.status === 'finished' || ready.coach.status !== 'employed') return
+      }
       const p = await startMatch() // idempotente: retoma a partida em andamento sem cobrar energia de novo
       setLive(p)
       refresh({ silent: true })
@@ -122,6 +138,10 @@ export default function SeasonsScreen({ onBack }) {
 
   const startNext = () =>
     run('next', async () => {
+      if (hub.world) {
+        const ready = await simulation.prepare(hub, { isActive: () => mounted.current })
+        if (!ready) return
+      }
       await startNextSeason()
       await refresh({ silent: true })
       setTab('home')
@@ -144,6 +164,7 @@ export default function SeasonsScreen({ onBack }) {
   const actions = {
     refresh: () => refresh({ silent: true }),
     play,
+    prepareNext,
     advance,
     startNext,
     goTab,

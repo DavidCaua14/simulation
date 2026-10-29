@@ -27,7 +27,7 @@ export function WorldStrip({ ctx, actions }) {
   return <section className="sn-sec cw-strip">
     <div className="cw-row"><span><CalendarDays size={16} /> {dateLabel(w.today)}</span><button className="sn-link" onClick={() => actions.goTab('world')}>Mundo <Globe2 size={15} /></button></div>
     <small>Brasil e Europa · {w.news_unread || 0} notícias novas</small>
-    {w.needs_sync && <p role="status">Simulando automaticamente {w.due_matches} partidas do mundo…</p>}
+    {w.needs_sync && <p role="status">As partidas do mundo serão processadas ao avançar para o seu próximo jogo.</p>}
     <button type="button" className="gx-btn-ghost" disabled={!!ctx.busy || !!ctx.hub.live_match} onClick={() => actions.goTab('world')}>Notícias, mercado e finanças</button>
   </section>
 }
@@ -76,7 +76,7 @@ export default function WorldPanel({ hub, onRefresh, initialArea = 'news', world
     <section className="sn-sec">
       <div className="cw-row"><h2 className="gx-title"><Globe2 size={18} /> Mundo do futebol</h2><b>{dateLabel(w.today)}</b></div>
       <p className="sn-hint">Competições e contratos seguem a data da sua carreira.</p>
-      <p role="status">{worldStatus === 'retrying' ? 'Aguardando conexão para continuar a simulação automaticamente…' : w.needs_sync ? `Simulando ${w.due_matches} partidas em segundo plano…` : 'Os resultados acompanham automaticamente os jogos da sua carreira.'}</p>
+      <p role="status">{worldStatus === 'retrying' ? 'Aguardando conexão para continuar a simulação automaticamente…' : w.needs_sync ? `As partidas pendentes acompanham o avanço para o seu próximo jogo.` : 'As competições avançam juntas quando você prepara sua próxima partida.'}</p>
       {onHome && hub.season.status === 'finished' && <button type="button" className="sn-link" onClick={onHome}>Ver a próxima temporada no Início</button>}
       {onHome && !w.needs_sync && hub.next_event?.kind === 'mine' && !(hub.next_event.days_until > 0) && <button type="button" className="sn-link" onClick={onHome}>Ir para a partida no Início</button>}
     </section>

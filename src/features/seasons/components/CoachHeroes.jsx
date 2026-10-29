@@ -26,7 +26,7 @@ function Side({ clubId, mine, pos, form, align, knockout }) {
 }
 
 // DIA DE JOGO do seu clube: confronto, situação da escalação e o botão para entrar em campo.
-export function MatchdayHero({ next, myClub, myPos, lineup, canPlay, blockedText, busy, onPlay, onLineup, engineVersion = 1 }) {
+export function MatchdayHero({ next, myClub, myPos, lineup, canPlay, blockedText, busy, onPlay, onLineup, needsAdvance = false, onAdvance, engineVersion = 1 }) {
   const m = next.match
   const t = COMP_THEME[next.competition]
   const venue = venueLabel(m)
@@ -43,7 +43,7 @@ export function MatchdayHero({ next, myClub, myPos, lineup, canPlay, blockedText
       <header className="nm-head">
         <CompEmblem comp={next.competition} size={30} />
         <span className="nm-head-txt">
-          <small>Dia de jogo</small>
+          <small>{needsAdvance ? 'Próxima partida' : 'Dia de jogo'}</small>
           <b>{COMP_NAME[next.competition]}</b>
         </span>
         <span className="nm-round">{describeMatch(m)}</span>
@@ -69,11 +69,13 @@ export function MatchdayHero({ next, myClub, myPos, lineup, canPlay, blockedText
       {engineVersion >= 2 && <OpponentScout fixtureId={next.fixture_id} />}
 
       <div className="nm-cta">
-        <button type="button" className={`gx-btn nm-play ${canPlay && !errors ? 'is-ready' : ''}`} disabled={busy || !canPlay || errors > 0} onClick={onPlay}>
+        <button type="button" className={`gx-btn nm-play ${needsAdvance ? 'is-advance' : canPlay && !errors ? 'is-ready' : ''}`} disabled={busy || (!needsAdvance && (!canPlay || errors > 0))} onClick={needsAdvance ? onAdvance : onPlay}>
           {busy ? (
             <>
-              <span className="nm-spin" /> Entrando em campo…
+              <span className="nm-spin" /> {needsAdvance ? 'Avançando para a partida…' : 'Entrando em campo…'}
             </>
+          ) : needsAdvance ? (
+            <><FastForward size={18} /> Avançar para a próxima partida</>
           ) : !canPlay ? (
             <>
               <Lock size={17} /> {blockedText}
@@ -91,7 +93,7 @@ export function MatchdayHero({ next, myClub, myPos, lineup, canPlay, blockedText
             </>
           )}
         </button>
-        <small>A partida é simulada ao vivo: você pode mexer no time durante o jogo.</small>
+        <small>{needsAdvance ? 'As outras competições são simuladas até a data do seu jogo.' : 'A partida é simulada ao vivo: você pode mexer no time durante o jogo.'}</small>
       </div>
     </section>
   )

@@ -63,7 +63,7 @@ begin
  select cs.id into sid from public.career_seasons cs where cs.career_id=p_career and cs.region=p_region and cs.year=p_year and cs.mode in('coach','world') order by cs.season_no desc limit 1;
  if sid is not null then
   starts:=public.cw_start(p_region,p_year);
-  insert into public.cw_seasons values(p_career,p_region,p_year,sid,starts,(starts+interval '1 year - 1 day')::date);
+  insert into public.cw_seasons(career_id,region,year,season_id,starts_on,ends_on) values(p_career,p_region,p_year,sid,starts,(starts+interval '1 year - 1 day')::date);
   update public.career_seasons set was_coached=was_coached or mode='coach' where id=sid;
   if(select status from public.career_seasons where id=sid)='active' then perform public.cw_schedule(sid);end if;
   return sid;
@@ -74,7 +74,7 @@ begin
  values(p_career,seq,p_year,null,p_region,'world',coalesce((select elapsed_days from public.cw_world where career_id=p_career),0)) returning id into sid;
  perform public.mgr_init_world(p_career);perform public.cw_initialize_finances(p_career);
  starts:=public.cw_start(p_region,p_year);
- insert into public.cw_seasons values(p_career,p_region,p_year,sid,starts,(starts+interval '1 year - 1 day')::date);
+ insert into public.cw_seasons(career_id,region,year,season_id,starts_on,ends_on) values(p_career,p_region,p_year,sid,starts,(starts+interval '1 year - 1 day')::date);
  perform public.sim_participants_build(sid);
  for co in select * from public.sim_competitions where region=p_region and active order by sort_order loop
   phase:=public.sim_phase_at(co.id,1);
@@ -99,7 +99,7 @@ begin
  from public.career_seasons cs where cs.career_id=p_career and cs.mode='coach' and (cs.status='finished' or(cs.status='archived' and not exists(select 1 from public.season_fixtures fx where fx.season_id=cs.id and fx.status='pending')));
  insert into public.cw_world(career_id,today,started_on,elapsed_days,primary_season) values(p_career,current_day,current_day,s.day_no,s.id) on conflict do nothing;
  insert into public.cw_coach(career_id,monthly_salary,contract_until) select p_career,round(70+reputation*3)::bigint,(current_day+interval '2years')::date from public.mgr_coach where career_id=p_career on conflict do nothing;
- insert into public.cw_seasons values(p_career,s.region,s.year,s.id,starts,(starts+interval '1 year - 1 day')::date) on conflict do nothing;
+ insert into public.cw_seasons(career_id,region,year,season_id,starts_on,ends_on) values(p_career,s.region,s.year,s.id,starts,(starts+interval '1 year - 1 day')::date) on conflict do nothing;
  update public.career_seasons set was_coached=true where id=s.id;
  perform public.mgr_init_world(p_career);
  perform public.cw_initialize_finances(p_career);

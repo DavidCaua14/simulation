@@ -1,6 +1,6 @@
-// The server owns dates, fixtures, results and the stop before the coach's match.
-// This coordinator only drains bounded batches; a retry reuses the same request.
-export function automaticWorldDays(hub) {
+// Dates and match results remain server-owned. A click prepares the next match;
+// partial batches continue here, without depending on a background browser timer.
+export function worldAdvanceDays(hub) {
   if (!hub?.world || hub.live_match) return null
   if (hub.world.needs_sync) return 0
   if (hub.season.status === 'finished') {
@@ -15,38 +15,42 @@ export function automaticWorldDays(hub) {
 export function createWorldSimulation({ advance, refresh, requestId }) {
   let pending = null
   let owner = null
-  let running = false
-  let stoppedAt = null
-  const key = hub => JSON.stringify([hub?.career.id, hub?.season.id, hub?.season.status, hub?.coach.club_id, hub?.coach.status, hub?.world.today, hub?.world.needs_sync, hub?.world.due_matches, hub?.next_event])
-  const hasWork = hub => Boolean(hub?.world && !hub.live_match && (owner !== hub.career.id || stoppedAt !== key(hub)) && (pending || automaticWorldDays(hub) !== null))
+  let preparing = null
+  async function step(hub) {
+    if (owner !== hub.career.id) { owner = hub.career.id; pending = null }
+    const days = worldAdvanceDays(hub)
+    if (!pending && days === null) return null
+    pending ||= { days, id: requestId(), completed: false }
+    if (!pending.completed) {
+      pending.result = await advance(pending.days, pending.id)
+      pending.completed = true
+    }
+    // An ambiguous write retries its UUID; a failed read retries only the read.
+    const next = await refresh({ silent: true })
+    if (!next) throw new Error('Não foi possível consultar a carreira atualizada. Toque novamente para continuar.')
+    const result = pending.result
+    pending = null
+    if (!result?.more && !result?.matches && !result?.days && worldAdvanceDays(next) !== null) {
+      throw new Error('O calendário não avançou. Toque novamente para continuar a preparação.')
+    }
+    return next
+  }
   return {
-    hasWork,
-    async tick(hub, paused = false) {
-      if (running || paused || !hub?.world || hub.live_match) return false
-      if (owner !== hub.career.id) {
-        owner = hub.career.id
-        pending = null
-        stoppedAt = null
-      }
-      const days = automaticWorldDays(hub)
-      if (!hasWork(hub)) return false
-      running = true
-      try {
-        pending ||= { days, id: requestId(), completed: false }
-        if (!pending.completed) {
-          pending.result = await advance(pending.days, pending.id)
-          pending.completed = true
+    prepare(hub, { isActive = () => true, onProgress = () => {} } = {}) {
+      if (preparing) return preparing
+      preparing = (async () => {
+        let current = hub
+        for (let batch = 0; batch < 240 && isActive(); batch++) {
+          const next = await step(current)
+          if (!next) return current
+          current = next
+          onProgress(current)
+          if (current.live_match || worldAdvanceDays(current) === null) return current
         }
-        // A failed refresh must never cause another date advance. Retry the read.
-        const next = await refresh({ silent: true })
-        if (!next) throw new Error('Não foi possível consultar a carreira atualizada.')
-        const result = pending.result
-        if (result && !result.more && !result.matches && !result.days && key(hub) === key(next)) stoppedAt = key(next)
-        pending = null
-        return true
-      } finally {
-        running = false
-      }
+        if (!isActive()) return null
+        throw new Error('A preparação foi pausada. Toque novamente para continuar de onde parou.')
+      })().finally(() => { preparing = null })
+      return preparing
     },
   }
 }

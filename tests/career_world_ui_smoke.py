@@ -30,6 +30,13 @@ with sync_playwright() as p:
         payload = json.loads(json.dumps(original_payload))
         advance_trace = []
         advance_state = {'partial': False, 'draining': False, 'backlog': 2}
+        if width == 390:
+            # Regression: a career stopped exactly three days before its next match.
+            payload['worldHub']['world']['needs_sync'] = False
+            event = payload['worldHub']['next_event']
+            event['days_until'] = 3
+            event['scheduled_on'] = (date.fromisoformat(payload['worldHub']['world']['today']) + timedelta(days=3)).isoformat()
+            advance_state['backlog'] = 0
         context = browser.new_context(viewport={'width': width, 'height': 844})
         page = context.new_page()
         errors, calls = [], []
@@ -63,7 +70,7 @@ with sync_playwright() as p:
                     assert requested == 0
                     advance_state['backlog'] -= 1
                     more = advance_state['backlog'] > 0
-                elif requested == 7 and not advance_state['partial']:
+                elif requested > 0 and not advance_state['partial']:
                     advance_state.update(partial=True, draining=True)
                     days, more = 2, True
                 elif requested == 0 and advance_state['draining']:
@@ -111,11 +118,18 @@ with sync_playwright() as p:
         page.route('https://' + host + '/**', api)
         page.goto('http://127.0.0.1:5173/', wait_until='domcontentloaded')
         page.get_by_role('button', name='Comandar', exact=True).click()
-        # No manual calendar action: the coordinator drains backlogs and reaches match day.
-        expect(page.get_by_role('button', name='Ir para o jogo', exact=False)).to_be_enabled(timeout=20000)
-        assert advance_trace == [0, 0, 7, 0, 7, 5], advance_trace
+        # Processing starts only from the regular next-match button.
+        advance_button = page.get_by_role('button', name='Avançar para a próxima partida', exact=True)
+        expect(advance_button).to_be_enabled()
+        assert advance_button.evaluate('el => el.scrollWidth <= el.clientWidth && el.scrollHeight <= el.clientHeight'), 'Advance button text clipped'
         page.wait_for_timeout(800)
-        assert len(advance_trace) == 6, 'Must stop before the user match'
+        assert advance_trace == [], advance_trace
+        advance_button.click()
+        expect(page.get_by_role('button', name='Ir para o jogo', exact=False)).to_be_enabled(timeout=20000)
+        expected = [3, 0, 1] if width == 390 else [0, 0, 7, 0, 7, 5]
+        assert advance_trace == expected, advance_trace
+        page.wait_for_timeout(800)
+        assert advance_trace == expected, 'Must stop before the user match'
         nav = page.get_by_role('navigation', name='Seções do modo Carreira')
         expect(nav.get_by_role('button')).to_have_count(6)
         nav.get_by_role('button', name='Mundo', exact=True).click()
@@ -171,6 +185,10 @@ with sync_playwright() as p:
             page.get_by_role('button', name=re.compile('Ver resumo da partida')).click(timeout=15000)
             expect(page.get_by_role('dialog', name='Resumo da partida', exact=True)).to_be_visible()
             page.get_by_role('button', name='Continuar', exact=True).click()
+            expect(advance_button).to_be_enabled()
+            page.wait_for_timeout(800)
+            assert len(advance_trace) == before_match, 'Post-match must wait for the next-match button'
+            advance_button.click()
             expect(page.get_by_role('button', name=re.compile('Ir para o jogo'))).to_be_enabled(timeout=15000)
             assert advance_trace[before_match:] == [0, 7], advance_trace
             assert page.get_by_role('button', name='Abrir calendário', exact=True).count() == 0

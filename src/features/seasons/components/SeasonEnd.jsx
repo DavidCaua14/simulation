@@ -67,15 +67,15 @@ export default function SeasonEnd({ season, coach, objectives = [], starting, on
         </p>
       )}
 
-      {nextStartsOn && <p className="se-note">A próxima temporada começa em {new Date(`${nextStartsOn}T12:00:00Z`).toLocaleDateString('pt-BR', { timeZone: 'UTC' })}. O calendário avança automaticamente até essa data.</p>}
+      {nextStartsOn && <p className="se-note">A próxima temporada começa em {new Date(`${nextStartsOn}T12:00:00Z`).toLocaleDateString('pt-BR', { timeZone: 'UTC' })}. Avance para preparar a próxima temporada e os campeonatos paralelos.</p>}
       <div className="se-actions">
         {offers > 0 && (
           <button type="button" className="gx-btn-ghost" onClick={onOffers}>
             <ArrowLeftRight size={16} /> {offers} proposta{offers > 1 ? 's' : ''}
           </button>
         )}
-        <button type="button" className="gx-btn" disabled={starting || !!nextStartsOn} onClick={onStartNext}>
-          {starting ? <span className="nm-spin" /> : <Play size={18} fill="currentColor" />} {nextStartsOn ? 'Preparando a próxima temporada…' : 'Começar a próxima temporada'}
+        <button type="button" className="gx-btn" disabled={starting} onClick={onStartNext}>
+          {starting ? <span className="nm-spin" /> : <Play size={18} fill="currentColor" />} {nextStartsOn ? 'Avançar até a próxima temporada' : 'Começar a próxima temporada'}
         </button>
       </div>
     </section>
