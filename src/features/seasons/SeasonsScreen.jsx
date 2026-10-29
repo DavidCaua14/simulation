@@ -5,9 +5,9 @@ import { getClubById } from '../club/data/clubs'
 import useManagerData from './hooks/useManagerData'
 import useCountdown from './hooks/useCountdown'
 import { createWorldSimulation } from './utils/worldSimulation'
-import { advanceWorld, requestId } from './services/careerWorldApi'
+import { advanceWorld, dateLabel, requestId } from './services/careerWorldApi'
 import WorldPanel from './world/WorldPanel'
-import { advanceDays, markMessagesRead, resign, respondOffer, startMatch, startNextSeason } from './services/managerApi'
+import { advanceDays, fetchHub, markMessagesRead, resign, respondOffer, startMatch, startNextSeason } from './services/managerApi'
 import { flattenFixtures, playerHistory, projectCalendar } from './utils/seasonSelectors'
 import { formatRemaining } from './utils/seasonUtils'
 import SeasonHeader from './ui/SeasonHeader'
@@ -49,7 +49,9 @@ export default function SeasonsScreen({ onBack }) {
   const actionLock = useRef(false)
   const mounted = useRef(true)
   useEffect(() => { mounted.current = true; return () => { mounted.current = false } }, [])
-  const simulation = useMemo(() => createWorldSimulation({ advance: advanceWorld, refresh, requestId }), [refresh])
+  const simulation = useMemo(() => createWorldSimulation({ advance: advanceWorld, refresh, peek: () => fetchHub(), requestId }), [refresh])
+  const [prepareProgress, setPrepareProgress] = useState(null)
+  const onPrepareProgress = useCallback((h, r) => mounted.current && setPrepareProgress(dateLabel(r?.today || h?.world?.today)), [])
   const worldStatus = busy === 'prepare' || busy === 'next' ? 'syncing' : 'idle'
 
   const notify = useCallback((text, kind = 'info') => setToast({ text, kind, id: Date.now() }), [])
@@ -99,8 +101,12 @@ export default function SeasonsScreen({ onBack }) {
   }
 
   const prepareNext = () => run('prepare', async () => {
-    const next = await simulation.prepare(hub, { isActive: () => mounted.current })
-    if (next && next.season.status === 'finished') notify('Temporada encerrada. Veja o balanço no Início.', 'ok')
+    try {
+      const next = await simulation.prepare(hub, { isActive: () => mounted.current, onProgress: onPrepareProgress })
+      if (next && next.season.status === 'finished') notify('Temporada encerrada. Veja o balanço no Início.', 'ok')
+    } finally {
+      if (mounted.current) setPrepareProgress(null)
+    }
   })
 
   const play = () =>
@@ -183,7 +189,7 @@ export default function SeasonsScreen({ onBack }) {
     },
   }
 
-  const ctx = hub && derived ? { hub, byComp, ...derived, canPlay, blockedText, busy: busy || (worldStatus === 'syncing' ? 'world' : null), worldStatus } : null
+  const ctx = hub && derived ? { hub, byComp, ...derived, canPlay, blockedText, busy: busy || (worldStatus === 'syncing' ? 'world' : null), worldStatus, prepareProgress } : null
   const badges = hub ? { career: hub.offers.length, home: hub.unread > 0 ? hub.unread : 0, team: hub.lineup?.errors || 0 } : {}
 
   return (

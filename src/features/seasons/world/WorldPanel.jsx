@@ -21,17 +21,6 @@ function NumberField({ label, value, onChange, min = 0, max = 100000000 }) {
 }
 function ClubLine({ id }) { return <span className="cw-club"><ClubCrest clubId={id} size={22} />{clubName(id)}</span> }
 
-export function WorldStrip({ ctx, actions }) {
-  const w = ctx.hub.world
-  if (!w) return null
-  return <section className="sn-sec cw-strip">
-    <div className="cw-row"><span><CalendarDays size={16} /> {dateLabel(w.today)}</span><button className="sn-link" onClick={() => actions.goTab('world')}>Mundo <Globe2 size={15} /></button></div>
-    <small>Brasil e Europa · {w.news_unread || 0} notícias novas</small>
-    {w.needs_sync && <p role="status">As partidas do mundo serão processadas ao avançar para o seu próximo jogo.</p>}
-    <button type="button" className="gx-btn-ghost" disabled={!!ctx.busy || !!ctx.hub.live_match} onClick={() => actions.goTab('world')}>Notícias, mercado e finanças</button>
-  </section>
-}
-
 export default function WorldPanel({ hub, onRefresh, initialArea = 'news', worldStatus = 'idle', onHome }) {
   const [area, updateArea] = useState(initialArea)
   const areaRef = useRef(initialArea)
@@ -73,25 +62,33 @@ export default function WorldPanel({ hub, onRefresh, initialArea = 'news', world
   const edit = field => value => setTerms(t => ({ ...t, [field]: value }))
   if (!w) return null
   return <div className="cw-panel">
-    <section className="sn-sec">
-      <div className="cw-row"><h2 className="gx-title"><Globe2 size={18} /> Mundo do futebol</h2><b>{dateLabel(w.today)}</b></div>
-      <p className="sn-hint">Competições e contratos seguem a data da sua carreira.</p>
-      <p role="status">{worldStatus === 'retrying' ? 'Aguardando conexão para continuar a simulação automaticamente…' : w.needs_sync ? `As partidas pendentes acompanham o avanço para o seu próximo jogo.` : 'As competições avançam juntas quando você prepara sua próxima partida.'}</p>
+    <section className="cw-hero">
+      <div className="cw-hero-top">
+        <span className="cw-hero-icon"><Globe2 size={22} /></span>
+        <div className="cw-hero-txt"><small>Brasil e Europa</small><h2>Mundo do futebol</h2></div>
+        <span className="cw-date"><CalendarDays size={14} /> {dateLabel(w.today)}</span>
+      </div>
+      {w.club && <div className="cw-hero-stats">
+        <span><small>Caixa</small><b>{money(w.club.cash)}</b></span>
+        <span><small>Disponível</small><b>{money(w.club.available)}</b></span>
+        <span><small>Janela</small><b className={w.club.window_open ? 'cw-positive' : ''}>{w.club.window_open ? 'Aberta' : 'Fechada'}</b></span>
+      </div>}
+      <p role="status" className="cw-hero-note">{worldStatus === 'retrying' ? 'Aguardando conexão para continuar a simulação automaticamente…' : 'Competições, mercado e contratos seguem a data da sua carreira e avançam juntos quando você prepara a próxima partida.'}</p>
       {onHome && hub.season.status === 'finished' && <button type="button" className="sn-link" onClick={onHome}>Ver a próxima temporada no Início</button>}
       {onHome && !w.needs_sync && hub.next_event?.kind === 'mine' && !(hub.next_event.days_until > 0) && <button type="button" className="sn-link" onClick={onHome}>Ir para a partida no Início</button>}
     </section>
     {error && <p className="cw-alert" role="alert">{error}</p>}{message && <p className="cw-notice" role="status">{message}</p>}
     <div className="sn-seg cw-nav" role="tablist" aria-label="Gestão do clube">
-      {[['news','Notícias'],['finance','Finanças'],['market','Mercado'],['deals','Negociações'],['contracts','Contratos']].map(([id,label]) => <button key={id} role="tab" aria-selected={area===id} className={area===id?'is-on':''} onClick={() => setArea(id)}>{label}</button>)}
+      {[['news','Notícias'],['finance','Finanças'],['market','Mercado'],['deals','Negociações'],['contracts','Contratos']].map(([id,label]) => <button key={id} role="tab" aria-selected={area===id} className={area===id?'is-on':''} onClick={() => setArea(id)}>{label}{id==='news'&&w.news_unread>0&&<em aria-hidden="true">{w.news_unread}</em>}</button>)}
     </div>
-    {area === 'news' && <div className="sn-stack">{rows.length===0 && <p className="sn-hint">Nenhuma notícia neste momento.</p>}{rows.map(n => <article key={n.id} className={`sn-sec cw-news ${n.read?'':'is-new'}`}>
+    {area === 'news' && <div className="sn-stack">{rows.length===0 && <p className="sn-hint">Nenhuma notícia neste momento.</p>}{rows.map(n => <article key={n.id} className={`cw-card cw-news ${n.read?'':'is-new'}`}>
       <small><Newspaper size={13}/> {dateLabel(n.on_date)}</small><h3>{n.title}</h3>
       {n.metadata?.big_signing && <div className="cw-announcement"><b>NOVA CONTRATAÇÃO</b><button className="cw-card-button" onClick={() => run(async () => setDetail(await fetchPlayer(n.player_id)))}><BasePlayerCard player={{ id:n.player_id,name:n.title.split(' assina')[0],club_id:n.club_id,overall:n.metadata.overall,position:n.metadata.position }} width={128}/></button><span>{clubName(n.metadata.from_club)} → {clubName(n.metadata.to_club)}</span><b>{money(n.metadata.fee)} moedas</b></div>}
       <p>{n.body}</p>{!n.read && <button className="sn-link" disabled={busy} onClick={() => run(() => readNews([n.id]))}>Marcar como lida</button>}
     </article>)}{rows.length>=40 && <button className="gx-btn-ghost" disabled={busy} onClick={async () => { try { const older = await newsFeed(Math.min(...rows.map(n=>n.id))); if (mounted.current) setRows(r=>[...r,...older]) } catch(e) { if (!isSessionError(e)) setError(e.message) } }}>Mais notícias</button>}</div>}
-    {area==='finance' && <><section className="sn-sec"><h3><Coins size={17}/> Finanças do clube</h3>{w.club ? <><ClubLine id={own}/><div className="cw-grid">{[['Caixa',w.club.cash],['Dívidas',w.club.debt],['Folha mensal prevista',w.club.payroll],['Reservas e parcelas',w.club.reserved],['Livre para negociar',w.club.available],['Patrimônio investido',w.club.infrastructure]].map(([label,v])=><span key={label}><small>{label}</small><b>{money(v)}</b></span>)}</div><p>Risco financeiro: {Math.round(w.club.financial_risk)}% · {w.club.window_open?'Janela aberta':`Janela fechada · próxima: ${dateLabel(w.club.next_window)}`}</p><p className="sn-hint">O orçamento livre desconta compromissos, dívidas e dois meses da folha prevista, com estimativa dos bônus. Valores são moedas de simulação.</p><form onSubmit={e=>{e.preventDefault();run(async()=>{await invoke('career_club_invest',{p_amount:+investment});setMessage('Investimento transferido ao clube.')})}}><NumberField label={`Investir da sua carteira (${money(hub.career.coins)} moedas)`} value={investment} max={Math.min(hub.career.coins,1000000)} min={1} onChange={setInvestment}/><button className="gx-btn" disabled={busy}>Transferir ao clube</button></form></>:<p>Assuma um clube para administrar seu orçamento.</p>}</section><section className="sn-sec"><h3>Histórico financeiro</h3>{rows.map(r=><div key={r.id} className="cw-ledger"><span><b>{r.description}</b><small>{dateLabel(r.on_date)} · Saldo {money(r.cash_after)}</small></span><b className={r.amount<0?'cw-negative':'cw-positive'}>{r.amount>0?'+':''}{money(r.amount)}</b></div>)}</section></>}
+    {area==='finance' && <><section className="cw-card"><h3><Coins size={17}/> Finanças do clube</h3>{w.club ? <><ClubLine id={own}/><div className="cw-grid">{[['Caixa',w.club.cash],['Dívidas',w.club.debt],['Folha mensal prevista',w.club.payroll],['Reservas e parcelas',w.club.reserved],['Livre para negociar',w.club.available],['Patrimônio investido',w.club.infrastructure]].map(([label,v])=><span key={label}><small>{label}</small><b>{money(v)}</b></span>)}</div><p>Risco financeiro: {Math.round(w.club.financial_risk)}% · {w.club.window_open?'Janela aberta':`Janela fechada · próxima: ${dateLabel(w.club.next_window)}`}</p><p className="sn-hint">O orçamento livre desconta compromissos, dívidas e dois meses da folha prevista, com estimativa dos bônus. Valores são moedas de simulação.</p><form onSubmit={e=>{e.preventDefault();run(async()=>{await invoke('career_club_invest',{p_amount:+investment});setMessage('Investimento transferido ao clube.')})}}><NumberField label={`Investir da sua carteira (${money(hub.career.coins)} moedas)`} value={investment} max={Math.min(hub.career.coins,1000000)} min={1} onChange={setInvestment}/><button className="gx-btn" disabled={busy}>Transferir ao clube</button></form></>:<p>Assuma um clube para administrar seu orçamento.</p>}</section><section className="cw-card"><h3>Histórico financeiro</h3>{rows.length===0&&<p className="sn-hint">Nenhuma movimentação registrada.</p>}{rows.map(r=><div key={r.id} className="cw-ledger"><span><b>{r.description}</b><small>{dateLabel(r.on_date)} · Saldo {money(r.cash_after)}</small></span><b className={r.amount<0?'cw-negative':'cw-positive'}>{r.amount>0?'+':''}{money(r.amount)}</b></div>)}</section></>}
     {(area==='market'||area==='contracts') && <>
-      <form className="sn-sec cw-filters" onSubmit={e=>{e.preventDefault();reload().catch(e=>setError(e.message))}}>
+      <form className="cw-card cw-filters" onSubmit={e=>{e.preventDefault();reload().catch(e=>setError(e.message))}}>
         <label className="cw-field">Buscar atleta<input type="search" maxLength={60} value={filters.p_query} onChange={e=>setFilters(f=>({...f,p_query:e.target.value,p_page:0}))}/></label>
         <div className="cw-two"><label className="cw-field">Posição<select aria-label="Posição" value={filters.p_position} onChange={e=>setFilters(f=>({...f,p_position:e.target.value,p_page:0}))}><option value="">Todas</option>{POS_ORDER.map(p=><option key={p}>{p}</option>)}</select></label><label className="cw-field">Região<select aria-label="Região" value={filters.p_region} onChange={e=>setFilters(f=>({...f,p_region:e.target.value,p_page:0}))}><option value="">Mundo</option><option value="BRA">América do Sul</option><option value="ENG">Europa</option><option value="free">Sem contrato</option></select></label></div>
         <label className="cw-field">País do clube<select aria-label="País do clube" value={filters.p_country} onChange={e=>setFilters(f=>({...f,p_country:e.target.value,p_page:0}))}><option value="">Todos os países</option>{countries.map(c=><option key={c}>{c}</option>)}</select></label>
@@ -102,7 +99,7 @@ export default function WorldPanel({ hub, onRefresh, initialArea = 'news', world
       {rows.length===0&&<p className="sn-hint">Nenhum atleta encontrado.</p>}
       <div className="cw-actions"><button className="gx-btn-ghost" disabled={filters.p_page===0} onClick={()=>setFilters(f=>({...f,p_page:f.p_page-1}))}>Anterior</button><span>Página {filters.p_page+1}</span><button className="gx-btn-ghost" disabled={rows.length<30} onClick={()=>setFilters(f=>({...f,p_page:f.p_page+1}))}>Próxima</button></div>
     </>}
-    {area==='deals' && <div className="sn-stack">{rows.length===0&&<p className="sn-hint">Nenhuma negociação. Busque atletas no Mercado ou aguarde propostas de outros clubes.</p>}{rows.map(n=><article key={n.id} className="sn-sec"><small>{states[n.status]} · {['precontract','agreed','completed'].includes(n.status)?'Registro':'Prazo'} {dateLabel(['precontract','agreed','completed'].includes(n.status)?n.register_on:n.expires_on)}</small><h3>{n.player_name}</h3><p>{clubName(n.seller_club)} → {clubName(n.buyer_club)}</p><b>{money(n.fee)} moedas · {n.installments} parcela(s)</b><p>{n.response}</p><div className="cw-actions"><button className="gx-btn-ghost" onClick={()=>{setOffer(n);setClubFee(n.fee);setTerms(t=>({...t,salary:n.monthly_salary||Math.ceil(n.valuation*.0075),years:n.contract_years||3,signing:n.signing_bonus||0,role:n.role||'rotation',appearance:n.appearance_bonus||0,goal:n.goal_bonus||0}))}}>Ver negociação</button></div></article>)}</div>}
+    {area==='deals' && <div className="sn-stack">{rows.length===0&&<p className="sn-hint">Nenhuma negociação. Busque atletas no Mercado ou aguarde propostas de outros clubes.</p>}{rows.map(n=><article key={n.id} className="cw-card cw-deal"><small>{states[n.status]} · {['precontract','agreed','completed'].includes(n.status)?'Registro':'Prazo'} {dateLabel(['precontract','agreed','completed'].includes(n.status)?n.register_on:n.expires_on)}</small><h3>{n.player_name}</h3><p>{clubName(n.seller_club)} → {clubName(n.buyer_club)}</p><b>{money(n.fee)} moedas · {n.installments} parcela(s)</b><p>{n.response}</p><div className="cw-actions"><button className="gx-btn-ghost" onClick={()=>{setOffer(n);setClubFee(n.fee);setTerms(t=>({...t,salary:n.monthly_salary||Math.ceil(n.valuation*.0075),years:n.contract_years||3,signing:n.signing_bonus||0,role:n.role||'rotation',appearance:n.appearance_bonus||0,goal:n.goal_bonus||0}))}}>Ver negociação</button></div></article>)}</div>}
     {player && <Sheet title={player.short_name||player.name} kicker="Atleta e contrato" onClose={()=>setPlayer(null)} tall>
       <div className="cw-announcement"><BasePlayerCard player={player} width={132}/><ClubLine id={player.club_id}/></div>
       <div className="cw-grid"><span><small>Idade {player.age_estimated?'estimada':''}</small><b>{player.age} anos</b></span><span><small>Potencial estimado</small><b>{player.potential}</b></span><span><small>Valor</small><b>{money(player.value)}</b></span><span><small>Salário mensal</small><b>{money(player.monthly_salary)}</b></span><span><small>Contrato até</small><b>{dateLabel(player.expires_on)}</b></span><span><small>Minutos nas temporadas atuais</small><b>{player.minutes}</b></span><span><small>Satisfação</small><b>{Math.round(player.morale)}%</b></span><span><small>Promessa</small><b>{roles[player.promised_role]}</b></span></div>

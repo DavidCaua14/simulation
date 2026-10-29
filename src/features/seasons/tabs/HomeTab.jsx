@@ -1,9 +1,8 @@
 import { useMemo } from 'react'
-import { WorldStrip } from '../world/WorldPanel'
 import { ArrowLeftRight, CalendarDays, ChevronRight, Inbox, Target } from 'lucide-react'
 import ClubCrest from '../../club/components/ClubCrest'
 import { getClubById } from '../../club/data/clubs'
-import { FreeDayHero, LiveHero, MatchdayHero, UnemployedHero } from '../components/CoachHeroes'
+import { AdvanceHero, LiveHero, MatchdayHero, UnemployedHero } from '../components/CoachHeroes'
 import CoachStatusCard from '../components/CoachStatusCard'
 import SeasonEnd from '../components/SeasonEnd'
 import CalendarRow from '../components/CalendarRow'
@@ -11,12 +10,11 @@ import MatchRow from '../components/MatchRow'
 import CompCard from '../components/CompCard'
 import { EmptyState } from '../ui/States'
 import { MSG_KIND, objectiveProgress } from '../utils/managerUtils'
-import { upcomingMatch } from '../utils/seasonSelectors'
 
 // INÍCIO: o que acontece HOJE (jogo, folga, sem clube, fim de temporada), a situação do treinador
 // (diretoria, torcida, reputação), objetivos, caixa de mensagens, calendário e campeonatos.
 export default function HomeTab({ ctx, actions }) {
-  const { hub, byComp, nextEvent, calendar, history, myClub, canPlay, blockedText, busy } = ctx
+  const { hub, nextEvent, calendar, history, myClub, canPlay, blockedText, busy } = ctx
   const coach = hub.coach
   const finished = hub.season.status === 'finished'
   const nextStart = `${hub.season.year + 1}-${hub.season.region === 'ENG' ? '07' : '01'}-01`
@@ -24,13 +22,9 @@ export default function HomeTab({ ctx, actions }) {
   const unemployed = coach.status === 'unemployed'
   const mine = nextEvent?.kind === 'mine' ? nextEvent : null
   const free = nextEvent?.kind === 'free' ? nextEvent : null
-  // Hoje não é dia de jogo do seu clube: mostra o seu próximo confronto e o botão para avançar até ele
-  const ahead = useMemo(
-    () => (!mine && !hub.live_match && !finished && !unemployed ? upcomingMatch(calendar, byComp, myClub) : null),
-    [mine, hub.live_match, finished, unemployed, calendar, byComp, myClub],
-  )
-  const focus = mine || ahead
-  const myTable = useMemo(() => hub.competitions.find((c) => c.id === focus?.competition)?.table, [hub.competitions, focus])
+  // Dia de jogo do seu clube (no mundo paralelo, só quando o calendário já chegou na data do jogo)
+  const matchday = mine && !(hub.world && (hub.world.needs_sync || mine.days_until > 0)) ? mine : null
+  const myTable = useMemo(() => hub.competitions.find((c) => c.id === matchday?.competition)?.table, [hub.competitions, matchday])
   const myPos = myTable?.played ? myTable.pos : null
   const leaguePlayed = hub.competitions.find((c) => c.kind === 'league' && c.table)?.table?.played ?? null
 
@@ -53,46 +47,27 @@ export default function HomeTab({ ctx, actions }) {
         onOffers={() => actions.goTab('career', 'offers')}
       />
     )
-  else if (mine)
+  else if (matchday)
     hero = (
       <MatchdayHero
-        needsAdvance={!!hub.world && (hub.world.needs_sync || mine.days_until > 0)}
-        onAdvance={actions.prepareNext}
-        next={mine}
+        next={matchday}
         myClub={myClub}
         myPos={myPos}
         lineup={hub.lineup}
         canPlay={canPlay}
         blockedText={blockedText}
-        busy={busy === 'start' || busy === 'prepare'}
+        busy={busy === 'start'}
         onPlay={actions.openPreMatch}
         onLineup={() => actions.goTab('team')}
       />
     )
-  else if (ahead)
-    hero = (
-      <MatchdayHero
-        needsAdvance
-        onAdvance={hub.world ? actions.prepareNext : () => actions.advance(false)}
-        next={ahead}
-        myClub={myClub}
-        myPos={myPos ?? ahead.my_position}
-        lineup={hub.lineup}
-        canPlay={canPlay}
-        blockedText={blockedText}
-        busy={!!busy}
-        onPlay={actions.openPreMatch}
-        onLineup={() => actions.goTab('team')}
-      />
-    )
-  else if (hub.world) hero = <section className="sn-sec"><h2 className="gx-title">Preparar a próxima partida</h2><p className="sn-hint">As outras competições avançam junto com a sua carreira.</p><button type="button" className="gx-btn" disabled={!!busy} onClick={actions.prepareNext}>{busy === 'prepare' ? 'Avançando…' : 'Avançar para a próxima partida'}</button></section>
-  else if (free) hero = <FreeDayHero event={free} calendar={calendar} advancing={busy === 'advance'} onAdvance={() => actions.advance(false)} />
+  else if (hub.world || free || mine)
+    hero = <AdvanceHero busy={!!busy} progress={ctx.prepareProgress} onAdvance={hub.world ? actions.prepareNext : () => actions.advance(false)} />
   else hero = <EmptyState icon={CalendarDays} title="Nenhum jogo pendente agora" text="Acompanhe os campeonatos na aba Torneios." />
 
   return (
     <div className="sn-page">
       {hero}
-      <WorldStrip ctx={ctx} actions={actions} />
 
       {firstOffer && !unemployed && (
         <button type="button" className="sn-offerbar" onClick={() => actions.goTab('career', 'offers')}>

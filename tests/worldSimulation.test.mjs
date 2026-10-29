@@ -89,3 +89,34 @@ test('owner changes discard pending requests; unmount stops the continuation', a
   assert.deepEqual(ids, ['1', '2'])
   assert.equal(await sim.prepare(hub, { isActive: () => false }), null)
 })
+
+test('reads only the light hub between batches and reloads everything once at the end', async () => {
+  const hub = career(), trace = []; let peeks = 0, refreshes = 0
+  hub.next_event.days_until = 5
+  const sim = createWorldSimulation({ requestId: () => String(trace.length),
+    peek: async () => { peeks++; return structuredClone(hub) },
+    refresh: async () => { refreshes++; return structuredClone(hub) },
+    advance: async days => {
+      trace.push(days)
+      const more = trace.length === 1
+      hub.next_event.days_until -= days
+      return { days, matches: 24, more }
+    } })
+  const ready = await sim.prepare(hub)
+  assert.deepEqual(trace, [5, 0])
+  assert.equal(peeks, 1, 'partial batches continue without re-reading the hub')
+  assert.equal(refreshes, 1)
+  assert.equal(ready.next_event.days_until, 0)
+})
+
+test('transient timeouts retry the same request id before failing', async () => {
+  const hub = career(), ids = []
+  const sim = createWorldSimulation({ requestId: () => 'same', retryDelay: 1, refresh: async () => hub, advance: async (days, id) => {
+    ids.push(id)
+    if (ids.length < 3) throw new Error('canceling statement due to statement timeout')
+    hub.next_event.days_until = 0
+    return { days, matches: 1, more: false }
+  } })
+  await sim.prepare(hub)
+  assert.deepEqual(ids, ['same', 'same', 'same'])
+})

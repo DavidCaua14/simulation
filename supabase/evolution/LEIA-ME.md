@@ -33,6 +33,7 @@ supabase/evolution/17_season_draws.sql      <- tabelas finais e classificação 
 supabase/evolution/18_swiss_certificates.sql <- certificados dos sorteios suíços
 supabase/evolution/19_opponent_analysis.sql <- análise do rival e histórico
 supabase/evolution/20_pending_calendar_repair.sql <- somente rodadas futuras; snapshots legados
+supabase/evolution/31_world_advance_speed.sql <- (depois da carreira completa 24–30) avanço do calendário em lotes curtos
 ```
 
 Banco que já estava no ar: rode só `evolution/01`, `evolution/02`, `manager/02_players_seed.sql` (gerado de novo) e
@@ -123,3 +124,9 @@ Ver [TEMPORADAS_V2.md](../../docs/TEMPORADAS_V2.md) para causas, critérios, tes
 ## Cartas base (após Temporadas v2)
 
 Aplicar 21_base_cards.sql, 22_base_card_functions.sql e 23_base_card_migration.sql juntos pelo pacote transacional `supabase/releases/cartas_base.sql`, após backup e `preflight_base_cards.sql`. Ver `docs/CARTAS_BASE.md` para tabela de compensação, preservação e testes. Os scripts antigos de cartas/loja/roleta/mercado fazem parte do histórico de instalação; não reaplicá-los isoladamente após esta migração. A manutenção deve permanecer ativa.
+
+## Avanço do calendário mais rápido (31)
+
+Banco que já está no ar: rode só `supabase/evolution/31_world_advance_speed.sql` no SQL Editor. Substitui apenas
+`career_world_advance` e `cw_step_day` (mesmo resultado, lotes menores e menos escrita por dia); não altera tabelas
+nem dados. O app já trata lotes parciais e funciona com ou sem esta migração.

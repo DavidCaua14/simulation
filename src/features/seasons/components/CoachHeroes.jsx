@@ -4,7 +4,7 @@ import { getClubById } from '../../club/data/clubs'
 import CompEmblem from '../ui/CompEmblem'
 import FormDots from './FormDots'
 import stadium from '../../home/assets/temporadas.webp'
-import { COMP_NAME, COMP_SHORT, COMP_THEME, describeMatch, ordinal, venueLabel } from '../utils/seasonUtils'
+import { COMP_NAME, COMP_THEME, describeMatch, ordinal, venueLabel } from '../utils/seasonUtils'
 import { reputationTier } from '../utils/managerUtils'
 
 const toForm = (arr = []) => [...arr].reverse()
@@ -24,9 +24,9 @@ function Side({ clubId, mine, pos, form, align, knockout }) {
   )
 }
 
-// PRÓXIMA PARTIDA do seu clube: confronto e situação da escalação. Antes do dia do jogo o botão avança o calendário;
-// no dia do jogo abre o pré-jogo (escalações e análise do rival), de onde a partida é iniciada.
-export function MatchdayHero({ next, myClub, myPos, lineup, canPlay, blockedText, busy, onPlay, onLineup, needsAdvance = false, onAdvance }) {
+// DIA DE JOGO do seu clube: confronto e situação da escalação. O botão abre o pré-jogo
+// (escalações e análise do rival), de onde a partida é iniciada.
+export function MatchdayHero({ next, myClub, myPos, lineup, canPlay, blockedText, busy, onPlay, onLineup }) {
   const m = next.match
   const t = COMP_THEME[next.competition]
   const venue = venueLabel(m)
@@ -43,7 +43,7 @@ export function MatchdayHero({ next, myClub, myPos, lineup, canPlay, blockedText
       <header className="nm-head">
         <CompEmblem comp={next.competition} size={30} />
         <span className="nm-head-txt">
-          <small>{needsAdvance ? 'Próxima partida' : 'Dia de jogo'}</small>
+          <small>Dia de jogo</small>
           <b>{COMP_NAME[next.competition]}</b>
         </span>
         <span className="nm-round">{describeMatch(m)}</span>
@@ -67,13 +67,11 @@ export function MatchdayHero({ next, myClub, myPos, lineup, canPlay, blockedText
       </button>
 
       <div className="nm-cta">
-        <button type="button" className={`gx-btn nm-play ${needsAdvance ? 'is-advance' : canPlay && !errors ? 'is-ready' : ''}`} disabled={busy || (!needsAdvance && (!canPlay || errors > 0))} onClick={needsAdvance ? onAdvance : onPlay}>
+        <button type="button" className={`gx-btn nm-play ${canPlay && !errors ? 'is-ready' : ''}`} disabled={busy || !canPlay || errors > 0} onClick={onPlay}>
           {busy ? (
             <>
-              <span className="nm-spin" /> {needsAdvance ? 'Avançando para a partida…' : 'Entrando em campo…'}
+              <span className="nm-spin" /> Entrando em campo…
             </>
-          ) : needsAdvance ? (
-            <><FastForward size={18} /> Avançar para a próxima partida</>
           ) : !canPlay ? (
             <>
               <Lock size={17} /> {blockedText}
@@ -88,7 +86,7 @@ export function MatchdayHero({ next, myClub, myPos, lineup, canPlay, blockedText
             </>
           )}
         </button>
-        <small>{needsAdvance ? 'As outras competições são simuladas até a data do seu jogo.' : 'Veja as escalações e a análise do adversário antes do apito inicial.'}</small>
+        <small>Veja as escalações e a análise do adversário antes do apito inicial.</small>
       </div>
     </section>
   )
@@ -156,56 +154,21 @@ export function UnemployedHero({ coach, offersCount, advancing, onAdvanceDay, on
   )
 }
 
-// DIA SEM JOGO do seu clube: as outras competições andam
-export function FreeDayHero({ event, calendar, advancing, onAdvance }) {
-  const batch = []
-  for (const e of calendar) {
-    if (e.kind !== 'free') break
-    batch.push(e)
-  }
-  const compId = event.competition
-  const t = COMP_THEME[compId]
+// DIA SEM JOGO do seu clube: só o botão que avança o calendário até a sua próxima partida
+export function AdvanceHero({ busy, progress, onAdvance }) {
   return (
-    <section className="nm is-free" style={{ '--c1': t.c1, '--c2': t.c2 }} aria-label="Dia sem jogo">
-      <img className="nm-bg" src={stadium} alt="" />
-      <span className="nm-shade" aria-hidden="true" />
-      <header className="nm-head">
-        <CompEmblem comp={compId} size={30} />
-        <span className="nm-head-txt">
-          <small>Seu time folga</small>
-          <b>{COMP_NAME[compId]}</b>
-        </span>
-      </header>
-      <div className="nm-free-body">
-        <p>
-          Dia de treino. O elenco <b>recupera a condição física</b> enquanto a rodada dos outros campeonatos acontece.
-        </p>
-        {batch.length > 1 && (
-          <ul className="nm-free-list">
-            {batch.slice(0, 4).map((e) => (
-              <li key={`${e.comp}-${e.stage}-${e.round}`}>
-                <CompEmblem comp={e.comp} size={16} />
-                <b>{COMP_SHORT[e.comp]}</b>
-                <span>{e.label}</span>
-              </li>
-            ))}
-          </ul>
+    <section className="nm-cta nm-solo" aria-label="Próxima partida">
+      <button type="button" className="gx-btn nm-play is-advance" disabled={busy} onClick={onAdvance}>
+        {busy ? (
+          <>
+            <span className="nm-spin" /> {progress ? `Avançando… ${progress}` : 'Avançando…'}
+          </>
+        ) : (
+          <>
+            <FastForward size={18} /> Avançar para a próxima partida
+          </>
         )}
-      </div>
-      <div className="nm-cta">
-        <button type="button" className="gx-btn nm-play is-advance" disabled={advancing} onClick={onAdvance}>
-          {advancing ? (
-            <>
-              <span className="nm-spin" /> Simulando…
-            </>
-          ) : (
-            <>
-              <FastForward size={20} fill="currentColor" /> Próximo jogo
-              <span className="nm-cost free">não gasta energia</span>
-            </>
-          )}
-        </button>
-      </div>
+      </button>
     </section>
   )
 }
