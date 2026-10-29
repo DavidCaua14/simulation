@@ -1,4 +1,4 @@
-import { COMPETITIONS, COMP_ORDER, phaseIndex, roundTitle } from './seasonUtils'
+import { COMPETITIONS, COMP_ORDER, phaseIndex, phaseOf, roundTitle } from './seasonUtils'
 
 // Funções puras: recebem os dados já carregados e devolvem o que a tela precisa.
 // Nada aqui chama o banco, por isso trocar de aba é instantâneo.
@@ -135,4 +135,41 @@ export function sideResult(f, club) {
   const mine = f.home_club === club ? f.home_goals : f.away_goals
   const opp = f.home_club === club ? f.away_goals : f.home_goals
   return mine > opp ? 'win' : mine === opp ? 'draw' : 'loss'
+}
+
+// Próxima partida do SEU clube quando hoje não é dia de jogo dele: mesmo formato de hub.next_event (kind 'mine'),
+// montado com o calendário projetado e os jogos já carregados. Só exibe o confronto; quem decide a data é o banco.
+export function upcomingMatch(calendar, byComp, myClub) {
+  const ev = calendar.find((e) => e.kind === 'mine' && e.fixture)
+  if (!ev) return null
+  const f = ev.fixture
+  const comp = f.comp
+  const opp = f.home_club === myClub ? f.away_club : f.home_club
+  const fixtures = byComp[comp] || []
+  const table = ['league', 'group'].includes(f.stage) ? standingsFrom(fixtures, f.stage === 'group' ? f.group_label : null) : []
+  const flat = flattenFixtures(byComp)
+  const recent = (club) => clubForm(flat, club).reverse() // mais recente primeiro, como o banco envia
+  return {
+    kind: 'mine',
+    competition: comp,
+    stage: f.stage,
+    round: f.round_no,
+    fixture_id: f.id,
+    opponent: opp,
+    opponent_position: table.find((r) => r.club_id === opp && r.played > 0)?.pos ?? null,
+    my_position: table.find((r) => r.club_id === myClub && r.played > 0)?.pos ?? null,
+    form: { mine: recent(myClub), opp: recent(opp) },
+    match: {
+      home: f.home_club,
+      away: f.away_club,
+      round: f.round_no,
+      stage: f.stage,
+      leg: f.leg,
+      group: f.group_label,
+      competition: comp,
+      venue: f.home_club === myClub ? 'home' : 'away',
+      neutral: phaseOf(comp, f.stage)?.neutral ?? f.stage === 'final',
+    },
+    projected: true,
+  }
 }

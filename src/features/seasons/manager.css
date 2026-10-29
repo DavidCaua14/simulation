@@ -555,3 +555,37 @@ em.l, .co-nums .l b { color: #ff5b6e; }
 .pt-pos.fit-ok { box-shadow: none; }
 .tt-bench .pt-pos { background: var(--gx-panel-2); color: var(--gx-ink); }
 .tt-ghost .pt-pos { background: rgba(5, 9, 20, 0.85); color: #fff; }
+
+/* ---------- Pré-jogo: confronto, escalações e análise do rival ---------- */
+.pm .sn-sheet-body { display: flex; flex-direction: column; gap: 12px; }
+.pm-versus { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 8px; padding: 12px; border-radius: 16px; background: var(--gx-panel); border: 1px solid var(--gx-line); }
+.pm-team { display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 0; text-align: center; }
+.pm-team b { font: 800 0.86rem var(--font-body); color: var(--gx-ink); max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pm-team small { font-size: 0.7rem; color: var(--gx-ink-2); }
+.pm-team.is-mine small { color: var(--gx-green); font-weight: 700; }
+.pm-mid { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.pm-mid span { font: 900 1.1rem var(--font-body); color: var(--gx-ink-2); }
+.pm-mid small { font-size: 0.66rem; color: var(--gx-ink-2); white-space: nowrap; }
+.pm-sec { display: flex; flex-direction: column; gap: 10px; }
+.pm-sec .pt { max-width: 420px; margin: 0 auto; }
+.pm-toggle { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.pm-toggle button { display: flex; align-items: center; justify-content: center; gap: 6px; min-width: 0; padding: 8px; border-radius: 12px; border: 1px solid var(--gx-line); background: var(--gx-panel); color: var(--gx-ink-2); font: 700 0.78rem var(--font-body); overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.pm-toggle button.is-on { border-color: var(--gx-gold-hi, #f5b800); color: var(--gx-ink); }
+.pm-formation { margin: 0; font-size: 0.8rem; color: var(--gx-ink-2); text-align: center; }
+.pm-formation b { color: var(--gx-ink); }
+.pm-out h4, .pm-compare h4 { margin: 0 0 6px; font: 800 0.8rem var(--font-body); color: var(--gx-ink); }
+.pm-out ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.pm-out li { display: flex; align-items: center; gap: 6px; padding: 6px 8px; border-radius: 10px; background: var(--gx-panel); font-size: 0.76rem; color: var(--gx-ink); }
+.pm-out li svg { color: #ff5b6e; flex: none; }
+.pm-out li small { margin-left: auto; color: var(--gx-ink-2); }
+.pm-compare { padding: 12px; border-radius: 14px; background: var(--gx-panel); border: 1px solid var(--gx-line); }
+.pm-bar { display: grid; grid-template-columns: 28px 1fr 28px; grid-template-areas: 'a bar b' 'l l l'; align-items: center; gap: 2px 8px; margin-bottom: 8px; }
+.pm-bar > b { font: 800 0.8rem var(--font-body); color: var(--gx-ink); text-align: center; }
+.pm-bar > b:first-child { grid-area: a; }
+.pm-bar > b:nth-of-type(2) { grid-area: b; }
+.pm-bar > span { grid-area: bar; display: flex; height: 8px; border-radius: 999px; overflow: hidden; background: var(--gx-line); }
+.pm-bar i { display: block; height: 100%; background: #ff5b6e; }
+.pm-bar i.is-mine { background: var(--gx-green); }
+.pm-bar small { grid-area: l; text-align: center; font-size: 0.68rem; color: var(--gx-ink-2); }
+.pm-scout { margin: 0; }
+.pm-start { flex: 1; white-space: nowrap; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }

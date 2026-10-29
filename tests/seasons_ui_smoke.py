@@ -68,16 +68,21 @@ with sync_playwright() as p:
         page.route('https://' + host + '/**', api)
         page.goto('http://127.0.0.1:5173/', wait_until='domcontentloaded')
         page.get_by_role('button', name='Comandar', exact=True).click()
-        summary = page.locator('.opponent-scout > summary')
+        # A análise do rival fica no pré-jogo; abrir o pré-jogo não inicia a partida.
+        assert 'mgr_opponent_report' not in calls
+        page.get_by_role('button', name=re.compile('Jogar partida')).click()
+        prematch = page.get_by_role('dialog')
+        expect(prematch.locator('.pt').first).to_be_visible()
+        prematch.get_by_role('tab', name='Análise do adversário', exact=True).click()
         if backend == 'v2':
-            expect(summary).to_be_visible()
-            summary.click()
             expect(page.get_by_text(re.compile('Plano provável'))).to_be_visible()
             expect(page.locator('.opponent-analysis')).to_contain_text(payload['scout']['formation'])
-            assert calls.count('mgr_opponent_report') == 1
+            assert calls.count('mgr_opponent_report') >= 1
         else:
-            assert summary.count() == 0
+            expect(prematch.locator('.opponent-analysis')).to_have_count(0)
             assert 'mgr_opponent_report' not in calls
+        assert 'mgr_match_start' not in calls
+        prematch.get_by_role('button', name='Fechar', exact=True).click()
         page.get_by_role('button', name='Time', exact=True).click()
         page.get_by_role('tab', name='Táticas', exact=True).click()
         tackles = page.get_by_role('radiogroup', name='Entradas', exact=True)
@@ -86,7 +91,8 @@ with sync_playwright() as p:
             tackles.get_by_role('radio', name='Cautelosas', exact=True).click()
             expect(tackles.get_by_role('radio', name='Cautelosas', exact=True)).to_have_attribute('aria-checked', 'true')
             page.locator('.sn-nav button').filter(has_text='Início').click()
-            page.get_by_role('button', name=re.compile('Ir para o jogo')).click()
+            page.get_by_role('button', name=re.compile('Jogar partida')).click()
+            page.get_by_role('dialog').get_by_role('button', name=re.compile('Iniciar partida')).click()
             page.get_by_role('tab', name='Times', exact=True).click()
             expect(page.get_by_text(re.compile('Plano atual em campo'))).to_be_visible()
         else:

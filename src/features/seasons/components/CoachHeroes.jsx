@@ -1,5 +1,4 @@
-import OpponentScout from './OpponentScout'
-import { CalendarClock, FastForward, Hourglass, Lock, Play, Radio, ShieldAlert, Shirt, TriangleAlert, Trophy, Zap } from 'lucide-react'
+import { CalendarClock, FastForward, Hourglass, Lock, Play, Radio, ShieldAlert, Shirt, TriangleAlert, Trophy } from 'lucide-react'
 import ClubCrest from '../../club/components/ClubCrest'
 import { getClubById } from '../../club/data/clubs'
 import CompEmblem from '../ui/CompEmblem'
@@ -25,8 +24,9 @@ function Side({ clubId, mine, pos, form, align, knockout }) {
   )
 }
 
-// DIA DE JOGO do seu clube: confronto, situação da escalação e o botão para entrar em campo.
-export function MatchdayHero({ next, myClub, myPos, lineup, canPlay, blockedText, busy, onPlay, onLineup, needsAdvance = false, onAdvance, engineVersion = 1 }) {
+// PRÓXIMA PARTIDA do seu clube: confronto e situação da escalação. Antes do dia do jogo o botão avança o calendário;
+// no dia do jogo abre o pré-jogo (escalações e análise do rival), de onde a partida é iniciada.
+export function MatchdayHero({ next, myClub, myPos, lineup, canPlay, blockedText, busy, onPlay, onLineup, needsAdvance = false, onAdvance }) {
   const m = next.match
   const t = COMP_THEME[next.competition]
   const venue = venueLabel(m)
@@ -66,8 +66,6 @@ export function MatchdayHero({ next, myClub, myPos, lineup, canPlay, blockedText
         </span>
       </button>
 
-      {engineVersion >= 2 && <OpponentScout fixtureId={next.fixture_id} />}
-
       <div className="nm-cta">
         <button type="button" className={`gx-btn nm-play ${needsAdvance ? 'is-advance' : canPlay && !errors ? 'is-ready' : ''}`} disabled={busy || (!needsAdvance && (!canPlay || errors > 0))} onClick={needsAdvance ? onAdvance : onPlay}>
           {busy ? (
@@ -86,14 +84,11 @@ export function MatchdayHero({ next, myClub, myPos, lineup, canPlay, blockedText
             </>
           ) : (
             <>
-              <Play size={20} fill="currentColor" /> Ir para o jogo
-              <span className="nm-cost" title="Custa 1 de energia">
-                <Zap size={13} fill="currentColor" />1
-              </span>
+              <Play size={20} fill="currentColor" /> Jogar partida
             </>
           )}
         </button>
-        <small>{needsAdvance ? 'As outras competições são simuladas até a data do seu jogo.' : 'A partida é simulada ao vivo: você pode mexer no time durante o jogo.'}</small>
+        <small>{needsAdvance ? 'As outras competições são simuladas até a data do seu jogo.' : 'Veja as escalações e a análise do adversário antes do apito inicial.'}</small>
       </div>
     </section>
   )

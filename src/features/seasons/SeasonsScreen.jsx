@@ -15,6 +15,7 @@ import { ErrorState, LoadingState } from './ui/States'
 import BottomNav from './components/BottomNav'
 import PostMatch from './components/PostMatch'
 import MatchLive from './components/MatchLive'
+import PreMatch from './components/PreMatch'
 import MatchReport from './components/MatchReport'
 import ParallelDigest from './components/ParallelDigest'
 import InboxSheet from './components/InboxSheet'
@@ -39,6 +40,7 @@ export default function SeasonsScreen({ onBack }) {
   const [busy, setBusy] = useState(null) // 'start' | 'advance' | 'next' | 'resign' | 'offer:<id>'
   const [live, setLive] = useState(null) // payload da partida ao vivo
   const [summary, setSummary] = useState(null) // pós-jogo
+  const [preMatch, setPreMatch] = useState(null) // id da partida no pré-jogo (escalações e análise do rival)
   const [digest, setDigest] = useState(null)
   const [report, setReport] = useState(null)
   const [inbox, setInbox] = useState(null)
@@ -108,6 +110,7 @@ export default function SeasonsScreen({ onBack }) {
         if (!ready || ready.season.status === 'finished' || ready.coach.status !== 'employed') return
       }
       const p = await startMatch() // idempotente: retoma a partida em andamento sem cobrar energia de novo
+      setPreMatch(null)
       setLive(p)
       refresh({ silent: true })
     })
@@ -164,6 +167,8 @@ export default function SeasonsScreen({ onBack }) {
   const actions = {
     refresh: () => refresh({ silent: true }),
     play,
+    // Dia de jogo: abre o pré-jogo; a partida (e o gasto de energia) só começa em "Iniciar partida"
+    openPreMatch: () => setPreMatch(hub?.next_event?.fixture_id ?? null),
     prepareNext,
     advance,
     startNext,
@@ -205,6 +210,25 @@ export default function SeasonsScreen({ onBack }) {
         </div>
 
         {ctx && !live && <BottomNav worldAvailable={!!hub.world} active={tab} onChange={(id) => goTab(id)} badges={badges} />}
+
+        {preMatch && !live && ctx && hub.next_event?.kind === 'mine' && hub.next_event.fixture_id === preMatch && !hub.live_match && (
+          <PreMatch
+            next={hub.next_event}
+            myClub={ctx.myClub}
+            myPos={hub.competitions.find((c) => c.id === hub.next_event.competition)?.table?.played ? hub.competitions.find((c) => c.id === hub.next_event.competition).table.pos : null}
+            lineupErrors={hub.lineup?.errors ?? 0}
+            canPlay={canPlay}
+            blockedText={blockedText}
+            starting={busy === 'start'}
+            engineVersion={hub.simulation_version ?? 1}
+            onStart={play}
+            onLineup={() => {
+              setPreMatch(null)
+              goTab('team')
+            }}
+            onClose={() => setPreMatch(null)}
+          />
+        )}
 
         {live && <MatchLive initial={live} myClub={ctx?.myClub} onFinished={onMatchFinished} notify={notify} />}
 

@@ -125,7 +125,7 @@ with sync_playwright() as p:
         page.wait_for_timeout(800)
         assert advance_trace == [], advance_trace
         advance_button.click()
-        expect(page.get_by_role('button', name='Ir para o jogo', exact=False)).to_be_enabled(timeout=20000)
+        expect(page.get_by_role('button', name='Jogar partida', exact=False)).to_be_enabled(timeout=20000)
         expected = [3, 0, 1] if width == 390 else [0, 0, 7, 0, 7, 5]
         assert advance_trace == expected, advance_trace
         page.wait_for_timeout(800)
@@ -176,7 +176,8 @@ with sync_playwright() as p:
         if width == 390:
             nav.locator('button').filter(has_text='Início').click()
             before_match = len(advance_trace)
-            page.get_by_role('button', name=re.compile('Ir para o jogo')).click()
+            page.get_by_role('button', name=re.compile('Jogar partida')).click()
+            page.get_by_role('dialog').get_by_role('button', name=re.compile('Iniciar partida')).click()
             match_dialog = page.get_by_role('dialog', name='Partida ao vivo', exact=True)
             expect(match_dialog).to_be_visible()
             page.wait_for_timeout(800)
@@ -189,7 +190,7 @@ with sync_playwright() as p:
             page.wait_for_timeout(800)
             assert len(advance_trace) == before_match, 'Post-match must wait for the next-match button'
             advance_button.click()
-            expect(page.get_by_role('button', name=re.compile('Ir para o jogo'))).to_be_enabled(timeout=15000)
+            expect(page.get_by_role('button', name=re.compile('Jogar partida'))).to_be_enabled(timeout=15000)
             assert advance_trace[before_match:] == [0, 7], advance_trace
             assert page.get_by_role('button', name='Abrir calendário', exact=True).count() == 0
         assert not errors, errors

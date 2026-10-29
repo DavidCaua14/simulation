@@ -121,7 +121,8 @@ with sync_playwright() as p:
         page.screenshot(path=f'/tmp/base-cards-{region}-{width}.png', full_page=True)
         if region == 'BRA':
             page.locator('.sn-nav button').filter(has_text='Início').click()
-            page.get_by_role('button', name=re.compile('Ir para o jogo')).click()
+            page.get_by_role('button', name=re.compile('Jogar partida')).click()
+            page.get_by_role('dialog').get_by_role('button', name=re.compile('Iniciar partida')).click()
             match_dialog = page.get_by_role('dialog', name='Partida ao vivo', exact=True)
             match_dialog.get_by_role('button', name='Pausar', exact=True).click()
             page.get_by_role('tab', name='Times', exact=True).click()

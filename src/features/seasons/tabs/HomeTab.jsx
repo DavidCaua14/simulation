@@ -11,11 +11,12 @@ import MatchRow from '../components/MatchRow'
 import CompCard from '../components/CompCard'
 import { EmptyState } from '../ui/States'
 import { MSG_KIND, objectiveProgress } from '../utils/managerUtils'
+import { upcomingMatch } from '../utils/seasonSelectors'
 
 // INÍCIO: o que acontece HOJE (jogo, folga, sem clube, fim de temporada), a situação do treinador
 // (diretoria, torcida, reputação), objetivos, caixa de mensagens, calendário e campeonatos.
 export default function HomeTab({ ctx, actions }) {
-  const { hub, nextEvent, calendar, history, myClub, canPlay, blockedText, busy } = ctx
+  const { hub, byComp, nextEvent, calendar, history, myClub, canPlay, blockedText, busy } = ctx
   const coach = hub.coach
   const finished = hub.season.status === 'finished'
   const nextStart = `${hub.season.year + 1}-${hub.season.region === 'ENG' ? '07' : '01'}-01`
@@ -23,7 +24,13 @@ export default function HomeTab({ ctx, actions }) {
   const unemployed = coach.status === 'unemployed'
   const mine = nextEvent?.kind === 'mine' ? nextEvent : null
   const free = nextEvent?.kind === 'free' ? nextEvent : null
-  const myTable = useMemo(() => hub.competitions.find((c) => c.id === mine?.competition)?.table, [hub.competitions, mine])
+  // Hoje não é dia de jogo do seu clube: mostra o seu próximo confronto e o botão para avançar até ele
+  const ahead = useMemo(
+    () => (!mine && !hub.live_match && !finished && !unemployed ? upcomingMatch(calendar, byComp, myClub) : null),
+    [mine, hub.live_match, finished, unemployed, calendar, byComp, myClub],
+  )
+  const focus = mine || ahead
+  const myTable = useMemo(() => hub.competitions.find((c) => c.id === focus?.competition)?.table, [hub.competitions, focus])
   const myPos = myTable?.played ? myTable.pos : null
   const leaguePlayed = hub.competitions.find((c) => c.kind === 'league' && c.table)?.table?.played ?? null
 
@@ -51,7 +58,6 @@ export default function HomeTab({ ctx, actions }) {
       <MatchdayHero
         needsAdvance={!!hub.world && (hub.world.needs_sync || mine.days_until > 0)}
         onAdvance={actions.prepareNext}
-        engineVersion={hub.simulation_version ?? 1}
         next={mine}
         myClub={myClub}
         myPos={myPos}
@@ -59,7 +65,23 @@ export default function HomeTab({ ctx, actions }) {
         canPlay={canPlay}
         blockedText={blockedText}
         busy={busy === 'start' || busy === 'prepare'}
-        onPlay={actions.play}
+        onPlay={actions.openPreMatch}
+        onLineup={() => actions.goTab('team')}
+      />
+    )
+  else if (ahead)
+    hero = (
+      <MatchdayHero
+        needsAdvance
+        onAdvance={hub.world ? actions.prepareNext : () => actions.advance(false)}
+        next={ahead}
+        myClub={myClub}
+        myPos={myPos ?? ahead.my_position}
+        lineup={hub.lineup}
+        canPlay={canPlay}
+        blockedText={blockedText}
+        busy={!!busy}
+        onPlay={actions.openPreMatch}
         onLineup={() => actions.goTab('team')}
       />
     )
