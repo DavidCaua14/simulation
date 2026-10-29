@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { WorldStrip } from '../world/WorldPanel'
 import { ArrowLeftRight, CalendarDays, ChevronRight, Inbox, Target } from 'lucide-react'
 import ClubCrest from '../../club/components/ClubCrest'
 import { getClubById } from '../../club/data/clubs'
@@ -17,6 +18,8 @@ export default function HomeTab({ ctx, actions }) {
   const { hub, nextEvent, calendar, history, myClub, canPlay, blockedText, busy } = ctx
   const coach = hub.coach
   const finished = hub.season.status === 'finished'
+  const nextStart = `${hub.season.year + 1}-${hub.season.region === 'ENG' ? '07' : '01'}-01`
+  const waitNext = hub.world && hub.world.today < nextStart
   const unemployed = coach.status === 'unemployed'
   const mine = nextEvent?.kind === 'mine' ? nextEvent : null
   const free = nextEvent?.kind === 'free' ? nextEvent : null
@@ -31,7 +34,7 @@ export default function HomeTab({ ctx, actions }) {
 
   let hero
   if (hub.live_match) hero = <LiveHero busy={busy === 'start'} onResume={actions.play} />
-  else if (finished) hero = <SeasonEnd season={hub.season} coach={coach} objectives={hub.objectives} starting={busy === 'next'} onStartNext={actions.startNext} onOffers={() => actions.goTab('career')} offers={hub.offers.length} />
+  else if (finished) hero = <SeasonEnd season={hub.season} coach={coach} objectives={hub.objectives} starting={busy === 'next'} nextStartsOn={waitNext ? nextStart : null} onStartNext={waitNext ? () => actions.goTab('career', 'world') : actions.startNext} onOffers={() => actions.goTab('career')} offers={hub.offers.length} />
   else if (unemployed)
     hero = (
       <UnemployedHero
@@ -43,6 +46,7 @@ export default function HomeTab({ ctx, actions }) {
         onOffers={() => actions.goTab('career', 'offers')}
       />
     )
+  else if (hub.world && (hub.world.needs_sync || mine?.days_until > 0)) hero = <section className="sn-sec"><h2 className="gx-title">{hub.world.needs_sync ? 'O mundo está em movimento' : `Próxima partida em ${mine.days_until} dia(s)`}</h2><p className="sn-hint">Avance a data e acompanhe os acontecimentos do clube.</p><button className="gx-btn" disabled={!!busy} onClick={() => actions.goTab('career', 'world')}>Abrir calendário</button></section>
   else if (mine)
     hero = (
       <MatchdayHero
@@ -64,6 +68,7 @@ export default function HomeTab({ ctx, actions }) {
   return (
     <div className="sn-page">
       {hero}
+      <WorldStrip ctx={ctx} actions={actions} />
 
       {firstOffer && !unemployed && (
         <button type="button" className="sn-offerbar" onClick={() => actions.goTab('career', 'offers')}>

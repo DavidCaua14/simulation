@@ -19,9 +19,12 @@ parser = argparse.ArgumentParser()
 parser.add_argument('container', nargs='?', default='simulation-seasons-test')
 parser.add_argument('--ui-fixtures', type=Path)
 parser.add_argument('--base-cards', action='store_true')
+parser.add_argument('--career-world', action='store_true')
+parser.add_argument('--world-cycle', action='store_true')
 parser.add_argument('--skip-existing-tests', action='store_true')
 parser.add_argument('--keep-db', action='store_true')
 args = parser.parse_args()
+if args.career_world or args.world_cycle: args.base_cards = True
 CONTAINER = args.container
 DATABASE = 'simulation_validation_' + uuid.uuid4().hex[:12]
 ENV = {k: v for k, v in os.environ.items() if k not in ['DOCKER_HOST', 'DOCKER_CONTEXT', 'DOCKER_TLS', 'DOCKER_TLS_VERIFY', 'DOCKER_CERT_PATH']}
@@ -94,6 +97,23 @@ try:
         data = next(json.loads(line) for line in result.stdout.decode().splitlines() if line.startswith('{'))
         args.ui_fixtures.write_text(json.dumps(data))
         print('Respostas fictícias de API salvas em', args.ui_fixtures, flush=True)
+    if args.career_world or args.world_cycle:
+        for path in sorted((ROOT / 'supabase/evolution').glob('2[4-9]_*.sql')):
+            run_file(path)
+        run_file('supabase/evolution/tests/career_world_tests.sql')
+        run_file('supabase/evolution/tests/career_world_lifecycle_tests.sql')
+        run_file('supabase/evolution/tests/career_world_awards_tests.sql')
+        # Reapplying the additive migration must not duplicate data or stack wrappers.
+        for path in sorted((ROOT / 'supabase/evolution').glob('2[4-9]_*.sql')):
+            run_file(path)
+        run_file('supabase/evolution/tests/career_world_tests.sql')
+        subprocess.run([sys.executable,str(ROOT/'tests/career_world_concurrency.py'),CONTAINER,DATABASE],check=True,env=ENV)
+        if args.ui_fixtures:
+            result = subprocess.run(DOCKER + ['psql', '-U', 'postgres', '-d', DATABASE, '-At', '-v', 'ON_ERROR_STOP=1'], input=(ROOT / 'supabase/evolution/tests/support/career_world_ui_fixtures.sql').read_bytes(), stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=ENV, check=True)
+            data = json.loads(args.ui_fixtures.read_text())
+            data.update(next(json.loads(line) for line in result.stdout.decode().splitlines() if line.startswith('{')))
+            args.ui_fixtures.write_text(json.dumps(data))
+        if args.world_cycle: subprocess.run([sys.executable,str(ROOT/'tests/career_world_season_cycle.py'),CONTAINER,DATABASE],check=True,env=ENV)
 finally:
     if args.keep_db:
         print('Retained local test database:', DATABASE, flush=True)

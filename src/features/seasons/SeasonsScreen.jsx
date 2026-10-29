@@ -60,7 +60,8 @@ export default function SeasonsScreen({ onBack }) {
 
   const finished = hub?.season.status === 'finished'
   const hasEnergy = hub ? hub.career.energy + hub.career.bonus_energy > 0 : false
-  const canPlay = (hasEnergy || Boolean(hub?.live_match)) && !finished && !busy
+  const calendarReady = !hub?.world || (!hub.world.needs_sync && !(hub.next_event?.days_until > 0))
+  const canPlay = calendarReady && (hasEnergy || Boolean(hub?.live_match)) && !finished && !busy
   const blockedText = finished ? 'Temporada encerrada' : remaining != null ? `Sem energia · recarga em ${formatRemaining(remaining)}` : 'Sem energia'
 
   const goTab = useCallback((id, sub = null) => {
@@ -120,7 +121,7 @@ export default function SeasonsScreen({ onBack }) {
       await startNextSeason()
       await refresh({ silent: true })
       setTab('home')
-      notify('Nova temporada! Elenco descansado e objetivos renovados.', 'ok')
+      notify('Nova temporada! Calendário e objetivos atualizados.', 'ok')
     })
 
   const doResign = () =>
@@ -137,6 +138,7 @@ export default function SeasonsScreen({ onBack }) {
   }
 
   const actions = {
+    refresh: () => refresh({ silent: true }),
     play,
     advance,
     startNext,

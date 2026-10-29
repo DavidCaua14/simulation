@@ -1,3 +1,5 @@
+import WorldPanel from '../world/WorldPanel'
+import JobTerms from '../world/JobTerms'
 import StandingsTable from '../components/StandingsTable'
 import { useEffect, useRef, useState } from 'react'
 import { Briefcase, CalendarRange, Coins, DoorOpen, Flag, History, Target, Trophy } from 'lucide-react'
@@ -13,6 +15,7 @@ import { COMP_SHORT, fmt, seasonLabel } from '../utils/seasonUtils'
 
 const VIEWS = [
   { id: 'profile', label: 'Perfil' },
+  { id: 'world', label: 'Gestão' },
   { id: 'offers', label: 'Propostas' },
   { id: 'clubs', label: 'Clubes' },
   { id: 'seasons', label: 'Temporadas' },
@@ -20,7 +23,7 @@ const VIEWS = [
 
 const when = (year, day) => `${year}${day != null ? ` · dia ${day}` : ''}`
 
-function OfferCard({ o, employed, busy, onRespond }) {
+function OfferCard({ o, employed, busy, onRespond, onRefresh }) {
   const [confirm, setConfirm] = useState(false)
   const club = getClubById(o.club_id)
   const ctx = o.context || {}
@@ -38,7 +41,7 @@ function OfferCard({ o, employed, busy, onRespond }) {
       <ul className="of-facts">
         {ctx.position != null && (
           <li>
-            <Flag size={13} /> Hoje: {ctx.position}º no Brasileirão
+            <Flag size={13} /> Hoje: {ctx.position}º na liga
           </li>
         )}
         {ctx.objective && (
@@ -52,6 +55,7 @@ function OfferCard({ o, employed, busy, onRespond }) {
           </li>
         )}
       </ul>
+      {o.salary != null && <JobTerms key={`${o.id}:${o.negotiation_round}`} offer={o} onRefresh={onRefresh} />}
       {confirm ? (
         <div className="of-confirm">
           <p>{employed ? 'Você deixa o clube atual agora. A temporada continua de onde parou, no novo clube, com o elenco dele.' : 'Você assume o clube agora e a temporada continua de onde parou.'}</p>
@@ -158,8 +162,8 @@ export default function CareerTab({ ctx, initialView, actions }) {
         </div>
       </section>
 
-      <div className="sn-seg" role="tablist" aria-label="Áreas da carreira">
-        {VIEWS.map((v) => (
+      <div className="sn-seg cw-nav" role="tablist" aria-label="Áreas da carreira">
+        {VIEWS.filter(v => v.id !== 'world' || hub.world).map((v) => (
           <button key={v.id} type="button" role="tab" aria-selected={view === v.id} className={view === v.id ? 'is-on' : ''} onClick={() => setView(v.id)}>
             {v.label}
             {v.id === 'offers' && hub.offers.length > 0 && <em>{hub.offers.length}</em>}
@@ -167,10 +171,12 @@ export default function CareerTab({ ctx, initialView, actions }) {
         ))}
       </div>
 
+      {view === 'world' && hub.world && <WorldPanel hub={hub} onRefresh={actions.refresh} onReport={actions.openReport} onHome={() => actions.goTab('home')} />}
       {view === 'profile' && (
         <>
           <section className="sn-sec">
             <h2 className="gx-title">Conquistas</h2>
+            {hub.world && <JobTerms coach={hub.world.coach} employed={coach.status === 'employed'} onRefresh={actions.refresh} />}
             <TrophyCabinet history={hist?.seasons || []} titles={coach.titles} />
           </section>
           <section className="sn-sec">
@@ -243,7 +249,7 @@ export default function CareerTab({ ctx, initialView, actions }) {
               }
             />
           ) : (
-            hub.offers.map((o) => <OfferCard key={o.id} o={o} employed={coach.status === 'employed'} busy={busy === `offer:${o.id}`} onRespond={actions.respondOffer} />)
+            hub.offers.map((o) => <OfferCard key={o.id} o={o} employed={coach.status === 'employed'} busy={busy === `offer:${o.id}`} onRespond={actions.respondOffer} onRefresh={actions.refresh} />)
           )}
           {hub.offer_history?.length > 0 && (
             <section className="sn-sec">

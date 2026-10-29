@@ -140,7 +140,7 @@ export function reputationTier(v = 0) {
   return { label: REP_TIERS[i].label, stars: Math.max(0.5, Math.min(5, Math.round((v / 20) * 2) / 2)) }
 }
 
-export const END_REASON = { fired: 'Demitido', left: 'Saiu para outro clube', resigned: 'Pediu demissão' }
+export const END_REASON = { fired: 'Demitido', left: 'Saiu para outro clube', resigned: 'Pediu demissão', expired: 'Contrato encerrado' }
 
 export const winRate = (w = 0, d = 0, l = 0) => {
   const j = w + d + l

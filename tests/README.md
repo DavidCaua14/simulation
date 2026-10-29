@@ -22,3 +22,9 @@ Cenários: JWT rejeitado ao carregar carreira e ao iniciar uma partida; falha de
 # Temporadas v2
 
 A validação isolada do banco e os testes do navegador estão descritos em [TEMPORADAS_V2.md](../docs/TEMPORADAS_V2.md). `tests/seasons_ui_smoke.py` exige respostas fictícias geradas pelo runner SQL e intercepta as chamadas ao Supabase.
+
+# Carreira completa
+
+Cobertura dos 13 tópicos, regras, execução das suítes e preparação da implantação: [CARREIRA_COMPLETA.md](../docs/CARREIRA_COMPLETA.md).
+
+`test-seasons-db.py --career-world --world-cycle` instala em PostgreSQL descartável, valida isolamento/reaplicação e percorre o calendário com uma transação por RPC. Os testes de navegador usam API interceptada e não acessam dados reais.

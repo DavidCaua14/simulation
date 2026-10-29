@@ -5,7 +5,7 @@ import CompEmblem from '../ui/CompEmblem'
 import { COMP_NAME, seasonLabel } from '../utils/seasonUtils'
 
 // FIM DE TEMPORADA: campeões, a campanha do seu time, objetivos e o caminho para a próxima.
-export default function SeasonEnd({ season, coach, objectives = [], starting, onStartNext, offers = 0, onOffers }) {
+export default function SeasonEnd({ season, coach, objectives = [], starting, onStartNext, offers = 0, onOffers, nextStartsOn }) {
   const sum = season.summary || {}
   const comps = sum.competitions || []
   const titles = comps.filter((c) => c.player_result === 'Campeão')
@@ -63,10 +63,11 @@ export default function SeasonEnd({ season, coach, objectives = [], starting, on
         <p className="se-note">Você está sem clube. As propostas aparecem na aba Carreira — dá para começar a próxima temporada e esperar por elas.</p>
       ) : (
         <p className="se-note">
-          Você segue no cargo: <ClubCrest clubId={coach.club_id} size={14} /> <b>{getClubById(coach.club_id)?.name}</b>. O elenco volta descansado e a diretoria renova os objetivos.
+          Você segue no cargo: <ClubCrest clubId={coach.club_id} size={14} /> <b>{getClubById(coach.club_id)?.name}</b>. O calendário segue e a diretoria renova os objetivos.
         </p>
       )}
 
+      {nextStartsOn && <p className="se-note">A próxima temporada começa em {new Date(`${nextStartsOn}T12:00:00Z`).toLocaleDateString('pt-BR', { timeZone: 'UTC' })}. Avance os dias na gestão da carreira.</p>}
       <div className="se-actions">
         {offers > 0 && (
           <button type="button" className="gx-btn-ghost" onClick={onOffers}>
@@ -74,7 +75,7 @@ export default function SeasonEnd({ season, coach, objectives = [], starting, on
           </button>
         )}
         <button type="button" className="gx-btn" disabled={starting} onClick={onStartNext}>
-          {starting ? <span className="nm-spin" /> : <Play size={18} fill="currentColor" />} Começar a próxima temporada
+          {starting ? <span className="nm-spin" /> : <Play size={18} fill="currentColor" />} {nextStartsOn ? 'Avançar até a próxima temporada' : 'Começar a próxima temporada'}
         </button>
       </div>
     </section>
