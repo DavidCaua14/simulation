@@ -8,7 +8,7 @@ const ROLES = { key: 'Peça-chave', starter: 'Titular', rotation: 'Rotação', p
 const monthsLeft = (until, today) => (until && today ? Math.max(0, Math.ceil((Date.parse(until) - Date.parse(today)) / (30 * 86400000))) : null)
 
 // Satisfação e contrato do atleta do SEU elenco: renovar (até 5 anos), colocar na lista de transferências ou rescindir.
-export default function ContractPanel({ player: p, today, maxYears = 5, notify, onChanged }) {
+export default function ContractPanel({ player: p, today, maxYears = 5, fullActions = true, notify, onChanged }) {
   const [busy, setBusy] = useState(false)
   const [renewal, setRenewal] = useState(null) // { id, salary, years, signing, role }
   const [confirmRelease, setConfirmRelease] = useState(false)
@@ -88,8 +88,8 @@ export default function ContractPanel({ player: p, today, maxYears = 5, notify, 
       ) : (
         <div className="ps-deal-actions">
           <button type="button" className="gx-btn" disabled={busy || p.precontract} onClick={openRenewal}><FileSignature size={15} /> Renovar contrato</button>
-          <button type="button" className="gx-btn-ghost" disabled={busy} onClick={toggleList}><Tag size={15} /> {p.transfer_listed ? 'Tirar da lista' : 'Colocar à venda'}</button>
-          <button type="button" className="gx-btn-ghost" disabled={busy || p.precontract} onClick={() => setConfirmRelease(true)}><UserMinus size={15} /> Rescindir</button>
+          {fullActions && <button type="button" className="gx-btn-ghost" disabled={busy} onClick={toggleList}><Tag size={15} /> {p.transfer_listed ? 'Tirar da lista' : 'Colocar à venda'}</button>}
+          {fullActions && <button type="button" className="gx-btn-ghost" disabled={busy || p.precontract} onClick={() => setConfirmRelease(true)}><UserMinus size={15} /> Rescindir</button>}
         </div>
       )}
     </section>

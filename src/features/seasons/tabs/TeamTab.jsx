@@ -9,7 +9,7 @@ import TacticsPanel from '../components/TacticsPanel'
 import MoodBadge from '../components/MoodBadge'
 import { MOODS } from '../utils/mood'
 import ContractPanel from '../components/ContractPanel'
-import { dateLabel } from '../services/careerWorldApi'
+import { dateLabel, fetchSquadContracts } from '../services/careerWorldApi'
 import ClubCrest from '../../club/components/ClubCrest'
 import { getClubById } from '../../club/data/clubs'
 import { EmptyState, ErrorState, LoadingState } from '../ui/States'
@@ -58,11 +58,23 @@ export default function TeamTab({ hub, onSaved, notify }) {
   const [issues, setIssues] = useState([])
 
   const clubId = hub.coach.club_id
+  const hasWorld = !!hub.world
   const club = getClubById(clubId)
 
   const load = useCallback(async () => {
     try {
       const s = await fetchSquad()
+      // Sem a evolução 32 o elenco não traz satisfação/contrato: completa com a busca do próprio elenco.
+      if (hasWorld && s.players?.some((p) => p.morale == null)) {
+        const extra = await fetchSquadContracts().catch(() => null)
+        if (extra) {
+          s.players = s.players.map((p) => {
+            const x = extra[p.id]
+            if (!x || p.morale != null) return p
+            return { ...p, morale: x.morale, transfer_requested: x.transfer_requested, promised_role: x.promised_role, contract_expires: x.expires_on, monthly_salary: x.monthly_salary, age: x.age }
+          })
+        }
+      }
       setSquad(s)
       setDraft({ formation: s.lineup.formation, slots: s.lineup.slots || {}, bench: s.lineup.bench || [], tactics: { ...DEFAULT_TACTICS, ...(s.lineup.tactics || {}) } })
       setIssues(s.lineup.issues || [])
@@ -71,7 +83,7 @@ export default function TeamTab({ hub, onSaved, notify }) {
     } catch (e) {
       setError(e.message)
     }
-  }, [])
+  }, [hasWorld])
 
   useEffect(() => {
     if (clubId) load()
@@ -456,6 +468,7 @@ export default function TeamTab({ hub, onSaved, notify }) {
               key={infoPlayer.id}
               player={infoPlayer}
               today={hub.world?.today}
+              fullActions={!!squad.squad}
               notify={notify}
               onChanged={(r) => {
                 load()
