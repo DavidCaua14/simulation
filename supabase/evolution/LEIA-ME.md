@@ -34,6 +34,7 @@ supabase/evolution/18_swiss_certificates.sql <- certificados dos sorteios suíç
 supabase/evolution/19_opponent_analysis.sql <- análise do rival e histórico
 supabase/evolution/20_pending_calendar_repair.sql <- somente rodadas futuras; snapshots legados
 supabase/evolution/31_world_advance_speed.sql <- (depois da carreira completa 24–30) avanço do calendário em lotes curtos
+supabase/evolution/32_squad_morale_contracts.sql <- satisfação no rendimento, contratos/pré-contratos, limite de elenco, rescisão e demissão por falência
 ```
 
 Banco que já estava no ar: rode só `evolution/01`, `evolution/02`, `manager/02_players_seed.sql` (gerado de novo) e
@@ -130,3 +131,20 @@ Aplicar 21_base_cards.sql, 22_base_card_functions.sql e 23_base_card_migration.s
 Banco que já está no ar: rode só `supabase/evolution/31_world_advance_speed.sql` no SQL Editor. Substitui apenas
 `career_world_advance` e `cw_step_day` (mesmo resultado, lotes menores e menos escrita por dia); não altera tabelas
 nem dados. O app já trata lotes parciais e funciona com ou sem esta migração.
+
+## Elenco, satisfação e contratos (32)
+
+Banco que já está no ar: rode `31_world_advance_speed.sql` (se ainda não rodou) e depois `32_squad_morale_contracts.sql`.
+Adiciona duas colunas com padrão em `cw_players` (`shirt_number`, `transfer_listed`) e embrulha funções existentes
+(`*_before_v32`). Não altera carreiras, saldos, resultados nem jogadores. Regras:
+
+- Satisfação (0–100) muda o rendimento individual na partida: abaixo de 45 até −12%; acima de 80 até +3%.
+  Abaixo de 30 o atleta pede para sair e passa a receber propostas.
+- Limite de inscrição: 30 atletas com 21 anos ou mais por clube (sub-21 livres), em `cw_rules.rules.squad_limit`.
+  Inspirado na lista de 25 adultos + sub-21 da Premier League, ajustado ao tamanho médio dos elencos do jogo.
+- Lista de transferências e rescisão (até seis salários) para abrir vagas.
+- Contratos nos seis meses finais recebem pré-contratos: sem renovação, o atleta sai de graça. Máximo de 5 anos.
+- Clube com risco financeiro ≥ 90% por 21 dias demite o treinador (após 45 dias no cargo), além da regra antiga de 60 dias.
+- Atleta transferido recebe um número livre no novo clube; cartas de notícias usam o atleta real.
+
+Teste: `supabase/evolution/tests/squad_morale_contracts_tests.sql`.

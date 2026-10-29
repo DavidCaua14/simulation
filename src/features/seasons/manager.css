@@ -589,3 +589,40 @@ em.l, .co-nums .l b { color: #ff5b6e; }
 .pm-bar small { grid-area: l; text-align: center; font-size: 0.68rem; color: var(--gx-ink-2); }
 .pm-scout { margin: 0; }
 .pm-start { flex: 1; white-space: nowrap; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+
+/* ---------- satisfação (rostinho ao lado da carta) ---------- */
+.mood { --mc: #93a0bb; display: inline-flex; align-items: center; justify-content: center; gap: 5px; flex: none; color: var(--mc); }
+.mood.m-joy { --mc: #2ee38a; }
+.mood.m-happy { --mc: #8fd96b; }
+.mood.m-neutral { --mc: #f5c542; }
+.mood.m-upset { --mc: #f5a524; }
+.mood.m-angry { --mc: #ff5b6e; }
+.mood.has-label { padding: 3px 8px 3px 5px; border-radius: 999px; background: color-mix(in srgb, var(--mc) 14%, transparent); font: 800 0.72rem var(--font-body); }
+.pt-mood { position: absolute; top: -4px; right: -6px; z-index: 2; width: 20px; height: 20px; border-radius: 50%; background: #0b1224; box-shadow: 0 0 0 1.5px var(--mc), 0 2px 6px rgba(0, 0, 0, 0.5); }
+.pt-mood.m-angry { animation: mood-pulse 1.6s ease-in-out infinite; }
+@keyframes mood-pulse { 50% { box-shadow: 0 0 0 3px color-mix(in srgb, var(--mc) 55%, transparent), 0 2px 6px rgba(0, 0, 0, 0.5); } }
+@media (prefers-reduced-motion: reduce) { .pt-mood.m-angry { animation: none; } }
+.tt-moods { display: flex; flex-wrap: wrap; gap: 6px 10px; margin: 0; padding: 0; list-style: none; font-size: 0.7rem; color: var(--gx-ink-2); }
+.tt-moods li { display: inline-flex; align-items: center; gap: 4px; }
+.tt-squad { margin-left: auto; text-align: right; }
+.tt-squad small { display: block; font-size: 0.62rem; color: var(--gx-ink-2); }
+.tt-squad b { font: 800 0.9rem var(--font-body); }
+.tt-squad.is-full b { color: #ff5b6e; }
+.sq-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 2px; }
+.sq-tag { padding: 1px 6px; border-radius: 999px; font: 800 0.58rem var(--font-body); letter-spacing: 0.02em; background: var(--gx-panel-2); color: var(--gx-ink-2); }
+.sq-tag.bad { background: rgba(255, 91, 110, 0.14); color: #ff5b6e; }
+.sq-tag.warn { background: rgba(245, 165, 36, 0.14); color: #f5a524; }
+.ps-deal { display: flex; flex-direction: column; gap: 10px; padding: 12px; border-radius: 14px; border: 1px solid var(--gx-line); background: var(--gx-panel); }
+.ps-deal h4 { margin: 0; font: 800 0.82rem var(--font-body); color: var(--gx-ink); }
+.ps-deal dl { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin: 0; }
+.ps-deal dt { font-size: 0.64rem; color: var(--gx-ink-2); }
+.ps-deal dd { margin: 0; font: 800 0.82rem var(--font-body); color: var(--gx-ink); }
+.ps-deal p { margin: 0; font-size: 0.74rem; line-height: 1.45; color: var(--gx-ink-2); }
+.ps-deal-actions { display: flex; flex-wrap: wrap; gap: 6px; }
+.ps-deal-actions button { flex: 1 1 140px; min-height: 40px; }
+.ps-renew { display: flex; flex-direction: column; gap: 2px; }
+.ps-renew .cw-field { display: grid; gap: 5px; margin: 4px 0; font: 700 0.72rem var(--font-body); color: var(--gx-ink-2); }
+.ps-renew .cw-field input, .ps-renew .cw-field select { width: 100%; min-height: 42px; box-sizing: border-box; padding: 9px 12px; border-radius: 12px; border: 1px solid var(--gx-line); background: var(--gx-panel-2); color: var(--gx-ink); font: 600 16px var(--font-body); }
+.ps-deal-actions > p { flex-basis: 100%; }
+.ps-deal .mood.has-label { align-self: flex-start; }
+.ps-deal-actions button { white-space: nowrap; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }

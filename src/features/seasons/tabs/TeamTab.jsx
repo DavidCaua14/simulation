@@ -6,6 +6,10 @@ import PositionFilter from '../components/PositionFilter'
 import PlayerPicker from '../components/PlayerPicker'
 import PlayerSheet from '../components/PlayerSheet'
 import TacticsPanel from '../components/TacticsPanel'
+import MoodBadge from '../components/MoodBadge'
+import { MOODS } from '../utils/mood'
+import ContractPanel from '../components/ContractPanel'
+import { dateLabel } from '../services/careerWorldApi'
 import ClubCrest from '../../club/components/ClubCrest'
 import { getClubById } from '../../club/data/clubs'
 import { EmptyState, ErrorState, LoadingState } from '../ui/States'
@@ -74,6 +78,8 @@ export default function TeamTab({ hub, onSaved, notify }) {
   }, [clubId, hub.season.day_no, load])
 
   const byId = useMemo(() => Object.fromEntries((squad?.players || []).map((p) => [p.id, p])), [squad])
+  const infoPlayer = info ? byId[info.id] || info : null
+  const expiringSoon = (until) => hub.world?.today && Date.parse(until) - Date.parse(hub.world.today) <= 183 * 86400000
   const formation = catalog?.byId[draft?.formation]
   const strength = useMemo(() => (formation && draft ? lineupStrength(formation, draft.slots, byId) : null), [formation, draft, byId])
 
@@ -229,6 +235,12 @@ export default function TeamTab({ hub, onSaved, notify }) {
             {squad.next_competition ? ` · próximo jogo: ${COMP_SHORT[squad.next_competition]}` : ''}
           </small>
         </div>
+        {squad.squad && (
+          <span className={`tt-squad ${squad.squad.count >= squad.squad.limit ? 'is-full' : ''}`} title={`Limite de inscrição: ${squad.squad.limit} atletas com ${squad.squad.age} anos ou mais. Sub-${squad.squad.age} não contam.`}>
+            <small>Elenco {squad.squad.age}+</small>
+            <b>{squad.squad.count}/{squad.squad.limit}</b>
+          </span>
+        )}
         {strength && (
           <span className={`tt-ovr o-${ovrTone(strength.overall)}`} title="Força média do time titular nas vagas escolhidas">
             <small>Força</small>
@@ -330,6 +342,15 @@ export default function TeamTab({ hub, onSaved, notify }) {
               <Check size={14} /> Escalação pronta para o próximo jogo
             </p>
           )}
+          {squad.players.some((p) => p.morale != null) && (
+            <ul className="tt-moods" aria-label="Legenda de satisfação">
+              {MOODS.map((m) => (
+                <li key={m.id}>
+                  <MoodBadge morale={m.at < 0 ? 0 : m.at} size={13} /> {m.label}
+                </li>
+              ))}
+            </ul>
+          )}
           <p className="sn-hint">
             Arraste um jogador até outra vaga ou até o banco para trocar de lugar — ou toque nele para escolher da lista. A etiqueta abaixo do nome é a posição: no campo, a da vaga ("é MC" mostra a posição de origem de quem está improvisado); no banco, a posição de cada reserva. Fora de posição ele rende menos; cansado também. Mudar a formação toda hora reduz o entrosamento
             tático ({squad.lineup.formation_games} jogo{squad.lineup.formation_games === 1 ? '' : 's'} seguidos nesta formação).
@@ -366,7 +387,16 @@ export default function TeamTab({ hub, onSaved, notify }) {
                             {p.position_estimated ? '*' : ''}
                             {inXI ? ' · titular' : onBench ? ' · banco' : ''}
                           </small>
+                          {(p.transfer_requested || p.transfer_listed || p.precontract || p.contract_expires) && (
+                            <span className="sq-tags">
+                              {p.transfer_requested && <em className="sq-tag bad">Pede para sair</em>}
+                              {p.precontract && <em className="sq-tag bad">Pré-contrato</em>}
+                              {p.transfer_listed && <em className="sq-tag warn">À venda</em>}
+                              {p.contract_expires && <em className={`sq-tag ${expiringSoon(p.contract_expires) ? 'warn' : ''}`}>Até {dateLabel(p.contract_expires).slice(3)}</em>}
+                            </span>
+                          )}
                         </span>
+                        <MoodBadge morale={p.morale} size={16} />
                         <span className="sq-flags">
                           {p.injured_days > 0 && <Ambulance size={13} className="bad" />}
                           {p.suspended > 0 && <Ban size={13} className="bad" />}
@@ -419,7 +449,23 @@ export default function TeamTab({ hub, onSaved, notify }) {
           onClose={() => setPicker(null)}
         />
       )}
-      {info && <PlayerSheet player={info ? { ...info, club_id: clubId } : null} clubName={club?.name} onClose={() => setInfo(null)} />}
+      {infoPlayer && (
+        <PlayerSheet player={{ ...infoPlayer, club_id: clubId }} clubName={club?.name} onClose={() => setInfo(null)}>
+          {(infoPlayer.contract_expires || infoPlayer.morale != null) && (
+            <ContractPanel
+              key={infoPlayer.id}
+              player={infoPlayer}
+              today={hub.world?.today}
+              notify={notify}
+              onChanged={(r) => {
+                load()
+                onSaved?.()
+                if (r?.closed) setInfo(null)
+              }}
+            />
+          )}
+        </PlayerSheet>
+      )}
     </div>
   )
 }

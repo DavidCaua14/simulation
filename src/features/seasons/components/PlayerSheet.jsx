@@ -8,7 +8,7 @@ const attrTone = (v) => (v >= 80 ? 'a-elite' : v >= 70 ? 'a-good' : v >= 55 ? 'a
 
 // Ficha completa do jogador: posição, atributos (estimativa de gameplay), notas por posição,
 // condição física, disponibilidade e números da temporada.
-export default function PlayerSheet({ player, onClose, clubName }) {
+export default function PlayerSheet({ player, onClose, clubName, children }) {
   if (!player) return null
   const p = player
   const isGk = p.position === 'GOL'
@@ -77,6 +77,8 @@ export default function PlayerSheet({ player, onClose, clubName }) {
             </i>
           </div>
         </section>
+
+        {children}
 
         <section className="ps-sec">
           <h3 className="gx-title">

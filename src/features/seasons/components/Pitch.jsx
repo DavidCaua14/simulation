@@ -1,6 +1,7 @@
 import { Ambulance, Ban, BatteryLow } from 'lucide-react'
 import BasePlayerCard from '../../cards/components/BasePlayerCard'
 import { POS_NAME, fitTone, posFit } from '../utils/managerUtils'
+import MoodBadge from './MoodBadge'
 
 // Campo visto de cima (ataque para cima). Cada vaga da formação fica na posição real do campo
 // (coordenadas vêm de sim_formations, as mesmas que o motor usa).
@@ -38,6 +39,7 @@ export function PlayerToken({ player, pos, colors, selected, live, onClick, labe
       aria-label={player ? `${label || pos}: ${player.short_name || player.name}, nota ${rating} nessa posição` : `${label || pos}: vaga vazia`}
     >
       {player ? <BasePlayerCard player={player} position={pos} overall={rating} colors={[c1, c2]} /> : <span className="pt-shirt"><b>+</b></span>}
+      {player?.morale != null && !live && <MoodBadge morale={player.morale} size={14} className="pt-mood" />}
       <span className="pt-status">
         {injured && (
           <i className="pt-flag inj" title="Lesionado">
