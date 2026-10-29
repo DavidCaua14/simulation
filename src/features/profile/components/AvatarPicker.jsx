@@ -3,11 +3,12 @@ import * as photoModule from '../../player/data/profilePhotos'
 import { fileToAvatar } from '../profileStore'
 import { CheckIcon, UploadIcon, UserIcon } from './ProfileIcons'
 import Sheet from './Sheet'
+import { AVATAR_ART } from '../data/avatars'
 
 // Lê a lista de fotos prontas do arquivo existente, seja qual for o nome da exportação.
 const PRESET_PHOTOS = Object.values(photoModule).find((v) => Array.isArray(v)) ?? []
 
-export default function AvatarPicker({ currentSrc, originalSrc, onChange, onClose }) {
+export default function AvatarPicker({ currentSrc, originalSrc, onChange, onClose, owned = [] }) {
   const inputRef = useRef(null)
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
@@ -34,6 +35,35 @@ export default function AvatarPicker({ currentSrc, originalSrc, onChange, onClos
           {currentSrc ? <img src={currentSrc} alt="" /> : <UserIcon size={34} />}
         </span>
       </div>
+
+      {owned.some((a) => AVATAR_ART[a.id]) && (
+        <>
+          <h4 className="pf-sub">Seus avatares</h4>
+          <div className="pf-photo-grid">
+            {owned.filter((a) => AVATAR_ART[a.id]).map((a) => {
+              const on = AVATAR_ART[a.id] === currentSrc
+              return (
+                <button key={a.id} type="button" className={`pf-photo is-avatar ${on ? 'is-on' : ''}`} aria-label={a.label} aria-pressed={on} title={a.label}
+                  onClick={async () => {
+                    setError('')
+                    try {
+                      await onChange(`avatar:${a.id}`)
+                    } catch (err) {
+                      setError(err.message)
+                    }
+                  }}>
+                  <img src={AVATAR_ART[a.id]} alt="" />
+                  {on && (
+                    <span className="pf-swatch-check">
+                      <CheckIcon size={12} />
+                    </span>
+                  )}
+                </button>
+              )
+            })}
+          </div>
+        </>
+      )}
 
       {PRESET_PHOTOS.length > 0 && (
         <>

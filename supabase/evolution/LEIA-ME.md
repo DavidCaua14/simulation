@@ -37,6 +37,7 @@ supabase/evolution/31_world_advance_speed.sql <- (depois da carreira completa 24
 supabase/evolution/32_squad_morale_contracts.sql <- satisfação no rendimento, contratos/pré-contratos, limite de elenco, rescisão e demissão por falência
 supabase/evolution/33_inbox.sql             <- caixa de mensagens por assunto (Elenco, Mercado, Clube, Carreira)
 supabase/evolution/34_ai_balance.sql        <- equilíbrio da IA verificado pela simulação longa
+supabase/evolution/35_update_gift.sql       <- presente da atualização para quem já jogava e avatares de lendas
 ```
 
 Banco que já estava no ar: rode só `evolution/01`, `evolution/02`, `manager/02_players_seed.sql` (gerado de novo) e
@@ -165,3 +166,12 @@ Verificado por `tests/career_world_journey.py` (Brasil → Inglaterra → Brasil
 - Propostas de emprego: dependem da reputação (alcance de força dos clubes). Clubes de outra região chamam sobretudo
   na pré-temporada ou janela deles; empregado, você é procurado com mais frequência.
 - Contratos novos terminam no fim da temporada do país (Brasil 31/12, Inglaterra 30/06), sem passar de 5 anos.
+
+## Presente da atualização e avatares (35)
+
+Banco no ar: rode `supabase/releases/presentes_atualizacao.sql` (depois de `ia_equilibrio.sql`). Na PRIMEIRA instalação
+fotografa as carreiras existentes; só elas recebem, uma única vez ao entrar no jogo, +1000 XP, +20 de energia bônus e
+um avatar de lenda aleatório, e veem a tela de Novidades (que pode ser revista em Perfil → Novidades). Contas criadas
+depois não recebem nem veem nada; reexecutar o script não inclui ninguém novo. Avatares ganhos ficam no perfil
+(`player_avatars`) e podem virar foto (`avatar:<id>`), só para quem os possui. Scripts de colar no SQL Editor são um
+único comando gerado por `scripts/build-editor-releases.sh`.

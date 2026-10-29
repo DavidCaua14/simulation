@@ -1,16 +1,15 @@
--- Gerado por scripts/build-ai-release.mjs: evolução 34 (equilíbrio da IA: satisfação, mercado, propostas e contratos).
--- Requer as evoluções 31, 32 e 33. Cole o arquivo INTEIRO no SQL Editor e execute.
+-- Gerado por scripts/build-editor-release.mjs a partir de 34_ai_balance.sql: equilíbrio da IA ativo.
+-- Requer a evolução 33 (supabase/releases/mensagens.sql). Cole o arquivo INTEIRO no SQL Editor e execute.
 -- É um único comando: ou instala tudo, ou nada muda. Pode ser executado de novo. A manutenção não é alterada.
--- Não altera dados existentes: só substitui funções e adiciona um gatilho para contratos novos. Ao final compara as
--- impressões digitais de carreiras, resultados, partidas ao vivo, elencos, contratos, caixas, negociações, mensagens
+-- Ao final compara as impressões digitais de carreiras, resultados, partidas ao vivo, elencos, contratos, caixas, negociações, mensagens
 -- e satisfação; se alguma mudar, o comando é desfeito por inteiro.
 do $install$
 declare antes jsonb;depois jsonb;mudou text;
 begin
  perform set_config('statement_timeout','120s',true);
  perform set_config('lock_timeout','10s',true);
- perform pg_advisory_xact_lock(hashtext('ia-equilibrio-v34'));
- if to_regprocedure('public.mgr_hub_before_v33()') is null then raise exception 'Instale antes a evolução 33 (supabase/releases/mensagens.sql); nada foi alterado';end if;
+ perform pg_advisory_xact_lock(hashtext('34_ai_balance.sql'));
+ if to_regprocedure('public.mgr_hub_before_v33()') is null then raise exception 'Requer a evolução 33 (supabase/releases/mensagens.sql); nada foi alterado';end if;
  select jsonb_build_object(
    'careers',(select md5(coalesce(string_agg(to_jsonb(c)::text,'' order by id),'')) from public.careers c),
    'results',(select md5(coalesce(string_agg(to_jsonb(f)::text,'' order by id),'')) from public.season_fixtures f where status='played'),

@@ -16,6 +16,10 @@ import EventsScreen from './features/events/EventsScreen'
 import { AudioProvider, useAudio } from './features/audio/AudioContext'
 import { getActiveCareer } from './features/player/playerService'
 import MaintenanceGate from './features/maintenance/MaintenanceGate'
+import LevelUpOverlay from './features/progress/LevelUpOverlay'
+import { rememberLevel, reportLevel } from './features/progress/levelEvents'
+import UpdateWelcome from './features/update/UpdateWelcome'
+import { claimReleaseGift, markReleaseSeen } from './features/update/updateApi'
 import './styles/theme.css'
 
 function Gate() {
@@ -30,6 +34,7 @@ function Gate() {
   // 'home' | 'tips' (palpites esportivos) | 'profile'
   const [screen, setScreen] = useState('home')
   const [screenParams, setScreenParams] = useState(null) // ex.: { tab: 'inbox' } ao abrir as cartas
+  const [gift, setGift] = useState(null) // presente da atualização (só quem já jogava): { ...release_gift_claim, open }
 
   // Carrega a carreira do banco sempre que a sessão muda — é isso que faz
   // reload, login de novo e troca de conta caírem na tela certa.
@@ -60,6 +65,41 @@ function Gate() {
       cancelled = true
     }
   }, [status, user?.id, careerAttempt]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const ready = Boolean(career?.player?.clubId) && careerUserId === user?.id
+  // Nível mudou em qualquer lugar (partida, evento, presente): animação de novo nível.
+  useEffect(() => {
+    if (ready) reportLevel(user.id, career.player.level)
+  }, [ready, user?.id, career?.player?.level])
+
+  // Presente da atualização: o banco só entrega a quem já jogava antes dela, e uma única vez.
+  useEffect(() => {
+    if (!ready) return undefined
+    let cancelled = false
+    claimReleaseGift()
+      .then(async (g) => {
+        if (cancelled || !g?.eligible) return
+        if (g.show) {
+          const fresh = await getActiveCareer(user.id).catch(() => null)
+          if (cancelled) return
+          if (fresh) {
+            rememberLevel(user.id, fresh.player.level) // a tela de novidades já anima a subida
+            setCareer(fresh)
+          }
+        }
+        setGift({ ...g, open: g.show })
+      })
+      .catch(() => {})
+    return () => {
+      cancelled = true
+    }
+  }, [ready, user?.id])
+
+  const closeGift = () => {
+    if (gift?.show) markReleaseSeen().catch(() => {})
+    setGift((g) => (g ? { ...g, show: false, open: false } : g))
+  }
+  const giftLayer = gift?.open ? <UpdateWelcome gift={gift} replay={!gift.show} onClose={closeGift} /> : null
 
   // 'loading': checando se já existe sessão (ex.: acabou de voltar do Google)
   if (status === 'loading') {
@@ -113,6 +153,16 @@ function Gate() {
     setScreen('home')
   }
 
+  const openNews = gift?.eligible ? () => setGift((g) => ({ ...g, open: true })) : null
+  const view = renderScreen()
+  return (
+    <>
+      {view}
+      {giftLayer}
+    </>
+  )
+
+  function renderScreen() {
   if (screen === 'tips') {
     return <PredictionsScreen career={career} onBack={backHome} />
   }
@@ -134,10 +184,11 @@ function Gate() {
   }
 
   if (screen === 'profile') {
-    return <ProfileScreen career={career} onNavigate={navigate} />
+    return <ProfileScreen career={career} onNavigate={navigate} onOpenNews={openNews} />
   }
 
   return <HomeScreen career={career} onNavigate={navigate} />
+  }
 }
 
 function App() {
@@ -149,6 +200,7 @@ function App() {
           <MaintenanceGate>
             <AudioProvider>
               <Gate />
+              <LevelUpOverlay />
             </AudioProvider>
           </MaintenanceGate>
         </AuthProvider>

@@ -29,7 +29,7 @@ import { Notice, Skeleton } from '../../components/ui/feedback'
 
 // Perfil = página de identidade do jogador. Tudo vem do servidor (avatar, insígnias, títulos,
 // estatísticas, visual e privacidade); o som e o tema continuam aqui.
-export default function ProfileScreen({ career, onNavigate }) {
+export default function ProfileScreen({ career, onNavigate, onOpenNews }) {
   const { player, userId } = career
   const { signOut } = useAuth()
   const { theme, toggleTheme } = useTheme()
@@ -104,6 +104,7 @@ export default function ProfileScreen({ career, onNavigate }) {
                     <button type="button" className="pf-edit-pill" onClick={() => setSheet('customize')}><GameIcon name="palette" size={14} /> Personalizar</button>
                     <button type="button" className="pf-edit-pill" onClick={() => setSheet('avatar')}><PencilIcon size={14} /> Foto</button>
                     <button type="button" className="pf-edit-pill" onClick={() => onNavigate?.('friends')} aria-label="Amigos"><Users size={14} /></button>
+                    {onOpenNews && <button type="button" className="pf-edit-pill" onClick={onOpenNews}><GameIcon name="highlight" size={14} /> Novidades</button>}
                   </>
                 }
               />
@@ -188,7 +189,7 @@ export default function ProfileScreen({ career, onNavigate }) {
         <BottomTabBar active="profile" onSelect={onNavigate} />
 
         {sheet === 'avatar' && profile && (
-          <AvatarPicker currentSrc={avatarSrcOf(profile)} originalSrc={getProfilePhotoById(player.photoId)?.src ?? null} onChange={changeAvatar} onClose={close} />
+          <AvatarPicker currentSrc={avatarSrcOf(profile)} originalSrc={getProfilePhotoById(player.photoId)?.src ?? null} onChange={changeAvatar} onClose={close} owned={profile.avatars || []} />
         )}
         {sheet === 'customize' && profile && (
           <CustomizeSheet profile={profile} onClose={close} onChanged={load} onOpenStore={() => onNavigate?.('store', { tab: 'visual' })} />

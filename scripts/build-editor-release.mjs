@@ -1,10 +1,11 @@
 import { readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
-// Gera supabase/releases/ia_equilibrio.sql (evolução 34) para colar no SQL Editor depois de mensagens.sql (33).
-// O arquivo é UM ÚNICO comando (bloco DO): instalação, conferência dos dados e verificação acontecem juntas.
-// Se o editor executar só um trecho, o comando fica incompleto e nada roda; se rodar, é tudo ou nada.
+// Gera um script de colar no SQL Editor a partir de uma migração: UM ÚNICO comando (bloco DO) com a instalação,
+// a conferência das impressões digitais dos dados de usuários e a verificação. Trecho parcial não roda; completo é tudo ou nada.
+// Uso: node scripts/build-editor-release.mjs <migração> <saída> <função exigida> <função instalada> "<título>" "<mensagem de pré-requisito>"
+const [migration, output, requires, installed, title, requiresMsg] = process.argv.slice(2)
 const root = resolve(import.meta.dirname, '..')
-const body = readFileSync(resolve(root, 'supabase/evolution/34_ai_balance.sql'), 'utf8')
+const body = readFileSync(resolve(root, 'supabase/evolution', migration), 'utf8')
   .trim()
   .replace(/^(--.*\n)*begin;\s*/i, '')
   .replace(/\s*commit;\s*$/i, '')
@@ -20,19 +21,18 @@ const fingerprint = `select jsonb_build_object(
    'negotiations',(select md5(coalesce(string_agg(to_jsonb(n)::text,'' order by id),'')) from public.cw_negotiations n),
    'messages',(select md5(coalesce(string_agg(concat_ws('|',id,career_id,kind,title,body,club_id,read,day_no),'' order by id),'')) from public.mgr_messages),
    'morale',(select md5(coalesce(string_agg(concat_ws('|',career_id,player_id,morale,transfer_requested,promised_role),'' order by career_id,player_id),'')) from public.cw_players))`
-const out = `-- Gerado por scripts/build-ai-release.mjs: evolução 34 (equilíbrio da IA: satisfação, mercado, propostas e contratos).
--- Requer as evoluções 31, 32 e 33. Cole o arquivo INTEIRO no SQL Editor e execute.
+const out = `-- Gerado por scripts/build-editor-release.mjs a partir de ${migration}: ${title}.
+-- ${requiresMsg}. Cole o arquivo INTEIRO no SQL Editor e execute.
 -- É um único comando: ou instala tudo, ou nada muda. Pode ser executado de novo. A manutenção não é alterada.
--- Não altera dados existentes: só substitui funções e adiciona um gatilho para contratos novos. Ao final compara as
--- impressões digitais de carreiras, resultados, partidas ao vivo, elencos, contratos, caixas, negociações, mensagens
+-- Ao final compara as impressões digitais de carreiras, resultados, partidas ao vivo, elencos, contratos, caixas, negociações, mensagens
 -- e satisfação; se alguma mudar, o comando é desfeito por inteiro.
 do $install$
 declare antes jsonb;depois jsonb;mudou text;
 begin
  perform set_config('statement_timeout','120s',true);
  perform set_config('lock_timeout','10s',true);
- perform pg_advisory_xact_lock(hashtext('ia-equilibrio-v34'));
- if to_regprocedure('public.mgr_hub_before_v33()') is null then raise exception 'Instale antes a evolução 33 (supabase/releases/mensagens.sql); nada foi alterado';end if;
+ perform pg_advisory_xact_lock(hashtext('${migration}'));
+ if to_regprocedure('${requires}') is null then raise exception '${requiresMsg}; nada foi alterado';end if;
  ${fingerprint} into antes;
 
 -- ===================== evolução 34 =====================
@@ -41,10 +41,10 @@ ${body}
  ${fingerprint} into depois;
  select string_agg(k,', ') into mudou from jsonb_object_keys(antes) k where antes->k is distinct from depois->k;
  if mudou is not null then raise exception 'Abortado: dados de usuários mudariam (%); nada foi alterado',mudou;end if;
- if to_regprocedure('public.cw_foreign_hiring(text,date)') is null then raise exception 'Instalação incompleta; nada foi alterado';end if;
- raise notice 'Instalação concluída: equilíbrio da IA ativo; dados dos usuários preservados.';
+ if to_regprocedure('${installed}') is null then raise exception 'Instalação incompleta; nada foi alterado';end if;
+ raise notice 'Instalação concluída: ${title}; dados dos usuários preservados.';
 end $install$;
-select case when to_regprocedure('public.cw_foreign_hiring(text,date)') is not null then 'Instalação concluída: equilíbrio da IA ativo; dados dos usuários preservados.' else 'Não instalado' end as resultado;
+select case when to_regprocedure('${installed}') is not null then 'Instalação concluída: ${title}; dados dos usuários preservados.' else 'Não instalado' end as resultado;
 `
-writeFileSync(resolve(root, 'supabase/releases/ia_equilibrio.sql'), out)
-console.log('supabase/releases/ia_equilibrio.sql')
+writeFileSync(resolve(root, output), out)
+console.log(output)

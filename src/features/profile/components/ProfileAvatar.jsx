@@ -1,11 +1,13 @@
 import { getProfilePhotoById } from '../../player/data/profilePhotos'
 import { UserIcon } from './ProfileIcons'
+import { AVATAR_ART } from '../data/avatars'
 
-// Resolve a foto do perfil: enviada (data URL), foto pronta do jogo ('preset:<id>') ou a da criação (photo_id)
+// Resolve a foto do perfil: enviada (data URL), foto pronta do jogo ('preset:<id>'), avatar ganho ('avatar:<id>') ou a da criação (photo_id)
 export function avatarSrcOf(profile) {
   const a = profile?.avatar
   if (a?.startsWith('data:image/')) return a
   if (a?.startsWith('preset:')) return getProfilePhotoById(a.slice(7))?.src ?? null
+  if (a?.startsWith('avatar:')) return AVATAR_ART[a.slice(7)] ?? null
   return getProfilePhotoById(profile?.photo_id)?.src ?? null
 }
 

@@ -10,6 +10,7 @@ import WorldPanel from './world/WorldPanel'
 import { advanceDays, fetchHub, markMessagesRead, resign, respondOffer, startMatch, startNextSeason } from './services/managerApi'
 import { flattenFixtures, playerHistory, projectCalendar } from './utils/seasonSelectors'
 import { msgCategory } from './utils/managerUtils'
+import { reportLevel } from '../progress/levelEvents'
 import { formatRemaining } from './utils/seasonUtils'
 import SeasonHeader from './ui/SeasonHeader'
 import { ErrorState, LoadingState } from './ui/States'
@@ -33,7 +34,7 @@ const TITLES = { home: 'Início', team: 'Time', matches: 'Jogos', comps: 'Tornei
 
 // MODO CARREIRA (treinador): você comanda um clube real. Tudo é decidido no banco (supabase/manager/*.sql);
 // O avanço até a próxima partida processa as competições paralelas no mesmo calendário.
-export default function SeasonsScreen({ onBack }) {
+export default function SeasonsScreen({ career: account, onBack }) {
   const { hub, byComp, loading, error, refresh } = useManagerData()
   const [tab, setTab] = useState('home')
   const [careerView, setCareerView] = useState(null)
@@ -80,6 +81,11 @@ export default function SeasonsScreen({ onBack }) {
       notify(fresh.length === 1 ? first.title : `${fresh.length} novas mensagens: ${first.title}`, 'offer', () => setInbox({ focusId: fresh.length === 1 ? first.id : null, category: msgCategory(first) }))
     }
   }, [hub, notify])
+
+  // Subiu de nível numa partida ou recompensa: animação global de novo nível.
+  useEffect(() => {
+    if (hub?.career?.level) reportLevel(account?.userId, hub.career.level)
+  }, [hub?.career?.level, account?.userId])
 
   const remaining = useCountdown(hub?.career.next_reset_at, () => refresh({ silent: true }))
 
