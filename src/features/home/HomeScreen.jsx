@@ -11,6 +11,7 @@ import QuickTile from './components/QuickTile'
 import useEventsBadge from '../events/useEventsBadge'
 import EventsStrip from '../events/EventsStrip'
 import BottomTabBar from './components/BottomTabBar'
+import { ChevronRight } from 'lucide-react'
 import { GAME_MODES } from './data/gameModes'
 import './home.css'
 import '../cards/cards.css'
@@ -61,7 +62,18 @@ export default function HomeScreen({ career, onNavigate }) {
             <h2 className="gx-title">
               Loja <small>energia e itens visuais</small>
             </h2>
-            {store && <QuickTile mode={store} onSelect={onNavigate} />}
+            {store && (
+              <button type="button" className={`hm-store ${store.locked ? 'is-locked' : ''}`} disabled={store.locked} onClick={() => onNavigate?.(store.id)}>
+                <img src={store.image} alt="" loading="lazy" />
+                <span className="hm-store-scrim" aria-hidden="true" />
+                <span className="hm-store-icon"><store.Icon size={20} /></span>
+                <span className="hm-store-text">
+                  <strong>{store.title}</strong>
+                  <span>{store.desc}</span>
+                </span>
+                <ChevronRight size={20} className="hm-chev" />
+              </button>
+            )}
           </section>
 
           <section className="hm-section">
