@@ -1,7 +1,8 @@
+import { useId } from 'react'
 import ClubCrest from '../../club/components/ClubCrest'
 import { getClubById } from '../../club/data/clubs'
 
-const TIER_LABEL = { basica: 'Básica', destaque: 'Destaque', lenda: 'Lenda', epica: 'Épica' }
+const TIER_LABEL = { basica: 'Base' }
 
 function hash(s = '') {
   let h = 0
@@ -12,20 +13,21 @@ function hash(s = '') {
 // Atleta ilustrado (não é foto): silhueta com a camisa nas cores do clube e o número.
 // Variações determinísticas (cabelo/gola) por jogador, para as cartas não ficarem idênticas.
 function Avatar({ card, c1, c2 }) {
+  const gradientId = `shirt-${useId().replace(/:/g, '')}`
   const h = hash(card.player_key || card.id)
   const hair = h % 4
   const collar = (h >> 3) % 3
-  const num = card.meta?.number ?? (card.tier === 'lenda' ? 10 : (h % 30) + 1)
+  const num = card.meta?.number ?? ((h % 30) + 1)
   return (
     <svg className="ac-avatar" viewBox="0 0 120 120" aria-hidden="true">
       <defs>
-        <linearGradient id={`sh-${card.id}`} x1="0" x2="0" y1="0" y2="1">
+        <linearGradient id={gradientId} x1="0" x2="0" y1="0" y2="1">
           <stop offset="0" stopColor={c1} />
           <stop offset="1" stopColor={c1} stopOpacity="0.75" />
         </linearGradient>
       </defs>
       {/* tronco com a camisa */}
-      <path d="M14 120 C16 92 30 80 46 76 L60 84 L74 76 C90 80 104 92 106 120 Z" fill={`url(#sh-${card.id})`} />
+      <path d="M14 120 C16 92 30 80 46 76 L60 84 L74 76 C90 80 104 92 106 120 Z" fill={`url(#${gradientId})`} />
       <path d="M46 76 L60 84 L74 76 L70 72 L60 78 L50 72 Z" fill={c2} />
       {collar === 1 && <path d="M52 73 L60 90 L68 73" fill="none" stroke={c2} strokeWidth="3" />}
       {collar === 2 && <rect x="38" y="96" width="44" height="4" rx="2" fill={c2} opacity="0.85" />}
@@ -46,7 +48,7 @@ function Avatar({ card, c1, c2 }) {
 // CARTA GERADA AUTOMATICAMENTE (image = 'auto'): moldura da raridade, nota, posição, escudo, nome e atleta ilustrado.
 export default function AutoCard({ card }) {
   const club = card.club_id ? getClubById(card.club_id) : null
-  const [c1, c2] = club?.colors || (card.tier === 'lenda' ? ['#f5c542', '#2a1d00'] : ['#4b5878', '#e6ebf5'])
+  const [c1, c2] = card.meta?.colors || club?.colors || ['#4b5878', '#e6ebf5']
   const meta = card.meta || {}
   return (
     <span className={`ac t-${card.tier}`}>
@@ -64,7 +66,7 @@ export default function AutoCard({ card }) {
       <Avatar card={card} c1={c1} c2={c2} />
       <span className={`ac-name ${card.name.length > 16 ? 'is-xlong' : card.name.length > 11 ? 'is-long' : ''}`}>
         <b>{card.name}</b>
-        <small>{card.tier === 'lenda' ? `Lenda · ${meta.club_name || ''}` : club?.name || meta.club_name || TIER_LABEL[card.tier]}</small>
+        <small>{club?.name || meta.club_name || TIER_LABEL.basica}</small>
       </span>
       <span className="ac-tier">{TIER_LABEL[card.tier]}</span>
     </span>

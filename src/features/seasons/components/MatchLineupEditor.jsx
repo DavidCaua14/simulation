@@ -1,6 +1,8 @@
 import { useCallback, useMemo, useState } from 'react'
 import { ArrowDown, ArrowUp, RotateCcw } from 'lucide-react'
+import PositionFilter from './PositionFilter'
 import Pitch, { PlayerToken } from './Pitch'
+import PlayerSheet from './PlayerSheet'
 import TacticsPanel from './TacticsPanel'
 import useDragSwap from '../hooks/useDragSwap'
 import { lineupStrength, ovrTone } from '../utils/managerUtils'
@@ -60,7 +62,9 @@ export default function MatchLineupEditor({
   const [draft, setDraft] = useState(initialDraft)
   const [tactics, setTactics] = useState(initialTactics)
   const [view, setView] = useState('lineup')
+  const [positionFilter, setPositionFilter] = useState('')
   const [sel, setSel] = useState(null) // seleção por toque
+  const [info, setInfo] = useState(null)
   const [msg, setMsg] = useState('')
 
   // jogador = dados do elenco (notas por posição) + situação AO VIVO (condição, cartões, lesão, nota no jogo)
@@ -72,6 +76,9 @@ export default function MatchLineupEditor({
       m[p.id] = {
         ...base,
         id: p.id,
+        name: base.name || p.name,
+        overall: base.overall ?? p.overall,
+        club_id: p.club_id || base.club_id,
         short_name: base.short_name || p.name,
         number: p.number ?? base.number,
         position: base.position || p.natural,
@@ -222,6 +229,10 @@ export default function MatchLineupEditor({
                 ))}
               </div>
 
+              {sel && (() => {
+                const pid = sel.startsWith('slot:') ? draft.slots[sel.slice(5)] : draft.bench[Number(sel.slice(6))]
+                return byId[pid] ? <button type="button" className="gx-btn-ghost" onClick={() => setInfo(byId[pid])}>Ver ficha de {byId[pid].short_name}</button> : null
+              })()}
               <div className="mle-pitch">
                 <Pitch
                   formation={formation}
@@ -254,8 +265,9 @@ export default function MatchLineupEditor({
               <h4 className="mle-title">
                 Banco <small>arraste até o jogador que vai sair</small>
               </h4>
+              <PositionFilter id="live-bench-position" value={positionFilter} onChange={setPositionFilter} />
               <div className={`tt-bench ${drag ? 'is-dragging' : ''}`}>
-                {draft.bench.map((pid, i) => (
+                {draft.bench.map((pid, i) => (!positionFilter || byId[pid]?.position === positionFilter) && (
                   <div key={pid} className={`tt-bslot ${drag?.over === `bench:${i}` ? 'is-drop' : ''} ${drag?.from === `bench:${i}` ? 'is-dragging' : ''} ${selCls(`bench:${i}`)}`} {...bindTap(`bench:${i}`, pid)}>
                     <PlayerToken player={byId[pid]} pos={byId[pid]?.position} label={byId[pid]?.position} colors={colors} onClick={() => {}} />
                   </div>
@@ -285,6 +297,8 @@ export default function MatchLineupEditor({
           )}
           {view === 'tactics' && <TacticsPanel compact engineVersion={engineVersion} tactics={tactics} onChange={setTactics} />}
         </div>
+
+        {info && <PlayerSheet player={info} onClose={() => setInfo(null)} />}
 
         {drag && ghost && (
           <div className="tt-ghost" style={{ left: drag.x, top: drag.y }} aria-hidden="true">

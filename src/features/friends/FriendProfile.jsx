@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import { X } from 'lucide-react'
 import ProfileHero from '../profile/components/ProfileHero'
 import BadgeGrid from '../profile/components/BadgeGrid'
-import CardView from '../cards/components/CardView'
 import { tierOf, TIER_ORDER } from '../cards/data/tiers'
 import { getClubById } from '../club/data/clubs'
 import { fetchCompetitions } from '../seasons/services/managerApi'
@@ -31,15 +30,6 @@ export default function FriendProfile({ username, onClose, onRemove }) {
           <>
             <ProfileHero profile={p} />
             {p.friend_since && <p className="fr-since">Amigos desde {new Date(p.friend_since).toLocaleDateString('pt-BR')}</p>}
-            {p.featured_card && (
-              <section className="pf-panel">
-                <header className="pf-panel-head"><h2>Carta em destaque</h2></header>
-                <div className="pf-featured-body" style={{ '--tier': tierOf(p.featured_card.tier).color }}>
-                  <CardView card={p.featured_card} width={130} shine />
-                  <div><strong>{p.featured_card.name}</strong><span>{tierOf(p.featured_card.tier).label} · nota {p.featured_card.overall}</span></div>
-                </div>
-              </section>
-            )}
             <section className="pf-panel">
               <header className="pf-panel-head"><h2>Insígnias</h2><span className="pf-count">{p.badges?.length || 0}</span></header>
               <BadgeGrid badges={p.badges} showLocked={false} />
@@ -72,7 +62,7 @@ export default function FriendProfile({ username, onClose, onRemove }) {
             )}
             {p.collection && (
               <section className="pf-panel">
-                <header className="pf-panel-head"><h2>Coleção</h2></header>
+                <header className="pf-panel-head"><h2>Cartas base</h2></header>
                 <p className="pf-hint">{p.collection.owned} de {p.collection.total} cartas</p>
                 <div className="pf-col-bars">
                   {TIER_ORDER.slice().reverse().map((t) => (
@@ -81,7 +71,7 @@ export default function FriendProfile({ username, onClose, onRemove }) {
                 </div>
               </section>
             )}
-            {!p.stats && !p.titles && !p.collection && <p className="pf-hint" style={{ padding: '12px 16px' }}>{p.nickname} preferiu deixar carreira, títulos e coleção privados.</p>}
+            {!p.stats && !p.titles && !p.collection && <p className="pf-hint" style={{ padding: '12px 16px' }}>{p.nickname} preferiu deixar carreira, títulos e cartas base privados.</p>}
             {onRemove && p.friendship_id && (
               <button type="button" className="pf-btn danger block fr-remove" onClick={() => onRemove(p.friendship_id)}>Desfazer amizade</button>
             )}

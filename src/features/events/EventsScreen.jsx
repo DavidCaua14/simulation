@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { CalendarClock, Gift, History } from 'lucide-react'
+import { CalendarClock, History } from 'lucide-react'
 import AppShell from '../../components/layout/AppShell'
 import { BackIcon } from '../../components/ui/icons'
 import { EmptyState, Notice, Skeleton } from '../../components/ui/feedback'
@@ -16,8 +16,8 @@ import '../friends/friends.css'
 import './events.css'
 
 // Eventos: ativos (diários, semanais, especiais), próximos e encerrados; sequência diária; histórico de recompensas.
-// Tudo vem do servidor: o progresso é contado pelas partidas, caixas, cartas, vendas e palpites reais.
-export default function EventsScreen({ career, onBack, onNavigate }) {
+// Tudo vem do servidor: o progresso é contado pelas partidas e palpites reais.
+export default function EventsScreen({ career, onBack }) {
   const { playSfx } = useAudio()
   const now = useNow()
   const [data, setData] = useState(null)
@@ -66,7 +66,7 @@ export default function EventsScreen({ career, onBack, onNavigate }) {
     try {
       const r = await claimStreak()
       playSfx('reward')
-      const rewards = [{ kind: 'coins', amount: r.coins }, r.diamonds > 0 && { kind: 'diamonds', amount: r.diamonds }, r.box_tier && { kind: 'box', amount: 1, ref: r.box_tier }].filter(Boolean)
+      const rewards = [{ kind: 'coins', amount: r.coins }, r.diamonds > 0 && { kind: 'diamonds', amount: r.diamonds }, r.energy > 0 && { kind: 'energy', amount: r.energy }].filter(Boolean)
       if (r.replayed) setMsg({ kind: 'info', text: 'A recompensa de hoje já foi resgatada.' })
       else setWon({ title: `Dia ${r.day} conquistado!`, subtitle: `Sequência diária · ${r.current} ${r.current === 1 ? 'dia seguido' : 'dias seguidos'}`, rewards })
       await load()
@@ -82,7 +82,6 @@ export default function EventsScreen({ career, onBack, onNavigate }) {
   const ended = data?.ended || []
   const history = data?.history || []
   const tabs = [['events', 'Eventos'], ['history', 'Histórico'], ...(data?.is_admin ? [['admin', 'Admin']] : [])]
-  const hasBox = won?.rewards?.some((r) => r.kind === 'box')
 
   return (
     <AppShell
@@ -154,8 +153,7 @@ export default function EventsScreen({ career, onBack, onNavigate }) {
             rewards={won.rewards.map((r, i) => <RewardChip key={i} r={r} />)}
             onClose={() => setWon(null)}
             actions={<>
-              {hasBox && <button type="button" className="gx-btn" onClick={() => onNavigate?.('cards', { tab: 'inbox' })}><Gift size={16} /> Abrir caixas</button>}
-              <button type="button" className={hasBox ? 'gx-btn-ghost' : 'gx-btn'} onClick={() => setWon(null)}>Continuar</button>
+              <button type="button" className="gx-btn" onClick={() => setWon(null)}>Continuar</button>
             </>}
           />
         )}

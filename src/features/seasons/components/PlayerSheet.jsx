@@ -1,4 +1,5 @@
 import { Activity, Ambulance, Ban, Crown, Info, Shirt } from 'lucide-react'
+import BasePlayerCard from '../../cards/components/BasePlayerCard'
 import Sheet from '../ui/Sheet'
 import { ATTR_GROUPS, POS_NAME, POS_ORDER, condTone, ovrTone } from '../utils/managerUtils'
 import { COMP_SHORT } from '../utils/seasonUtils'
@@ -17,10 +18,7 @@ export default function PlayerSheet({ player, onClose, clubName }) {
     <Sheet kicker={clubName || POS_NAME[p.position]} title={p.name} onClose={onClose} tall>
       <div className="ps">
         <section className="ps-head">
-          <span className={`ps-ovr o-${ovrTone(p.overall)}`}>
-            <b>{p.overall}</b>
-            <small>{p.position}</small>
-          </span>
+          <BasePlayerCard player={p} width={112} />
           <div className="ps-id">
             <span className="ps-tags">
               {p.number != null && (

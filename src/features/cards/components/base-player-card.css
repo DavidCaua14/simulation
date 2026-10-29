@@ -1,0 +1,27 @@
+.base-player-card { display: inline-block; flex-shrink: 0; pointer-events: none; vertical-align: middle; }
+.pt-tok > .base-player-card { width: 52px !important; aspect-ratio: 1 / 1.15; }
+.pt-tok.is-sel > .base-player-card, .is-drop .base-player-card { filter: drop-shadow(0 0 4px var(--gx-gold)); }
+.pt-tok.is-out > .base-player-card { filter: grayscale(.7); opacity: .75; }
+.pt-tok > .base-player-card .ac-tier { display: none; }
+.pt-tok .pt-flag { z-index: 2; top: 1px; right: 0; }
+.base-position-filter { display: flex; align-items: center; gap: 8px; margin: 12px 0; color: var(--text-secondary); font-size: .8rem; }
+.base-position-filter select { min-height: 36px; border: 1px solid var(--border); border-radius: 9px; padding: 4px 8px; color: var(--text-primary); background: var(--surface); }
+.sq .sq-group ul { display: grid; grid-template-columns: repeat(auto-fill, minmax(145px, 1fr)); gap: 10px; }
+.sq-group .sq-row { width: 100%; height: auto; min-width: 0; display: flex; flex-wrap: wrap; justify-content: center; padding: 10px 6px; gap: 5px; }
+.sq-row .sq-name { flex: 0 0 100%; text-align: center; }
+.sq-row .sq-cond { flex: 0 0 70%; }
+.sq-row .sq-st { width: auto; }
+.ps-head .base-player-card { margin-right: 6px; }
+.ml-base-button { border: 0; padding: 0; background: transparent; cursor: pointer; flex-shrink: 0; }
+.ml-lu li { min-width: 0; }
+.pk-main > .base-player-card { margin-right: 4px; }
+@media (max-width: 380px) { .pt-tok > .base-player-card { width: 44px !important; } .sq .sq-group ul { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+.pt-tok .ac-name small { display: none; }
+.pt-tok .ac-avatar { width: 64%; left: 18%; bottom: 24%; }
+.pt-tok .ac-top { padding: 3cqw 5cqw 0; }
+.pt-tok .ac-ovr b { font-size: 19cqw; }
+.pt-tok .pt-name { display: block; }
+.pt-tok .pt-cond { width: 42px; height: 4px; }
+
+.ml-lineups .ml-lu li { grid-template-columns: 54px minmax(0, 1fr) 40px 32px; }

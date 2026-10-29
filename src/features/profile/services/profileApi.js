@@ -10,7 +10,6 @@ async function unwrap(promise) {
 
 export const fetchMyProfile = () => unwrap(supabase.rpc('profile_me'))
 export const setAvatar = (data) => unwrap(supabase.rpc('profile_set_avatar', { p_data: data }))
-export const setFeaturedCard = (cardId) => unwrap(supabase.rpc('profile_set_featured', { p_card: cardId }))
 export const setPrivacy = (privacy) => unwrap(supabase.rpc('profile_set_privacy', { p_privacy: privacy }))
 export const migrateLocalPrefs = (avatar, background) =>
   unwrap(supabase.rpc('profile_migrate_local', { p_avatar: avatar, p_background: background }))

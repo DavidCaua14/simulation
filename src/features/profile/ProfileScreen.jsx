@@ -15,7 +15,6 @@ import ProfileHero from './components/ProfileHero'
 import { avatarSrcOf } from './components/ProfileAvatar'
 import AvatarPicker from './components/AvatarPicker'
 import BadgeGrid from './components/BadgeGrid'
-import FeaturedCardPanel from './components/FeaturedCardPanel'
 import CustomizeSheet from './components/CustomizeSheet'
 import PrivacyPanel from './components/PrivacyPanel'
 import MusicPlayer from './components/MusicPlayer'
@@ -26,7 +25,7 @@ import './profile.css'
 import { useAudio } from '../audio/AudioContext'
 import { Notice, Skeleton } from '../../components/ui/feedback'
 
-// Perfil = página de identidade do jogador. Tudo vem do servidor (avatar, carta em destaque, insígnias, títulos,
+// Perfil = página de identidade do jogador. Tudo vem do servidor (avatar, insígnias, títulos,
 // estatísticas, visual e privacidade); o som e o tema continuam aqui.
 export default function ProfileScreen({ career, onNavigate }) {
   const { player, userId } = career
@@ -111,7 +110,6 @@ export default function ProfileScreen({ career, onNavigate }) {
                 <p className="pf-newbadge">🏅 Nova insígnia: {profile.new_badges.map((b) => b.label).join(', ')}!</p>
               )}
 
-              <FeaturedCardPanel card={profile.featured_card} editable onChanged={load} />
 
               <section className="pf-panel" aria-labelledby="pf-badges-title">
                 <header className="pf-panel-head"><h2 id="pf-badges-title">Insígnias</h2></header>
@@ -150,8 +148,7 @@ export default function ProfileScreen({ career, onNavigate }) {
               {col && (
                 <section className="pf-panel" aria-labelledby="pf-col-title">
                   <header className="pf-panel-head">
-                    <h2 id="pf-col-title">Coleção</h2>
-                    <button type="button" className="pf-link" onClick={() => onNavigate?.('cards', { tab: 'collection' })}>Abrir</button>
+                    <h2 id="pf-col-title">Cartas base</h2>
                   </header>
                   <p className="pf-hint">{col.owned} de {col.total} cartas</p>
                   <div className="pf-col-bars">

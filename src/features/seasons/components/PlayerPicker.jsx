@@ -1,11 +1,14 @@
 import { useMemo, useState } from 'react'
 import { Ambulance, Ban, Info } from 'lucide-react'
+import BasePlayerCard from '../../cards/components/BasePlayerCard'
+import PositionFilter from './PositionFilter'
 import Sheet from '../ui/Sheet'
-import { POS_NAME, condTone, fitTone, ovrTone, posFit } from '../utils/managerUtils'
+import { POS_NAME, condTone, fitTone, POS_ORDER, posFit } from '../utils/managerUtils'
 
 // Escolher quem joga numa vaga (ou no banco). Ordena pela nota NAQUELA posição e mostra
 // adequação, condição física e disponibilidade — para comparar atletas antes de decidir.
 export default function PlayerPicker({ target, players, slots, bench, onPick, onRemove, onInfo, onClose }) {
+  const [positionFilter, setPositionFilter] = useState('')
   const [onlyAvail, setOnlyAvail] = useState(true)
   const isBench = target.kind === 'bench'
   const pos = target.pos
@@ -19,10 +22,11 @@ export default function PlayerPicker({ target, players, slots, bench, onPick, on
   const list = useMemo(() => {
     const score = (p) => (isBench ? p.overall : p.ratings?.[pos] ?? 0) * (p.available ? 1 : 0.5)
     return players
+      .filter((p) => !positionFilter || p.position === positionFilter)
       .filter((p) => !onlyAvail || p.available)
       .filter((p) => !isBench || !Object.values(slots || {}).includes(p.id))
-      .sort((a, b) => score(b) - score(a))
-  }, [players, onlyAvail, isBench, pos, slots])
+      .sort((a, b) => POS_ORDER.indexOf(a.position) - POS_ORDER.indexOf(b.position) || score(b) - score(a))
+  }, [players, onlyAvail, isBench, pos, slots, positionFilter])
 
   const current = target.current
   return (
@@ -43,6 +47,8 @@ export default function PlayerPicker({ target, players, slots, bench, onPick, on
             </button>
           )}
         </div>
+        {current && players.find((p) => p.id === current) && <button type="button" className="gx-btn-ghost" onClick={() => onInfo(players.find((p) => p.id === current))}>Ver ficha do jogador atual</button>}
+        <PositionFilter id="picker-position" value={positionFilter} onChange={setPositionFilter} />
         <ul className="pk-list">
           {list.map((p) => {
             const r = Math.round(isBench ? p.overall : p.ratings?.[pos] ?? 0)
@@ -51,7 +57,7 @@ export default function PlayerPicker({ target, players, slots, bench, onPick, on
             return (
               <li key={p.id} className={`pk-row ${isCur ? 'is-cur' : ''} ${p.available ? '' : 'is-out'}`}>
                 <button type="button" className="pk-main" onClick={() => onPick(p.id)} disabled={isCur}>
-                  <span className={`pk-ovr o-${ovrTone(r)}`}>{r}</span>
+                  <BasePlayerCard player={p} position={isBench ? p.position : pos} overall={r} width={64} />
                   <span className="pk-txt">
                     <b>
                       {p.number != null && <em>{p.number}</em>} {p.short_name}

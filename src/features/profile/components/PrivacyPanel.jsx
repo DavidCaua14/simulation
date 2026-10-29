@@ -6,10 +6,10 @@ const OPTIONS = [
   { key: 'show_career', label: 'Clube atual', hint: 'O clube que você treina agora.' },
   { key: 'show_stats', label: 'Estatísticas', hint: 'Partidas, vitórias, gols e reputação.' },
   { key: 'show_titles', label: 'Títulos', hint: 'Suas taças, com ano e clube.' },
-  { key: 'show_collection', label: 'Coleção', hint: 'Quantas cartas você tem por raridade.' },
+  { key: 'show_collection', label: 'Cartas base', hint: 'Quantidade de cartas base que você possui.' },
 ]
 
-// O que OUTROS jogadores veem. Nome, foto, nível, insígnias conquistadas, carta em destaque e visual são sempre públicos.
+// O que OUTROS jogadores veem. Nome, foto, nível, insígnias conquistadas, visual são sempre públicos.
 export default function PrivacyPanel({ privacy = {}, onChanged }) {
   const [busy, setBusy] = useState(null)
   const [error, setError] = useState('')
@@ -28,7 +28,7 @@ export default function PrivacyPanel({ privacy = {}, onChanged }) {
   return (
     <section className="pf-panel" aria-labelledby="pf-privacy-title">
       <header className="pf-panel-head"><h2 id="pf-privacy-title">O que os outros veem</h2></header>
-      <p className="pf-hint">Nome, foto, nível, insígnias conquistadas, carta em destaque e visual aparecem sempre no seu perfil público.</p>
+      <p className="pf-hint">Nome, foto, nível, insígnias conquistadas, visual aparecem sempre no seu perfil público.</p>
       {OPTIONS.map((o) => {
         const on = privacy[o.key] ?? true
         return (

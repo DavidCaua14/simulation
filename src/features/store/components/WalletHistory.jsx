@@ -20,6 +20,8 @@ const REASON = {
   card_discard: 'Carta descartada',
   signing_bonus: 'Luvas de contrato',
   match_reward: 'Prêmio de partida',
+  match_win_energy: 'Energia por vitória',
+  base_cards_compensation: 'Conversão de cartas especiais',
   match_energy: 'Energia da partida',
   competition_prize: 'Premiação de competição',
   prediction_stake: 'Palpite feito',

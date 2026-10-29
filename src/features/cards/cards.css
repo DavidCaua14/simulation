@@ -206,10 +206,6 @@ button.cv:active { transform: scale(.96); }
   radial-gradient(120% 60% at 50% 20%, rgba(255, 255, 255, .22), transparent 60%),
   repeating-linear-gradient(135deg, rgba(255, 255, 255, .05) 0 2cqw, transparent 2cqw 5cqw); }
 .ac.t-basica   { --ac-bg: linear-gradient(165deg, #8e9ab0 0%, #4c566b 55%, #252b38 100%); --ac-edge: #d8dee9; --ac-ink: #f3f6fb; }
-.ac.t-destaque { --ac-bg: linear-gradient(165deg, #3fb5f5 0%, #1d5fb8 50%, #0b1f4a 100%); --ac-edge: #8fdcff; --ac-ink: #e9f8ff; }
-.ac.t-lenda    { --ac-bg: linear-gradient(165deg, #ffe08a 0%, #d79b14 45%, #4a2f00 100%); --ac-edge: #fff1b8; --ac-ink: #fffaf0; }
-.ac.t-epica    { --ac-bg: linear-gradient(165deg, #f0abfc 0%, #9333ea 45%, #2a0a4a 100%); --ac-edge: #f5d0fe; --ac-ink: #fdf4ff; }
-.ac.t-epica .ac-bg::after { content: ''; position: absolute; inset: 0; background: conic-gradient(from 210deg at 50% 40%, rgba(56,189,248,.25), rgba(244,114,182,.25), rgba(250,204,21,.22), rgba(56,189,248,.25)); mix-blend-mode: overlay; }
 .ac-top { display: flex; justify-content: space-between; align-items: flex-start; padding: 6cqw 7cqw 0; }
 .ac-ovr { display: flex; flex-direction: column; align-items: center; line-height: 1; text-shadow: 0 0.8cqw 2cqw rgba(0, 0, 0, .45); }
 .ac-ovr b { font: 900 17cqw/0.95 var(--font-display, var(--font-heading)); }

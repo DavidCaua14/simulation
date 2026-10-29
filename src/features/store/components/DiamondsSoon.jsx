@@ -14,8 +14,7 @@ export default function DiamondsSoon() {
         <span className="gx-tag is-soon"><Lock size={11} /> EM BREVE</span>
       </div>
       <p className="cx-hint">
-        Ainda não há compra com dinheiro real no jogo — nenhum pagamento é feito aqui. Por enquanto os diamantes vêm das
-        caixas Destaque, Lenda e Épica e do descarte de cartas repetidas, e continuam funcionando normalmente na loja.
+        Ainda não há compra com dinheiro real no jogo — nenhum pagamento é feito aqui. Os diamantes conquistados nos eventos continuam disponíveis para energia e itens visuais.
       </p>
     </section>
   )

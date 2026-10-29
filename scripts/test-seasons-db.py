@@ -18,6 +18,9 @@ ROOT = Path(__file__).resolve().parents[1]
 parser = argparse.ArgumentParser()
 parser.add_argument('container', nargs='?', default='simulation-seasons-test')
 parser.add_argument('--ui-fixtures', type=Path)
+parser.add_argument('--base-cards', action='store_true')
+parser.add_argument('--skip-existing-tests', action='store_true')
+parser.add_argument('--keep-db', action='store_true')
 args = parser.parse_args()
 CONTAINER = args.container
 DATABASE = 'simulation_validation_' + uuid.uuid4().hex[:12]
@@ -59,26 +62,40 @@ try:
     # As migrações também precisam suportar reaplicação.
     for path in updates:
         run_file(path)
-    for path in tests:
-        run_file(path)
-    # Duas conexões concorrentes, não apenas chamadas sequenciais em uma transação.
-    run_file('supabase/evolution/tests/support/concurrency_setup.sql')
-    command = DOCKER + ['psql', '-U', 'postgres', '-d', DATABASE, '-At', '-v', 'ON_ERROR_STOP=1', '-c', "select public.sim_create_season('20202020-0000-0000-0000-0000000000ca','BRA')"]
-    with ThreadPoolExecutor(max_workers=2) as pool:
-        concurrent = list(pool.map(lambda _: subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=ENV), range(2)))
-    if sorted(r.returncode == 0 for r in concurrent) != [False, True]:
-        raise RuntimeError('Concorrência criou zero ou duas temporadas')
-    losing = next(r for r in concurrent if r.returncode)
-    if 'temporada ativa' not in losing.stderr.decode():
-        raise RuntimeError('Falha concorrente inesperada: ' + losing.stderr.decode())
-    count = subprocess.check_output(DOCKER + ['psql', '-U', 'postgres', '-d', DATABASE, '-Atc', "select count(*) from public.career_seasons where career_id='20202020-0000-0000-0000-0000000000ca'"], env=ENV).decode().strip()
-    if count != '1':
-        raise RuntimeError('Temporada duplicada após concorrência')
-    print('PASS concorrência real: uma temporada criada, segunda requisição recusada', flush=True)
+    if not args.skip_existing_tests:
+        for path in tests:
+            run_file(path)
+    if not args.skip_existing_tests:
+        # Duas conexões concorrentes, não apenas chamadas sequenciais em uma transação.
+        run_file('supabase/evolution/tests/support/concurrency_setup.sql')
+        command = DOCKER + ['psql', '-U', 'postgres', '-d', DATABASE, '-At', '-v', 'ON_ERROR_STOP=1', '-c', "select public.sim_create_season('20202020-0000-0000-0000-0000000000ca','BRA')"]
+        with ThreadPoolExecutor(max_workers=2) as pool:
+            concurrent = list(pool.map(lambda _: subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=ENV), range(2)))
+        if sorted(r.returncode == 0 for r in concurrent) != [False, True]:
+            raise RuntimeError('Concorrência criou zero ou duas temporadas')
+        losing = next(r for r in concurrent if r.returncode)
+        if 'temporada ativa' not in losing.stderr.decode():
+            raise RuntimeError('Falha concorrente inesperada: ' + losing.stderr.decode())
+        count = subprocess.check_output(DOCKER + ['psql', '-U', 'postgres', '-d', DATABASE, '-Atc', "select count(*) from public.career_seasons where career_id='20202020-0000-0000-0000-0000000000ca'"], env=ENV).decode().strip()
+        if count != '1':
+            raise RuntimeError('Temporada duplicada após concorrência')
+        print('PASS concorrência real: uma temporada criada, segunda requisição recusada', flush=True)
+    if args.base_cards:
+        run_file('supabase/evolution/tests/support/base_cards_setup.sql')
+        run_file('supabase/releases/cartas_base.sql')
+        run_file('supabase/evolution/tests/base_cards_tests.sql')
+        run_file('supabase/evolution/tests/base_cards_gameplay_tests.sql')
+        run_file('supabase/evolution/tests/support/base_cards_reapply_snapshot.sql')
+        run_file('supabase/releases/cartas_base.sql')
+        run_file('supabase/evolution/tests/base_cards_reapply_tests.sql')
+        subprocess.run([sys.executable,str(ROOT/'tests/base_cards_compensation_concurrency.py'),CONTAINER,DATABASE],check=True,env=ENV)
     if args.ui_fixtures:
         result = subprocess.run(DOCKER + ['psql', '-U', 'postgres', '-d', DATABASE, '-At', '-v', 'ON_ERROR_STOP=1'], input=(ROOT / 'supabase/evolution/tests/support/ui_fixtures.sql').read_bytes(), stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=ENV, check=True)
         data = next(json.loads(line) for line in result.stdout.decode().splitlines() if line.startswith('{'))
         args.ui_fixtures.write_text(json.dumps(data))
         print('Respostas fictícias de API salvas em', args.ui_fixtures, flush=True)
 finally:
-    subprocess.run(DOCKER + ['dropdb', '-U', 'postgres', DATABASE], check=True, env=ENV)
+    if args.keep_db:
+        print('Retained local test database:', DATABASE, flush=True)
+    else:
+        subprocess.run(DOCKER + ['dropdb', '-U', 'postgres', DATABASE], check=True, env=ENV)

@@ -41,9 +41,9 @@ export default function DiamondExchange({ diamonds, onClose, onDone }) {
             </button>
           ))}
         </div>
-        {diamonds < 1 && <p className="cx-hint">Você ainda não tem diamantes. Eles saem das caixas mais raras.</p>}
+        {diamonds < 1 && <p className="cx-hint">Você ainda não tem diamantes. Você pode conquistá-los nos eventos.</p>}
         {msg && <p className="cx-msg">{msg}</p>}
-        <p className="cx-hint">Diamantes também compram cartas Destaque e Lenda na Loja.</p>
+        <p className="cx-hint">A energia bônus permanece disponível após a recarga diária.</p>
       </div>
     </div>
   )

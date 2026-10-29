@@ -2,12 +2,14 @@ import { OpponentTactics } from './OpponentScout'
 import { isSessionError } from '../../../lib/sessionRecovery'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Ambulance, ChevronsRight, FastForward, Pause, Play, Repeat2, Settings2, Square, Users } from 'lucide-react'
+import BasePlayerCard from '../../cards/components/BasePlayerCard'
+import PlayerSheet from './PlayerSheet'
 import ClubCrest from '../../club/components/ClubCrest'
 import { getClubById } from '../../club/data/clubs'
 import CompEmblem from '../ui/CompEmblem'
 import MatchLineupEditor, { draftFromMatch } from './MatchLineupEditor'
 import useCatalog from '../hooks/useCatalog'
-import { fetchSquad, stepMatch } from '../services/managerApi'
+import { fetchPlayer, fetchSquad, stepMatch } from '../services/managerApi'
 import { MAJOR_EVENTS, condTone, eventText, isGoal } from '../utils/managerUtils'
 import { COMP_NAME, describeMatch } from '../utils/seasonUtils'
 import useMatchAudio from '../../audio/useMatchAudio'
@@ -44,6 +46,7 @@ export default function MatchLive({ initial, myClub, onFinished, notify }) {
   const [tab, setTab] = useState('feed')
   const [pending, setPending] = useState(EMPTY)
   const [squadById, setSquadById] = useState(null)
+  const [playerInfo, setPlayerInfo] = useState(null)
   const [flash, setFlash] = useState(null)
   const [turbo, setTurbo] = useState(false)
   const lastSeq = useRef(Math.max(0, ...(initial.events || []).map((e) => e.seq)))
@@ -60,7 +63,7 @@ export default function MatchLive({ initial, myClub, onFinished, notify }) {
 
   // ---- relógio ----
   const msPerMin = turbo ? 35 : SPEEDS.find((s) => s.id === speed).ms
-  const waitingDecision = overlay || panel
+  const waitingDecision = overlay || panel || playerInfo
   useEffect(() => {
     if (paused || waitingDecision || clock >= serverMin) return undefined
     const id = setInterval(() => setClock((c) => Math.min(serverMin, c + 100 / msPerMin)), 100)
@@ -163,6 +166,7 @@ export default function MatchLive({ initial, myClub, onFinished, notify }) {
   }
 
   async function simulateToEnd() {
+    setPaused(false)
     setOverlay(null)
     stopRef.current = null
     setPanel(false)
@@ -306,7 +310,13 @@ export default function MatchLive({ initial, myClub, onFinished, notify }) {
                     .filter((p) => p.side === sd && p.status !== 'bench')
                     .map((p) => (
                       <li key={p.id} className={`st-${p.status}`}>
-                        <span className="ml-pos">{p.pos}</span>
+                        <button type="button" className="ml-base-button" aria-label={`Ver ficha de ${p.name}`} onClick={async () => {
+                          const clubId = sd === 'h' ? data.home : data.away
+                          try {
+                            const detail = await fetchPlayer(p.id, data.fixture_id)
+                            if (detail) setPlayerInfo({ ...detail, club_id: clubId, condition: Math.round(p.cond) })
+                          } catch (error) { if (!isSessionError(error)) notify?.(error.message, 'alert') }
+                        }}><BasePlayerCard player={{ ...p, club_id: sd === 'h' ? data.home : data.away }} position={p.pos || p.natural} width={54} /></button>
                         <span className="ml-pn">
                           {p.name}
                           {p.yellow > 0 && <i className="mcard y" />}
@@ -417,6 +427,8 @@ export default function MatchLive({ initial, myClub, onFinished, notify }) {
           </div>
         </div>
       )}
+
+      {playerInfo && <PlayerSheet player={playerInfo} onClose={() => setPlayerInfo(null)} />}
 
       {panel && (
         <MatchLineupEditor

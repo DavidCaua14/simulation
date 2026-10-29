@@ -1,10 +1,8 @@
 import { useEffect, useState } from 'react'
-import { Activity, Award, CalendarDays, Coins, Crown, Flame, Gem, Gift, Layers, Package, Palette, Sparkles, Star, Trophy, Zap } from 'lucide-react'
-import { tierOf } from '../cards/data/tiers'
+import { Activity, Award, CalendarDays, Coins, Crown, Flame, Gem, Gift, Layers, Palette, Sparkles, Star, Trophy, Zap } from 'lucide-react'
 
 export const BANNER_ICONS = { activity: Activity, trophy: Trophy, flame: Flame, star: Star, layers: Layers, crown: Crown, calendar: CalendarDays, gift: Gift, sparkles: Sparkles }
 export const CATEGORY_LABEL = { daily: 'Diário', weekly: 'Semanal', themed: 'Especial', collection: 'Coleção' }
-const TIER_LABEL = { basica: 'Básica', destaque: 'Destaque', lenda: 'Lenda', epica: 'Épica' }
 
 // relógio da tela (atualiza a cada 30 s) — o tempo restante vem das datas reais do servidor
 export function useNow(step = 30000) {
@@ -35,8 +33,6 @@ export function rewardText(r) {
     case 'coins': return `${Number(r.amount).toLocaleString('pt-BR')} moedas`
     case 'diamonds': return `${r.amount} ${r.amount === 1 ? 'diamante' : 'diamantes'}`
     case 'energy': return `${r.amount} de energia bônus`
-    case 'box': return `${r.amount > 1 ? `${r.amount}× ` : ''}caixa ${TIER_LABEL[r.ref] || r.ref}`
-    case 'card': return `Carta ${r.label || r.ref || ''}`.trim()
     case 'cosmetic': return `Visual: ${r.label || r.ref}`
     case 'badge': return `Insígnia: ${r.label || r.ref}`
     default: return r.kind
@@ -44,11 +40,11 @@ export function rewardText(r) {
 }
 
 export function RewardChip({ r }) {
+  if (r.kind === 'box' || r.kind === 'card') return null // historical records remain auditable, without an acquisition action
   let icon
   if (r.kind === 'coins') icon = <Coins size={13} className="ev-ic-coins" />
   else if (r.kind === 'diamonds') icon = <Gem size={13} className="ev-ic-gems" />
   else if (r.kind === 'energy') icon = <Zap size={13} fill="currentColor" className="ev-ic-energy" />
-  else if (r.kind === 'box') icon = tierOf(r.ref)?.closed ? <img src={tierOf(r.ref).closed} alt="" /> : <Package size={13} />
   else if (r.kind === 'cosmetic') icon = <Palette size={13} className="ev-ic-gold" />
   else if (r.kind === 'badge') icon = <Award size={13} className="ev-ic-gold" />
   else icon = <Gift size={13} />

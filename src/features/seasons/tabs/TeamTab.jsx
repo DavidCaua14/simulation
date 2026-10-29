@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Ambulance, CircleAlert, Ban, BatteryLow, Check, Save, Sparkles, TriangleAlert, Users } from 'lucide-react'
 import Pitch, { PlayerToken } from '../components/Pitch'
+import BasePlayerCard from '../../cards/components/BasePlayerCard'
+import PositionFilter from '../components/PositionFilter'
 import PlayerPicker from '../components/PlayerPicker'
 import PlayerSheet from '../components/PlayerSheet'
 import TacticsPanel from '../components/TacticsPanel'
@@ -10,7 +12,7 @@ import { EmptyState, ErrorState, LoadingState } from '../ui/States'
 import useCatalog from '../hooks/useCatalog'
 import useDragSwap from '../hooks/useDragSwap'
 import { autoLineup, fetchSquad, saveLineup } from '../services/managerApi'
-import { DEFAULT_TACTICS, LINE_NAME, LINES, POS_LINE, condTone, lineupStrength, ovrTone } from '../utils/managerUtils'
+import { DEFAULT_TACTICS, LINE_NAME, LINES, POS_LINE, condTone, lineupStrength, ovrTone, POS_ORDER } from '../utils/managerUtils'
 import { COMP_SHORT } from '../utils/seasonUtils'
 
 const VIEWS = [
@@ -48,6 +50,7 @@ export default function TeamTab({ hub, onSaved, notify }) {
   const [picker, setPicker] = useState(null)
   const [info, setInfo] = useState(null)
   const [saving, setSaving] = useState(false)
+  const [positionFilter, setPositionFilter] = useState('')
   const [issues, setIssues] = useState([])
 
   const clubId = hub.coach.club_id
@@ -213,7 +216,7 @@ export default function TeamTab({ hub, onSaved, notify }) {
   const shownIssues = dirty ? localIssues : issues
   const errors = shownIssues.filter((i) => i.level === 'error')
   const warns = shownIssues.filter((i) => i.level === 'warn')
-  const groups = LINES.map((line) => ({ line, players: squad.players.filter((p) => POS_LINE[p.position] === line) }))
+  const groups = LINES.map((line) => ({ line, players: squad.players.filter((p) => POS_LINE[p.position] === line && (!positionFilter || p.position === positionFilter)).sort((a, b) => POS_ORDER.indexOf(a.position) - POS_ORDER.indexOf(b.position) || b.overall - a.overall) }))
 
   return (
     <div className="sn-page tt">
@@ -241,6 +244,8 @@ export default function TeamTab({ hub, onSaved, notify }) {
           </button>
         ))}
       </div>
+
+      {(view === 'lineup' || view === 'squad') && <PositionFilter value={positionFilter} onChange={setPositionFilter} />}
 
       {view === 'lineup' && (
         <>
@@ -287,7 +292,7 @@ export default function TeamTab({ hub, onSaved, notify }) {
               Banco <small>{draft.bench.length}/{squad.rules.bench} reservas</small>
             </h2>
             <div className={`tt-bench ${drag ? 'is-dragging' : ''}`}>
-              {draft.bench.map((pid, i) => (
+              {draft.bench.map((pid, i) => (!positionFilter || byId[pid]?.position === positionFilter) && (
                 <div key={pid} className={`tt-bslot ${drag?.over === `bench:${i}` ? 'is-drop' : ''} ${drag?.from === `bench:${i}` ? 'is-dragging' : ''}`} {...bind(`bench:${i}`, pid)}>
                   <PlayerToken
                     player={byId[pid]}
@@ -341,7 +346,7 @@ export default function TeamTab({ hub, onSaved, notify }) {
 
       {view === 'squad' && (
         <div className="sq">
-          {groups.map((g) => (
+          {groups.filter((g) => g.players.length > 0).map((g) => (
             <section key={g.line} className="sq-group">
               <h3 className="gx-title">
                 {LINE_NAME[g.line]} <small>{g.players.length}</small>
@@ -353,7 +358,7 @@ export default function TeamTab({ hub, onSaved, notify }) {
                   return (
                     <li key={p.id}>
                       <button type="button" className={`sq-row ${p.available ? '' : 'is-out'}`} onClick={() => setInfo(p)}>
-                        <span className="sq-num">{p.number ?? '–'}</span>
+                        <BasePlayerCard player={{ ...p, club_id: clubId }} width={112} />
                         <span className="sq-name">
                           <b>{p.short_name}</b>
                           <small>
@@ -405,7 +410,7 @@ export default function TeamTab({ hub, onSaved, notify }) {
       {picker && (
         <PlayerPicker
           target={picker}
-          players={squad.players}
+          players={squad.players.map((p) => ({ ...p, club_id: clubId }))}
           slots={draft.slots}
           bench={draft.bench}
           onPick={pick}
@@ -414,7 +419,7 @@ export default function TeamTab({ hub, onSaved, notify }) {
           onClose={() => setPicker(null)}
         />
       )}
-      {info && <PlayerSheet player={info} clubName={club?.name} onClose={() => setInfo(null)} />}
+      {info && <PlayerSheet player={info ? { ...info, club_id: clubId } : null} clubName={club?.name} onClose={() => setInfo(null)} />}
     </div>
   )
 }

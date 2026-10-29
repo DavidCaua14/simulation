@@ -1,5 +1,6 @@
 import { Ambulance, Ban, BatteryLow } from 'lucide-react'
-import { POS_NAME, fitTone, ovrTone, posFit } from '../utils/managerUtils'
+import BasePlayerCard from '../../cards/components/BasePlayerCard'
+import { POS_NAME, fitTone, posFit } from '../utils/managerUtils'
 
 // Campo visto de cima (ataque para cima). Cada vaga da formação fica na posição real do campo
 // (coordenadas vêm de sim_formations, as mesmas que o motor usa).
@@ -20,11 +21,6 @@ function PitchLines() {
   )
 }
 
-function initials(name = '') {
-  const parts = name.replace(/\./g, '').split(' ').filter(Boolean)
-  return (parts.length > 1 ? parts[0][0] + parts[parts.length - 1][0] : name.slice(0, 2)).toUpperCase()
-}
-
 export function PlayerToken({ player, pos, colors, selected, live, onClick, label }) {
   const rating = player ? Math.round(player.ratings?.[pos] ?? player.overall ?? 0) : null
   const fit = player ? (player.fit ?? posFit(player, pos)) : 1
@@ -41,9 +37,8 @@ export function PlayerToken({ player, pos, colors, selected, live, onClick, labe
       onClick={onClick}
       aria-label={player ? `${label || pos}: ${player.short_name || player.name}, nota ${rating} nessa posição` : `${label || pos}: vaga vazia`}
     >
-      <span className="pt-shirt" style={{ '--j1': c1, '--j2': c2 }}>
-        <b>{player ? (player.number ?? initials(player.short_name || player.name)) : '+'}</b>
-        {player && <em className={`pt-ovr o-${ovrTone(rating)}`}>{rating}</em>}
+      {player ? <BasePlayerCard player={player} position={pos} overall={rating} colors={[c1, c2]} /> : <span className="pt-shirt"><b>+</b></span>}
+      <span className="pt-status">
         {injured && (
           <i className="pt-flag inj" title="Lesionado">
             <Ambulance size={10} />

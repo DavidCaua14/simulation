@@ -1,0 +1,1161 @@
+-- Cartas base: backup + preflight obrigatórios. Pacote transacional gerado.
+begin;
+set local lock_timeout='5s';
+set local statement_timeout='90s';
+
+-- FILE: 21_base_cards.sql
+-- Cartas base: estruturas e regras centrais. Aplicar após 20, com 22 e 23.
+create table if not exists public.base_card_conversion_rates (
+ tier text primary key references public.card_tiers(id),
+ coins int not null check(coins>=0),diamonds int not null check(diamonds>=0),energy int not null check(energy>=0),
+ version int not null default 1 check(version=1)
+);
+insert into public.base_card_conversion_rates(tier,coins,diamonds,energy) values
+ ('basica',15,0,0),('destaque',2300,16,2),('lenda',21600,130,4),('epica',43200,260,6)
+on conflict do nothing;
+create table if not exists public.base_card_compensations (
+ career_id uuid not null references public.careers(id),source_kind text not null check(source_kind in('card','box')),
+ source_id text not null,tier text not null,qty int not null check(qty>0),coins int not null,diamonds int not null,energy int not null,
+ version int not null default 1,created_at timestamptz not null default now(),
+ primary key(career_id,source_kind,source_id,version)
+);
+create table if not exists public.base_card_players (
+ card_id text primary key references public.cards(id),player_id text not null unique references public.sim_players(id)
+);
+insert into public.base_card_players select c.id,p.id from public.cards c join public.sim_players p on p.id=c.player_key where c.tier='basica'
+on conflict do nothing;
+create table if not exists public.base_card_roster (
+ career_id uuid not null references public.careers(id),player_id text not null references public.sim_players(id),
+ card_id text not null references public.base_card_players(card_id),original_club_id text,last_club_id text,
+ primary key(career_id,player_id),foreign key(career_id,player_id) references public.mgr_players(career_id,player_id)
+);
+alter table public.streak_rewards add column if not exists energy int not null default 0 check(energy>=0);
+create table if not exists public.base_event_reward_migrations (
+ reward_id uuid primary key,original jsonb not null,created_at timestamptz not null default now()
+);
+create table if not exists public.base_card_release (
+ id boolean primary key default true check(id),activated_at timestamptz not null default now(),version int not null default 1
+);
+insert into public.base_card_release(id) values(true) on conflict do nothing;
+create table if not exists public.base_match_rewards (
+ fixture_id bigint primary key,season_id uuid not null,career_id uuid not null,
+ coins int not null check(coins>=0),energy int not null check(energy in(0,1)),created_at timestamptz not null default now(),
+ foreign key(fixture_id,season_id) references public.season_fixtures(id,season_id),
+ foreign key(season_id,career_id) references public.career_seasons(id,career_id)
+);
+do $$ declare t text; begin
+ foreach t in array array['base_event_reward_migrations','base_card_conversion_rates','base_card_compensations','base_card_players','base_card_roster','base_card_release','base_match_rewards'] loop
+  execute format('alter table public.%I enable row level security',t);
+  execute format('revoke all on public.%I from public,anon,authenticated',t);
+ end loop;
+end $$;
+grant select on public.base_card_compensations to authenticated;
+drop policy if exists own_base_compensation on public.base_card_compensations;
+create policy own_base_compensation on public.base_card_compensations for select to authenticated using
+ (exists(select 1 from public.careers c where c.id=career_id and c.user_id=auth.uid()));
+
+create or replace function public.mgr_sync_base_cards(p_career uuid)
+returns int language plpgsql security definer set search_path=public as $$
+declare target text;r record;original text;changed int:=0;
+begin
+ perform 1 from public.careers where id=p_career for update;
+ select club_id into target from public.mgr_coach where career_id=p_career and status='employed';
+ if target is null then return 0;end if;
+ for r in select m.card_id,m.player_id from public.user_cards u join public.base_card_players m on m.card_id=u.card_id
+   where u.career_id=p_career and u.qty>0 order by m.player_id loop
+  insert into public.mgr_players(career_id,player_id,club_id,rhythm)
+   select p_career,p.id,p.club_id,case when p.is_youth then 50 else 70 end from public.sim_players p where p.id=r.player_id
+   on conflict do nothing;
+  select club_id into original from public.mgr_players where career_id=p_career and player_id=r.player_id;
+  insert into public.base_card_roster(career_id,player_id,card_id,original_club_id,last_club_id)
+   values(p_career,r.player_id,r.card_id,original,target) on conflict(career_id,player_id) do update set last_club_id=excluded.last_club_id;
+  if original is distinct from target then
+   -- Preserve saved tactics; only remove this transferred athlete from old club selections.
+   update public.mgr_lineups l set
+    slots=coalesce((select jsonb_object_agg(k,v) from jsonb_each(l.slots) e(k,v) where v<>to_jsonb(r.player_id)),'{}'),
+    bench=array_remove(l.bench,r.player_id)
+    where l.career_id=p_career and l.club_id<>target and
+     (exists(select 1 from jsonb_each_text(l.slots) where value=r.player_id)
+       or r.player_id=any(l.bench));
+   update public.mgr_players set club_id=target where career_id=p_career and player_id=r.player_id;
+   changed:=changed+1;
+  end if;
+ end loop;
+ return changed;
+end $$;
+
+create or replace function public.base_award_match(p_fixture bigint)
+returns void language plpgsql security definer set search_path=public as $$
+declare f public.season_fixtures;s public.career_seasons;club text;mine int;opp int;won boolean;mult numeric;award public.base_match_rewards;
+begin
+ select * into f from public.season_fixtures where id=p_fixture;
+ if f.id is null or f.status<>'played' or not coalesce(f.player_match,false) then return;end if;
+ if f.played_at is null or f.played_at<(select activated_at from public.base_card_release) then return;end if;
+ select * into s from public.career_seasons where id=f.season_id;
+ club:=coalesce(f.coach_club,s.club_id);
+ if club is null or club not in(f.home_club,f.away_club) then return;end if;
+ perform 1 from public.careers where id=s.career_id for update;
+ mine:=case when f.home_club=club then f.home_goals else f.away_goals end;
+ opp:=case when f.home_club=club then f.away_goals else f.home_goals end;
+ won:=mine>opp or(mine=opp and f.home_pens is not null and case when f.home_club=club then f.home_pens>f.away_pens else f.away_pens>f.home_pens end);
+ select c.xp_mult*(case public.mgr_stage_rank(f.competition_id,f.stage) when 5 then 1.5 when 4 then 1.2 when 3 then 1.2 when 2 then 1.2 else 1 end) into mult
+  from public.sim_competitions c where c.id=f.competition_id;
+ insert into public.base_match_rewards(fixture_id,season_id,career_id,coins,energy)
+  values(f.id,s.id,s.career_id,round((case when won then 60 when mine=opp then 25 else 10 end)*mult)::int,won::int)
+  on conflict do nothing returning * into award;
+ if award.fixture_id is null then return;end if;
+ if award.coins>0 then perform public.econ_apply(s.career_id,'coins',award.coins,'match_reward',f.id::text);end if;
+ if award.energy>0 then perform public.econ_apply(s.career_id,'bonus_energy',1,'match_win_energy',f.id::text);end if;
+end $$;
+
+create or replace function public.base_fixture_reward_trigger()
+returns trigger language plpgsql security definer set search_path=public as $$
+begin
+ if new.status='played' and old.status is distinct from 'played' then perform public.base_award_match(new.id);end if;
+ return new;
+end $$;
+drop trigger if exists card_on_fixture_played on public.season_fixtures;
+drop trigger if exists base_fixture_reward on public.season_fixtures;
+create trigger base_fixture_reward after update on public.season_fixtures for each row execute function public.base_fixture_reward_trigger();
+revoke all on function public.mgr_sync_base_cards(uuid),public.base_award_match(bigint),public.base_fixture_reward_trigger() from public,anon,authenticated;
+create or replace function public.mgr_player_detail(p_player text,p_fixture bigint default null)
+returns jsonb language plpgsql security definer set search_path=public as $$
+declare car public.careers;club text;detail jsonb;
+begin
+ car:=public.mgr_lock();
+ if p_fixture is not null and not exists(select 1 from public.mgr_matches m join public.mgr_match_players mp on mp.fixture_id=m.fixture_id
+   where m.fixture_id=p_fixture and m.career_id=car.id and mp.player_id=p_player) then raise exception 'Jogador ou partida fora desta carreira';end if;
+ select club_id into club from public.mgr_players where career_id=car.id and player_id=p_player;
+ if not found or club is null then raise exception 'Jogador não encontrado nesta carreira';end if;
+ select value into detail from jsonb_array_elements(public.mgr_squad(club)->'players') where value->>'id'=p_player;
+ if detail is null then raise exception 'Ficha não encontrada nesta carreira';end if;
+ return detail;
+end $$;
+revoke all on function public.mgr_player_detail(text,bigint) from public,anon;
+grant execute on function public.mgr_player_detail(text,bigint) to authenticated;
+
+
+-- FILE: 22_base_card_functions.sql
+-- Generated by scripts/build-base-card-functions.py. Run after 21.
+
+create or replace function public.mgr_lock()
+returns public.careers language plpgsql security definer set search_path = public as $$
+declare
+  v_c   public.careers;
+  v_day int;
+  v_sid uuid;
+begin
+  v_c := public.sim_lock_career();
+  perform public.mgr_ensure(v_c);
+  perform public.mgr_sync_base_cards(v_c.id);
+  select id, day_no into v_sid, v_day from public.career_seasons
+   where career_id = v_c.id and mode = 'coach' order by season_no desc limit 1;
+  update public.season_offers set status = 'expired', responded_at = now()
+   where career_id = v_c.id and kind = 'coach' and status = 'pending' and expires_day is not null
+     and (season_id is distinct from v_sid or expires_day < v_day);
+  select * into v_c from public.careers where id = v_c.id;
+  return v_c;
+end;
+$$;
+
+create or replace function public.mgr_squad(p_club text default null)
+returns jsonb language plpgsql security definer set search_path = public as $$
+declare
+  v_car  public.careers;
+  v_c    public.mgr_coach;
+  v_s    public.career_seasons;
+  v_club text;
+  v_l    public.mgr_lineups;
+  v_comp text;
+  v_ev   record;
+begin
+  v_car := public.mgr_lock();
+  select * into v_c from public.mgr_coach where career_id = v_car.id;
+  select * into v_s from public.career_seasons where career_id = v_car.id and mode = 'coach' order by season_no desc limit 1;
+  v_club := coalesce(p_club, v_c.club_id);
+  if v_club is null then raise exception 'Você está sem clube no momento.'; end if;
+  if v_s.status = 'active' then
+    select * into v_ev from public.sim_next_event(v_s.id, v_club);
+    if found and v_ev.o_kind = 'mine' then v_comp := v_ev.o_comp; end if;
+  end if;
+  v_comp := coalesce(v_comp, '-');
+
+  if v_club = v_c.club_id then
+    perform public.mgr_lineup_default(v_car.id, v_club);
+    select * into v_l from public.mgr_lineups where career_id = v_car.id and club_id = v_club;
+  end if;
+
+  return jsonb_build_object(
+    'club_id', v_club, 'mine', v_club = v_c.club_id, 'next_competition', nullif(v_comp, '-'), 'day_no', v_s.day_no,
+    'rules', (select jsonb_build_object('bench', coalesce((rules ->> 'bench')::int, 12), 'max_subs', coalesce((rules ->> 'max_subs')::int, 5),
+                                        'sub_windows', coalesce((rules ->> 'sub_windows')::int, 3))
+                from public.sim_competitions where id = case when v_comp = '-'
+                  then coalesce((select id from public.sim_competitions where region = v_s.region and kind = 'league' order by division limit 1), 'brasileirao')
+                  else v_comp end),
+    'lineup', case when v_l.club_id is not null then jsonb_build_object('formation', v_l.formation, 'slots', v_l.slots, 'bench', to_jsonb(v_l.bench),
+                'tactics', v_l.tactics, 'formation_games', v_l.formation_games,
+                'issues', public.mgr_lineup_issues(v_car.id, v_club, jsonb_build_object('formation', v_l.formation, 'slots', v_l.slots,
+                                                   'bench', to_jsonb(v_l.bench)), v_comp, v_s.day_no)) end,
+    'players', (select coalesce(jsonb_agg(jsonb_build_object(
+        'club_id', mp.club_id, 'id', p.id, 'name', p.full_name, 'short_name', p.short_name, 'number', p.shirt_number, 'position', p.position,
+        'secondary', to_jsonb(p.secondary_positions), 'position_estimated', p.position_estimated, 'nationality', p.nationality,
+        'age', p.age, 'captain', p.is_captain, 'youth', p.is_youth,
+        'overall', round((select r.rating from public.sim_player_pos_ratings r where r.player_id = p.id and r.pos = p.position)),
+        'ratings', (select jsonb_object_agg(r.pos, round(r.eff)) from public.sim_player_pos_ratings r where r.player_id = p.id),
+        'attrs', to_jsonb(a) - 'player_id' - 'method' - 'updated_at',
+        'condition', round(mp.condition), 'rhythm', round(mp.rhythm),
+        'injured_days', case when mp.injured_until > v_s.day_no then mp.injured_until - v_s.day_no end, 'injury', mp.injury,
+        'suspended', (select coalesce(sum(value::int), 0) from jsonb_each_text(mp.susp)), 'susp', mp.susp, 'yellows', mp.yellows,
+        'available', public.mgr_available(mp.injured_until, mp.susp, v_comp, v_s.day_no),
+        'stats', (select jsonb_build_object('apps', coalesce(sum(st.apps), 0), 'starts', coalesce(sum(st.starts), 0), 'minutes', coalesce(sum(st.minutes), 0),
+                    'goals', coalesce(sum(st.goals), 0), 'assists', coalesce(sum(st.assists), 0), 'yellows', coalesce(sum(st.yellows), 0),
+                    'reds', coalesce(sum(st.reds), 0), 'motm', coalesce(sum(st.motm), 0),
+                    'rating', case when sum(st.apps) > 0 then round(sum(st.rating_sum) / sum(st.apps), 2) end)
+                    from public.mgr_player_stats st where st.season_id = v_s.id and st.player_id = p.id and st.club_id = v_club))
+        order by sp.sort, p.shirt_number nulls last, p.short_name), '[]'::jsonb)
+      from public.mgr_players mp
+      join public.sim_players p on p.id = mp.player_id
+      join public.sim_positions sp on sp.code = p.position
+      join public.sim_player_attrs a on a.player_id = p.id
+     where mp.career_id = v_car.id and mp.club_id = v_club));
+end;
+$$;
+
+create or replace function public.mgr_match_payload(p_fixture bigint, p_after_seq int)
+returns jsonb language sql stable security definer set search_path = public as $$
+  select jsonb_build_object(
+    'engine_version',coalesce((m.state->>'engine_version')::int,1),'referee',m.state->'referee',
+    'fixture_id', m.fixture_id, 'status', m.status, 'minute', m.minute, 'user_side', m.user_side,
+    'score', m.state -> 'score', 'agg', m.state -> 'agg', 'decisive', m.state -> 'decisive', 'et', m.state -> 'et',
+    'extra_time_rule', m.state -> 'extra_time_rule', 'pens', m.state -> 'pens',
+    'competition', f.competition_id, 'stage', f.stage, 'round', f.round_no, 'leg', f.leg, 'group', f.group_label,
+    'home', f.home_club, 'away', f.away_club, 'neutral', m.state -> 'neutral',
+    'tactics', m.state -> 'tactics', 'formation', m.state -> 'formation',
+    'subs', m.state -> 'subs', 'max_subs', m.state -> 'max_subs', 'max_windows', m.state -> 'max_windows',
+    'events', (select coalesce(jsonb_agg(jsonb_build_object('seq', e.seq, 'minute', e.minute, 'side', e.side, 'kind', e.kind,
+                 'player', e.player_id, 'player_name', p1.short_name, 'player2', e.player2_id, 'player2_name', p2.short_name, 'detail', e.detail)
+                 order by e.seq), '[]'::jsonb)
+                 from public.mgr_match_events e
+                 left join public.sim_players p1 on p1.id = e.player_id left join public.sim_players p2 on p2.id = e.player2_id
+                where e.fixture_id = m.fixture_id and e.seq > coalesce(p_after_seq, 0)),
+    'stats', jsonb_build_object(
+       'poss', jsonb_build_array(round(100.0 * (m.state -> 'poss' ->> 0)::int / greatest((m.state -> 'poss' ->> 0)::int + (m.state -> 'poss' ->> 1)::int, 1)),
+                                 100 - round(100.0 * (m.state -> 'poss' ->> 0)::int / greatest((m.state -> 'poss' ->> 0)::int + (m.state -> 'poss' ->> 1)::int, 1))),
+       'shots', jsonb_build_array((select coalesce(sum(shots), 0) from public.mgr_match_players where fixture_id = m.fixture_id and side = 'h'),
+                                  (select coalesce(sum(shots), 0) from public.mgr_match_players where fixture_id = m.fixture_id and side = 'a')),
+       'sot', jsonb_build_array((select coalesce(sum(sot), 0) from public.mgr_match_players where fixture_id = m.fixture_id and side = 'h'),
+                                (select coalesce(sum(sot), 0) from public.mgr_match_players where fixture_id = m.fixture_id and side = 'a')),
+       'fouls', jsonb_build_array((select coalesce(sum(fouls), 0) from public.mgr_match_players where fixture_id = m.fixture_id and side = 'h'),
+                                  (select coalesce(sum(fouls), 0) from public.mgr_match_players where fixture_id = m.fixture_id and side = 'a')),
+       'yellows', jsonb_build_array((select coalesce(sum(yellow), 0) from public.mgr_match_players where fixture_id = m.fixture_id and side = 'h'),
+                                    (select coalesce(sum(yellow), 0) from public.mgr_match_players where fixture_id = m.fixture_id and side = 'a')),
+       'reds', jsonb_build_array((select coalesce(sum(red), 0) from public.mgr_match_players where fixture_id = m.fixture_id and side = 'h'),
+                                 (select coalesce(sum(red), 0) from public.mgr_match_players where fixture_id = m.fixture_id and side = 'a')),
+       'saves', jsonb_build_array((select coalesce(sum(saves), 0) from public.mgr_match_players where fixture_id = m.fixture_id and side = 'h'),
+                                  (select coalesce(sum(saves), 0) from public.mgr_match_players where fixture_id = m.fixture_id and side = 'a')),
+       'corners', m.state -> 'corners', 'offsides', m.state -> 'offsides'),
+    'players', (select coalesce(jsonb_agg(jsonb_build_object('club_id', case when mp.side='h' then f.home_club else f.away_club end, 'id', mp.player_id, 'name', p.short_name, 'number', p.shirt_number, 'side', mp.side,
+                 'slot', mp.slot, 'pos', mp.pos, 'natural', p.position, 'status', mp.status, 'starter', mp.starter, 'fit', mp.fit,
+                 'cond', round(mp.cond), 'rating', mp.rating, 'goals', mp.goals, 'assists', mp.assists, 'yellow', mp.yellow, 'red', mp.red,
+                 'injured', mp.injured, 'minutes', mp.minutes,
+                 'overall', round((select r.eff from public.sim_player_pos_ratings r where r.player_id = mp.player_id and r.pos = coalesce(mp.pos, p.position))))
+                 order by mp.side, (mp.status = 'on') desc, mp.slot, p.shirt_number), '[]'::jsonb)
+                 from public.mgr_match_players mp join public.sim_players p on p.id = mp.player_id where mp.fixture_id = m.fixture_id),
+    'summary', m.summary)
+  from public.mgr_matches m join public.season_fixtures f on f.id = m.fixture_id
+  where m.fixture_id = p_fixture
+$$;
+
+create or replace function public.mgr_after_user_match(p_fixture bigint)
+returns jsonb language plpgsql security definer set search_path = public as $$
+declare
+  v_f     public.season_fixtures;
+  v_m     public.mgr_matches;
+  v_s     public.career_seasons;
+  v_c     public.mgr_coach;
+  v_dp    record;   -- perfil de dificuldade em vigor (evolução 05: public.mgr_difficulty)
+  v_comp  public.sim_competitions;
+  v_side  char;
+  v_my    int;
+  v_opp   int;
+  v_res   text;
+  v_home  boolean;
+  v_d     numeric;
+  v_es    numeric;
+  v_as    numeric;
+  v_db    numeric;
+  v_df    numeric;
+  v_dr    numeric;
+  v_pos   int;
+  v_obj   public.mgr_objectives;
+  v_out   boolean := false;   -- eliminado neste jogo
+  v_adv   boolean := false;   -- classificado neste jogo
+  v_streak int;
+  v_mult  numeric;
+  v_xp    int;
+  v_coins int;
+  v_fire  text;
+  v_inj   jsonb;
+  v_susp  jsonb;
+  v_b0    numeric;
+  v_f0    numeric;
+  v_r0    numeric;
+  v_lvl0  int;
+  v_car   public.careers;
+begin
+  select * into v_f from public.season_fixtures where id = p_fixture;
+  select * into v_m from public.mgr_matches where fixture_id = p_fixture;
+  select * into v_s from public.career_seasons where id = v_f.season_id;
+  select * into v_c from public.mgr_coach where career_id = v_m.career_id for update;
+  select * into v_comp from public.sim_competitions where id = v_f.competition_id;
+  select * into v_car from public.careers where id = v_m.career_id;
+  v_lvl0 := v_car.level;
+  v_b0 := v_c.board_confidence; v_f0 := v_c.fan_mood; v_r0 := v_c.reputation;
+
+  v_side := v_m.user_side;
+  v_home := (v_side = 'h') and not coalesce((v_m.state ->> 'neutral')::boolean, false);
+  v_my  := case when v_side = 'h' then v_f.home_goals else v_f.away_goals end;
+  v_opp := case when v_side = 'h' then v_f.away_goals else v_f.home_goals end;
+  v_res := case when v_my > v_opp then 'win' when v_my = v_opp then 'draw' else 'loss' end;
+  if v_f.tie_winner is not null then
+    v_out := v_f.tie_winner <> v_c.club_id;
+    v_adv := not v_out;
+  end if;
+
+  -- expectativa x resultado (força média do 11 de cada lado + mando)
+  v_d := (v_m.state -> 'strength' ->> (case when v_side = 'h' then 0 else 1 end))::numeric
+       - (v_m.state -> 'strength' ->> (case when v_side = 'h' then 1 else 0 end))::numeric
+       + case when coalesce((v_m.state ->> 'neutral')::boolean, false) then 0 when v_home then 3 else -3 end;
+  v_es := 1 / (1 + power(10, -v_d / 25));
+  v_as := case v_res when 'win' then 1 when 'draw' then 0.5 else 0 end;
+
+  -- diretoria: resultado x expectativa | torcida: também pesa a expectativa, mas cobra um pouco mais (e mais em casa)
+  v_db := 8 * (v_as - v_es);
+  v_df := 8 * (v_as - (0.15 + 0.7 * v_es + case when v_home then 0.05 else 0 end));
+  if v_my - v_opp >= 3 then v_df := v_df + 2; v_db := v_db + 1; end if;
+  if v_opp - v_my >= 3 then v_df := v_df - 4; v_db := v_db - 2; end if;
+  if v_out then v_db := v_db - 6; v_df := v_df - 6; end if;
+  if v_adv then v_db := v_db + 3; v_df := v_df + 3; end if;
+
+  -- sequência de derrotas
+  select count(*) into v_streak from (
+    select case when (f.home_club = v_c.club_id and f.home_goals < f.away_goals) or (f.away_club = v_c.club_id and f.away_goals < f.home_goals) then 1 else 0 end as l
+      from public.season_fixtures f
+     where f.season_id = v_s.id and f.player_match and f.coach_club = v_c.club_id and f.status = 'played'
+     order by f.played_at desc, f.id desc limit 4) x where x.l = 1;
+  if v_streak >= 4 then v_df := v_df - 3; v_db := v_db - 2; end if;
+
+  -- pressão da tabela na liga nacional (depois da 8ª rodada)
+  select * into v_obj from public.mgr_objectives where spell_id = v_c.spell_id and season_id = v_s.id
+     and competition_id = v_f.competition_id and kind = 'league_pos';
+  if v_obj.id is not null and v_f.stage = 'league' then
+    select t.pos into v_pos from public.sim_standings(v_s.id, v_f.competition_id, null) t where t.club_id = v_c.club_id;
+    if (select count(*) from public.season_fixtures where season_id = v_s.id and competition_id = v_f.competition_id and stage = 'league' and status = 'played'
+         and (home_club = v_c.club_id or away_club = v_c.club_id)) >= 8 then
+      if v_pos > v_obj.target + 3 then v_db := v_db - 1.5; elsif v_pos <= v_obj.target then v_db := v_db + 0.6; end if;
+      if v_pos > (select count(*) from public.season_participants where season_id = v_s.id and competition_id = v_f.competition_id) - 4 then
+        v_df := v_df - 1;
+      end if;
+    end if;
+  end if;
+
+  v_dr := 1.0 * (v_as - v_es) + case when v_res = 'win' then 0.12 else 0 end + case when v_res = 'win' and v_d < -5 then 0.3 else 0 end;
+
+  -- perfil de dificuldade (evolução 05): só suaviza QUEDAS de confiança/humor e acelera a reputação; o placar não muda
+  v_dp := public.mgr_difficulty(v_c.career_id);
+  if v_db < 0 then v_db := v_db * v_dp.board_loss_mult; end if;
+  if v_df < 0 then v_df := v_df * v_dp.fan_loss_mult; end if;
+  if v_dr > 0 then v_dr := v_dr * v_dp.rep_gain_mult; end if;
+
+  update public.mgr_coach
+     set board_confidence = round(greatest(0, least(100, board_confidence + v_db + (55 - board_confidence) * 0.02)), 2),
+         fan_mood = round(greatest(0, least(100, fan_mood + v_df + (55 - fan_mood) * 0.04)), 2),
+         reputation = round(greatest(0, least(100, reputation + v_dr)), 2),
+         matches = matches + 1, wins = wins + (v_res = 'win')::int, draws = draws + (v_res = 'draw')::int, losses = losses + (v_res = 'loss')::int,
+         gf = gf + v_my, ga = ga + v_opp
+   where career_id = v_c.career_id
+  returning * into v_c;
+  update public.mgr_spells
+     set matches = matches + 1, wins = wins + (v_res = 'win')::int, draws = draws + (v_res = 'draw')::int, losses = losses + (v_res = 'loss')::int,
+         gf = gf + v_my, ga = ga + v_opp
+   where id = v_c.spell_id;
+
+  -- prêmios (moedas e XP da conta)
+  v_mult  := v_comp.xp_mult * (case public.mgr_stage_rank(v_f.competition_id, v_f.stage) when 5 then 1.5 when 4 then 1.2 when 3 then 1.2 when 2 then 1.2 else 1 end);
+  v_xp := 0;
+  v_coins := coalesce((select coins from public.base_match_rewards where fixture_id=p_fixture),0);
+  -- Account resources are credited once by base_fixture_reward.
+  update public.career_seasons
+     set matches = matches + 1, wins = wins + (v_res = 'win')::int, draws = draws + (v_res = 'draw')::int, losses = losses + (v_res = 'loss')::int,
+         xp_earned = xp_earned + v_xp, coins_earned = coins_earned + v_coins
+   where id = v_s.id;
+
+  -- departamento médico e disciplina (do seu time)
+  select coalesce(jsonb_agg(jsonb_build_object('player', mp.player_id, 'name', p.short_name, 'injury', mp.injury,
+                                              'days', mp.injured_until - v_s.day_no)), '[]'::jsonb)
+    into v_inj
+    from public.mgr_match_players x join public.mgr_players mp on mp.career_id = v_c.career_id and mp.player_id = x.player_id
+    join public.sim_players p on p.id = x.player_id
+   where x.fixture_id = p_fixture and x.side = v_side and x.injured;
+  select coalesce(jsonb_agg(jsonb_build_object('player', mp.player_id, 'name', p.short_name, 'games', (mp.susp ->> v_f.competition_id)::int)), '[]'::jsonb)
+    into v_susp
+    from public.mgr_match_players x join public.mgr_players mp on mp.career_id = v_c.career_id and mp.player_id = x.player_id
+    join public.sim_players p on p.id = x.player_id
+   where x.fixture_id = p_fixture and x.side = v_side and coalesce((mp.susp ->> v_f.competition_id)::int, 0) > 0;
+  if jsonb_array_length(v_inj) > 0 then
+    perform public.mgr_msg(v_c.career_id, v_s.id, v_s.day_no, 'medical', 'Departamento médico',
+      (select string_agg(format('%s: %s (%s dia%s fora)', e ->> 'name', e ->> 'injury', e ->> 'days',
+                                case when (e ->> 'days')::int = 1 then '' else 's' end), ' · ') from jsonb_array_elements(v_inj) e), v_c.club_id);
+  end if;
+  if jsonb_array_length(v_susp) > 0 then
+    perform public.mgr_msg(v_c.career_id, v_s.id, v_s.day_no, 'press', 'Suspensão',
+      (select string_agg(format('%s cumpre %s jogo%s de suspensão (%s)', e ->> 'name', e ->> 'games',
+                                case when (e ->> 'games')::int = 1 then '' else 's' end, v_comp.short_name), ' · ') from jsonb_array_elements(v_susp) e), v_c.club_id);
+  end if;
+
+  -- avisos da diretoria e da torcida
+  if v_c.board_confidence < 22 and v_c.warned < 2 then
+    perform public.mgr_msg(v_c.career_id, v_s.id, v_s.day_no, 'board', 'Ultimato da diretoria',
+      'A paciência acabou. Sem resultados imediatos, o seu cargo estará em risco.', v_c.club_id);
+    update public.mgr_coach set warned = 2 where career_id = v_c.career_id;
+  elsif v_c.board_confidence < 35 and v_c.warned < 1 then
+    perform public.mgr_msg(v_c.career_id, v_s.id, v_s.day_no, 'board', 'Diretoria preocupada',
+      'Os resultados estão abaixo do esperado. A diretoria quer ver reação nos próximos jogos.', v_c.club_id);
+    update public.mgr_coach set warned = 1 where career_id = v_c.career_id;
+  elsif v_c.board_confidence > 45 and v_c.warned > 0 then
+    update public.mgr_coach set warned = 0 where career_id = v_c.career_id;
+  end if;
+  if v_c.fan_mood < 25 and v_c.fan_warned = 0 then
+    perform public.mgr_msg(v_c.career_id, v_s.id, v_s.day_no, 'fans', 'Protesto da torcida',
+      'Faixas e vaias no estádio: a torcida pede a saída do treinador.', v_c.club_id);
+    update public.mgr_coach set fan_warned = 1 where career_id = v_c.career_id;
+  elsif v_c.fan_mood > 40 and v_c.fan_warned = 1 then
+    update public.mgr_coach set fan_warned = 0 where career_id = v_c.career_id;
+  end if;
+
+  -- DEMISSÃO: desempenho muito ruim ou pressão da torcida (depois de pelo menos 6 jogos no clube)
+  if (select matches from public.mgr_spells where id = v_c.spell_id) >= 6 then
+    if v_c.board_confidence <= v_dp.fire_threshold then v_fire := 'resultados muito abaixo do esperado';
+    elsif v_c.board_confidence <= 25 and v_c.fan_mood <= 15 then v_fire := 'pressão da torcida';
+    end if;
+  end if;
+
+  return jsonb_build_object(
+    'result', v_res, 'my_goals', v_my, 'opp_goals', v_opp, 'eliminated', v_out, 'advanced', v_adv,
+    'expected', round(v_es, 2),
+    'board', jsonb_build_object('before', round(v_b0), 'after', round(v_c.board_confidence), 'delta', round(v_c.board_confidence - v_b0, 1)),
+    'fans', jsonb_build_object('before', round(v_f0), 'after', round(v_c.fan_mood), 'delta', round(v_c.fan_mood - v_f0, 1)),
+    'reputation', jsonb_build_object('before', round(v_r0, 1), 'after', round(v_c.reputation, 1), 'delta', round(v_c.reputation - v_r0, 2)),
+    'rewards', jsonb_build_object('energy', coalesce((select energy from public.base_match_rewards where fixture_id=p_fixture),0), 'xp', v_xp, 'coins', v_coins),
+    'injuries', v_inj, 'suspensions', v_susp,
+    'fire_reason', v_fire);
+end;
+$$;
+
+create or replace function public.season_play()
+returns jsonb language plpgsql security definer set search_path = public as $$
+declare
+  v_c     public.careers;
+  v_s     public.career_seasons;
+  v_cid   text;
+  v_ev    record;
+  v_comp  public.sim_competitions;
+  v_sc    public.season_competitions;
+  v_f     public.season_fixtures;
+  v_f2    public.season_fixtures;
+  v_lvl0  int;
+  v_home  boolean;
+  v_sh    int;
+  v_sa    int;
+  v_q     double precision;
+  v_gs    double precision;
+  v_as    double precision;
+  v_fac   double precision;
+  v_sco   int[];
+  v_hg    int;
+  v_ag    int;
+  v_my    int;
+  v_opp   int;
+  v_pg    int := 0;
+  v_pa    int := 0;
+  v_i     int;
+  v_res   text;
+  v_rat   numeric;
+  v_mult  numeric;
+  v_xp    int;
+  v_coins int;
+  v_pop   int;     -- popularidade TOTAL (para a chance de proposta)
+  v_dpop  int;     -- variação de popularidade desta partida
+  v_pending int;
+  v_cst   text;
+  v_offer jsonb;
+  v_round jsonb;
+  v_comp_done boolean := false;
+  v_season_done boolean := false;
+begin
+  v_c := public.sim_lock_career();
+  v_lvl0 := v_c.level;
+  if v_c.energy + v_c.bonus_energy < 1 then
+    raise exception 'Sem energia. Espere a recarga para simular a próxima partida.';
+  end if;
+
+  select * into v_s from public.career_seasons where career_id = v_c.id and status = 'active';
+  if not found then raise exception 'Não há temporada em andamento. Inicie a próxima temporada.'; end if;
+
+  -- O calendário decide qual campeonato é o próximo. Só dá para jogar se for dia de jogo do SEU clube.
+  select * into v_ev from public.sim_next_event(v_s.id, v_s.club_id);
+  if not found then raise exception 'Não há partidas pendentes nesta temporada.'; end if;
+  if v_ev.o_kind <> 'mine' then
+    raise exception 'Hoje não é dia de jogo do seu clube. Toque em "Próximo" para avançar os outros campeonatos.';
+  end if;
+  v_cid := v_ev.o_comp;
+
+  select * into v_comp from public.sim_competitions where id = v_cid;
+  if not found then raise exception 'Campeonato inválido'; end if;
+  select * into v_sc from public.season_competitions where season_id = v_s.id and competition_id = v_cid;
+
+  select * into v_f from public.season_fixtures
+   where season_id = v_s.id and competition_id = v_cid and status = 'pending'
+     and (home_club = v_s.club_id or away_club = v_s.club_id)
+   order by round_no, id limit 1;
+  if not found then raise exception 'Seu clube não tem partidas pendentes neste campeonato.'; end if;
+
+  -- gasta a energia livre primeiro; a bônus (comprada) só quando a livre acabar
+  if v_c.energy >= 1 then
+    update public.careers set energy = energy - 1 where id = v_c.id;
+  else
+    update public.careers set bonus_energy = bonus_energy - 1 where id = v_c.id;
+  end if;
+
+  -- ---- a partida ----------------------------------------------------
+  v_home := (v_f.home_club = v_s.club_id);
+  select strength into v_sh from public.sim_clubs where id = v_f.home_club;
+  select strength into v_sa from public.sim_clubs where id = v_f.away_club;
+
+  -- qualidade do jogador: sobe com o nível (nível 1 = 0.28 ... nível 24+ = 0.95)
+  v_q := least(0.95, 0.25 + 0.03 * v_c.level);
+
+  v_sco := public.sim_score(v_sh, v_sa, v_f.stage = 'final',
+             case when v_home then 1 + 0.18 * v_q else 1 - 0.06 * v_q end,
+             case when v_home then 1 - 0.06 * v_q else 1 + 0.18 * v_q end);
+  v_hg := v_sco[1];  v_ag := v_sco[2];
+  v_my  := case when v_home then v_hg else v_ag end;
+  v_opp := case when v_home then v_ag else v_hg end;
+  v_res := case when v_my > v_opp then 'win' when v_my = v_opp then 'draw' else 'loss' end;
+
+  -- chance de o gol / a assistência do SEU time ter sido seu: depende da POSIÇÃO e do NÍVEL
+  v_gs := case v_c.position when 'ATA' then 0.36 when 'PE' then 0.26 when 'PD' then 0.26 when 'MEI' then 0.24
+            when 'MC' then 0.12 when 'VOL' then 0.05 when 'LD' then 0.05 when 'LE' then 0.05
+            when 'ZAG' then 0.06 when 'GOL' then 0.002 else 0.12 end;
+  v_as := case v_c.position when 'ATA' then 0.15 when 'PE' then 0.25 when 'PD' then 0.25 when 'MEI' then 0.32
+            when 'MC' then 0.28 when 'VOL' then 0.12 when 'LD' then 0.22 when 'LE' then 0.22
+            when 'ZAG' then 0.04 when 'GOL' then 0.02 else 0.12 end;
+  v_fac := 0.35 + 0.65 * v_q;
+  for v_i in 1 .. v_my loop
+    if random() < v_gs * v_fac then v_pg := v_pg + 1;
+    elsif random() < v_as * v_fac then v_pa := v_pa + 1;
+    end if;
+  end loop;
+
+  -- nota da partida (3.0 a 10.0)
+  v_rat := 5.8 + 1.0 * (v_q - 0.5)
+         + case v_res when 'win' then 0.6 when 'draw' then 0.1 else -0.4 end
+         + v_pg * 1.1 + v_pa * 0.6
+         + case when v_opp = 0 and v_c.position in ('GOL', 'ZAG', 'LD', 'LE', 'VOL') then 0.7 else 0 end
+         + (random() - 0.5) * 1.2;
+  v_rat := round(greatest(3.0, least(10.0, v_rat))::numeric, 1);
+
+  update public.season_fixtures
+     set home_goals = v_hg, away_goals = v_ag, status = 'played', player_match = true,
+         player_goals = v_pg, player_assists = v_pa, player_rating = v_rat, played_at = now()
+   where id = v_f.id;
+  update public.season_competitions set status = 'active'
+   where season_id = v_s.id and competition_id = v_cid and status = 'pending';
+
+  -- ---- prêmios, estatísticas e popularidade -------------------------
+  v_mult := v_comp.xp_mult * (case v_f.stage when 'final' then 1.5 when 'r16' then 1.2 when 'qf' then 1.2 when 'sf' then 1.2 else 1 end);
+  v_xp := 0;
+  v_coins := coalesce((select coins from public.base_match_rewards where fixture_id=v_f.id),0);
+  v_dpop  := (case v_res when 'win' then 8 when 'draw' then 3 else -2 end) + v_pg * 6 + v_pa * 4
+           + (case when v_rat >= 8 then 5 when v_rat < 5 then -3 else 0 end)
+           + (case when v_f.stage in ('r16', 'qf', 'sf', 'final') then 2 else 0 end);
+
+  -- Account resources are credited once by base_fixture_reward.
+
+  update public.career_stats
+     set matches = matches + 1,
+         wins   = wins   + (v_res = 'win')::int,
+         draws  = draws  + (v_res = 'draw')::int,
+         losses = losses + (v_res = 'loss')::int,
+         goals = goals + v_pg, assists = assists + v_pa,
+         popularity = greatest(0, least(1000, popularity + v_dpop)),
+         updated_at = now()
+   where career_id = v_c.id;
+
+  update public.career_seasons
+     set matches = matches + 1,
+         wins   = wins   + (v_res = 'win')::int,
+         draws  = draws  + (v_res = 'draw')::int,
+         losses = losses + (v_res = 'loss')::int,
+         goals = goals + v_pg, assists = assists + v_pa,
+         xp_earned = xp_earned + v_xp, coins_earned = coins_earned + v_coins
+   where id = v_s.id;
+
+  -- ---- o resto da rodada, o próximo mata-mata e o fim do campeonato --
+  perform public.sim_play_round(v_s.id, v_cid, v_f.stage, v_f.round_no);
+  perform public.sim_advance(v_s.id, v_cid);
+
+  -- (se o seu clube caiu, o campeonato continua no calendário: os próximos dias viram "Próximo")
+  select * into v_sc from public.season_competitions where season_id = v_s.id and competition_id = v_cid;
+  v_comp_done := (v_sc.status = 'finished');
+
+  -- ---- proposta de outro clube? -------------------------------------
+  select popularity into v_pop from public.career_stats where career_id = v_c.id;
+  v_offer := public.sim_maybe_offer(v_c.id, v_s.id, v_s.club_id, v_pop);
+
+  -- ---- acabou a temporada? ------------------------------------------
+  if not exists (select 1 from public.season_fixtures where season_id = v_s.id and status = 'pending') then
+    perform public.sim_finalize_season(v_s.id);
+    v_season_done := true;
+  end if;
+
+  -- ---- resposta para a tela -----------------------------------------
+  select * into v_c  from public.careers where id = v_c.id;
+  select * into v_f2 from public.season_fixtures where id = v_f.id;
+  select jsonb_agg(jsonb_build_object('home', o.home_club, 'away', o.away_club, 'hg', o.home_goals, 'ag', o.away_goals, 'group', o.group_label) order by o.id)
+    into v_round
+    from public.season_fixtures o
+   where o.season_id = v_s.id and o.competition_id = v_cid and o.stage = v_f.stage
+     and o.round_no = v_f.round_no and o.id <> v_f.id;
+
+  return jsonb_build_object(
+    'competition', v_cid,
+    'stage', v_f.stage, 'round', v_f.round_no, 'leg', v_f.leg, 'group', v_f.group_label,
+    'venue', case when v_home then 'home' else 'away' end,
+    'home', v_f2.home_club, 'away', v_f2.away_club,
+    'home_goals', v_f2.home_goals, 'away_goals', v_f2.away_goals,
+    'home_pens', v_f2.home_pens, 'away_pens', v_f2.away_pens, 'tie_winner', v_f2.tie_winner,
+    'my_club', v_s.club_id, 'result', v_res,
+    'player', jsonb_build_object('goals', v_pg, 'assists', v_pa, 'rating', v_rat),
+    'rewards', jsonb_build_object('energy', coalesce((select energy from public.base_match_rewards where fixture_id=v_f.id),0), 'xp', v_xp, 'coins', v_coins, 'popularity', v_dpop),
+    'level_up', v_c.level > v_lvl0, 'new_level', v_c.level,
+    'round_results', coalesce(v_round, '[]'::jsonb),
+    'competition_finished', v_comp_done,
+    'competition_result', case when v_comp_done then v_sc.player_result end,
+    'competition_bonus', case when v_comp_done and coalesce(v_sc.player_bonus_xp, 0) + coalesce(v_sc.player_bonus_coins, 0) > 0
+                              then jsonb_build_object('xp', v_sc.player_bonus_xp, 'coins', v_sc.player_bonus_coins) end,
+    'champion', case when v_comp_done then v_sc.champion_club end,
+    'offer', v_offer,
+    'season_finished', v_season_done,
+    'energy', v_c.energy + v_c.bonus_energy);
+end;
+$$;
+
+create or replace function public.profile_build(p_career uuid, p_full boolean)
+returns jsonb language plpgsql stable security definer set search_path = public as $$
+declare
+  v_c   public.careers;
+  v_p   public.player_profiles;
+  v_m   public.mgr_coach;
+  v_s   public.career_seasons;
+  priv  jsonb;
+begin
+  select * into v_c from public.careers where id = p_career;
+  select * into v_p from public.player_profiles where career_id = p_career;
+  select * into v_m from public.mgr_coach where career_id = p_career;
+  select * into v_s from public.career_seasons where career_id = p_career and mode = 'coach' order by season_no desc limit 1;
+  priv := coalesce(v_p.privacy, '{}'::jsonb);
+  return jsonb_strip_nulls(jsonb_build_object(
+    'career_id', case when p_full then v_c.id end,
+    'nickname', v_c.nickname, 'country', v_c.country, 'photo_id', v_c.photo_id, 'avatar', v_p.avatar_data,
+    'level', v_c.level, 'xp', v_c.xp, 'joined_at', v_c.created_at,
+    'club_id', case when p_full or coalesce((priv ->> 'show_career')::boolean, true) then coalesce(v_m.club_id, v_c.club_id) end,
+    'coach_status', case when p_full or coalesce((priv ->> 'show_career')::boolean, true) then v_m.status end,
+    'region', case when p_full or coalesce((priv ->> 'show_career')::boolean, true) then v_s.region end,
+    'equipped', jsonb_strip_nulls(jsonb_build_object(
+        'background', public.cosmetic_json(v_p.background_id), 'frame', public.cosmetic_json(v_p.frame_id),
+        'effect', public.cosmetic_json(v_p.effect_id), 'emblem', public.cosmetic_json(v_p.emblem_id), 'theme', public.cosmetic_json(v_p.theme_id))),
+    'badges', (select coalesce(jsonb_agg(jsonb_build_object('id', b.id, 'label', b.label, 'description', b.description, 'icon', b.icon,
+                 'tier', b.tier, 'earned', pb.awarded_at is not null, 'awarded_at', pb.awarded_at) order by (pb.awarded_at is null), b.sort_order), '[]'::jsonb)
+                 from public.badges b left join public.player_badges pb on pb.badge_id = b.id and pb.career_id = p_career
+                where (b.active or pb.awarded_at is not null) and (p_full or pb.awarded_at is not null)),
+    'titles', case when p_full or coalesce((priv ->> 'show_titles')::boolean, true) then
+        (select coalesce(jsonb_agg(jsonb_build_object('competition', t ->> 'competition', 'year', (t ->> 'year')::int, 'club_id', sp.club_id)
+                                   order by (t ->> 'year')::int desc), '[]'::jsonb)
+           from public.mgr_spells sp cross join lateral jsonb_array_elements(coalesce(sp.titles, '[]'::jsonb)) t
+          where sp.career_id = p_career) end,
+    'stats', case when (p_full or coalesce((priv ->> 'show_stats')::boolean, true)) and v_m.career_id is not null then
+        jsonb_build_object('matches', v_m.matches, 'wins', v_m.wins, 'draws', v_m.draws, 'losses', v_m.losses, 'gf', v_m.gf, 'ga', v_m.ga,
+                           'titles', v_m.titles, 'seasons', v_m.seasons, 'reputation', round(v_m.reputation)) end,
+    'collection', case when p_full or coalesce((priv ->> 'show_collection')::boolean, true) then
+        jsonb_build_object(
+          'total', (select count(*) from public.cards where active and tier='basica'),
+          'owned', (select count(*) from public.user_cards where career_id = p_career and qty > 0),
+          'by_tier', (select coalesce(jsonb_object_agg(x.tier, x.n), '{}'::jsonb)
+                        from (select c.tier, count(*) as n from public.user_cards u join public.cards c on c.id = u.card_id
+                               where u.career_id = p_career and u.qty > 0 group by c.tier) x)) end,
+    'privacy', case when p_full then priv end));
+end;
+$$;
+
+create or replace function public.refresh_wallet()
+returns jsonb language plpgsql security definer set search_path = public as $$
+declare v_c public.careers;
+begin
+  v_c := public.sim_lock_career();
+  return jsonb_build_object(
+    'coins', v_c.coins, 'energy', v_c.energy, 'bonus_energy', v_c.bonus_energy,
+    'diamonds', v_c.diamonds,
+    'pending_boxes', 0,
+    'next_reset_at', v_c.energy_reset_at + interval '5 hours');
+end;
+$$;
+
+create or replace function public.streak_claim()
+returns jsonb language plpgsql security definer set search_path = public as $$
+declare v_c public.careers; v_cfg public.streak_config; v_s public.player_streaks; d date; v_cur int; v_day int; v_r public.streak_rewards; v_ref text;
+begin
+  v_c := public.sim_lock_career();
+  select * into v_cfg from public.streak_config;
+  if not v_cfg.active then raise exception 'A sequência diária está desligada.'; end if;
+  d := (now() at time zone v_cfg.timezone)::date;
+  insert into public.player_streaks (career_id) values (v_c.id) on conflict do nothing;
+  select * into v_s from public.player_streaks where career_id = v_c.id for update;
+  if v_s.last_day = d then return jsonb_build_object('ok', true, 'replayed', true, 'current', v_s.current); end if;
+  if not public.streak_active_today(v_c.id, v_cfg.timezone) then
+    raise exception 'Jogue uma partida ou faça um palpite hoje para liberar a recompensa do dia.';
+  end if;
+  v_cur := case when v_s.last_day = d - 1 then v_s.current + 1 else 1 end;
+  v_day := ((v_cur - 1) % v_cfg.cycle_days) + 1;
+  select * into v_r from public.streak_rewards where day = v_day;
+  v_ref := 'streak:' || d::text;
+  if v_r.coins > 0 then perform public.econ_apply(v_c.id, 'coins', v_r.coins, 'daily_streak', v_ref); end if;
+  if v_r.diamonds > 0 then perform public.econ_apply(v_c.id, 'diamonds', v_r.diamonds, 'daily_streak', v_ref); end if;
+  if v_r.energy>0 then perform public.econ_apply(v_c.id,'bonus_energy',v_r.energy,'daily_streak',v_ref);end if;
+  update public.player_streaks set current = v_cur, best = greatest(best, v_cur), last_day = d where career_id = v_c.id;
+  return jsonb_build_object('ok', true, 'replayed', false, 'current', v_cur, 'day', v_day,
+                            'coins', v_r.coins, 'diamonds', v_r.diamonds, 'energy', v_r.energy);
+end;
+$$;
+
+create or replace function public.streak_status_for(p_career uuid)
+returns jsonb language plpgsql stable security definer set search_path = public as $$
+declare v_cfg public.streak_config; v_s public.player_streaks; d date; v_next int; v_claimed boolean;
+begin
+  select * into v_cfg from public.streak_config;
+  select * into v_s from public.player_streaks where career_id = p_career;
+  d := (now() at time zone v_cfg.timezone)::date;
+  v_claimed := v_s.last_day = d;
+  v_next := case when v_claimed then v_s.current when v_s.last_day = d - 1 then v_s.current + 1 else 1 end;
+  return jsonb_build_object(
+    'active', v_cfg.active, 'current', case when v_claimed or v_s.last_day = d - 1 then coalesce(v_s.current, 0) else 0 end,
+    'best', coalesce(v_s.best, 0), 'claimed_today', coalesce(v_claimed, false),
+    'today_day', ((v_next - 1) % v_cfg.cycle_days) + 1, 'cycle_days', v_cfg.cycle_days,
+    'eligible_today', public.streak_active_today(p_career, v_cfg.timezone),
+    'resets_at', (d + 1)::timestamp at time zone v_cfg.timezone,
+    'rewards', (select jsonb_agg(jsonb_build_object('day', day, 'coins', coins, 'diamonds', diamonds, 'energy', energy) order by day)
+                  from public.streak_rewards where day <= v_cfg.cycle_days));
+end;
+$$;
+
+create or replace function public.event_grant(p_career uuid, p_reward public.event_rewards, p_ref text)
+returns jsonb language plpgsql security definer set search_path = public as $$
+declare i int;
+begin
+  case p_reward.kind
+    when 'coins' then perform public.econ_apply(p_career, 'coins', p_reward.amount, 'event_reward', p_ref);
+    when 'diamonds' then perform public.econ_apply(p_career, 'diamonds', p_reward.amount, 'event_reward', p_ref);
+    when 'energy' then perform public.econ_apply(p_career, 'bonus_energy', p_reward.amount, 'event_reward', p_ref);
+    when 'cosmetic' then
+      insert into public.player_cosmetics (career_id, cosmetic_id, source) values (p_career, p_reward.ref, 'event') on conflict do nothing;
+    when 'badge' then
+      insert into public.player_badges (career_id, badge_id, value) values (p_career, p_reward.ref, 1) on conflict do nothing;
+    else raise exception 'Tipo de recompensa removido';
+  end case;
+  return jsonb_build_object('kind', p_reward.kind, 'amount', p_reward.amount, 'ref', p_reward.ref);
+end;
+$$;
+
+create or replace function public.admin_event_save(p_event jsonb)
+returns jsonb language plpgsql security definer set search_path = public as $$
+declare
+  v_id uuid := nullif(p_event ->> 'id', '')::uuid;
+  v_ev public.events;
+  o jsonb; w jsonb; k text; v_kind public.event_objective_kinds; i int := 0;
+begin
+  perform public.admin_assert();
+  if v_id is not null then
+    select * into v_ev from public.events where id = v_id for update;
+    if not found then raise exception 'Evento não encontrado.'; end if;
+    if v_ev.status = 'published' and now() >= v_ev.starts_at then
+      raise exception 'Evento já começou: não dá para alterar objetivos/recompensas. Cancele e crie outro.';
+    end if;
+  end if;
+  if coalesce(p_event ->> 'timezone', 'America/Sao_Paulo') not in (select name from pg_timezone_names) then raise exception 'Fuso horário inválido.'; end if;
+  if jsonb_typeof(p_event -> 'objectives') <> 'array' or jsonb_array_length(p_event -> 'objectives') = 0 then raise exception 'O evento precisa de pelo menos um objetivo.'; end if;
+  if jsonb_typeof(p_event -> 'rewards') <> 'array' or jsonb_array_length(p_event -> 'rewards') = 0 then raise exception 'O evento precisa de pelo menos uma recompensa.'; end if;
+
+  -- objetivos: só tipos do catálogo e só os parâmetros previstos para cada tipo
+  for o in select * from jsonb_array_elements(p_event -> 'objectives') loop
+    if o->>'kind' in ('box_opened','card_collected','market_sale') then raise exception 'Objetivo removido';end if;
+    select * into v_kind from public.event_objective_kinds where id = o ->> 'kind';
+    if not found then raise exception 'Tipo de objetivo inválido: %', o ->> 'kind'; end if;
+    if o ? 'params' and jsonb_typeof(o -> 'params') not in ('object', 'null') then raise exception 'Parâmetros do objetivo % precisam ser um objeto.', v_kind.label; end if;
+    if coalesce((o ->> 'target')::int, 0) < 1 then raise exception 'Meta inválida no objetivo %.', v_kind.label; end if;
+    for k in select jsonb_object_keys(coalesce(nullif(o -> 'params', 'null'::jsonb), '{}'::jsonb)) loop
+      if not (v_kind.params ? k) then raise exception 'Parâmetro "%" não é permitido em "%".', k, v_kind.label; end if;
+    end loop;
+    if o -> 'params' ? 'competition' and not exists (select 1 from public.sim_competitions where id = o -> 'params' ->> 'competition') then
+      raise exception 'Competição inexistente: %', o -> 'params' ->> 'competition'; end if;
+    if o -> 'params' ? 'tier' and not exists (select 1 from public.card_tiers where id = o -> 'params' ->> 'tier') then
+      raise exception 'Raridade inexistente: %', o -> 'params' ->> 'tier'; end if;
+    if o -> 'params' ? 'region' and o -> 'params' ->> 'region' not in ('BRA', 'ENG') then raise exception 'Região inválida.'; end if;
+    if o -> 'params' ? 'min_opponent_strength' and coalesce((o -> 'params' ->> 'min_opponent_strength')::int, -1) not between 1 and 99 then
+      raise exception 'Força mínima do adversário deve ficar entre 1 e 99.'; end if;
+  end loop;
+  -- recompensas: tipos conhecidos e referências que existem (nada de diamante obrigatório para completar)
+  for w in select * from jsonb_array_elements(p_event -> 'rewards') loop
+    if w ->> 'kind' not in ('coins', 'diamonds', 'energy', 'cosmetic', 'badge') then raise exception 'Recompensa inválida: %', w ->> 'kind'; end if;
+    if coalesce((w ->> 'amount')::int, 1) not between 1 and 100000 then raise exception 'Quantidade inválida na recompensa.'; end if;
+    if w ->> 'kind' = 'cosmetic' and not exists (select 1 from public.cosmetics where id = w ->> 'ref') then raise exception 'Cosmético inexistente.'; end if;
+    if w ->> 'kind' = 'badge' and not exists (select 1 from public.badges where id = w ->> 'ref') then raise exception 'Insígnia inexistente.'; end if;
+  end loop;
+
+  if v_id is null then
+    insert into public.events (slug, name, description, category, banner, starts_at, ends_at, timezone, recurrence, min_level,
+                               max_completions, claim_grace_hours, sort_order, created_by)
+    values (p_event ->> 'slug', p_event ->> 'name', coalesce(p_event ->> 'description', ''), p_event ->> 'category',
+            coalesce(p_event -> 'banner', '{}'::jsonb), (p_event ->> 'starts_at')::timestamptz, (p_event ->> 'ends_at')::timestamptz,
+            coalesce(p_event ->> 'timezone', 'America/Sao_Paulo'), coalesce(p_event ->> 'recurrence', 'none'),
+            coalesce((p_event ->> 'min_level')::int, 1), (p_event ->> 'max_completions')::int,
+            coalesce((p_event ->> 'claim_grace_hours')::int, 48), coalesce((p_event ->> 'sort_order')::int, 0), auth.uid())
+    returning * into v_ev;
+  else
+    update public.events set slug = p_event ->> 'slug', name = p_event ->> 'name', description = coalesce(p_event ->> 'description', ''),
+           category = p_event ->> 'category', banner = coalesce(p_event -> 'banner', '{}'::jsonb),
+           starts_at = (p_event ->> 'starts_at')::timestamptz, ends_at = (p_event ->> 'ends_at')::timestamptz,
+           timezone = coalesce(p_event ->> 'timezone', 'America/Sao_Paulo'), recurrence = coalesce(p_event ->> 'recurrence', 'none'),
+           min_level = coalesce((p_event ->> 'min_level')::int, 1), max_completions = (p_event ->> 'max_completions')::int,
+           claim_grace_hours = coalesce((p_event ->> 'claim_grace_hours')::int, 48), sort_order = coalesce((p_event ->> 'sort_order')::int, 0),
+           updated_at = now()
+     where id = v_id returning * into v_ev;
+    delete from public.event_objectives where event_id = v_id;
+    delete from public.event_rewards where event_id = v_id;
+  end if;
+  for o in select * from jsonb_array_elements(p_event -> 'objectives') loop
+    i := i + 1;
+    insert into public.event_objectives (event_id, kind, target, params, label, sort_order)
+    values (v_ev.id, o ->> 'kind', (o ->> 'target')::int, coalesce(nullif(o -> 'params', 'null'::jsonb), '{}'::jsonb),
+            coalesce(nullif(o ->> 'label', ''), (select label from public.event_objective_kinds where id = o ->> 'kind')), i);
+  end loop;
+  i := 0;
+  for w in select * from jsonb_array_elements(p_event -> 'rewards') loop
+    i := i + 1;
+    insert into public.event_rewards (event_id, kind, amount, ref, sort_order)
+    values (v_ev.id, w ->> 'kind', coalesce((w ->> 'amount')::int, 1), nullif(w ->> 'ref', ''), i);
+  end loop;
+  return jsonb_build_object('ok', true, 'id', v_ev.id, 'status', v_ev.status);
+end;
+$$;
+
+create or replace function public.admin_events_list()
+returns jsonb language plpgsql stable security definer set search_path = public as $$
+begin
+  perform public.admin_assert();
+  return jsonb_build_object(
+    'kinds', (select jsonb_agg(to_jsonb(k) order by k.sort_order) from public.event_objective_kinds k where k.id not in ('box_opened','card_collected','market_sale')),
+    'events', coalesce((select jsonb_agg(to_jsonb(e) || jsonb_build_object(
+                 'objectives', (select coalesce(jsonb_agg(to_jsonb(o) order by o.sort_order), '[]') from public.event_objectives o where o.event_id = e.id),
+                 'rewards', (select coalesce(jsonb_agg(to_jsonb(w) order by w.sort_order), '[]') from public.event_rewards w where w.event_id = e.id),
+                 'completions', (select count(*) from public.event_completions c where c.event_id = e.id))
+               order by e.starts_at desc) from public.events e), '[]'::jsonb),
+    'options', jsonb_build_object(
+      'competitions', (select jsonb_agg(jsonb_build_object('id', id, 'name', name) order by sort_order) from public.sim_competitions where active),
+      'tiers', (select jsonb_agg(id order by rank) from public.card_tiers where id='basica'),
+      'cosmetics', (select jsonb_agg(jsonb_build_object('id', id, 'label', label, 'kind', kind) order by kind, sort_order) from public.cosmetics where active),
+      'badges', (select jsonb_agg(jsonb_build_object('id', id, 'label', label) order by sort_order) from public.badges where active)));
+end;
+$$;
+
+create or replace function public.card_discard(p_card text, p_qty int default 1)
+returns jsonb language plpgsql security definer set search_path = public as $$
+declare
+  v_c    public.careers;
+  v_uc   public.user_cards;
+  v_t    public.card_tiers;
+  v_coin int;
+  v_dia  int;
+begin
+  v_c := public.sim_lock_career();
+  if not exists(select 1 from public.cards where id=p_card and tier='basica') then raise exception 'Somente cartas base';end if;
+  if p_qty is null or p_qty < 1 then raise exception 'Quantidade inválida.'; end if;
+
+  select * into v_uc from public.user_cards where career_id = v_c.id and card_id = p_card for update;
+  if not found then raise exception 'Você não tem esta carta.'; end if;
+  if v_uc.qty - p_qty < 1 then raise exception 'Você só pode descartar cartas repetidas (uma cópia sempre fica).'; end if;
+
+  select t.* into v_t from public.cards c join public.card_tiers t on t.id = c.tier where c.id = p_card;
+  v_coin := v_t.discard_coins * p_qty;
+  v_dia  := v_t.discard_diamonds * p_qty;
+
+  update public.user_cards set qty = qty - p_qty where career_id = v_c.id and card_id = p_card;
+  update public.careers set coins = coins + v_coin, diamonds = diamonds + v_dia where id = v_c.id;
+
+  return jsonb_build_object('coins', v_coin, 'diamonds', v_dia, 'qty_left', v_uc.qty - p_qty);
+end;
+$$;
+
+create or replace function public.box_open(p_box uuid)
+returns jsonb language plpgsql security definer set search_path = public as $$ begin raise exception 'Este recurso de cartas foi removido'; end $$;
+
+create or replace function public.card_claim_daily()
+returns jsonb language plpgsql security definer set search_path = public as $$ begin raise exception 'Este recurso de cartas foi removido'; end $$;
+
+create or replace function public.card_grant_box(p_career uuid, p_tier text, p_source text, p_ref text default null)
+returns uuid language plpgsql security definer set search_path = public as $$ begin raise exception 'Este recurso de cartas foi removido'; end $$;
+
+create or replace function public.card_grant_source(p_career uuid, p_source text, p_ref text)
+returns int language plpgsql security definer set search_path = public as $$ begin raise exception 'Este recurso de cartas foi removido'; end $$;
+
+create or replace function public.card_on_fixture_played()
+returns trigger language plpgsql security definer set search_path = public as $$ begin raise exception 'Este recurso de cartas foi removido'; end $$;
+
+create or replace function public.card_pick_tier(p_weights jsonb)
+returns text language plpgsql volatile set search_path = public as $$ begin raise exception 'Este recurso de cartas foi removido'; end $$;
+
+create or replace function public.market_browse(p_q text default null, p_tier text default null, p_min int default null, p_max int default null,
+                                                p_sort text default 'newest', p_limit int default 30, p_offset int default 0)
+returns jsonb language plpgsql security definer set search_path = public as $$ begin raise exception 'Este recurso de cartas foi removido'; end $$;
+
+create or replace function public.market_buy(p_listing uuid, p_request uuid)
+returns jsonb language plpgsql security definer set search_path = public as $$ begin raise exception 'Este recurso de cartas foi removido'; end $$;
+
+create or replace function public.market_cancel(p_listing uuid)
+returns jsonb language plpgsql security definer set search_path = public as $$ begin raise exception 'Este recurso de cartas foi removido'; end $$;
+
+create or replace function public.market_card_json(p_card public.cards)
+returns jsonb language plpgsql stable as $$ begin raise exception 'Este recurso de cartas foi removido'; end $$;
+
+create or replace function public.market_expire_due(p_limit int default 200)
+returns int language plpgsql security definer set search_path = public as $$ begin raise exception 'Este recurso de cartas foi removido'; end $$;
+
+create or replace function public.market_fee(p_price int, p_pct numeric)
+returns int language plpgsql immutable as $$ begin raise exception 'Este recurso de cartas foi removido'; end $$;
+
+create or replace function public.market_list_card(p_card text, p_price int, p_request uuid)
+returns jsonb language plpgsql security definer set search_path = public as $$ begin raise exception 'Este recurso de cartas foi removido'; end $$;
+
+create or replace function public.market_mine()
+returns jsonb language plpgsql security definer set search_path = public as $$ begin raise exception 'Este recurso de cartas foi removido'; end $$;
+
+create or replace function public.market_return_card(p_listing public.market_listings)
+returns void language plpgsql security definer set search_path = public as $$ begin raise exception 'Este recurso de cartas foi removido'; end $$;
+
+create or replace function public.market_rules()
+returns jsonb language plpgsql stable security definer set search_path = public as $$ begin raise exception 'Este recurso de cartas foi removido'; end $$;
+
+create or replace function public.market_sellable()
+returns jsonb language plpgsql stable security definer set search_path = public as $$ begin raise exception 'Este recurso de cartas foi removido'; end $$;
+
+create or replace function public.profile_set_featured(p_card text)
+returns jsonb language plpgsql security definer set search_path = public as $$ begin raise exception 'Este recurso de cartas foi removido'; end $$;
+
+create or replace function public.shop_buy_card(p_card text, p_currency text, p_request uuid)
+returns jsonb language plpgsql security definer set search_path = public as $$ begin raise exception 'Este recurso de cartas foi removido'; end $$;
+
+create or replace function public.shop_catalog()
+returns jsonb language plpgsql stable security definer set search_path = public as $$ begin raise exception 'Este recurso de cartas foi removido'; end $$;
+
+create or replace function public.shop_period(p_hours int, p_at timestamptz default now())
+returns table (period_key text, ends_at timestamptz) language plpgsql stable as $$ begin raise exception 'Este recurso de cartas foi removido'; end $$;
+
+create or replace function public.shop_price(p_card public.cards, p_currency text)
+returns int language plpgsql stable set search_path = public as $$ begin raise exception 'Este recurso de cartas foi removido'; end $$;
+
+create or replace function public.shop_showcase_cards(p_tier text)
+returns setof public.cards language plpgsql stable security definer set search_path = public as $$ begin raise exception 'Este recurso de cartas foi removido'; end $$;
+
+create or replace function public.wheel_catalog()
+returns jsonb language plpgsql stable security definer set search_path = public as $$ begin raise exception 'Este recurso de cartas foi removido'; end $$;
+
+create or replace function public.wheel_check_sum()
+returns trigger language plpgsql set search_path = public as $$ begin raise exception 'Este recurso de cartas foi removido'; end $$;
+
+create or replace function public.wheel_segment_cards(p_seg public.wheel_segments)
+returns setof public.cards language plpgsql stable security definer set search_path = public as $$ begin raise exception 'Este recurso de cartas foi removido'; end $$;
+
+create or replace function public.wheel_spin(p_request uuid)
+returns jsonb language plpgsql security definer set search_path = public as $$ begin raise exception 'Este recurso de cartas foi removido'; end $$;
+
+do $acl$ declare fn record;begin
+ for fn in select p.oid::regprocedure as signature from pg_proc p join pg_namespace ns on ns.oid=p.pronamespace
+ where ns.nspname='public' and(p.proname like 'shop\_%' escape '\' or p.proname like 'wheel\_%' escape '\' or p.proname like 'market\_%' escape '\' or p.proname in('box_open','card_claim_daily','card_grant_box','card_grant_source','card_pick_tier','card_on_fixture_played','profile_set_featured')) loop
+  execute format('revoke all on function %s from public,anon,authenticated,service_role',fn.signature);
+ end loop;
+end $acl$;
+
+
+
+-- FILE: 23_base_card_migration.sql
+-- Conversão e encerramento dos mecanismos antigos. Somente após backup e prévia.
+set local lock_timeout='5s';
+set local statement_timeout='90s';
+
+create or replace function public.base_reward_value(p_tier text,p_box boolean)
+returns table(coins int,diamonds int,energy int) language sql stable security definer set search_path=public as $$
+ select case when p_box then t.discard_coins+t.box_coins_max else r.coins end,
+        case when p_box then t.discard_diamonds+t.box_diamonds_max else r.diamonds end,
+        case when p_box then t.box_energy_max else r.energy end
+ from public.base_card_conversion_rates r join public.card_tiers t on t.id=r.tier where r.tier=p_tier
+$$;
+create or replace function public.base_compensate(p_career uuid,p_kind text,p_source text,p_tier text,p_qty int)
+returns boolean language plpgsql security definer set search_path=public as $$
+declare v record;paid public.base_card_compensations;
+begin
+ if p_qty<1 then return false;end if;
+ perform 1 from public.careers where id=p_career for update;
+ select * into v from public.base_reward_value(p_tier,p_kind='box');
+ if not found then raise exception 'Raridade sem regra de conversão';end if;
+ insert into public.base_card_compensations(career_id,source_kind,source_id,tier,qty,coins,diamonds,energy)
+ values(p_career,p_kind,p_source,p_tier,p_qty,v.coins*p_qty,v.diamonds*p_qty,v.energy*p_qty)
+ on conflict do nothing returning * into paid;
+ if paid.career_id is null then return false;end if;
+ if paid.coins>0 then perform public.econ_apply(p_career,'coins',paid.coins,'base_cards_compensation',p_kind||':'||p_source);end if;
+ if paid.diamonds>0 then perform public.econ_apply(p_career,'diamonds',paid.diamonds,'base_cards_compensation',p_kind||':'||p_source);end if;
+ if paid.energy>0 then perform public.econ_apply(p_career,'bonus_energy',paid.energy,'base_cards_compensation',p_kind||':'||p_source);end if;
+ return true;
+end $$;
+revoke all on function public.base_reward_value(text,boolean),public.base_compensate(uuid,text,text,text,int) from public,anon,authenticated,service_role;
+
+-- No progress events may be fabricated by this administrative conversion.
+drop trigger if exists event_on_box on public.reward_boxes;
+drop trigger if exists event_on_new_card on public.user_cards;
+drop trigger if exists event_on_market_sale on public.market_listings;
+drop trigger if exists profile_featured_guard on public.user_cards;
+
+-- Original marketplace escrow is an owned copy, even when its advertisement expired by time.
+do $$ declare listing public.market_listings;begin
+ for listing in select * from public.market_listings where status='active' order by seller_career,id for update loop
+  insert into public.user_cards(career_id,card_id,qty) values(listing.seller_career,listing.card_id,1)
+   on conflict(career_id,card_id) do update set qty=public.user_cards.qty+1;
+  update public.market_listings set status='cancelled',closed_at=now() where id=listing.id;
+  insert into public.market_events(listing_id,event,actor,data) values(listing.id,'cancelled',listing.seller_career,'{"reason":"base_cards_migration"}');
+ end loop;
+end $$;
+
+-- Refuse approximate name matches: no owned base card may be lost.
+do $$ begin
+ if exists(select 1 from public.user_cards u join public.cards c on c.id=u.card_id left join public.base_card_players p on p.card_id=c.id
+ where u.qty>0 and c.tier='basica' and p.card_id is null) then raise exception 'Carta base possuída sem jogador correspondente; revisar mapeamento';end if;
+ if exists(select 1 from (values('basica',15,0,0),('destaque',2300,16,2),('lenda',21600,130,4),('epica',43200,260,6)) x(t,c,d,e)
+  left join public.base_card_conversion_rates r on r.tier=x.t where row(r.coins,r.diamonds,r.energy) is distinct from row(x.c,x.d,x.e)) then
+  raise exception 'Tabela de conversão diverge da versão revisada';end if;
+end $$;
+
+do $$ declare r record;begin
+ for r in select u.career_id,u.card_id,u.qty,c.tier from public.user_cards u join public.cards c on c.id=u.card_id
+   where c.tier<>'basica' and u.qty>0 order by u.career_id,u.card_id loop
+  perform public.base_compensate(r.career_id,'card',r.card_id,r.tier,r.qty);
+ end loop;
+end $$;
+delete from public.user_cards u using public.cards c where c.id=u.card_id and c.tier<>'basica';
+
+alter table public.reward_boxes drop constraint if exists reward_boxes_status_check;
+alter table public.reward_boxes add constraint reward_boxes_status_check check(status in('pending','opened','retired'));
+do $$ declare box public.reward_boxes;begin
+ for box in select * from public.reward_boxes where status='pending' order by career_id,id for update loop
+  perform public.base_compensate(box.career_id,'box',box.id::text,box.tier,1);
+  update public.reward_boxes set status='retired',prize=jsonb_build_object('converted',true,'version',1),opened_at=null where id=box.id;
+ end loop;
+end $$;
+
+-- Convert future event benefits; claimed history is never credited again.
+do $$ declare r public.event_rewards;v record;tier text;inserted uuid;begin
+ for r in select * from public.event_rewards where kind in('box','card') order by id for update loop
+  insert into public.base_event_reward_migrations(reward_id,original) values(r.id,to_jsonb(r)) on conflict do nothing returning reward_id into inserted;
+  if inserted is null then continue;end if;
+  tier:=case when r.kind='box' then r.ref else(select c.tier from public.cards c where c.id=r.ref) end;
+  select * into v from public.base_reward_value(tier,r.kind='box');
+  if not found then raise exception 'Recompensa antiga sem regra de conversão';end if;
+  update public.event_rewards set kind='coins',amount=v.coins*r.amount,ref=null where id=r.id;
+  if v.diamonds>0 then insert into public.event_rewards(event_id,kind,amount,sort_order) values(r.event_id,'diamonds',v.diamonds*r.amount,r.sort_order);end if;
+  if v.energy>0 then insert into public.event_rewards(event_id,kind,amount,sort_order) values(r.event_id,'energy',v.energy*r.amount,r.sort_order);end if;
+ end loop;
+end $$;
+alter table public.event_rewards drop constraint if exists event_rewards_kind_check;
+alter table public.event_rewards add constraint event_rewards_kind_check check(kind in('coins','diamonds','energy','cosmetic','badge'));
+
+-- Pay already completed, still claimable retired challenges before closing them.
+do $$ declare c public.event_completions;w public.event_rewards;v_rewards jsonb;begin
+ for c in select ec.* from public.event_completions ec join public.events e on e.id=ec.event_id
+ where ec.claimed_at is null and ec.claim_until>now() and e.status<>'cancelled'
+ and exists(select 1 from public.event_objectives o where o.event_id=e.id and o.kind in('box_opened','card_collected','market_sale'))
+ order by ec.career_id,ec.id for update of ec loop
+  v_rewards:='[]';
+  for w in select * from public.event_rewards where event_id=c.event_id order by sort_order,id loop
+   v_rewards:=v_rewards||public.event_grant(c.career_id,w,c.id::text);
+  end loop;
+  update public.event_completions set claimed_at=now(),rewards=v_rewards where id=c.id;
+ end loop;
+end $$;
+update public.events e set status='cancelled' where status<>'cancelled' and exists
+ (select 1 from public.event_objectives o where o.event_id=e.id and o.kind in('box_opened','card_collected','market_sale'));
+
+do $$ declare r public.streak_rewards;v record;begin
+ for r in select * from public.streak_rewards where box_tier is not null for update loop
+  select * into v from public.base_reward_value(r.box_tier,true);
+  update public.streak_rewards set coins=coins+v.coins,diamonds=diamonds+v.diamonds,energy=energy+v.energy,box_tier=null where day=r.day;
+ end loop;
+end $$;
+
+update public.cards set active=false where tier<>'basica' and active;
+update public.box_sources set draws=0,guaranteed='{}',weights='{}';
+update public.shop_sections set active=false where active;
+update public.shop_prices set active=false where active;
+update public.wheel_config set active=false where active;
+update public.market_config set active=false where active;
+update public.player_profiles set featured_card=null where featured_card is not null;
+alter table public.player_profiles drop constraint if exists profile_no_featured_card;
+alter table public.player_profiles add constraint profile_no_featured_card check(featured_card is null);
+update public.badges set active=false where kind in('collection','own_epica','market_sales') and active;
+
+-- Positive base inventory quantities and all individual athlete state are retained.
+do $$ declare c record;begin
+ for c in select id from public.careers where exists(select 1 from public.mgr_coach m where m.career_id=careers.id) order by id loop
+  perform public.mgr_sync_base_cards(c.id);
+ end loop;
+end $$;
+
+create or replace function public.base_inventory_guard()
+returns trigger language plpgsql security definer set search_path=public as $$
+begin
+ if not exists(select 1 from public.cards where id=new.card_id and tier='basica') then raise exception 'Somente cartas base são permitidas';end if;
+ return new;
+end $$;
+create or replace function public.base_boxes_disabled()
+returns trigger language plpgsql security definer set search_path=public as $$
+begin raise exception 'Caixas de cartas foram removidas';end $$;
+drop trigger if exists base_inventory_guard on public.user_cards;
+create trigger base_inventory_guard before insert or update on public.user_cards for each row execute function public.base_inventory_guard();
+drop trigger if exists base_boxes_disabled on public.reward_boxes;
+create trigger base_boxes_disabled before insert on public.reward_boxes for each row execute function public.base_boxes_disabled();
+revoke all on function public.base_inventory_guard(),public.base_boxes_disabled() from public,anon,authenticated,service_role;
+
+grant select on public.user_cards,public.card_tiers to authenticated;
+drop policy if exists read_cards on public.cards;
+create policy read_cards on public.cards for select to authenticated using(tier='basica');
+drop policy if exists read_card_tiers on public.card_tiers;
+create policy read_card_tiers on public.card_tiers for select to authenticated using(id='basica');
+revoke all on public.reward_boxes,public.box_sources,public.career_card_state,
+ public.shop_sections,public.shop_prices,public.shop_purchases,public.wheel_config,public.wheel_segments,public.wheel_state,public.wheel_spins,
+ public.market_config,public.market_price_limits,public.market_listings,public.market_events from anon,authenticated;
+
+-- Consistent wallet labels; historical transactions and their references stay intact.
+insert into public.econ_reason_map(fn,reason,label) values
+ ('base_compensate','base_cards_compensation','Conversão de cartas especiais'),('base_award_match','match_reward','Prêmio de partida')
+on conflict(fn) do update set reason=excluded.reason,label=excluded.label;
+notify pgrst,'reload schema';
+
+set constraints all immediate;
+notify pgrst,'reload schema';
+commit;

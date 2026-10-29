@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Ambulance, ArrowDown, ArrowLeftRight, ArrowUp, Ban, Building2, Coins, Crown, Megaphone, Sparkles, Star, Trophy, UserX } from 'lucide-react'
+import { Ambulance, ArrowDown, ArrowLeftRight, ArrowUp, Ban, Building2, Coins, Crown, Megaphone, Sparkles, Star, Trophy, UserX, Zap } from 'lucide-react'
 import ClubCrest from '../../club/components/ClubCrest'
-import { tierOf } from '../../cards/data/tiers'
 import { getClubById } from '../../club/data/clubs'
 import RoundResults from './RoundResults'
 import CompEmblem from '../ui/CompEmblem'
@@ -43,7 +42,7 @@ function headline(s) {
 
 // PÓS-JOGO do treinador: resultado, reação da diretoria e da torcida, reputação, departamento médico,
 // a rodada completa e a classificação atualizada.
-export default function PostMatch({ summary: s, seasonId, byComp, onClose, onOffers, box, onOpenBox }) {
+export default function PostMatch({ summary: s, seasonId, byComp, onClose, onOffers }) {
   const [tab, setTab] = useState('summary')
   const { playSfx } = useAudio()
   useEffect(() => {
@@ -185,21 +184,12 @@ export default function PostMatch({ summary: s, seasonId, byComp, onClose, onOff
               )}
 
               <div className="sn-rewards">
-                <span className="xp">+{s.rewards.xp} XP</span>
+                {s.rewards.xp > 0 && <span className="xp">+{s.rewards.xp} XP</span>}
                 <span className="coins">
                   <Coins size={13} /> +{s.rewards.coins}
                 </span>
+                {s.rewards.energy > 0 && <span className="energy"><Zap size={13} /> +{s.rewards.energy} energia</span>}
               </div>
-
-              {box && (
-                <button type="button" className="sn-boxwin" style={{ '--tier': tierOf(box.tier).color, '--glow': tierOf(box.tier).glow }} onClick={onOpenBox}>
-                  <img src={tierOf(box.tier).closed} alt="" draggable="false" />
-                  <span>
-                    <b>Você ganhou uma caixa {tierOf(box.tier).label}!</b>
-                    <small>Toque para abrir agora · ou abra depois na caixa de entrada</small>
-                  </span>
-                </button>
-              )}
 
               {s.level_up && (
                 <div className="sn-levelup">

@@ -1,5 +1,4 @@
-import { Check, Coins, Flame, Gem } from 'lucide-react'
-import { tierOf } from '../cards/data/tiers'
+import { Check, Coins, Flame, Gem, Zap } from 'lucide-react'
 import { timeLeft } from './eventsUi'
 
 // Sequência diária: 7 dias de recompensas crescentes. Libera com uma partida concluída ou um palpite no dia
@@ -24,9 +23,10 @@ export default function StreakPanel({ streak, now, busy, onClaim }) {
           return (
             <li key={r.day} className={`${past ? 'is-past' : ''} ${isToday ? 'is-today' : ''}`}>
               <small>Dia {r.day}</small>
-              {past ? <Check size={16} /> : r.box_tier ? <img src={tierOf(r.box_tier)?.closed} alt={`caixa ${r.box_tier}`} /> : r.diamonds > 0 ? <Gem size={16} className="ev-ic-gems" /> : <Coins size={16} className="ev-ic-coins" />}
+              {past ? <Check size={16} /> : r.diamonds > 0 ? <Gem size={16} className="ev-ic-gems" /> : <Coins size={16} className="ev-ic-coins" />}
               <b>{r.coins}</b>
               {r.diamonds > 0 && <i>+{r.diamonds}<Gem size={9} /></i>}
+              {r.energy > 0 && <i>+{r.energy}<Zap size={9} /></i>}
             </li>
           )
         })}

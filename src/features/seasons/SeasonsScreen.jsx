@@ -15,8 +15,6 @@ import MatchLive from './components/MatchLive'
 import MatchReport from './components/MatchReport'
 import ParallelDigest from './components/ParallelDigest'
 import InboxSheet from './components/InboxSheet'
-import BoxOpener from '../cards/components/BoxOpener'
-import { fetchLatestWinBox } from '../cards/services/cardsApi'
 import '../cards/cards.css'
 import HomeTab from './tabs/HomeTab'
 import TeamTab from './tabs/TeamTab'
@@ -42,8 +40,6 @@ export default function SeasonsScreen({ onBack }) {
   const [report, setReport] = useState(null)
   const [inbox, setInbox] = useState(null)
   const [toast, setToast] = useState(null)
-  const [winBox, setWinBox] = useState(null)
-  const [openingBox, setOpeningBox] = useState(null)
 
   const notify = useCallback((text, kind = 'info') => setToast({ text, kind, id: Date.now() }), [])
   useEffect(() => {
@@ -91,7 +87,6 @@ export default function SeasonsScreen({ onBack }) {
   const play = () =>
     run('start', async () => {
       const p = await startMatch() // idempotente: retoma a partida em andamento sem cobrar energia de novo
-      setWinBox(null)
       setLive(p)
       refresh({ silent: true })
     })
@@ -100,7 +95,6 @@ export default function SeasonsScreen({ onBack }) {
     setLive(null)
     setSummary(s)
     refresh({ silent: true })
-    if (s?.result === 'win') fetchLatestWinBox().then(setWinBox).catch(() => {})
   }
 
   const advance = (untilOffer) =>
@@ -191,8 +185,6 @@ export default function SeasonsScreen({ onBack }) {
             summary={summary}
             seasonId={hub?.season.id}
             byComp={byComp}
-            box={winBox}
-            onOpenBox={() => winBox && setOpeningBox([winBox])}
             onClose={() => {
               setSummary(null)
               setTab('home')
@@ -224,17 +216,7 @@ export default function SeasonsScreen({ onBack }) {
         {report && <MatchReport fixtureId={report} onClose={() => setReport(null)} />}
         {inbox && hub && <InboxSheet messages={hub.messages} focusId={inbox.focusId} onSeen={seenInbox} onClose={() => setInbox(null)} />}
 
-        {openingBox && (
-          <BoxOpener
-            boxes={openingBox}
-            onOpened={() => refresh({ silent: true })}
-            onClose={() => {
-              setOpeningBox(null)
-              setWinBox(null)
-              refresh({ silent: true })
-            }}
-          />
-        )}
+
       </div>
     </AppShell>
   )

@@ -9,7 +9,6 @@ import ClubOfferScreen from './features/club/ClubOfferScreen'
 import HomeScreen from './features/home/HomeScreen'
 import PredictionsScreen from './features/predictions/PredictionsScreen'
 import SeasonsScreen from './features/seasons/SeasonsScreen'
-import CardsScreen from './features/cards/CardsScreen'
 import ProfileScreen from './features/profile/ProfileScreen'
 import StoreScreen from './features/store/StoreScreen'
 import FriendsScreen from './features/friends/FriendsScreen'
@@ -101,7 +100,7 @@ function Gate() {
 
   // Só estas telas estão construídas; os demais ids da barra/menu ainda não fazem nada.
   const navigate = (id, params = null) => {
-    if (id === 'home' || id === 'tips' || id === 'profile' || id === 'seasons' || id === 'cards' || id === 'store' || id === 'friends' || id === 'events') {
+    if (id === 'home' || id === 'tips' || id === 'profile' || id === 'seasons' || id === 'store' || id === 'friends' || id === 'events') {
       setScreenParams(params)
       setScreen(id)
       if (id !== 'home') playSfx('open') // abrir telas relevantes (som curto e discreto)
@@ -120,10 +119,6 @@ function Gate() {
 
   if (screen === 'seasons') {
     return <SeasonsScreen career={career} onBack={backHome} />
-  }
-
-  if (screen === 'cards') {
-    return <CardsScreen career={career} params={screenParams} onBack={backHome} onNavigate={navigate} />
   }
 
   if (screen === 'friends') {

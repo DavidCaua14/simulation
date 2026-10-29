@@ -119,3 +119,7 @@ e `supabase/manager/03_engine.sql`, `04_career.sql`.
 ## Reestruturação do Modo Temporadas
 
 Ver [TEMPORADAS_V2.md](../../docs/TEMPORADAS_V2.md) para causas, critérios, testes isolados, limitações dos formatos e implantação transacional com backup e preflight. Não executar os scripts de suporte/teste no banco dos usuários.
+
+## Cartas base (após Temporadas v2)
+
+Aplicar 21_base_cards.sql, 22_base_card_functions.sql e 23_base_card_migration.sql juntos pelo pacote transacional `supabase/releases/cartas_base.sql`, após backup e `preflight_base_cards.sql`. Ver `docs/CARTAS_BASE.md` para tabela de compensação, preservação e testes. Os scripts antigos de cartas/loja/roleta/mercado fazem parte do histórico de instalação; não reaplicá-los isoladamente após esta migração. A manutenção deve permanecer ativa.

@@ -4,17 +4,13 @@ import { getClubById } from '../club/data/clubs'
 import { getProfilePhotoById } from '../player/data/profilePhotos'
 import { useProfilePrefs } from '../profile/profileStore'
 import useWallet from '../predictions/hooks/useWallet'
-import useInbox from '../cards/hooks/useInbox'
-import DailyRewardsModal from '../cards/components/DailyRewardsModal'
 import RankingTicker from './components/RankingTicker'
 import MatchdayHero from './components/MatchdayHero'
 import PlayModeCard from './components/PlayModeCard'
-import CardsHub from './components/CardsHub'
 import QuickTile from './components/QuickTile'
 import useEventsBadge from '../events/useEventsBadge'
 import EventsStrip from '../events/EventsStrip'
 import BottomTabBar from './components/BottomTabBar'
-import useCollectionSummary from './hooks/useCollectionSummary'
 import { GAME_MODES } from './data/gameModes'
 import './home.css'
 import '../cards/cards.css'
@@ -27,7 +23,7 @@ const QUICK = ['ranking', 'events', 'messages', 'friends']
 //   2. banner do clube com o botão JOGAR (Temporadas)
 //   3. ranking ao vivo com a sua posição
 //   4. modos de jogo (palpites, partida online)
-//   5. coleção & loja (caixas, vitrine de cartas, loja)
+//   5. loja (energia e itens visuais)
 //   6. atalhos secundários (ranking, eventos, mensagens, convites)
 export default function HomeScreen({ career, onNavigate }) {
   const { player } = career
@@ -36,9 +32,6 @@ export default function HomeScreen({ career, onNavigate }) {
   const [prefs] = useProfilePrefs(career.userId) // foto escolhida no Perfil aparece aqui também
   // Começa com os valores da carreira e se atualiza sozinho (prêmios de palpites, etc.)
   const wallet = useWallet({ coins: player.coins, energy: player.energy, diamonds: player.diamonds })
-  // Ao chegar na Home o banco entrega as caixas de boas-vindas (1ª vez) e as diárias (1x por dia).
-  const inbox = useInbox({ claim: true })
-  const collection = useCollectionSummary()
   const events = useEventsBadge() // recompensas de evento/sequência prontas + evento especial em destaque
 
   const seasons = modeById('seasons')
@@ -66,9 +59,9 @@ export default function HomeScreen({ career, onNavigate }) {
 
           <section className="hm-section">
             <h2 className="gx-title">
-              Coleção &amp; loja <small>cartas, caixas e itens</small>
+              Loja <small>energia e itens visuais</small>
             </h2>
-            <CardsHub boxes={inbox.boxes} summary={collection} onNavigate={onNavigate} storeLocked={store?.locked !== false} />
+            {store && <QuickTile mode={store} onSelect={onNavigate} />}
           </section>
 
           <section className="hm-section">
@@ -83,19 +76,7 @@ export default function HomeScreen({ career, onNavigate }) {
 
         <BottomTabBar active="home" onSelect={onNavigate} />
 
-        {inbox.granted && inbox.boxes.length > 0 && (
-          <DailyRewardsModal
-            granted={inbox.granted}
-            boxes={inbox.boxes}
-            onOpened={wallet.refresh}
-            onDone={() => {
-              inbox.clearGranted()
-              inbox.refresh()
-              wallet.refresh()
-              collection.reload()
-            }}
-          />
-        )}
+
       </div>
     </AppShell>
   )

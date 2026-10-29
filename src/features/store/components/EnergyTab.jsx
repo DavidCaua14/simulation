@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { BatteryLow, Check, CircleAlert, Gem, X, Zap } from 'lucide-react'
 import { buyEnergy, fetchEnergy, newRequestId } from '../services/storeApi'
-import { fmt } from './marketUtils'
+import { fmt } from './storeUtils'
 import { useAudio } from '../../audio/AudioContext'
 import { Skeleton } from '../../../components/ui/feedback'
 

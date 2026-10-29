@@ -11,7 +11,7 @@ const BANNERS = [
   'linear-gradient(135deg,#0b4a2a,#1f9d55)', 'linear-gradient(135deg,#6b4a06,#e0a82e)', 'linear-gradient(135deg,#4d0a12,#d6283a)',
   'linear-gradient(135deg,#0a1633,#2447a8)', 'linear-gradient(135deg,#2a1055,#7a3df0)', 'linear-gradient(135deg,#1b1f27,#d97706)',
 ]
-const REWARD_KINDS = [['coins', 'Moedas'], ['diamonds', 'Diamantes'], ['energy', 'Energia bônus'], ['box', 'Caixa'], ['cosmetic', 'Item visual'], ['badge', 'Insígnia']]
+const REWARD_KINDS = [['coins', 'Moedas'], ['diamonds', 'Diamantes'], ['energy', 'Energia bônus'], ['cosmetic', 'Item visual'], ['badge', 'Insígnia']]
 const PARAM_LABEL = { competition: 'Competição', region: 'País', min_opponent_strength: 'Força mín. do adversário', tier: 'Raridade' }
 
 // datas do formulário em horário de Brasília (UTC−3, sem horário de verão desde 2019)
@@ -142,12 +142,7 @@ function EventForm({ initial, meta, onCancel, onSaved }) {
           <select value={r.kind} onChange={(e) => setRew(i, { kind: e.target.value, ref: '' })}>
             {REWARD_KINDS.map(([k, v]) => <option key={k} value={k}>{v}</option>)}
           </select>
-          {['coins', 'diamonds', 'energy', 'box'].includes(r.kind) && <input type="number" min={1} value={r.amount} onChange={(e) => setRew(i, { amount: e.target.value })} aria-label="quantidade" />}
-          {r.kind === 'box' && (
-            <select value={r.ref} onChange={(e) => setRew(i, { ref: e.target.value })} required>
-              <option value="">raridade…</option>{(opt.tiers || []).map((t) => <option key={t} value={t}>{t}</option>)}
-            </select>
-          )}
+          {['coins', 'diamonds', 'energy'].includes(r.kind) && <input type="number" min={1} value={r.amount} onChange={(e) => setRew(i, { amount: e.target.value })} aria-label="quantidade" />}
           {r.kind === 'cosmetic' && (
             <select value={r.ref} onChange={(e) => setRew(i, { ref: e.target.value })} required>
               <option value="">escolha…</option>{(opt.cosmetics || []).map((c) => <option key={c.id} value={c.id}>{c.kind}: {c.label}</option>)}

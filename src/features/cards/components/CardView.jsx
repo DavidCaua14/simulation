@@ -6,13 +6,13 @@ import AutoCard from './AutoCard'
 // pronta em public/cards/<arquivo> (moldura, nota e nome desenhados); se ela faltar,
 // aparece uma carta simples feita em CSS com a cor da raridade, então nada quebra.
 // hidden: silhueta ("carta que você ainda não tem").
-export default function CardView({ card, width = 140, qty, hidden = false, shine = false, onClick, className = '' }) {
+export default function CardView({ card, width = 140, qty, hidden = false, shine = false, onClick, className = '', as }) {
   const [failed, setFailed] = useState(false)
   const t = tierOf(card?.tier)
   const auto = card?.image === 'auto'
   const src = card?.image && !auto && !failed ? `${import.meta.env.BASE_URL}cards/${card.image}` : null
   const style = { width, '--tier': t.color, '--glow': t.glow }
-  const Tag = onClick ? 'button' : 'div'
+  const Tag = as || (onClick ? 'button' : 'div')
 
   return (
     <Tag

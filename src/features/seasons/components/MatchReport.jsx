@@ -1,16 +1,19 @@
 import { useEffect, useState } from 'react'
 import { Ambulance, Crown } from 'lucide-react'
+import BasePlayerCard from '../../cards/components/BasePlayerCard'
+import PlayerSheet from './PlayerSheet'
 import ClubCrest from '../../club/components/ClubCrest'
 import { getClubById } from '../../club/data/clubs'
 import Sheet from '../ui/Sheet'
 import MatchStats from './MatchStats'
-import { fetchMatchReport } from '../services/managerApi'
+import { fetchMatchReport, fetchPlayer } from '../services/managerApi'
 import { MAJOR_EVENTS, eventText } from '../utils/managerUtils'
 import { COMP_NAME, describeMatch } from '../utils/seasonUtils'
 
 // SÚMULA de qualquer partida da temporada: placar, lances, números e notas dos jogadores.
 export default function MatchReport({ fixtureId, onClose }) {
   const [data, setData] = useState(null)
+  const [info, setInfo] = useState(null)
   const [error, setError] = useState('')
   const [tab, setTab] = useState('events')
   useEffect(() => {
@@ -31,6 +34,7 @@ export default function MatchReport({ fixtureId, onClose }) {
 
   return (
     <Sheet kicker={data ? COMP_NAME[data.competition] : 'Súmula'} title={data ? describeMatch(data) : 'Carregando…'} onClose={onClose} tall>
+      {info && <PlayerSheet player={info} onClose={() => setInfo(null)} />}
       {error && <p className="sn-muted sn-center">{error}</p>}
       {!data && !error && <div className="st-sk row" />}
       {data && (
@@ -91,7 +95,12 @@ export default function MatchReport({ fixtureId, onClose }) {
                       .filter((p) => p.side === sd && p.minutes > 0)
                       .map((p) => (
                         <li key={p.id} className={`st-${p.status}`}>
-                          <span className="ml-pos">{p.pos || p.natural}</span>
+                          <button type="button" className="ml-base-button" aria-label={`Ver ficha de ${p.name}`} onClick={async () => {
+                            try {
+                              const detail = await fetchPlayer(p.id, fixtureId)
+                              setInfo({ ...detail, club_id: sd === 'h' ? data.home : data.away })
+                            } catch (error) { setError(error.message) }
+                          }}><BasePlayerCard player={{ ...p, club_id: sd === 'h' ? data.home : data.away }} position={p.pos || p.natural} width={54} /></button>
                           <span className="ml-pn">
                             {p.name}
                             {p.goals > 0 && <em className="ml-g">{'⚽'.repeat(Math.min(p.goals, 4))}</em>}

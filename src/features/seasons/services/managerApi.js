@@ -19,6 +19,7 @@ export const fetchCoachStatus = () => rpc('mgr_status')
 
 // Elenco (o seu, ou de outro clube para observar) + escalação e táticas salvas
 export const fetchSquad = (clubId = null) => rpc('mgr_squad', { p_club: clubId })
+export const fetchPlayer = (playerId, fixtureId = null) => rpc('mgr_player_detail', { p_player: playerId, p_fixture: fixtureId })
 export const saveLineup = ({ formation, slots, bench, tactics }) =>
   rpc('mgr_lineup_save', { p_formation: formation, p_slots: slots, p_bench: bench, p_tactics: tactics })
 export const autoLineup = (formation = null) => rpc('mgr_lineup_auto', { p_formation: formation })

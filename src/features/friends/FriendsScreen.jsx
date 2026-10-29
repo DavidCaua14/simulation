@@ -108,7 +108,7 @@ export default function FriendsScreen({ onBack }) {
           {!data && !error && <Skeleton rows={4} variant="line" />}
 
           {data && tab === 'friends' && (friends.length === 0 ? (
-            <EmptyState icon={Users} title="Monte seu time de amigos" text="Convide outros treinadores pelo username exato. Amigos veem o perfil um do outro — conquistas, carta em destaque e coleção." />
+            <EmptyState icon={Users} title="Monte seu time de amigos" text="Convide outros treinadores pelo username exato. Amigos veem o perfil um do outro — conquistas e cartas base." />
           ) : (
             <div className="fr-list">
               {friends.map((f) => (

@@ -1,3 +1,5 @@
+> Sistema histórico: caixas e cartas especiais foram encerradas nas migrações 21–23. Não reaplique estes scripts isoladamente em um banco atualizado. Consulte `docs/CARTAS_BASE.md` e `supabase/releases/cartas_base.sql`. CardView/AutoCard continuam como apresentação das cartas base.
+
 # Cartas e caixas — instalação e uso
 
 ## Instalar (uma vez)

@@ -64,7 +64,7 @@ export const GAME_MODES = [
   {
     id: 'store',
     title: 'Loja',
-    desc: 'Cartas Destaque e Lenda por moedas ou diamantes.',
+    desc: 'Energia e itens visuais para sua carreira.',
     Icon: StoreIcon,
     image: loja,
     locked: false,
