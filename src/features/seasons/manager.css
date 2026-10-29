@@ -642,3 +642,4 @@ em.l, .co-nums .l b { color: #ff5b6e; }
 .ib.k-squad { --kc: #2ee38a; }
 button.ib { flex-direction: row; align-items: flex-start; }
 .ib-cats.is-home button.has-new { border-color: color-mix(in srgb, var(--gx-gold) 55%, var(--gx-line)); color: var(--gx-ink); }
+.ps-role { width: 100%; min-height: 34px; padding: 4px 8px; border-radius: 10px; border: 1px solid var(--gx-line); background: var(--gx-panel-2); color: var(--gx-ink); font: 800 0.8rem var(--font-body); }

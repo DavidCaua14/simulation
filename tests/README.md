@@ -28,3 +28,9 @@ A validação isolada do banco e os testes do navegador estão descritos em [TEM
 Cobertura dos 13 tópicos, regras, execução das suítes e preparação da implantação: [CARREIRA_COMPLETA.md](../docs/CARREIRA_COMPLETA.md).
 
 `test-seasons-db.py --career-world --world-cycle` instala em PostgreSQL descartável, valida isolamento/reaplicação e percorre o calendário com uma transação por RPC. Os testes de navegador usam API interceptada e não acessam dados reais.
+
+# Jornada do treinador (simulação longa)
+
+`python tests/career_world_journey.py <container> <banco>` (ou `PG_LOCAL=1` com `PGHOST`/`PGPORT`) num banco
+descartável `simulation_validation_*` com as evoluções 24–34. Joga o calendário dia a dia com uma transação por
+chamada, troca de liga duas vezes e verifica IA de mercado, janelas, satisfação, contratos, propostas e mensagens.

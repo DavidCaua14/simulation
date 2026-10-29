@@ -41,6 +41,13 @@ export default function ContractPanel({ player: p, today, maxYears = 5, notify, 
       onChanged?.()
     })
   }
+  // Papel combinado com o atleta: quem promete "Titular" e não escala deixa o jogador insatisfeito.
+  const changeRole = (role) =>
+    run(async () => {
+      await worldRpc('career_player_role', { p_player: p.id, p_role: role })
+      notify?.(`Papel combinado: ${ROLES[role]}. A satisfação passa a considerar o novo papel.`, 'ok')
+      onChanged?.()
+    })
   const toggleList = () =>
     run(async () => {
       await worldRpc('career_player_list', { p_player: p.id, p_listed: !p.transfer_listed })
@@ -58,12 +65,19 @@ export default function ContractPanel({ player: p, today, maxYears = 5, notify, 
     <section className="ps-deal" aria-label="Satisfação e contrato">
       <h4>Satisfação e contrato</h4>
       <MoodBadge morale={p.morale} size={16} withLabel />
-      {p.transfer_requested && <p><b>Pediu para ser negociado.</b> Insatisfeito, ele rende menos em campo até a situação mudar (mais minutos, papel cumprido ou salários em dia).</p>}
+      {p.transfer_requested && <p><b>Pediu para ser negociado.</b> Insatisfeito, ele rende menos em campo até a situação mudar: dê mais minutos, combine outro papel ou negocie a saída.</p>}
       {p.precontract && <p><b>Já assinou pré-contrato com outro clube</b> e sai de graça quando o vínculo terminar.</p>}
       <dl>
         <div><dt>Contrato até</dt><dd>{dateLabel(p.contract_expires)}{left != null && left <= 6 ? ` · ${left} mês(es)` : ''}</dd></div>
         <div><dt>Salário mensal</dt><dd>{money(p.monthly_salary)}</dd></div>
-        <div><dt>Papel prometido</dt><dd>{ROLES[p.promised_role] || '—'}</dd></div>
+        <div>
+          <dt>Papel prometido</dt>
+          <dd>
+            <select className="ps-role" aria-label="Papel prometido" value={p.promised_role || 'rotation'} disabled={busy || renewal} onChange={(e) => changeRole(e.target.value)}>
+              {Object.entries(ROLES).map(([id, label]) => <option key={id} value={id}>{label}</option>)}
+            </select>
+          </dd>
+        </div>
         <div><dt>Situação</dt><dd>{p.transfer_listed ? 'Na lista de transferências' : 'No elenco'}</dd></div>
       </dl>
       {left != null && left <= 6 && !p.precontract && <p>Nos seis meses finais outros clubes podem oferecer pré-contrato. Sem renovação, ele sai de graça.</p>}

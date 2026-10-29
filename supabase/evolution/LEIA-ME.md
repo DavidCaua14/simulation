@@ -35,6 +35,8 @@ supabase/evolution/19_opponent_analysis.sql <- análise do rival e histórico
 supabase/evolution/20_pending_calendar_repair.sql <- somente rodadas futuras; snapshots legados
 supabase/evolution/31_world_advance_speed.sql <- (depois da carreira completa 24–30) avanço do calendário em lotes curtos
 supabase/evolution/32_squad_morale_contracts.sql <- satisfação no rendimento, contratos/pré-contratos, limite de elenco, rescisão e demissão por falência
+supabase/evolution/33_inbox.sql             <- caixa de mensagens por assunto (Elenco, Mercado, Clube, Carreira)
+supabase/evolution/34_ai_balance.sql        <- equilíbrio da IA verificado pela simulação longa
 ```
 
 Banco que já estava no ar: rode só `evolution/01`, `evolution/02`, `manager/02_players_seed.sql` (gerado de novo) e
@@ -148,3 +150,18 @@ Adiciona duas colunas com padrão em `cw_players` (`shirt_number`, `transfer_lis
 - Atleta transferido recebe um número livre no novo clube; cartas de notícias usam o atleta real.
 
 Teste: `supabase/evolution/tests/squad_morale_contracts_tests.sql`.
+
+## Equilíbrio da IA (34)
+
+Banco no ar: rode `supabase/releases/ia_equilibrio.sql` (depois de `mensagens.sql`). Só substitui funções e adiciona um
+gatilho para contratos novos; confere ao final que nenhum dado de usuário mudou.
+
+Verificado por `tests/career_world_journey.py` (Brasil → Inglaterra → Brasil, de janeiro a fevereiro do ano seguinte):
+
+- Satisfação: reservas e promessas aceitam o papel; titular prometido encostado cobra espaço e pode pedir para sair.
+  Nos clubes da IA quem não tem espaço passa a reserva. Quem volta a jogar recupera mais rápido.
+- Mercado da IA: transferências com clube vendedor só na janela; atletas livres também fora dela; clubes com elenco
+  muito acima do limite param de comprar.
+- Propostas de emprego: dependem da reputação (alcance de força dos clubes). Clubes de outra região chamam sobretudo
+  na pré-temporada ou janela deles; empregado, você é procurado com mais frequência.
+- Contratos novos terminam no fim da temporada do país (Brasil 31/12, Inglaterra 30/06), sem passar de 5 anos.
