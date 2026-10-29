@@ -6,7 +6,7 @@ Pedido integral: CARREIRA_COMPLETA_REQUISITOS.md. Manutenção permanece ativa.
 
 O motor e as escalações já usam atletas e atributos individuais por carreira; o catálogo mundial é compartilhado e imutável para ações do usuário. O calendário e as ofertas, porém, ainda pressupõem uma região ativa. Não existem caixa dos clubes, folha salarial, contratos de atletas nem negociações esportivas; o mercado de cartas foi aposentado. Ele não será reintroduzido.
 
-Integração: serviços SQL modulares em 24 (modelos), 25 (calendário/universo), 26 (finanças/contratos), 27 (negociações/IA), 28 (empregos/notícias), 29 (adaptação às RPCs existentes). Interface móvel mantém as cinco abas inferiores; a gestão adicional fica em painéis da Carreira, sem acrescentar uma barra de navegação larga. Mercado esportivo usa cartas base existentes e fichas atuais.
+Integração: serviços SQL modulares em 24 (modelos), 25 (calendário/universo), 26 (finanças/contratos), 27 (negociações/IA), 28 (empregos/notícias), 29 (adaptação às RPCs existentes). Interface móvel usa seis abas inferiores: Início, Time, Jogos, Torneios, Mundo e Carreira. Notícias, finanças, mercado, negociações e contratos ficam na aba Mundo; a seção adicional de campeonatos foi removida dessa tela. Mercado esportivo usa cartas base existentes e fichas atuais.
 
 Cada carreira possui data global persistente e temporadas regionais independentes (Brasil: janeiro–dezembro; Inglaterra/Europa: julho–junho). O usuário pode assumir um clube de outra região sem recriar resultados: a temporada regional correspondente passa a ser a temporada controlada. As demais seguem como `world`, com participantes classificados por seu próprio histórico. Ligas estrangeiras não cadastradas continuam representadas apenas por equipes de referência nas copas existentes.
 
@@ -27,7 +27,7 @@ Simulação de partidas reutiliza o motor existente, inclusive no exterior, para
 - [x] Mercado de IA, propostas recebidas, satisfação e renovação.
 - [x] Empregos internacionais, contratos do treinador, reputação e demissões.
 - [x] Notícias, campeões/MVP/recordes e apresentação de contratações.
-- [x] Interface responsiva integrada às cinco abas existentes.
+- [x] Interface responsiva com aba Mundo no menu inferior.
 - [x] Testes de ciclo, concorrência, RLS, preservação e interface; pacote de implantação preparado e testado localmente.
 
 Cada etapa deve ser validada em PostgreSQL descartável. Antes de produção, gerar novo backup privado, prévia e verificações transacionais de resultados/saldos/estados antigos. Publicação e testes reais mantêm a manutenção, com a exceção administrativa existente.
@@ -54,7 +54,7 @@ Cada etapa deve ser validada em PostgreSQL descartável. Antes de produção, ge
 
 - Competições disponíveis: Brasileirão, Série B, Copa do Brasil, Libertadores, Premier League, Championship, FA Cup, EFL Cup e Champions League. Clubes de outras ligas continuam no mercado e nas copas cadastradas; esta mudança não inventa campeonatos domésticos sem dados. As simplificações dos formatos e vagas continuam documentadas em `TEMPORADAS_V2.md`.
 - Brasil usa janeiro–dezembro; Inglaterra usa julho–junho. Na entrada de uma carreira antiga, a data é inferida do ano/dia legado e do último encerramento regional registrado; os resultados já realizados não são recalculados. A outra região pode precisar processar partidas anteriores à data de entrada. Essa primeira atualização leva mais tempo e tem progresso retomável.
-- Os lotes possuem limite de partidas e uma parada entre jogos após aproximadamente dois segundos; os serviços do dia e uma partida individual precisam terminar atomicamente. A interface pode sair da gestão e retomar depois. O relógio para antes da partida do clube controlado, durante uma partida ao vivo e na virada da temporada até o usuário iniciar a próxima. Anos regionais antigos são reaproveitados; propostas podem assumir a temporada seguinte já preparada durante a pré-temporada.
+- Os lotes possuem limite de partidas e uma parada entre jogos após aproximadamente dois segundos; os serviços do dia e uma partida individual precisam terminar atomicamente. A continuação dos lotes ocorre automaticamente em todas as abas do modo Temporadas, sem precisar abrir o calendário ou atualizar resultados. Ao sair do modo ou ocultar a janela, o processamento pausa e retoma automaticamente no retorno. O relógio para antes da partida do clube controlado, durante uma partida ao vivo e na virada da temporada até o usuário iniciar a próxima. Anos regionais antigos são reaproveitados; propostas podem assumir a temporada seguinte já preparada durante a pré-temporada.
 - Janelas são parâmetros de gameplay: Brasil, 03/01–20/04 e 10/07–02/09; Inglaterra, 10/06–01/09 e 01/01–02/02. Não são uma afirmação sobre todas as datas oficiais de uma federação. Negociação aprovada após o fechamento aguarda a próxima janela. Pré-contrato nos últimos 180 dias registra somente após o vínculo anterior terminar; livres e renovações não exigem janela.
 - Valores econômicos e potenciais são estimativas do jogo. Idade ausente no catálogo recebe estimativa identificada na interface. O valor incorpora avaliação, idade, potencial e atuações recentes; a reserva da taxa total impede usar parcelas para gastar um orçamento inexistente.
 - O clube reserva dois meses da folha prevista, incluindo salário do treinador e estimativas de bônus por papel/posição. O atleta avalia salário, luvas e bônus previstos como um pacote. O extrato registra os pagamentos efetivos, conforme as atuações realmente realizadas.
@@ -73,16 +73,22 @@ python scripts/test-seasons-db.py --career-world --world-cycle --ui-fixtures /tm
 npm run dev -- --host 127.0.0.1 --port 5173 --strictPort
 python tests/career_world_ui_smoke.py /tmp/career-world-fixtures.json
 python tests/base_cards_ui_smoke.py /tmp/career-world-fixtures.json
-node --test tests/sessionRecovery.test.mjs tests/maintenance.test.mjs
+node --test tests/sessionRecovery.test.mjs tests/maintenance.test.mjs tests/worldSimulation.test.mjs
 python tests/session_smoke.py
 npm run build
 ```
 
 `--skip-existing-tests` pula somente as suítes antigas mais longas; continua executando a migração e regressão das cartas base, os testes novos, a reaplicação e a concorrência. O ciclo durável usa uma transação por chamada e repete UUIDs a cada 25 lotes. `tests/career_world_season_cycle.py <container> <banco-descartável> --resume` permite continuar uma execução local interrompida.
 
-As novas suítes verificam fundação/preservação, compras nos dois sentidos, aprovação do atleta, propostas recebidas, parcelas, pré-contratos, janela fechada, salários e atrasados, investimentos, empregos, credibilidade, recuperação, prêmios reais, isolamento, permissões e concorrência. O navegador intercepta toda a API com dados fictícios e cobre 360, 390, 768 e 1280 px, anúncios, notícias, datas, orçamento, mercado, contratos e ausência de transbordamento horizontal. A regressão anterior cobre escalação, barras de cansaço, filtros, ficha, loja, perfil e eventos em Brasil e Europa.
+As novas suítes verificam fundação/preservação, compras nos dois sentidos, aprovação do atleta, propostas recebidas, parcelas, pré-contratos, janela fechada, salários e atrasados, investimentos, empregos, credibilidade, recuperação, prêmios reais, isolamento, permissões e concorrência. O navegador intercepta toda a API com dados fictícios e cobre 320, 360, 390, 768 e 1280 px, anúncios, notícias, avanço automático até a partida do usuário, parada durante jogo ao vivo e retomada após o pós-jogo, orçamento, mercado, contratos e ausência de transbordamento horizontal. A regressão anterior cobre escalação, barras de cansaço, filtros, ficha, loja, perfil e eventos em Brasil e Europa.
 
 A execução durável validada percorreu 2.914 partidas, quatro temporadas regionais (duas encerradas e duas seguintes criadas), nove notícias de títulos e 130 transferências internacionais concluídas da IA, sem contratos ativos duplicados. Esses números são de dados fictícios de teste, não do Supabase real. O build e o ESLint dos módulos novos passaram. O lint global continua com 50 erros preexistentes nas demais áreas; não foi ampliado o escopo para reescrever essas telas.
+
+## Revisão de navegação e simulação automática
+
+A revisão de interface usa as RPCs 24–29 já instaladas; não exige nova migração. `useWorldSimulation` continua os lotes no modo Temporadas, avança até o próximo jogo do treinador e mantém as paradas do servidor. O avanço manual de dias permanece para a procura de emprego de quem está sem clube. O botão para iniciar a próxima temporada continua explícito. Não há mais os controles “Atualizar resultados”, “+1 dia” e “+7 dias” na tela Mundo nem o caminho obrigatório “Abrir calendário”.
+
+Falha de escrita repete o mesmo UUID; uma leitura com falha após escrita confirmada repete somente a leitura. O coordenador serializa lotes, usa espera progressiva em falhas e interrompe atualizações vazias. As regras de isolamento, resultados e recompensas permanecem no backend existente. O teste unitário verifica esses casos e a retomada após a partida do treinador. Publicação desta revisão autorizada em 29/10/2026, pela `main`, mantendo a manutenção. Nenhuma migração ou alteração nos dados do Supabase é necessária; a implantação de backend abaixo refere-se à versão anterior.
 
 ## Implantação em produção — manutenção mantida
 

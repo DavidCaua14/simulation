@@ -4,6 +4,8 @@ import AppShell from '../../components/layout/AppShell'
 import { getClubById } from '../club/data/clubs'
 import useManagerData from './hooks/useManagerData'
 import useCountdown from './hooks/useCountdown'
+import useWorldSimulation from './hooks/useWorldSimulation'
+import WorldPanel from './world/WorldPanel'
 import { advanceDays, markMessagesRead, resign, respondOffer, startMatch, startNextSeason } from './services/managerApi'
 import { flattenFixtures, playerHistory, projectCalendar } from './utils/seasonSelectors'
 import { formatRemaining } from './utils/seasonUtils'
@@ -24,10 +26,10 @@ import CareerTab from './tabs/CareerTab'
 import './seasons.css'
 import './manager.css'
 
-const TITLES = { home: 'Início', team: 'Time', matches: 'Jogos', comps: 'Torneios', career: 'Carreira' }
+const TITLES = { home: 'Início', team: 'Time', matches: 'Jogos', comps: 'Torneios', career: 'Carreira', world: 'Mundo' }
 
 // MODO CARREIRA (treinador): você comanda um clube real. Tudo é decidido no banco (supabase/manager/*.sql);
-// a tela só mostra e envia as decisões do treinador. Abas: Início · Time · Jogos · Torneios · Carreira.
+// a tela envia decisões e acompanha automaticamente as partidas do mundo entre os jogos do treinador.
 export default function SeasonsScreen({ onBack }) {
   const { hub, byComp, loading, error, refresh } = useManagerData()
   const [tab, setTab] = useState('home')
@@ -40,6 +42,8 @@ export default function SeasonsScreen({ onBack }) {
   const [report, setReport] = useState(null)
   const [inbox, setInbox] = useState(null)
   const [toast, setToast] = useState(null)
+
+  const worldStatus = useWorldSimulation({ hub, refresh, paused: !!busy || !!live })
 
   const notify = useCallback((text, kind = 'info') => setToast({ text, kind, id: Date.now() }), [])
   useEffect(() => {
@@ -61,8 +65,8 @@ export default function SeasonsScreen({ onBack }) {
   const finished = hub?.season.status === 'finished'
   const hasEnergy = hub ? hub.career.energy + hub.career.bonus_energy > 0 : false
   const calendarReady = !hub?.world || (!hub.world.needs_sync && !(hub.next_event?.days_until > 0))
-  const canPlay = calendarReady && (hasEnergy || Boolean(hub?.live_match)) && !finished && !busy
-  const blockedText = finished ? 'Temporada encerrada' : remaining != null ? `Sem energia · recarga em ${formatRemaining(remaining)}` : 'Sem energia'
+  const canPlay = calendarReady && (hasEnergy || Boolean(hub?.live_match)) && !finished && !busy && worldStatus !== 'syncing'
+  const blockedText = worldStatus === 'syncing' ? 'Preparando a próxima partida…' : finished ? 'Temporada encerrada' : remaining != null ? `Sem energia · recarga em ${formatRemaining(remaining)}` : 'Sem energia'
 
   const goTab = useCallback((id, sub = null) => {
     setTab(id)
@@ -71,7 +75,7 @@ export default function SeasonsScreen({ onBack }) {
 
   // ---- ações ----
   async function run(kind, fn) {
-    if (busy) return null
+    if (busy || worldStatus === 'syncing') return null
     setBusy(kind)
     try {
       return await fn()
@@ -153,7 +157,7 @@ export default function SeasonsScreen({ onBack }) {
     },
   }
 
-  const ctx = hub && derived ? { hub, byComp, ...derived, canPlay, blockedText, busy } : null
+  const ctx = hub && derived ? { hub, byComp, ...derived, canPlay, blockedText, busy: busy || (worldStatus === 'syncing' ? 'world' : null), worldStatus } : null
   const badges = hub ? { career: hub.offers.length, home: hub.unread > 0 ? hub.unread : 0, team: hub.lineup?.errors || 0 } : {}
 
   return (
@@ -175,10 +179,11 @@ export default function SeasonsScreen({ onBack }) {
           {ctx && tab === 'comps' && (
             <CompetitionsTab ctx={ctx} selected={compSel || ctx.nextEvent?.competition || hub?.competitions?.[0]?.id} onSelect={setCompSel} onOpenReport={actions.openReport} />
           )}
+          {ctx && tab === 'world' && hub.world && <WorldPanel hub={hub} onRefresh={actions.refresh} worldStatus={worldStatus} onHome={() => goTab('home')} />}
           {ctx && tab === 'career' && <CareerTab ctx={ctx} initialView={careerView} actions={actions} />}
         </div>
 
-        {ctx && !live && <BottomNav active={tab} onChange={(id) => goTab(id)} badges={badges} />}
+        {ctx && !live && <BottomNav worldAvailable={!!hub.world} active={tab} onChange={(id) => goTab(id)} badges={badges} />}
 
         {live && <MatchLive initial={live} myClub={ctx?.myClub} onFinished={onMatchFinished} notify={notify} />}
 

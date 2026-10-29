@@ -1,4 +1,3 @@
-import WorldPanel from '../world/WorldPanel'
 import JobTerms from '../world/JobTerms'
 import StandingsTable from '../components/StandingsTable'
 import { useEffect, useRef, useState } from 'react'
@@ -15,7 +14,6 @@ import { COMP_SHORT, fmt, seasonLabel } from '../utils/seasonUtils'
 
 const VIEWS = [
   { id: 'profile', label: 'Perfil' },
-  { id: 'world', label: 'Gestão' },
   { id: 'offers', label: 'Propostas' },
   { id: 'clubs', label: 'Clubes' },
   { id: 'seasons', label: 'Temporadas' },
@@ -171,7 +169,6 @@ export default function CareerTab({ ctx, initialView, actions }) {
         ))}
       </div>
 
-      {view === 'world' && hub.world && <WorldPanel hub={hub} onRefresh={actions.refresh} onReport={actions.openReport} onHome={() => actions.goTab('home')} />}
       {view === 'profile' && (
         <>
           <section className="sn-sec">

@@ -1,16 +1,14 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { CalendarDays, Coins, Globe2, Newspaper } from 'lucide-react'
-import { worldRpc, requestId, advanceWorld, searchPlayers, negotiations, newsFeed, readNews, financeHistory, money, dateLabel } from '../services/careerWorldApi'
-import { fetchPlayer, fetchStandings, fetchFixtures } from '../services/managerApi'
+import { worldRpc, requestId, searchPlayers, negotiations, newsFeed, readNews, financeHistory, money, dateLabel } from '../services/careerWorldApi'
+import { fetchPlayer } from '../services/managerApi'
 import BasePlayerCard from '../../cards/components/BasePlayerCard'
 import ClubCrest from '../../club/components/ClubCrest'
 import { getClubById } from '../../club/data/clubs'
 import { CLUB_CATALOG } from '../../club/data/clubCatalog'
 import Sheet from '../ui/Sheet'
 import PlayerSheet from '../components/PlayerSheet'
-import StandingsTable from '../components/StandingsTable'
 import { POS_ORDER } from '../utils/managerUtils'
-import { COMP_SHORT } from '../utils/seasonUtils'
 import { isSessionError } from '../../../lib/sessionRecovery'
 import './world.css'
 
@@ -27,14 +25,14 @@ export function WorldStrip({ ctx, actions }) {
   const w = ctx.hub.world
   if (!w) return null
   return <section className="sn-sec cw-strip">
-    <div className="cw-row"><span><CalendarDays size={16} /> {dateLabel(w.today)}</span><button className="sn-link" onClick={() => actions.goTab('career', 'world')}>Mundo <Globe2 size={15} /></button></div>
+    <div className="cw-row"><span><CalendarDays size={16} /> {dateLabel(w.today)}</span><button className="sn-link" onClick={() => actions.goTab('world')}>Mundo <Globe2 size={15} /></button></div>
     <small>Brasil e Europa · {w.news_unread || 0} notícias novas</small>
-    {w.needs_sync && <p role="status">Atualização pendente: {w.due_matches} partidas do mundo. Atualize para continuar o calendário.</p>}
-    <button type="button" className="gx-btn-ghost" disabled={!!ctx.busy || !!ctx.hub.live_match} onClick={() => actions.goTab('career', 'world')}>{w.needs_sync ? 'Atualizar mundo' : 'Calendário, mercado e finanças'}</button>
+    {w.needs_sync && <p role="status">Simulando automaticamente {w.due_matches} partidas do mundo…</p>}
+    <button type="button" className="gx-btn-ghost" disabled={!!ctx.busy || !!ctx.hub.live_match} onClick={() => actions.goTab('world')}>Notícias, mercado e finanças</button>
   </section>
 }
 
-export default function WorldPanel({ hub, onRefresh, initialArea = 'news', onReport, onHome }) {
+export default function WorldPanel({ hub, onRefresh, initialArea = 'news', worldStatus = 'idle', onHome }) {
   const [area, updateArea] = useState(initialArea)
   const areaRef = useRef(initialArea)
   const [rows, setRows] = useState([])
@@ -48,11 +46,6 @@ export default function WorldPanel({ hub, onRefresh, initialArea = 'news', onRep
   const [clubFee, setClubFee] = useState(0)
   const [terms, setTerms] = useState({ fee: 0, installments: 1, bonus: 0, precontract: false, salary: 100, years: 3, signing: 0, role: 'rotation', appearance: 0, goal: 0 })
   const [investment, setInvestment] = useState(100)
-  const [regional, setRegional] = useState(null)
-  const [competition, setCompetition] = useState('')
-  const [table, setTable] = useState([])
-  const [matches, setMatches] = useState([])
-  const [syncProgress, setSyncProgress] = useState(0)
   const mounted = useRef(true)
   const request = useRef(0)
   const w = hub.world
@@ -64,7 +57,7 @@ export default function WorldPanel({ hub, onRefresh, initialArea = 'news', onRep
     if (mounted.current && key === request.current && areaRef.current === area) setRows(data || [])
   }, [area, filters])
   useEffect(() => { mounted.current = true; return () => { mounted.current = false } }, [])
-  useEffect(() => { const timer = setTimeout(() => { setRows([]); reload().catch(e => { if (!isSessionError(e) && mounted.current) setError(e.message) }) }, 250); return () => clearTimeout(timer) }, [reload, hub.world.today, hub.coach.club_id])
+  useEffect(() => { const timer = setTimeout(() => { setRows([]); reload().catch(e => { if (!isSessionError(e) && mounted.current) setError(e.message) }) }, 250); return () => clearTimeout(timer) }, [reload, hub.world.today, hub.world.news_unread, hub.world.due_matches, hub.coach.club_id])
   async function run(fn) {
     if (busy) return
     setBusy(true); setError(''); setMessage('')
@@ -72,58 +65,30 @@ export default function WorldPanel({ hub, onRefresh, initialArea = 'news', onRep
     catch (e) { if (!isSessionError(e) && mounted.current) setError(e.message) }
     finally { if (mounted.current) setBusy(false) }
   }
-  async function sync(days) {
-    await run(async () => {
-      setSyncProgress(0)
-      let remaining = days
-      let d = await advanceWorld(remaining)
-      let total = d.matches || 0
-      let advanced = d.days || 0
-      remaining = Math.max(0, remaining - (d.days || 0))
-      while (mounted.current && !(d.next_season_ready && days > 0) && (d.more || (remaining > 0 && !d.stopped_for_match))) {
-        if (!d.more && !d.matches && !d.days) break
-        setSyncProgress(total)
-        d = await advanceWorld(d.more ? 0 : remaining)
-        total += d.matches || 0
-        advanced += d.days || 0
-        remaining = Math.max(0, remaining - (d.days || 0))
-      }
-      if (mounted.current) {
-        setSyncProgress(total)
-        setMessage(d.next_season_ready ? 'A próxima temporada está pronta. Volte ao Início para começar e continuar o calendário.' : d.stopped_for_match ? `Dia de partida. Volte ao Início para comandar seu time. ${total} partidas atualizadas.` : `${advanced} dia(s) avançados · ${total} partidas atualizadas. Data: ${dateLabel(d.today)}.`)
-      }
-    })
-  }
   const invoke = (fn, args) => worldRpc(fn, { ...args, p_request: requestId() })
   async function openPlayer(p) { setPlayer(p); setTerms(t => ({ ...t, fee: Math.round(p.value * 1.2), salary: Math.ceil((p.monthly_salary || p.value * .0065) * 1.15) })) }
   const buy = e => { e.preventDefault(); run(async () => { await invoke('career_transfer_bid', { p_player: player.id, p_fee: +terms.fee, p_installments: +terms.installments, p_bonus: +terms.bonus, p_precontract: terms.precontract }); setPlayer(null); setArea('deals'); setMessage('Proposta enviada. Os clubes respondem com o passar dos dias.') }) }
   const contract = e => { e.preventDefault(); run(async () => { await invoke('career_player_offer', { p_id: offer.id, p_salary: +terms.salary, p_years: +terms.years, p_signing: +terms.signing, p_role: terms.role, p_appearance: +terms.appearance, p_goal: +terms.goal }); setOffer(null); setMessage('Contrato enviado ao atleta. Aguarde a resposta nos próximos dias.') }) }
   const respond = (n, action, fee = n.fee) => run(async () => { await invoke('career_transfer_respond', { p_id: n.id, p_action: action, p_fee: +fee }); setOffer(null); setMessage('Resposta registrada.') })
-  const loadRegion = async (s, comp) => { setRegional(s); setCompetition(comp); const key = ++request.current; try { const [t, f] = await Promise.all([fetchStandings(s.season_id, comp), fetchFixtures(s.season_id, comp)]); if (mounted.current && key === request.current) { setTable(t || []); setMatches(f.filter(x => x.status === 'played').slice(-10)) } } catch(e) { if (!isSessionError(e)) setError(e.message) } }
   const edit = field => value => setTerms(t => ({ ...t, [field]: value }))
   if (!w) return null
   return <div className="cw-panel">
     <section className="sn-sec">
       <div className="cw-row"><h2 className="gx-title"><Globe2 size={18} /> Mundo do futebol</h2><b>{dateLabel(w.today)}</b></div>
       <p className="sn-hint">Competições e contratos seguem a data da sua carreira.</p>
-      {w.needs_sync && <p>Há {w.due_matches} partidas para atualizar. O processamento pode ser retomado ao voltar.</p>}
-      <div className="cw-actions"><button className="gx-btn" disabled={busy || !!hub.live_match} onClick={() => sync(0)}>{busy ? 'Processando…' : 'Atualizar resultados'}</button><button className="gx-btn-ghost" disabled={busy || !!hub.live_match} onClick={() => sync(1)}>+1 dia</button><button className="gx-btn-ghost" disabled={busy || !!hub.live_match} onClick={() => sync(7)}>+7 dias</button></div>
+      <p role="status">{worldStatus === 'retrying' ? 'Aguardando conexão para continuar a simulação automaticamente…' : w.needs_sync ? `Simulando ${w.due_matches} partidas em segundo plano…` : 'Os resultados acompanham automaticamente os jogos da sua carreira.'}</p>
       {onHome && hub.season.status === 'finished' && <button type="button" className="sn-link" onClick={onHome}>Ver a próxima temporada no Início</button>}
       {onHome && !w.needs_sync && hub.next_event?.kind === 'mine' && !(hub.next_event.days_until > 0) && <button type="button" className="sn-link" onClick={onHome}>Ir para a partida no Início</button>}
-      {busy && <p role="status">Atualizando a carreira… {syncProgress > 0 ? `${syncProgress} partidas processadas` : ''}</p>}
     </section>
     {error && <p className="cw-alert" role="alert">{error}</p>}{message && <p className="cw-notice" role="status">{message}</p>}
     <div className="sn-seg cw-nav" role="tablist" aria-label="Gestão do clube">
-      {[['news','Notícias'],['world','Campeonatos'],['finance','Finanças'],['market','Mercado'],['deals','Negociações'],['contracts','Contratos']].map(([id,label]) => <button key={id} role="tab" aria-selected={area===id} className={area===id?'is-on':''} onClick={() => setArea(id)}>{label}</button>)}
+      {[['news','Notícias'],['finance','Finanças'],['market','Mercado'],['deals','Negociações'],['contracts','Contratos']].map(([id,label]) => <button key={id} role="tab" aria-selected={area===id} className={area===id?'is-on':''} onClick={() => setArea(id)}>{label}</button>)}
     </div>
     {area === 'news' && <div className="sn-stack">{rows.length===0 && <p className="sn-hint">Nenhuma notícia neste momento.</p>}{rows.map(n => <article key={n.id} className={`sn-sec cw-news ${n.read?'':'is-new'}`}>
       <small><Newspaper size={13}/> {dateLabel(n.on_date)}</small><h3>{n.title}</h3>
       {n.metadata?.big_signing && <div className="cw-announcement"><b>NOVA CONTRATAÇÃO</b><button className="cw-card-button" onClick={() => run(async () => setDetail(await fetchPlayer(n.player_id)))}><BasePlayerCard player={{ id:n.player_id,name:n.title.split(' assina')[0],club_id:n.club_id,overall:n.metadata.overall,position:n.metadata.position }} width={128}/></button><span>{clubName(n.metadata.from_club)} → {clubName(n.metadata.to_club)}</span><b>{money(n.metadata.fee)} moedas</b></div>}
       <p>{n.body}</p>{!n.read && <button className="sn-link" disabled={busy} onClick={() => run(() => readNews([n.id]))}>Marcar como lida</button>}
     </article>)}{rows.length>=40 && <button className="gx-btn-ghost" disabled={busy} onClick={async () => { try { const older = await newsFeed(Math.min(...rows.map(n=>n.id))); if (mounted.current) setRows(r=>[...r,...older]) } catch(e) { if (!isSessionError(e)) setError(e.message) } }}>Mais notícias</button>}</div>}
-    {area==='world' && <section className="sn-sec"><h3>Temporadas regionais</h3><div className="sn-stack">{w.seasons.map(s=><div key={s.season_id}><b>{s.region==='BRA'?'Brasil':'Europa'} · {s.year}{s.region==='ENG'?`/${String(s.year+1).slice(-2)}`:''}</b><small> · {s.status==='active'?'Em andamento':'Encerrada'}</small><div className="cw-actions">{(s.region==='BRA'?['brasileirao','serie_b','copa_brasil','libertadores']:['premier_league','championship','fa_cup','efl_cup','ucl']).map(c=><button className="gx-btn-ghost" key={c} onClick={()=>loadRegion(s,c)}>{COMP_SHORT[c]||c}</button>)}</div></div>)}</div>
-      {regional && <div><h3>{COMP_SHORT[competition]} · {regional.year}</h3><StandingsTable rows={table} myClub={own} zones={[]} /><div className="sn-stack">{matches.map(f=><button key={f.id} className="cw-result" onClick={() => onReport?.(f.id)}><ClubLine id={f.home_club}/><b>{f.home_goals} × {f.away_goals}</b><ClubLine id={f.away_club}/></button>)}</div></div>}
-    </section>}
     {area==='finance' && <><section className="sn-sec"><h3><Coins size={17}/> Finanças do clube</h3>{w.club ? <><ClubLine id={own}/><div className="cw-grid">{[['Caixa',w.club.cash],['Dívidas',w.club.debt],['Folha mensal prevista',w.club.payroll],['Reservas e parcelas',w.club.reserved],['Livre para negociar',w.club.available],['Patrimônio investido',w.club.infrastructure]].map(([label,v])=><span key={label}><small>{label}</small><b>{money(v)}</b></span>)}</div><p>Risco financeiro: {Math.round(w.club.financial_risk)}% · {w.club.window_open?'Janela aberta':`Janela fechada · próxima: ${dateLabel(w.club.next_window)}`}</p><p className="sn-hint">O orçamento livre desconta compromissos, dívidas e dois meses da folha prevista, com estimativa dos bônus. Valores são moedas de simulação.</p><form onSubmit={e=>{e.preventDefault();run(async()=>{await invoke('career_club_invest',{p_amount:+investment});setMessage('Investimento transferido ao clube.')})}}><NumberField label={`Investir da sua carteira (${money(hub.career.coins)} moedas)`} value={investment} max={Math.min(hub.career.coins,1000000)} min={1} onChange={setInvestment}/><button className="gx-btn" disabled={busy}>Transferir ao clube</button></form></>:<p>Assuma um clube para administrar seu orçamento.</p>}</section><section className="sn-sec"><h3>Histórico financeiro</h3>{rows.map(r=><div key={r.id} className="cw-ledger"><span><b>{r.description}</b><small>{dateLabel(r.on_date)} · Saldo {money(r.cash_after)}</small></span><b className={r.amount<0?'cw-negative':'cw-positive'}>{r.amount>0?'+':''}{money(r.amount)}</b></div>)}</section></>}
     {(area==='market'||area==='contracts') && <>
       <form className="sn-sec cw-filters" onSubmit={e=>{e.preventDefault();reload().catch(e=>setError(e.message))}}>

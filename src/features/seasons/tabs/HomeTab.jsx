@@ -34,7 +34,7 @@ export default function HomeTab({ ctx, actions }) {
 
   let hero
   if (hub.live_match) hero = <LiveHero busy={busy === 'start'} onResume={actions.play} />
-  else if (finished) hero = <SeasonEnd season={hub.season} coach={coach} objectives={hub.objectives} starting={busy === 'next'} nextStartsOn={waitNext ? nextStart : null} onStartNext={waitNext ? () => actions.goTab('career', 'world') : actions.startNext} onOffers={() => actions.goTab('career')} offers={hub.offers.length} />
+  else if (finished) hero = <SeasonEnd season={hub.season} coach={coach} objectives={hub.objectives} starting={busy === 'next'} nextStartsOn={waitNext ? nextStart : null} onStartNext={waitNext ? () => actions.goTab('world') : actions.startNext} onOffers={() => actions.goTab('career')} offers={hub.offers.length} />
   else if (unemployed)
     hero = (
       <UnemployedHero
@@ -46,7 +46,7 @@ export default function HomeTab({ ctx, actions }) {
         onOffers={() => actions.goTab('career', 'offers')}
       />
     )
-  else if (hub.world && (hub.world.needs_sync || mine?.days_until > 0)) hero = <section className="sn-sec"><h2 className="gx-title">{hub.world.needs_sync ? 'O mundo está em movimento' : `Próxima partida em ${mine.days_until} dia(s)`}</h2><p className="sn-hint">Avance a data e acompanhe os acontecimentos do clube.</p><button className="gx-btn" disabled={!!busy} onClick={() => actions.goTab('career', 'world')}>Abrir calendário</button></section>
+  else if (hub.world && (hub.world.needs_sync || !mine || mine.days_until > 0)) hero = <section className="sn-sec"><h2 className="gx-title">{hub.world.needs_sync ? 'O mundo está em movimento' : mine ? `Próxima partida em ${mine.days_until} dia(s)` : 'Preparando a próxima partida'}</h2><p className="sn-hint" role="status">{ctx.worldStatus === 'retrying' ? 'Aguardando conexão para continuar automaticamente…' : 'Os outros jogos e o calendário estão avançando automaticamente até a sua próxima partida.'}</p></section>
   else if (mine)
     hero = (
       <MatchdayHero
