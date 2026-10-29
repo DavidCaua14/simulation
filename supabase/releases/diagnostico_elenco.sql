@@ -4,6 +4,7 @@ select 'carreira completa (24–30)' as item, (to_regclass('public.cw_world') is
 union all select 'evolução 31 (avanço rápido)', (position('1200 milliseconds' in coalesce((select prosrc from pg_proc where oid=to_regprocedure('public.career_world_advance(integer,uuid)')),''))>0)::text
 union all select 'evolução 32 (elenco/satisfação)', (to_regprocedure('public.mgr_squad_before_v32(text)') is not null)::text
 union all select 'evolução 33 (mensagens por assunto)', (to_regprocedure('public.mgr_hub_before_v33()') is not null)::text
+union all select 'evolução 34 (equilíbrio da IA)', (to_regprocedure('public.cw_foreign_hiring(text,date)') is not null)::text
 union all select 'manutenção da API (db_pre_request)', coalesce((select string_agg(option_value,', ') from pg_roles r join pg_db_role_setting s on s.setrole=r.oid cross join lateral pg_options_to_table(s.setconfig) where r.rolname='authenticator' and option_name='pgrst.db_pre_request'),'desligada')
 union all select 'carreiras ativas', (select count(*)::text from public.careers where status='active')
 union all select 'carreiras no mundo paralelo', (select count(*)::text from public.cw_world)
