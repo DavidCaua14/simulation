@@ -1,4 +1,5 @@
-import { Check, Coins, Flame, Gem, Zap } from 'lucide-react'
+import GameIcon from '../../components/ui/GameIcon'
+import { Check, Flame } from 'lucide-react'
 import { timeLeft } from './eventsUi'
 
 // Sequência diária: 7 dias de recompensas crescentes. Libera com uma partida concluída ou um palpite no dia
@@ -23,10 +24,10 @@ export default function StreakPanel({ streak, now, busy, onClaim }) {
           return (
             <li key={r.day} className={`${past ? 'is-past' : ''} ${isToday ? 'is-today' : ''}`}>
               <small>Dia {r.day}</small>
-              {past ? <Check size={16} /> : r.diamonds > 0 ? <Gem size={16} className="ev-ic-gems" /> : <Coins size={16} className="ev-ic-coins" />}
+              {past ? <Check size={16} /> : r.diamonds > 0 ? <GameIcon name="diamond" size={16} className="ev-ic-gems" /> : <GameIcon name="coins" size={16} className="ev-ic-coins" />}
               <b>{r.coins}</b>
-              {r.diamonds > 0 && <i>+{r.diamonds}<Gem size={9} /></i>}
-              {r.energy > 0 && <i>+{r.energy}<Zap size={9} /></i>}
+              {r.diamonds > 0 && <i>+{r.diamonds}<GameIcon name="diamond" size={9} /></i>}
+              {r.energy > 0 && <i>+{r.energy}<GameIcon name="energy" size={9} /></i>}
             </li>
           )
         })}

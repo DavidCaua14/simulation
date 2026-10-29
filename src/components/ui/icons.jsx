@@ -31,12 +31,10 @@ import {
   MessageSquare,
   MailPlus,
   Ellipsis,
-  Zap,
-  Coins,
-  Gem,
   Shirt,
   Hash,
 } from 'lucide-react'
+import GameIcon from './GameIcon'
 
 export const UsernameIcon = (props) => <AtSign size={15} {...props} />
 export const AgeIcon = (props) => <Cake size={15} {...props} />
@@ -71,9 +69,9 @@ export const StoreIcon = (props) => <ShoppingBag size={22} {...props} />
 export const MessagesIcon = (props) => <MessageSquare size={22} {...props} />
 export const InvitesIcon = (props) => <MailPlus size={22} {...props} />
 export const MoreIcon = (props) => <Ellipsis size={20} {...props} />
-export const EnergyIcon = (props) => <Zap size={16} fill="currentColor" {...props} />
-export const CoinsIcon = (props) => <Coins size={16} {...props} />
-export const GemIcon = (props) => <Gem size={16} {...props} />
+export const EnergyIcon = ({ size = 16, className }) => <GameIcon name="energy" size={size} className={className} />
+export const CoinsIcon = ({ size = 16, className }) => <GameIcon name="coins" size={size} className={className} />
+export const GemIcon = ({ size = 16, className }) => <GameIcon name="diamond" size={size} className={className} />
 export const UserIcon = (props) => <User size={15} {...props} />
 export const ShirtIcon = (props) => <Shirt size={15} {...props} />
 export const HashIcon = (props) => <Hash size={15} {...props} />

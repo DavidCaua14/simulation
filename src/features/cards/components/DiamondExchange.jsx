@@ -1,5 +1,6 @@
+import GameIcon from '../../../components/ui/GameIcon'
 import { useState } from 'react'
-import { Gem, X, Zap } from 'lucide-react'
+import { X } from 'lucide-react'
 import { DIAMOND_TO_ENERGY } from '../data/tiers'
 import { exchangeDiamonds } from '../services/cardsApi'
 
@@ -32,12 +33,12 @@ export default function DiamondExchange({ diamonds, onClose, onDone }) {
         </button>
         <h3>Trocar diamantes por energia</h3>
         <p className="cx-meta">
-          1 <Gem size={13} /> = {DIAMOND_TO_ENERGY} <Zap size={13} fill="currentColor" /> · você tem <b>{diamonds}</b>
+          1 <GameIcon name="diamond" size={13} /> = {DIAMOND_TO_ENERGY} <GameIcon name="energy" size={13} /> · você tem <b>{diamonds}</b>
         </p>
         <div className="cx-swap">
           {options.map((n) => (
             <button key={n} type="button" className="bx-btn ghost" disabled={busy || diamonds < n} onClick={() => swap(n)}>
-              {n === diamonds && n > 10 ? 'Todos' : n} <Gem size={14} /> → +{n * DIAMOND_TO_ENERGY} <Zap size={14} fill="currentColor" />
+              {n === diamonds && n > 10 ? 'Todos' : n} <GameIcon name="diamond" size={14} /> → +{n * DIAMOND_TO_ENERGY} <GameIcon name="energy" size={14} />
             </button>
           ))}
         </div>

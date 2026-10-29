@@ -131,3 +131,12 @@
 .pf-featured-empty:disabled { cursor: default; }
 .pf-featured-empty b { display: block; color: var(--text-primary); font: 800 0.9rem var(--font-heading); }
 .pf-card-ghost { width: 62px; height: 86px; display: grid; place-items: center; border-radius: 10px; color: var(--gold); border: 2px dashed color-mix(in srgb, var(--gold) 55%, var(--border)); background: repeating-linear-gradient(135deg, color-mix(in srgb, var(--gold) 6%, transparent) 0 6px, transparent 6px 12px); }
+/* arte das insígnias: bloqueada em cinza; conquistada com brilho do metal */
+.bg-art { width: 58px; height: 58px; object-fit: contain; filter: grayscale(1) brightness(0.7); opacity: 0.45; transition: transform 0.2s, filter 0.2s; }
+.bg-item.is-on .bg-art { filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.45)); opacity: 1; }
+.bg-item.is-on.t-ouro .bg-art { filter: drop-shadow(0 0 10px rgba(251, 191, 36, 0.55)); }
+.bg-item:active .bg-art { transform: scale(0.94); }
+.bg-detail { display: flex; align-items: center; gap: 12px; }
+.bg-detail-art { width: 72px; height: 72px; flex: none; object-fit: contain; filter: grayscale(1); opacity: 0.6; }
+.bg-detail-art.is-on { filter: none; opacity: 1; }
+.gx-icon { display: inline-block; flex: none; object-fit: contain; vertical-align: -0.2em; }

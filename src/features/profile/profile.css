@@ -175,3 +175,4 @@
 .pf-seg3 button { height: 28px; padding: 0 10px; border: 0; border-radius: 999px; background: transparent; color: var(--text-secondary); font: 800 0.72rem var(--font-body); cursor: pointer; }
 .pf-seg3 button.is-on { background: var(--primary); color: var(--primary-contrast); }
 .pf-match-audio + .pf-visibility { margin-top: 10px; }
+.pf-newbadge-art { width: 28px; height: 28px; vertical-align: middle; margin-right: 4px; }

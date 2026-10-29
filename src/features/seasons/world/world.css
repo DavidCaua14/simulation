@@ -104,3 +104,7 @@
   .cw-player-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   .cw-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
+/* abas que rolam: indica que há mais itens e cabe tudo em telas estreitas */
+.cw-nav { -webkit-mask-image: linear-gradient(90deg, #000 88%, transparent); mask-image: linear-gradient(90deg, #000 88%, transparent); scroll-padding-inline: 8px; }
+.cw-nav button { scroll-snap-align: start; }
+@media (max-width: 400px) { .cw-nav button { padding-inline: 10px; font-size: 0.8rem; letter-spacing: 0.03em; } }

@@ -1,6 +1,7 @@
 import { readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
-// Gera supabase/releases/elenco_contratos.sql (evoluções 31 + 32) para colar no SQL Editor de um banco que já tem a carreira completa (24–30).
+// Gera os scripts de colar no SQL Editor (banco com a carreira completa 24–30):
+//  supabase/releases/elenco_contratos.sql (31 + 32) e supabase/releases/mensagens.sql (33).
 const root = resolve(import.meta.dirname, '..')
 const body = (f) => readFileSync(resolve(root, 'supabase/evolution', f), 'utf8').trim().replace(/^(--.*\n)*begin;\s*/i, '').replace(/\s*commit;\s*$/i, '')
 const out = `-- Gerado por scripts/build-elenco-release.mjs: evoluções 31 (avanço rápido) e 32 (satisfação, contratos, limite de elenco).

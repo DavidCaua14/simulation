@@ -343,3 +343,15 @@
    (Botafogo, Corinthians, Tottenham, Derby…) sem mudar o desenho. */
 [data-theme='dark'] img.crest { filter: drop-shadow(0 0 0.6px rgba(255, 255, 255, 0.7)) drop-shadow(0 1px 2px rgba(0, 0, 0, 0.35)); }
 [data-theme='light'] img.crest { filter: drop-shadow(0 0 0.6px rgba(10, 16, 30, 0.45)); }
+
+/* Nome de clube sem quebra no meio da palavra: com pouco espaço vira a sigla. */
+.club-name { container-type: inline-size; display: block; flex: 1 1 0; min-width: 0; overflow-wrap: normal; word-break: normal; }
+.club-name .cn-short { display: none; }
+@container (max-width: 78px) {
+  .club-name[data-size='l'] .cn-full, .club-name[data-size='xl'] .cn-full { display: none; }
+  .club-name[data-size='l'] .cn-short, .club-name[data-size='xl'] .cn-short { display: inline; }
+}
+@container (max-width: 128px) {
+  .club-name[data-size='xl'] .cn-full { display: none; }
+  .club-name[data-size='xl'] .cn-short { display: inline; }
+}

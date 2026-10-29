@@ -1,4 +1,5 @@
-import { Lock } from 'lucide-react'
+import GameIcon from '../../../components/ui/GameIcon'
+
 
 // Atalho secundário (ranking, eventos, mensagens, convites): pequeno, só ícone e nome.
 export default function QuickTile({ mode, onSelect, badge = 0 }) {
@@ -9,7 +10,7 @@ export default function QuickTile({ mode, onSelect, badge = 0 }) {
         <Icon size={20} />
         {locked && (
           <span className="hm-quick-lock" aria-hidden="true">
-            <Lock size={9} />
+            <GameIcon name="lock" size={9} />
           </span>
         )}
       </span>

@@ -1,4 +1,5 @@
-import { ArrowLeftRight, CircleCheck, CircleX, PartyPopper, Play, Trophy } from 'lucide-react'
+import GameIcon from '../../../components/ui/GameIcon'
+import { CircleCheck, CircleX, PartyPopper, Play, Trophy } from 'lucide-react'
 import ClubCrest from '../../club/components/ClubCrest'
 import { getClubById } from '../../club/data/clubs'
 import CompEmblem from '../ui/CompEmblem'
@@ -71,7 +72,7 @@ export default function SeasonEnd({ season, coach, objectives = [], starting, on
       <div className="se-actions">
         {offers > 0 && (
           <button type="button" className="gx-btn-ghost" onClick={onOffers}>
-            <ArrowLeftRight size={16} /> {offers} proposta{offers > 1 ? 's' : ''}
+            <GameIcon name="transfer" size={16} /> {offers} proposta{offers > 1 ? 's' : ''}
           </button>
         )}
         <button type="button" className="gx-btn" disabled={starting} onClick={onStartNext}>

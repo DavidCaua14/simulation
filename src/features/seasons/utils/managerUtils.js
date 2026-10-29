@@ -202,6 +202,26 @@ export const MSG_KIND = {
   system: { label: 'Clube', tone: 'system' },
   press: { label: 'Imprensa', tone: 'press' },
   title: { label: 'Título', tone: 'title' },
+  squad: { label: 'Elenco', tone: 'squad' },
+  transfer: { label: 'Negociação', tone: 'offer' },
+  contract: { label: 'Contrato', tone: 'squad' },
+  finance: { label: 'Finanças', tone: 'board' },
+}
+
+// Assuntos da caixa de mensagens (categoria gravada no banco; mensagens antigas sem categoria ficam em Clube).
+export const MSG_CATEGORIES = [
+  { id: 'all', label: 'Todas' },
+  { id: 'squad', label: 'Elenco', hint: 'Satisfação, pedidos de saída e contratos' },
+  { id: 'market', label: 'Mercado', hint: 'Propostas recebidas e respostas das negociações' },
+  { id: 'club', label: 'Clube', hint: 'Diretoria, torcida, departamento médico e resultados' },
+  { id: 'career', label: 'Carreira', hint: 'Propostas de trabalho para você' },
+]
+export const msgCategory = (m) => m.category || (m.kind === 'offer' ? 'career' : 'club')
+export const MSG_ACTIONS = {
+  open_negotiations: 'Ver negociação',
+  open_player: 'Ver no elenco',
+  open_finance: 'Ver finanças',
+  open_offers: 'Ver propostas',
 }
 
 // Força de uma escalação, por setor (média das notas na posição de cada vaga)

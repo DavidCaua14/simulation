@@ -1,5 +1,6 @@
+import GameIcon from '../../../components/ui/GameIcon'
 import { useEffect, useMemo, useState } from 'react'
-import { Ambulance, Ban, Lock, Play, Shirt, ShieldAlert, Zap } from 'lucide-react'
+import { Ambulance, Ban, Play, Shirt, ShieldAlert } from 'lucide-react'
 import ClubCrest from '../../club/components/ClubCrest'
 import { getClubById } from '../../club/data/clubs'
 import { isSessionError } from '../../../lib/sessionRecovery'
@@ -101,7 +102,7 @@ export default function PreMatch({ next, myClub, myPos, lineupErrors = 0, canPla
           </>
         ) : !canPlay ? (
           <>
-            <Lock size={16} /> {blockedText}
+            <GameIcon name="lock" size={16} /> {blockedText}
           </>
         ) : lineupErrors ? (
           <>
@@ -111,7 +112,7 @@ export default function PreMatch({ next, myClub, myPos, lineupErrors = 0, canPla
           <>
             <Play size={18} fill="currentColor" /> Iniciar partida
             <span className="nm-cost" title="Custa 1 de energia">
-              <Zap size={13} fill="currentColor" />1
+              <GameIcon name="energy" size={13} />1
             </span>
           </>
         )}

@@ -1,5 +1,6 @@
+import GameIcon from '../../../components/ui/GameIcon'
 import { useEffect, useState } from 'react'
-import { Ambulance, Crown } from 'lucide-react'
+import { Ambulance } from 'lucide-react'
 import BasePlayerCard from '../../cards/components/BasePlayerCard'
 import PlayerSheet from './PlayerSheet'
 import ClubCrest from '../../club/components/ClubCrest'
@@ -107,7 +108,7 @@ export default function MatchReport({ fixtureId, onClose }) {
                             {p.yellow > 0 && <i className="mcard y" />}
                             {p.red > 0 && <i className="mcard r" />}
                             {p.injured && <Ambulance size={11} />}
-                            {p.id === motm && <Crown size={12} className="ml-motm" />}
+                            {p.id === motm && <GameIcon name="crown" size={12} className="ml-motm" />}
                           </span>
                           <small className="ml-mins">{p.minutes}'</small>
                           <b className="ml-rt">{Number(p.rating).toFixed(1)}</b>

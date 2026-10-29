@@ -1,5 +1,6 @@
+import GameIcon from '../../../components/ui/GameIcon'
 import { useEffect, useMemo, useState } from 'react'
-import { Ambulance, ArrowDown, ArrowLeftRight, ArrowUp, Ban, Building2, Coins, Crown, Megaphone, Sparkles, Star, Trophy, UserX, Zap } from 'lucide-react'
+import { Ambulance, ArrowDown, ArrowUp, Ban, Building2, Megaphone, Star, Trophy, UserX } from 'lucide-react'
 import ClubCrest from '../../club/components/ClubCrest'
 import { getClubById } from '../../club/data/clubs'
 import RoundResults from './RoundResults'
@@ -152,7 +153,7 @@ export default function PostMatch({ summary: s, seasonId, byComp, onClose, onOff
 
               {s.motm && (
                 <div className="pm-motm">
-                  <Crown size={18} />
+                  <GameIcon name="crown" size={18} />
                   <ClubCrest clubId={motmClub} size={22} />
                   <span>
                     <small>Craque do jogo</small>
@@ -186,14 +187,14 @@ export default function PostMatch({ summary: s, seasonId, byComp, onClose, onOff
               <div className="sn-rewards">
                 {s.rewards.xp > 0 && <span className="xp">+{s.rewards.xp} XP</span>}
                 <span className="coins">
-                  <Coins size={13} /> +{s.rewards.coins}
+                  <GameIcon name="coins" size={13} /> +{s.rewards.coins}
                 </span>
-                {s.rewards.energy > 0 && <span className="energy"><Zap size={13} /> +{s.rewards.energy} energia</span>}
+                {s.rewards.energy > 0 && <span className="energy"><GameIcon name="energy" size={13} /> +{s.rewards.energy} energia</span>}
               </div>
 
               {s.level_up && (
                 <div className="sn-levelup">
-                  <Sparkles size={18} /> SUBIU DE NÍVEL! Agora você é nível <b>{s.new_level}</b>
+                  <GameIcon name="highlight" size={18} /> SUBIU DE NÍVEL! Agora você é nível <b>{s.new_level}</b>
                 </div>
               )}
 
@@ -217,7 +218,7 @@ export default function PostMatch({ summary: s, seasonId, byComp, onClose, onOff
 
               {s.offer && (
                 <button type="button" className="sn-offer-alert" onClick={onOffers}>
-                  <ArrowLeftRight size={18} />
+                  <GameIcon name="transfer" size={18} />
                   <ClubCrest clubId={s.offer.club_id} size={22} />
                   <span>
                     <b>{getClubById(s.offer.club_id)?.name}</b> quer você como treinador! Toque para ver.

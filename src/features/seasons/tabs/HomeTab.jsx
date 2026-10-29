@@ -1,5 +1,7 @@
+import GameIcon from '../../../components/ui/GameIcon'
+import ExitModeButton from '../components/ExitModeButton'
 import { useMemo } from 'react'
-import { ArrowLeftRight, CalendarDays, ChevronRight, Inbox, Target } from 'lucide-react'
+import { CalendarDays, ChevronRight, Inbox, Target } from 'lucide-react'
 import ClubCrest from '../../club/components/ClubCrest'
 import { getClubById } from '../../club/data/clubs'
 import { AdvanceHero, LiveHero, MatchdayHero, UnemployedHero } from '../components/CoachHeroes'
@@ -9,7 +11,7 @@ import CalendarRow from '../components/CalendarRow'
 import MatchRow from '../components/MatchRow'
 import CompCard from '../components/CompCard'
 import { EmptyState } from '../ui/States'
-import { MSG_KIND, objectiveProgress } from '../utils/managerUtils'
+import { MSG_CATEGORIES, MSG_KIND, msgCategory, objectiveProgress } from '../utils/managerUtils'
 
 // INÍCIO: o que acontece HOJE (jogo, folga, sem clube, fim de temporada), a situação do treinador
 // (diretoria, torcida, reputação), objetivos, caixa de mensagens, calendário e campeonatos.
@@ -78,7 +80,7 @@ export default function HomeTab({ ctx, actions }) {
             <b>{hub.offers.length > 1 ? `${hub.offers.length} propostas de trabalho` : `${getClubById(firstOffer.club_id)?.name} quer você como treinador`}</b>
             <small>Prazo: {firstOffer.days_left > 0 ? `${firstOffer.days_left} dia(s)` : 'último dia'}. Toque para responder.</small>
           </span>
-          <ArrowLeftRight size={18} />
+          <GameIcon name="transfer" size={18} />
         </button>
       )}
 
@@ -113,12 +115,25 @@ export default function HomeTab({ ctx, actions }) {
           <h2 className="gx-title">
             <Inbox size={16} /> Mensagens {hub.unread > 0 && <em className="sn-badge">{hub.unread}</em>}
           </h2>
-          {hub.messages.length > msgs.length && (
+          {hub.messages.length > 0 && (
             <button type="button" className="sn-link" onClick={actions.openInbox}>
               Ver todas <ChevronRight size={14} />
             </button>
           )}
         </div>
+        {hub.messages.length > 0 && (
+          <div className="ib-cats is-home" aria-label="Mensagens por assunto">
+            {MSG_CATEGORIES.filter((c) => c.id !== 'all').map((c) => {
+              const unread = hub.messages.filter((m) => !m.read && msgCategory(m) === c.id).length
+              return (
+                <button key={c.id} type="button" className={unread ? 'has-new' : ''} onClick={() => actions.openInbox(c.id)}>
+                  {c.label}
+                  {unread > 0 && <em>{unread}</em>}
+                </button>
+              )
+            })}
+          </div>
+        )}
         {msgs.length === 0 ? (
           <p className="sn-muted">Nenhuma mensagem ainda.</p>
         ) : (
@@ -175,6 +190,7 @@ export default function HomeTab({ ctx, actions }) {
           ))}
         </div>
       </section>
+      <ExitModeButton onExit={actions.exit} />
     </div>
   )
 }

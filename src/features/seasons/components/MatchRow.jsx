@@ -1,5 +1,6 @@
 import { Whistle } from './Whistle'
 import ClubCrest from '../../club/components/ClubCrest'
+import ClubName from '../../club/components/ClubName'
 import { getClubById } from '../../club/data/clubs'
 import CompEmblem from '../ui/CompEmblem'
 import { sideResult } from '../utils/seasonSelectors'
@@ -14,8 +15,6 @@ export default function MatchRow({ f, myClub, onOpen, highlight }) {
   const me = f.player_match && f.coach_club ? f.coach_club : myClub
   const res = sideResult(f, me)
   const Tag = onOpen ? 'button' : 'div'
-  const home = getClubById(f.home_club)
-  const away = getClubById(f.away_club)
   return (
     <Tag
       type={onOpen ? 'button' : undefined}
@@ -31,13 +30,13 @@ export default function MatchRow({ f, myClub, onOpen, highlight }) {
       </span>
       <span className="mr-teams">
         <span className={`mr-t home ${f.home_club === me ? 'is-mine' : ''}`}>
-          <b>{home?.name}</b>
+          <ClubName clubId={f.home_club} />
           <ClubCrest clubId={f.home_club} size={26} />
         </span>
         <span className="mr-score">{played ? `${f.home_goals} – ${f.away_goals}` : 'x'}</span>
         <span className={`mr-t away ${f.away_club === me ? 'is-mine' : ''}`}>
           <ClubCrest clubId={f.away_club} size={26} />
-          <b>{away?.name}</b>
+          <ClubName clubId={f.away_club} />
         </span>
       </span>
       {played && f.home_pens != null && (

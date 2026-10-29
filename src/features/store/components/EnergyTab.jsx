@@ -1,5 +1,6 @@
+import GameIcon from '../../../components/ui/GameIcon'
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { BatteryLow, Check, CircleAlert, Gem, X, Zap } from 'lucide-react'
+import { BatteryLow, Check, CircleAlert, X } from 'lucide-react'
 import { buyEnergy, fetchEnergy, newRequestId } from '../services/storeApi'
 import { fmt } from './storeUtils'
 import { useAudio } from '../../audio/AudioContext'
@@ -34,12 +35,12 @@ function ConfirmPack({ pack, data, onClose, onDone }) {
     <div className="cx-sheet-wrap" role="dialog" aria-modal="true" aria-label={`Comprar ${pack.label}`} onClick={busy ? undefined : onClose}>
       <div className="cx-sheet sh-confirm" onClick={(e) => e.stopPropagation()}>
         <button type="button" className="cx-sheet-x" onClick={onClose} disabled={busy} aria-label="Fechar"><X size={18} /></button>
-        <span className="en-big"><Zap size={34} fill="currentColor" /> +{pack.energy}</span>
+        <span className="en-big"><GameIcon name="energy" size={34} /> +{pack.energy}</span>
         <h3>{pack.label}</h3>
         {!result ? (
           <>
             <dl className="sh-bill">
-              <div><dt>Preço</dt><dd><Gem size={14} /> {pack.price} diamantes</dd></div>
+              <div><dt>Preço</dt><dd><GameIcon name="diamond" size={14} /> {pack.price} diamantes</dd></div>
               <div><dt>Seus diamantes</dt><dd>{fmt(data.diamonds)} → {short ? `faltam ${pack.price - data.diamonds}` : fmt(data.diamonds - pack.price)}</dd></div>
               <div><dt>Energia bônus</dt><dd>{fmt(data.bonus_energy)} → {fmt(data.bonus_energy + pack.energy)} (limite {fmt(data.bonus_cap)})</dd></div>
               <div><dt>Energia normal</dt><dd>{data.energy}/{data.regular_max} (não muda)</dd></div>
@@ -48,15 +49,15 @@ function ConfirmPack({ pack, data, onClose, onDone }) {
             {!pack.fits && <p className="sh-msg is-error"><CircleAlert size={14} /> Passaria do limite de energia bônus ({fmt(data.bonus_cap)}). Use um pouco antes de comprar.</p>}
             {error && <p className="sh-msg is-error"><CircleAlert size={14} /> {error}</p>}
             <button type="button" className="gx-btn sh-confirm-btn" disabled={busy || short || !pack.fits} onClick={confirm}>
-              {busy ? 'Comprando…' : <><Gem size={16} /> Comprar por {pack.price}</>}
+              {busy ? 'Comprando…' : <><GameIcon name="diamond" size={16} /> Comprar por {pack.price}</>}
             </button>
           </>
         ) : (
           <>
             <p className="sh-msg is-ok"><Check size={16} /> +{result.energy_added} de energia bônus!</p>
             <dl className="sh-bill">
-              <div><dt>Energia bônus agora</dt><dd><Zap size={14} fill="currentColor" /> {fmt(result.bonus_energy)}</dd></div>
-              <div><dt>Diamantes</dt><dd><Gem size={14} /> {fmt(result.diamonds)}</dd></div>
+              <div><dt>Energia bônus agora</dt><dd><GameIcon name="energy" size={14} /> {fmt(result.bonus_energy)}</dd></div>
+              <div><dt>Diamantes</dt><dd><GameIcon name="diamond" size={14} /> {fmt(result.diamonds)}</dd></div>
             </dl>
             <button type="button" className="gx-btn sh-confirm-btn" onClick={onClose}>Fechar</button>
           </>
@@ -91,7 +92,7 @@ export default function EnergyTab({ onChanged }) {
       <div className="en-now">
         <div>
           <small>Energia normal</small>
-          <b><Zap size={16} fill="currentColor" /> {data.energy}/{data.regular_max}</b>
+          <b><GameIcon name="energy" size={16} /> {data.energy}/{data.regular_max}</b>
           <span>volta a {data.regular_max} a cada {data.regen_hours} h · próxima às {hhmm(data.next_reset_at)}</span>
         </div>
         <div>
@@ -105,10 +106,10 @@ export default function EnergyTab({ onChanged }) {
       <div className="en-packs">
         {data.packs.map((p) => (
           <button key={p.id} type="button" className={`en-pack ${p.fits ? '' : 'is-full'}`} onClick={() => setPack(p)}>
-            <span className="en-pack-amt"><Zap size={20} fill="currentColor" /> +{p.energy}</span>
+            <span className="en-pack-amt"><GameIcon name="energy" size={20} /> +{p.energy}</span>
             <strong>{p.label}</strong>
             <small>{p.description}</small>
-            <span className={`sh-price gems ${data.diamonds < p.price ? 'is-short' : ''}`}><Gem size={14} /> {p.price}</span>
+            <span className={`sh-price gems ${data.diamonds < p.price ? 'is-short' : ''}`}><GameIcon name="diamond" size={14} /> {p.price}</span>
             {!p.fits && <small className="en-full">passaria do limite</small>}
           </button>
         ))}

@@ -1,4 +1,5 @@
-import { CalendarClock, FastForward, Hourglass, Lock, Play, Radio, ShieldAlert, Shirt, TriangleAlert, Trophy } from 'lucide-react'
+import GameIcon from '../../../components/ui/GameIcon'
+import { CalendarClock, FastForward, Hourglass, Play, Radio, ShieldAlert, Shirt, TriangleAlert, Trophy } from 'lucide-react'
 import ClubCrest from '../../club/components/ClubCrest'
 import { getClubById } from '../../club/data/clubs'
 import CompEmblem from '../ui/CompEmblem'
@@ -74,7 +75,7 @@ export function MatchdayHero({ next, myClub, myPos, lineup, canPlay, blockedText
             </>
           ) : !canPlay ? (
             <>
-              <Lock size={17} /> {blockedText}
+              <GameIcon name="lock" size={17} /> {blockedText}
             </>
           ) : errors ? (
             <>

@@ -76,19 +76,19 @@ export default function ContractPanel({ player: p, today, maxYears = 5, notify, 
           <label className="cw-field">Papel no elenco<select value={renewal.role} onChange={(e) => setRenewal((r) => ({ ...r, role: e.target.value }))}>{Object.entries(ROLES).map(([id, label]) => <option key={id} value={id}>{label}</option>)}</select></label>
           <div className="ps-deal-actions">
             <button type="button" className="gx-btn-ghost" disabled={busy} onClick={() => setRenewal(null)}>Cancelar</button>
-            <button type="submit" className="gx-btn" disabled={busy}>Enviar proposta</button>
+            <button type="submit" className="gx-btn" disabled={busy}>Enviar</button>
           </div>
         </form>
       ) : confirmRelease ? (
         <div className="ps-deal-actions">
           <p>Rescindir custa cerca de <b>{money(releaseCost)}</b> moedas (até seis salários) e o atleta fica livre no mercado.</p>
           <button type="button" className="gx-btn-ghost" disabled={busy} onClick={() => setConfirmRelease(false)}>Voltar</button>
-          <button type="button" className="gx-btn is-danger" disabled={busy} onClick={release}>Confirmar rescisão</button>
+          <button type="button" className="gx-btn is-danger" disabled={busy} onClick={release}>Confirmar</button>
         </div>
       ) : (
         <div className="ps-deal-actions">
-          <button type="button" className="gx-btn" disabled={busy || p.precontract} onClick={openRenewal}><FileSignature size={15} /> Renovar contrato</button>
-          <button type="button" className="gx-btn-ghost" disabled={busy} onClick={toggleList}><Tag size={15} /> {p.transfer_listed ? 'Tirar da lista' : 'Colocar à venda'}</button>
+          <button type="button" className="gx-btn" disabled={busy || p.precontract} onClick={openRenewal}><FileSignature size={15} /> Renovar</button>
+          <button type="button" className="gx-btn-ghost" disabled={busy} onClick={toggleList}><Tag size={15} /> {p.transfer_listed ? 'Tirar da venda' : 'Vender'}</button>
           <button type="button" className="gx-btn-ghost" disabled={busy || p.precontract} onClick={() => setConfirmRelease(true)}><UserMinus size={15} /> Rescindir</button>
         </div>
       )}

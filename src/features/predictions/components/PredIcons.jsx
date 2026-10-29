@@ -1,10 +1,9 @@
+import GameIcon from '../../../components/ui/GameIcon'
 // Ícones da tela de palpites (lucide-react). Ficam aqui para não mexer no icons.jsx compartilhado.
-import {
-  AlertTriangle, CheckCircle2, Clock3, Coins, Flag, Info, Medal, Play, Star, Ticket, Timer, Trophy, Undo2, XCircle, Zap,
-} from 'lucide-react'
+import { AlertTriangle, CheckCircle2, Clock3, Flag, Info, Medal, Play, Star, Ticket, Timer, Trophy, Undo2, XCircle } from 'lucide-react'
 
-export const CoinIcon = (p) => <Coins size={14} {...p} />
-export const EnergyIcon = (p) => <Zap size={14} fill="currentColor" {...p} />
+export const CoinIcon = ({ size = 14, className }) => <GameIcon name="coins" size={size} className={className} />
+export const EnergyIcon = ({ size = 14, className }) => <GameIcon name="energy" size={size} className={className} />
 export const FavoriteIcon = (p) => <Star size={11} fill="currentColor" {...p} />
 export const TimerIcon = (p) => <Timer size={13} {...p} />
 export const TrophyIcon = (p) => <Trophy size={16} {...p} />

@@ -1,6 +1,7 @@
 import './identity.css'
 import { useState } from 'react'
 import CosmeticIcon from './CosmeticIcon'
+import { BADGE_ART } from '../data/badgeArt'
 
 const TIER = { bronze: 'Bronze', prata: 'Prata', ouro: 'Ouro' }
 
@@ -18,15 +19,22 @@ export default function BadgeGrid({ badges = [], showLocked = true }) {
         {list.map((b) => (
           <button key={b.id} type="button" className={`bg-item t-${b.tier} ${b.earned ? 'is-on' : ''} ${open === b.id ? 'is-open' : ''}`}
             onClick={() => setOpen(open === b.id ? null : b.id)} aria-label={`${b.label}: ${b.earned ? 'conquistada' : 'bloqueada'}`}>
-            <span className="bg-medal"><CosmeticIcon name={b.icon} size={20} /></span>
+            {BADGE_ART[b.id] ? (
+              <img className="bg-art" src={BADGE_ART[b.id]} alt="" width={64} height={64} loading="lazy" decoding="async" draggable="false" />
+            ) : (
+              <span className="bg-medal"><CosmeticIcon name={b.icon} size={20} /></span>
+            )}
             <span className="bg-label">{b.label}</span>
           </button>
         ))}
       </div>
       {sel && (
         <p className="bg-detail">
-          <b>{sel.label}</b> · {TIER[sel.tier]} — {sel.description}{' '}
-          {sel.earned ? `Conquistada em ${new Date(sel.awarded_at).toLocaleDateString('pt-BR')}.` : '(ainda não conquistada)'}
+          {BADGE_ART[sel.id] && <img className={`bg-detail-art ${sel.earned ? 'is-on' : ''}`} src={BADGE_ART[sel.id]} alt="" width={72} height={72} />}
+          <span>
+            <b>{sel.label}</b> · {TIER[sel.tier]} — {sel.description}{' '}
+            {sel.earned ? `Conquistada em ${new Date(sel.awarded_at).toLocaleDateString('pt-BR')}.` : '(ainda não conquistada)'}
+          </span>
         </p>
       )}
     </>

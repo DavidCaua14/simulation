@@ -1,4 +1,5 @@
-import { ChevronLeft, Coins, Zap } from 'lucide-react'
+import GameIcon from '../../../components/ui/GameIcon'
+import { ChevronLeft } from 'lucide-react'
 import { FREE_ENERGY, XP_PER_LEVEL, fmt, formatRemaining, seasonLabel } from '../utils/seasonUtils'
 
 // Cabeçalho padrão dos modos de jogo (Temporadas, Palpites): voltar discreto, título esportivo e recursos (energia/moedas).
@@ -10,9 +11,11 @@ export default function SeasonHeader({ title, career, season, remaining, onBack,
 
   return (
     <header className="sh">
-      <button type="button" className="sh-back" onClick={onBack} aria-label={backLabel}>
-        <ChevronLeft size={20} strokeWidth={2.6} />
-      </button>
+      {onBack && (
+        <button type="button" className="sh-back" onClick={onBack} aria-label={backLabel} title={backLabel}>
+          <ChevronLeft size={20} strokeWidth={2.6} />
+        </button>
+      )}
 
       <div className="sh-title">
         <small>
@@ -26,12 +29,12 @@ export default function SeasonHeader({ title, career, season, remaining, onBack,
       {career && (
         <div className="sh-res">
           <span className="sh-pill energy" title={`Energia: 1 por partida. A livre volta a ${FREE_ENERGY} a cada 5h.`}>
-            <Zap size={13} fill="currentColor" />
+            <GameIcon name="energy" size={13} />
             <b>{fmt(energy)}</b>
             {recharging && <small>{formatRemaining(remaining)}</small>}
           </span>
           <span className="sh-pill coins" title="Moedas">
-            <Coins size={13} />
+            <GameIcon name="coins" size={13} />
             <b>{fmt(career.coins)}</b>
           </span>
         </div>

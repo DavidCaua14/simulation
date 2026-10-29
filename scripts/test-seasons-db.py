@@ -98,15 +98,16 @@ try:
         args.ui_fixtures.write_text(json.dumps(data))
         print('Respostas fictícias de API salvas em', args.ui_fixtures, flush=True)
     if args.career_world or args.world_cycle:
-        for path in sorted((ROOT / 'supabase/evolution').glob('2[4-9]_*.sql')) + [ROOT / 'supabase/evolution/30_career_calendar_entry.sql', ROOT / 'supabase/evolution/31_world_advance_speed.sql', ROOT / 'supabase/evolution/32_squad_morale_contracts.sql']:
+        for path in sorted((ROOT / 'supabase/evolution').glob('2[4-9]_*.sql')) + [ROOT / 'supabase/evolution/30_career_calendar_entry.sql', ROOT / 'supabase/evolution/31_world_advance_speed.sql', ROOT / 'supabase/evolution/32_squad_morale_contracts.sql', ROOT / 'supabase/evolution/33_inbox.sql']:
             run_file(path)
         run_file('supabase/evolution/tests/career_world_tests.sql')
         run_file('supabase/evolution/tests/career_world_lifecycle_tests.sql')
         run_file('supabase/evolution/tests/career_world_awards_tests.sql')
         run_file('supabase/evolution/tests/career_calendar_entry_tests.sql')
         run_file('supabase/evolution/tests/squad_morale_contracts_tests.sql')
+        run_file('supabase/evolution/tests/inbox_tests.sql')
         # Reapplying the additive migration must not duplicate data or stack wrappers.
-        for path in sorted((ROOT / 'supabase/evolution').glob('2[4-9]_*.sql')) + [ROOT / 'supabase/evolution/30_career_calendar_entry.sql', ROOT / 'supabase/evolution/31_world_advance_speed.sql', ROOT / 'supabase/evolution/32_squad_morale_contracts.sql']:
+        for path in sorted((ROOT / 'supabase/evolution').glob('2[4-9]_*.sql')) + [ROOT / 'supabase/evolution/30_career_calendar_entry.sql', ROOT / 'supabase/evolution/31_world_advance_speed.sql', ROOT / 'supabase/evolution/32_squad_morale_contracts.sql', ROOT / 'supabase/evolution/33_inbox.sql']:
             run_file(path)
         run_file('supabase/evolution/tests/career_world_tests.sql')
         subprocess.run([sys.executable,str(ROOT/'tests/career_world_concurrency.py'),CONTAINER,DATABASE],check=True,env=ENV)

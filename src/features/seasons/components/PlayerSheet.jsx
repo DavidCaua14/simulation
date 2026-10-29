@@ -1,4 +1,5 @@
-import { Activity, Ambulance, Ban, Crown, Info, Shirt } from 'lucide-react'
+import GameIcon from '../../../components/ui/GameIcon'
+import { Activity, Ambulance, Ban, Info, Shirt } from 'lucide-react'
 import BasePlayerCard from '../../cards/components/BasePlayerCard'
 import Sheet from '../ui/Sheet'
 import { ATTR_GROUPS, POS_NAME, POS_ORDER, condTone, ovrTone } from '../utils/managerUtils'
@@ -33,7 +34,7 @@ export default function PlayerSheet({ player, onClose, clubName, children }) {
               )}
               {p.captain && (
                 <span className="ps-tag gold">
-                  <Crown size={12} /> Capitão
+                  <GameIcon name="crown" size={12} /> Capitão
                 </span>
               )}
               {p.youth && <span className="ps-tag">Base</span>}

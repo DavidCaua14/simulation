@@ -1,7 +1,9 @@
+import GameIcon from '../../../components/ui/GameIcon'
+import ExitModeButton from '../components/ExitModeButton'
 import JobTerms from '../world/JobTerms'
 import StandingsTable from '../components/StandingsTable'
 import { useEffect, useRef, useState } from 'react'
-import { Briefcase, CalendarRange, Coins, DoorOpen, Flag, History, Target, Trophy } from 'lucide-react'
+import { Briefcase, CalendarRange, DoorOpen, Flag, History, Target, Trophy } from 'lucide-react'
 import ClubCrest from '../../club/components/ClubCrest'
 import { getClubById } from '../../club/data/clubs'
 import TrophyCabinet from '../components/TrophyCabinet'
@@ -49,7 +51,7 @@ function OfferCard({ o, employed, busy, onRespond, onRefresh }) {
         )}
         {o.bonus_coins > 0 && (
           <li>
-            <Coins size={13} /> Luvas: {fmt(o.bonus_coins)} moedas
+            <GameIcon name="coins" size={13} /> Luvas: {fmt(o.bonus_coins)} moedas
           </li>
         )}
       </ul>
@@ -360,6 +362,7 @@ export default function CareerTab({ ctx, initialView, actions }) {
           )}
         </section>
       )}
+      <ExitModeButton onExit={actions.exit} />
     </div>
   )
 }

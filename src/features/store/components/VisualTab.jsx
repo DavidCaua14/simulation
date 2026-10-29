@@ -1,5 +1,6 @@
+import GameIcon from '../../../components/ui/GameIcon'
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { Check, CircleAlert, Gem, X } from 'lucide-react'
+import { Check, CircleAlert, X } from 'lucide-react'
 import ProfileHero from '../../profile/components/ProfileHero'
 import { CosmeticSwatch, KINDS, RARITY_LABEL } from '../../profile/components/cosmeticsUi'
 import { buyCosmetic, equipCosmetic, fetchCosmetics, fetchMyProfile } from '../../profile/services/profileApi'
@@ -41,7 +42,7 @@ function BuySheet({ item, diamonds, profile, onClose, onDone }) {
         {!done ? (
           <>
             <dl className="sh-bill">
-              <div><dt>Preço</dt><dd><Gem size={14} /> {item.price} diamantes</dd></div>
+              <div><dt>Preço</dt><dd><GameIcon name="diamond" size={14} /> {item.price} diamantes</dd></div>
               <div className={short ? 'is-short' : ''}><dt>Seus diamantes</dt><dd>{diamonds} → {short ? `faltam ${item.price - diamonds}` : diamonds - item.price}</dd></div>
             </dl>
             {short && <p className="sh-msg is-error"><CircleAlert size={14} /> Diamantes insuficientes.</p>}
@@ -134,7 +135,7 @@ export default function VisualTab({ onChanged }) {
               <button type="button" className="vs-btn" disabled={busy} onClick={() => equip(i, true)}>Usar (é seu)</button>
             ) : (
               <button type="button" className={`vs-btn buy ${data.diamonds < i.price ? 'is-short' : ''}`} onClick={() => { setSel(i); setBuying(i) }}>
-                <Gem size={13} /> {i.price}
+                <GameIcon name="diamond" size={13} /> {i.price}
               </button>
             )}
           </article>

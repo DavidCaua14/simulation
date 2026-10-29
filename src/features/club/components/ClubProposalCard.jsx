@@ -1,4 +1,5 @@
-import { Check, Coins, Sparkles } from 'lucide-react'
+import GameIcon from '../../../components/ui/GameIcon'
+import { Check } from 'lucide-react'
 import ClubCrest from './ClubCrest'
 import { getClubById } from '../data/clubs'
 
@@ -36,13 +37,13 @@ export default function ClubProposalCard({ offer, selected, onSelect, style }) {
       </span>
       {offer.difficulty && offer.difficulty !== 'standard' && (
         <span className="of-card-diff" title={offer.difficulty_text}>
-          <Sparkles size={14} /> <strong>{offer.difficulty_label}</strong>
+          <GameIcon name="highlight" size={14} /> <strong>{offer.difficulty_label}</strong>
           <small>{offer.difficulty_text}</small>
         </span>
       )}
       <span className="of-card-foot">
         <span className="of-card-bonus">
-          <Coins size={14} /> +{Number(offer.bonus_coins).toLocaleString('pt-BR')}
+          <GameIcon name="coins" size={14} /> +{Number(offer.bonus_coins).toLocaleString('pt-BR')}
         </span>
         <span className="of-card-bonus-label">luvas de assinatura</span>
         {selected && <span className="gx-tag is-gold">Escolhido</span>}

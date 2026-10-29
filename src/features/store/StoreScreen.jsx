@@ -1,5 +1,5 @@
+import GameIcon from '../../components/ui/GameIcon'
 import { useState } from 'react'
-import { Coins, Gem, Lock, Palette, Receipt, Zap } from 'lucide-react'
 import AppShell from '../../components/layout/AppShell'
 import { BackIcon } from '../../components/ui/icons'
 import useWallet from '../predictions/hooks/useWallet'
@@ -10,11 +10,12 @@ import WalletHistory from './components/WalletHistory'
 import DiamondExchange from '../cards/components/DiamondExchange'
 import '../cards/cards.css'
 import './store.css'
+import storeBg from '../home/assets/loja.webp'
 
 const TABS = [
-  { id: 'energy', label: 'Energia', Icon: Zap },
-  { id: 'visual', label: 'Visual', Icon: Palette },
-  { id: 'diamonds', label: 'Diamantes', Icon: Gem, soon: true },
+  { id: 'energy', label: 'Energia', icon: 'energy' },
+  { id: 'visual', label: 'Visual', icon: 'palette' },
+  { id: 'diamonds', label: 'Diamantes', icon: 'diamond', soon: true },
 ]
 const fmt = (n) => Number(n ?? 0).toLocaleString('pt-BR')
 
@@ -26,17 +27,23 @@ export default function StoreScreen({ career, params, onBack }) {
   const [exchange, setExchange] = useState(false)
   return (
     <AppShell left={<button type="button" className="icon-btn" onClick={onBack} aria-label="Voltar ao menu"><BackIcon /></button>} title="Loja">
-      <div className="cx-screen sh-screen">
+      <div className="cx-screen sh-screen" style={{ '--store-bg': `url(${storeBg})` }}>
+        <span className="sh-backdrop" aria-hidden="true" />
+        <header className="sh-hero">
+          <small>Loja do clube</small>
+          <b>Energia, visual e recompensas</b>
+          <span>Tudo é comprado com moedas e diamantes do jogo — nenhum pagamento real.</span>
+        </header>
         <div className="cx-wallet">
-          <span className="cx-pill coins"><Coins size={14} /> {fmt(wallet.coins)}</span>
-          <span className="cx-pill gems"><Gem size={14} /> {fmt(wallet.diamonds)}</span>
-          <span className="cx-pill energy"><Zap size={14} /> {fmt(wallet.energy)}</span>
-          <button type="button" className="cx-pill wh-open" onClick={() => setHistory(true)} aria-label="Ver extrato"><Receipt size={14} /> Extrato</button>
+          <span className="cx-pill coins"><GameIcon name="coins" size={14} /> {fmt(wallet.coins)}</span>
+          <span className="cx-pill gems"><GameIcon name="diamond" size={14} /> {fmt(wallet.diamonds)}</span>
+          <span className="cx-pill energy"><GameIcon name="energy" size={14} /> {fmt(wallet.energy)}</span>
+          <button type="button" className="cx-pill wh-open" onClick={() => setHistory(true)} aria-label="Ver extrato"><GameIcon name="statement" size={14} /> Extrato</button>
         </div>
         <nav className="sh-tabs" role="tablist" aria-label="Seções da loja">
-          {TABS.map(({ id, label, Icon, soon }) => (
+          {TABS.map(({ id, label, icon, soon }) => (
             <button key={id} type="button" role="tab" aria-selected={tab === id} className={tab === id ? 'is-on' : ''} onClick={() => setTab(id)}>
-              <Icon size={15} /> {label}{soon && <Lock size={12} aria-label="em breve" />}
+              <GameIcon name={icon} size={18} /> {label}{soon && <GameIcon name="lock" size={12} title="em breve" />}
             </button>
           ))}
         </nav>

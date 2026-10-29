@@ -44,15 +44,16 @@ function remap(slots, formation, byId) {
 }
 
 // TIME: escalação no campo (protagonista), táticas e elenco completo.
-export default function TeamTab({ hub, onSaved, notify }) {
+// focusPlayerId: vindo de uma mensagem (ex.: atleta insatisfeito), abre o elenco já com a ficha dele.
+export default function TeamTab({ hub, onSaved, notify, focusPlayerId = null }) {
   const { catalog, error: catErr } = useCatalog()
   const [squad, setSquad] = useState(null)
   const [error, setError] = useState('')
-  const [view, setView] = useState('lineup')
+  const [view, setView] = useState(focusPlayerId ? 'squad' : 'lineup')
   const [draft, setDraft] = useState(null) // { formation, slots, bench, tactics }
   const [dirty, setDirty] = useState(false)
   const [picker, setPicker] = useState(null)
-  const [info, setInfo] = useState(null)
+  const [info, setInfo] = useState(focusPlayerId ? { id: focusPlayerId } : null)
   const [saving, setSaving] = useState(false)
   const [positionFilter, setPositionFilter] = useState('')
   const [issues, setIssues] = useState([])
@@ -78,7 +79,7 @@ export default function TeamTab({ hub, onSaved, notify }) {
   }, [clubId, hub.season.day_no, load])
 
   const byId = useMemo(() => Object.fromEntries((squad?.players || []).map((p) => [p.id, p])), [squad])
-  const infoPlayer = info ? byId[info.id] || info : null
+  const infoPlayer = info ? byId[info.id] || (info.name ? info : null) : null
   const expiringSoon = (until) => hub.world?.today && Date.parse(until) - Date.parse(hub.world.today) <= 183 * 86400000
   const formation = catalog?.byId[draft?.formation]
   const strength = useMemo(() => (formation && draft ? lineupStrength(formation, draft.slots, byId) : null), [formation, draft, byId])

@@ -1,5 +1,6 @@
+import GameIcon from '../../components/ui/GameIcon'
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { Palette, Users } from 'lucide-react'
+import { Users } from 'lucide-react'
 import AppShell from '../../components/layout/AppShell'
 import ThemeToggle from '../../components/ThemeToggle'
 import { useTheme } from '../../context/ThemeContext'
@@ -14,6 +15,7 @@ import { fetchMyProfile, migrateLocalPrefs, setAvatar } from './services/profile
 import ProfileHero from './components/ProfileHero'
 import { avatarSrcOf } from './components/ProfileAvatar'
 import AvatarPicker from './components/AvatarPicker'
+import { BADGE_ART } from './data/badgeArt'
 import BadgeGrid from './components/BadgeGrid'
 import CustomizeSheet from './components/CustomizeSheet'
 import PrivacyPanel from './components/PrivacyPanel'
@@ -99,7 +101,7 @@ export default function ProfileScreen({ career, onNavigate }) {
                 profile={profile}
                 actions={
                   <>
-                    <button type="button" className="pf-edit-pill" onClick={() => setSheet('customize')}><Palette size={14} /> Personalizar</button>
+                    <button type="button" className="pf-edit-pill" onClick={() => setSheet('customize')}><GameIcon name="palette" size={14} /> Personalizar</button>
                     <button type="button" className="pf-edit-pill" onClick={() => setSheet('avatar')}><PencilIcon size={14} /> Foto</button>
                     <button type="button" className="pf-edit-pill" onClick={() => onNavigate?.('friends')} aria-label="Amigos"><Users size={14} /></button>
                   </>
@@ -107,7 +109,7 @@ export default function ProfileScreen({ career, onNavigate }) {
               />
 
               {profile.new_badges?.length > 0 && (
-                <p className="pf-newbadge">🏅 Nova insígnia: {profile.new_badges.map((b) => b.label).join(', ')}!</p>
+                <p className="pf-newbadge">{profile.new_badges.map((b) => BADGE_ART[b.id] && <img key={b.id} src={BADGE_ART[b.id]} alt="" width={28} height={28} className="pf-newbadge-art" />)} Nova insígnia: {profile.new_badges.map((b) => b.label).join(', ')}!</p>
               )}
 
 

@@ -1,4 +1,5 @@
-import { ArrowLeftRight, Trophy } from 'lucide-react'
+import GameIcon from '../../../components/ui/GameIcon'
+import { Trophy } from 'lucide-react'
 import ClubCrest from '../../club/components/ClubCrest'
 import { getClubById } from '../../club/data/clubs'
 import RoundResults from './RoundResults'
@@ -22,7 +23,7 @@ export default function ParallelDigest({ digest, myClub, onClose, onOffers, onOp
           <section className="dg-offers">
             {offers.map((o) => (
               <button key={o.id} type="button" className="sn-offer-alert" onClick={onOffers}>
-                <ArrowLeftRight size={18} />
+                <GameIcon name="transfer" size={18} />
                 <ClubCrest clubId={o.club_id} size={26} />
                 <span>
                   <b>{getClubById(o.club_id)?.name}</b> fez uma proposta para você treinar o clube! Toque para ver.

@@ -9,6 +9,7 @@ import { advanceWorld, dateLabel, requestId } from './services/careerWorldApi'
 import WorldPanel from './world/WorldPanel'
 import { advanceDays, fetchHub, markMessagesRead, resign, respondOffer, startMatch, startNextSeason } from './services/managerApi'
 import { flattenFixtures, playerHistory, projectCalendar } from './utils/seasonSelectors'
+import { msgCategory } from './utils/managerUtils'
 import { formatRemaining } from './utils/seasonUtils'
 import SeasonHeader from './ui/SeasonHeader'
 import { ErrorState, LoadingState } from './ui/States'
@@ -44,6 +45,8 @@ export default function SeasonsScreen({ onBack }) {
   const [digest, setDigest] = useState(null)
   const [report, setReport] = useState(null)
   const [inbox, setInbox] = useState(null)
+  const [worldArea, setWorldArea] = useState('news')
+  const [teamFocus, setTeamFocus] = useState(null)
   const [toast, setToast] = useState(null)
 
   const actionLock = useRef(false)
@@ -54,12 +57,29 @@ export default function SeasonsScreen({ onBack }) {
   const onPrepareProgress = useCallback((h, r) => mounted.current && setPrepareProgress(dateLabel(r?.today || h?.world?.today)), [])
   const worldStatus = busy === 'prepare' || busy === 'next' ? 'syncing' : 'idle'
 
-  const notify = useCallback((text, kind = 'info') => setToast({ text, kind, id: Date.now() }), [])
+  const notify = useCallback((text, kind = 'info', action = null) => setToast({ text, kind, action, id: Date.now() }), [])
   useEffect(() => {
     if (!toast) return undefined
-    const t = setTimeout(() => setToast(null), 4200)
+    const t = setTimeout(() => setToast(null), toast.action ? 7000 : 4200)
     return () => clearTimeout(t)
   }, [toast])
+
+  // Proposta, resposta de negociação ou proposta de trabalho nova: alerta na hora, com atalho para a mensagem.
+  const lastMsg = useRef(null)
+  useEffect(() => {
+    if (!hub?.messages) return
+    const top = hub.messages.reduce((mx, m) => Math.max(mx, m.id), 0)
+    if (lastMsg.current == null) {
+      lastMsg.current = top
+      return
+    }
+    const fresh = hub.messages.filter((m) => m.id > lastMsg.current && !m.read && ['market', 'career'].includes(msgCategory(m)))
+    lastMsg.current = Math.max(lastMsg.current, top)
+    if (fresh.length) {
+      const first = fresh[fresh.length - 1]
+      notify(fresh.length === 1 ? first.title : `${fresh.length} novas mensagens: ${first.title}`, 'offer', () => setInbox({ focusId: fresh.length === 1 ? first.id : null, category: msgCategory(first) }))
+    }
+  }, [hub, notify])
 
   const remaining = useCountdown(hub?.career.next_reset_at, () => refresh({ silent: true }))
 
@@ -78,6 +98,7 @@ export default function SeasonsScreen({ onBack }) {
   const blockedText = worldStatus === 'syncing' ? 'Preparando a próxima partida…' : finished ? 'Temporada encerrada' : remaining != null ? `Sem energia · recarga em ${formatRemaining(remaining)}` : 'Sem energia'
 
   const goTab = useCallback((id, sub = null) => {
+    setTeamFocus(null)
     setTab(id)
     if (id === 'career') setCareerView(sub)
   }, [])
@@ -165,12 +186,34 @@ export default function SeasonsScreen({ onBack }) {
       notify('Você deixou o clube. Avance os dias para receber propostas.', 'info')
     })
 
-  const openInbox = (focusId = null) => setInbox({ focusId: typeof focusId === 'number' ? focusId : null })
-  const seenInbox = () => {
-    if (hub?.unread > 0) markMessagesRead().then(() => refresh({ silent: true })).catch(() => {})
+  const openInbox = (focus = null) => setInbox({ focusId: typeof focus === 'number' ? focus : null, category: typeof focus === 'string' ? focus : 'all' })
+  const seenInbox = (ids) => {
+    if (ids?.length) markMessagesRead(ids).then(() => refresh({ silent: true })).catch(() => {})
+  }
+  // Atalho de cada mensagem: leva à tela onde a decisão é tomada.
+  const inboxAction = (m) => {
+    setInbox(null)
+    if (m.action === 'open_negotiations' || m.action === 'open_finance') {
+      setWorldArea(m.action === 'open_finance' ? 'finance' : 'deals')
+      setTab('world')
+    } else if (m.action === 'open_player') {
+      setTeamFocus(m.player_id || null)
+      setTab('team')
+    } else if (m.action === 'open_offers') goTab('career', 'offers')
+  }
+
+  // Voltar (topo) sempre leva ao Início do modo, fechando o que estiver aberto; sair do modo tem botão próprio.
+  const atHome = tab === 'home' && !preMatch && !report && !inbox && !digest && !summary
+  const goHome = () => {
+    setPreMatch(null)
+    setReport(null)
+    setInbox(null)
+    setCompSel(null)
+    setTab('home')
   }
 
   const actions = {
+    exit: onBack,
     refresh: () => refresh({ silent: true }),
     play,
     // Dia de jogo: abre o pré-jogo; a partida (e o gasto de energia) só começa em "Iniciar partida"
@@ -193,11 +236,28 @@ export default function SeasonsScreen({ onBack }) {
   const badges = hub ? { career: hub.offers.length, home: hub.unread > 0 ? hub.unread : 0, team: hub.lineup?.errors || 0 } : {}
 
   return (
-    <AppShell header={<SeasonHeader title={live ? 'Ao vivo' : TITLES[tab]} career={hub?.career} season={hub?.season} remaining={remaining} onBack={onBack} />}>
+    <AppShell
+      header={
+        <SeasonHeader
+          title={live ? 'Ao vivo' : TITLES[tab]}
+          career={hub?.career}
+          season={hub?.season}
+          remaining={remaining}
+          onBack={!hub ? onBack : live || atHome ? null : goHome}
+          backLabel={!hub ? 'Voltar ao menu' : 'Voltar ao início da temporada'}
+        />
+      }
+    >
       <div className="sn-screen">
         {toast && (
-          <div className={`sn-toast ${toast.kind}`} role="status" key={toast.id}>
-            {toast.text}
+          <div className={`sn-toast ${toast.kind} ${toast.action ? 'has-action' : ''}`} role="status" key={toast.id}>
+            {toast.action ? (
+              <button type="button" onClick={() => { setToast(null); toast.action() }}>
+                {toast.text} <small>Abrir</small>
+              </button>
+            ) : (
+              toast.text
+            )}
           </div>
         )}
 
@@ -206,12 +266,12 @@ export default function SeasonsScreen({ onBack }) {
           {error && !hub && <ErrorState message={error} onRetry={() => refresh()} />}
 
           {ctx && tab === 'home' && <HomeTab ctx={ctx} actions={actions} />}
-          {ctx && tab === 'team' && <TeamTab hub={hub} notify={notify} onSaved={() => refresh({ silent: true })} />}
+          {ctx && tab === 'team' && <TeamTab hub={hub} notify={notify} onSaved={() => refresh({ silent: true })} focusPlayerId={teamFocus} />}
           {ctx && tab === 'matches' && <MatchesTab ctx={ctx} onOpenReport={actions.openReport} />}
           {ctx && tab === 'comps' && (
             <CompetitionsTab ctx={ctx} selected={compSel || ctx.nextEvent?.competition || hub?.competitions?.[0]?.id} onSelect={setCompSel} onOpenReport={actions.openReport} />
           )}
-          {ctx && tab === 'world' && hub.world && <WorldPanel hub={hub} onRefresh={actions.refresh} worldStatus={worldStatus} onHome={() => goTab('home')} />}
+          {ctx && tab === 'world' && hub.world && <WorldPanel key={worldArea} initialArea={worldArea} hub={hub} onRefresh={actions.refresh} worldStatus={worldStatus} onHome={() => goTab('home')} />}
           {ctx && tab === 'career' && <CareerTab ctx={ctx} initialView={careerView} actions={actions} />}
         </div>
 
@@ -272,7 +332,7 @@ export default function SeasonsScreen({ onBack }) {
         )}
 
         {report && <MatchReport fixtureId={report} onClose={() => setReport(null)} />}
-        {inbox && hub && <InboxSheet messages={hub.messages} focusId={inbox.focusId} onSeen={seenInbox} onClose={() => setInbox(null)} />}
+        {inbox && hub && <InboxSheet messages={hub.messages} focusId={inbox.focusId} initialCategory={inbox.category} onSeen={seenInbox} onAction={inboxAction} onClose={() => setInbox(null)} />}
 
 
       </div>

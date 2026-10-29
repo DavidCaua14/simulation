@@ -1,4 +1,5 @@
-import { Lock } from 'lucide-react'
+import GameIcon from '../../../components/ui/GameIcon'
+
 
 // Modo de jogo com imagem. `size`: 'tall' (destaque) ou 'wide'.
 // Estado vem do próprio modo (data/gameModes.js): locked = "Em breve".
@@ -17,7 +18,7 @@ export default function PlayModeCard({ mode, size = 'tall', badge, onSelect }) {
       <span className="hm-mode-state">
         {locked ? (
           <span className="gx-tag is-soon">
-            <Lock /> Em breve
+            <GameIcon name="lock" size={16} /> Em breve
           </span>
         ) : (
           badge || (

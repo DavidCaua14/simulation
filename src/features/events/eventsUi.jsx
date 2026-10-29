@@ -1,5 +1,6 @@
+import GameIcon from '../../components/ui/GameIcon'
 import { useEffect, useState } from 'react'
-import { Activity, Award, CalendarDays, Coins, Crown, Flame, Gem, Gift, Layers, Palette, Sparkles, Star, Trophy, Zap } from 'lucide-react'
+import { Activity, Award, CalendarDays, Crown, Flame, Gift, Layers, Sparkles, Star, Trophy } from 'lucide-react'
 
 export const BANNER_ICONS = { activity: Activity, trophy: Trophy, flame: Flame, star: Star, layers: Layers, crown: Crown, calendar: CalendarDays, gift: Gift, sparkles: Sparkles }
 export const CATEGORY_LABEL = { daily: 'Diário', weekly: 'Semanal', themed: 'Especial', collection: 'Coleção' }
@@ -42,10 +43,10 @@ export function rewardText(r) {
 export function RewardChip({ r }) {
   if (r.kind === 'box' || r.kind === 'card') return null // historical records remain auditable, without an acquisition action
   let icon
-  if (r.kind === 'coins') icon = <Coins size={13} className="ev-ic-coins" />
-  else if (r.kind === 'diamonds') icon = <Gem size={13} className="ev-ic-gems" />
-  else if (r.kind === 'energy') icon = <Zap size={13} fill="currentColor" className="ev-ic-energy" />
-  else if (r.kind === 'cosmetic') icon = <Palette size={13} className="ev-ic-gold" />
+  if (r.kind === 'coins') icon = <GameIcon name="coins" size={13} className="ev-ic-coins" />
+  else if (r.kind === 'diamonds') icon = <GameIcon name="diamond" size={13} className="ev-ic-gems" />
+  else if (r.kind === 'energy') icon = <GameIcon name="energy" size={13} className="ev-ic-energy" />
+  else if (r.kind === 'cosmetic') icon = <GameIcon name="palette" size={13} className="ev-ic-gold" />
   else if (r.kind === 'badge') icon = <Award size={13} className="ev-ic-gold" />
   else icon = <Gift size={13} />
   return <span className="ev-chip">{icon}{rewardText(r)}</span>

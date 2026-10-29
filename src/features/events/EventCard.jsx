@@ -1,4 +1,5 @@
-import { Check, Clock, Gift, Hourglass, Lock, RotateCw } from 'lucide-react'
+import GameIcon from '../../components/ui/GameIcon'
+import { Check, Clock, Gift, Hourglass, RotateCw } from 'lucide-react'
 import { BANNER_ICONS, CATEGORY_LABEL, RewardChip, fmtDate, timeLeft } from './eventsUi'
 
 // Um evento: faixa com nome/categoria/tempo, objetivos com barra de progresso, recompensas e o botão de resgate.
@@ -61,7 +62,7 @@ export default function EventCard({ ev, now, busy, onClaim, playerLevel }) {
         {comp?.claimable && <p className="ev-note">Resgate até {fmtDate(comp.claim_until)}.</p>}
         {comp?.claimed_at && <p className="ev-done"><Check size={14} /> Recompensa resgatada{ev.recurrence !== 'none' ? ' — volte no próximo período!' : '.'}</p>}
         {comp && !comp.claimable && !comp.claimed_at && <p className="ev-note">O prazo de resgate terminou.</p>}
-        {!comp && ev.state === 'active' && lockedLevel && <p className="ev-note"><Lock size={12} /> Disponível a partir do nível {ev.min_level}.</p>}
+        {!comp && ev.state === 'active' && lockedLevel && <p className="ev-note"><GameIcon name="lock" size={12} /> Disponível a partir do nível {ev.min_level}.</p>}
         {!comp && limitReached && <p className="ev-done"><Check size={14} /> Você já completou este evento.</p>}
         {!comp && ev.state === 'active' && !done && !lockedLevel && !limitReached && (
           <p className="ev-note">O progresso conta sozinho enquanto você joga.</p>
