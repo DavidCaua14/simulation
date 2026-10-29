@@ -15,7 +15,6 @@ import FriendsScreen from './features/friends/FriendsScreen'
 import EventsScreen from './features/events/EventsScreen'
 import { AudioProvider, useAudio } from './features/audio/AudioContext'
 import { getActiveCareer } from './features/player/playerService'
-import MaintenanceGate from './features/maintenance/MaintenanceGate'
 import LevelUpOverlay from './features/progress/LevelUpOverlay'
 import { rememberLevel, reportLevel } from './features/progress/levelEvents'
 import UpdateWelcome from './features/update/UpdateWelcome'
@@ -199,12 +198,11 @@ function App() {
       <ErrorBoundary>
         <AuthProvider>
           {/* Acima do Gate: a música não para em telas de loading nem em trocas de tela */}
-          <MaintenanceGate>
-            <AudioProvider>
-              <Gate />
-              <LevelUpOverlay />
-            </AudioProvider>
-          </MaintenanceGate>
+          {/* Manutenção desativada: para reativar, envolva o AudioProvider com <MaintenanceGate> (ver supabase/maintenance/README.md) */}
+          <AudioProvider>
+            <Gate />
+            <LevelUpOverlay />
+          </AudioProvider>
         </AuthProvider>
       </ErrorBoundary>
     </ThemeProvider>

@@ -20,3 +20,9 @@ O hook atua apenas na Data API do PostgREST (REST/RPC). Não bloqueia Auth, Stor
 2. Altere somente `enabled` para `false` em `public/maintenance.json`, mantendo o restante da configuração, e publique o commit. As abas da nova versão detectam a liberação automaticamente, sem apagar sessão ou progresso.
 
 Mantenha `enabled: true` e o hook ativos durante as próximas etapas. Em falha de rede/configuração da manutenção, a nova interface bloqueia por precaução. Para reativar no futuro, publique `enabled: true` e execute `01_enable.sql` novamente.
+
+## Situação atual: manutenção removida
+
+- Banco: rode `supabase/releases/remover_manutencao.sql` no SQL Editor (um comando só; equivale ao `02_disable.sql`).
+- Interface: o `<MaintenanceGate>` foi retirado de `src/App.jsx`, então a tela de manutenção não aparece mais nem por um instante. O `public/maintenance.json` deixou de ser lido.
+- Para reativar no futuro: envolva de novo o `AudioProvider` com `<MaintenanceGate>` em `src/App.jsx`, publique `enabled: true` e rode `01_enable.sql`.
