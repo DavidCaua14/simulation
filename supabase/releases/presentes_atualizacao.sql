@@ -21,7 +21,7 @@ begin
    'messages',(select md5(coalesce(string_agg(concat_ws('|',id,career_id,kind,title,body,club_id,read,day_no),'' order by id),'')) from public.mgr_messages),
    'morale',(select md5(coalesce(string_agg(concat_ws('|',career_id,player_id,morale,transfer_requested,promised_role),'' order by career_id,player_id),'')) from public.cw_players)) into antes;
 
--- ===================== evolução 34 =====================
+-- ===================== 35_update_gift.sql =====================
 create table if not exists public.avatar_catalog (
  id text primary key check (id ~ '^[a-z0-9_-]{1,30}$'),label text not null,active boolean not null default true,sort_order int not null default 0
 );

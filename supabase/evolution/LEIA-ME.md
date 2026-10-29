@@ -175,3 +175,12 @@ um avatar de lenda aleatório, e veem a tela de Novidades (que pode ser revista 
 depois não recebem nem veem nada; reexecutar o script não inclui ninguém novo. Avatares ganhos ficam no perfil
 (`player_avatars`) e podem virar foto (`avatar:<id>`), só para quem os possui. Scripts de colar no SQL Editor são um
 único comando gerado por `scripts/build-editor-releases.sh`.
+
+## Primeiro acesso ao modo Temporadas mais rápido (36)
+
+Banco no ar: rode `supabase/releases/primeiro_acesso_rapido.sql` (um comando só; pode repetir). Só desempenho, sem
+mexer em dados de jogadores. O primeiro acesso de uma carreira monta o mundo inteiro numa chamada e passava de 20 s,
+estourando o limite de 8 s da API ("canceling statement due to statement timeout"); agora leva ~3 s.
+- `season_fixture_slots(fixture_id)` indexado: cada jogo criado varria a tabela inteira (que cresce com os jogadores).
+- `cw_initialize_finances`: papel prometido copiado do contrato atleta a atleta pela chave primária e criação de
+  contratos sem checagem de duplicidade quando a carreira ainda não tem nenhum.

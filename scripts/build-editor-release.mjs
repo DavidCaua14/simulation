@@ -35,7 +35,7 @@ begin
  if to_regprocedure('${requires}') is null then raise exception '${requiresMsg}; nada foi alterado';end if;
  ${fingerprint} into antes;
 
--- ===================== evolução 34 =====================
+-- ===================== ${migration} =====================
 ${body}
 
  ${fingerprint} into depois;

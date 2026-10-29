@@ -21,7 +21,7 @@ begin
    'messages',(select md5(coalesce(string_agg(concat_ws('|',id,career_id,kind,title,body,club_id,read,day_no),'' order by id),'')) from public.mgr_messages),
    'morale',(select md5(coalesce(string_agg(concat_ws('|',career_id,player_id,morale,transfer_requested,promised_role),'' order by career_id,player_id),'')) from public.cw_players)) into antes;
 
--- ===================== evolução 34 =====================
+-- ===================== 34_ai_balance.sql =====================
 create or replace function public.cw_foreign_hiring(p_region text,p_date date)
 returns boolean language sql stable security definer set search_path=public as $$
  select case when p_region='ENG' then extract(month from p_date) between 5 and 7 else extract(month from p_date) in(11,12,1) end
