@@ -1,4 +1,11 @@
 -- Testes da evolução 32. Roda numa transação e desfaz tudo (ROLLBACK).
+-- ATENÇÃO: teste do banco LOCAL descartável (scripts/test-seasons-db.py). Não rode no Supabase de produção:
+-- ele usa carreiras fictícias de teste. Em produção, use supabase/releases/diagnostico_elenco.sql.
+do $guard$ begin
+ if not exists(select 1 from public.careers where id='31313131-0000-0000-0000-000000000011') then
+  raise exception 'Este arquivo é só para o banco de teste local (carreiras fictícias). Nada foi alterado. Em produção, rode supabase/releases/diagnostico_elenco.sql.';
+ end if;
+end $guard$;
 begin;
 select set_config('request.jwt.claim.sub','31313131-0000-0000-0000-000000000001',true);
 select public.mgr_hub() is not null;
