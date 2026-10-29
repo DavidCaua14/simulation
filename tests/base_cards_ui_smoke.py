@@ -39,7 +39,9 @@ with sync_playwright() as p:
             calls.append(name)
             args = request.post_data_json if request.method == 'POST' else {}
             data = []
-            if name == 'careers': data = {**payload['career'], 'club_id': club}
+            if name == 'careers':
+                data = {**payload['career'], 'club_id': club}
+                if 'vnd.pgrst.object' not in (request.headers.get('accept') or ''): data = [data]  # como o PostgREST: lista sem .single()
             elif name == 'mgr_hub':
                 data = json.loads(json.dumps(payload['hub'] if region == 'BRA' else payload['europeanHub']))
                 data['coach']['club_id'] = club

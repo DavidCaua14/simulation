@@ -56,9 +56,9 @@ function Gate() {
       setCareer(found)
       setCareerUserId(user.id)
       setCheckingCareer(false)
-    }).catch(() => {
+    }).catch((e) => {
       if (cancelled) return
-      setCareerError(true)
+      setCareerError([e?.code, e?.message].filter(Boolean).join(' · ') || 'erro desconhecido')
       setCheckingCareer(false)
     })
     return () => {
@@ -119,6 +119,7 @@ function Gate() {
       <main className="app-error" role="alert">
         <h2>Não foi possível carregar sua carreira</h2>
         <p>Tente novamente para continuar de onde parou.</p>
+        <small className="app-error-detail">Detalhe: {careerError}</small>
         <button type="button" className="btn-primary" onClick={() => setCareerAttempt((attempt) => attempt + 1)}>
           Tentar novamente
         </button>
@@ -149,7 +150,8 @@ function Gate() {
 
   // Nível, XP, moedas e clube mudam no banco enquanto se joga: ao voltar, recarrega a carreira.
   const backHome = () => {
-    getActiveCareer(user.id).then((fresh) => fresh && setCareer(fresh)).catch(() => setCareerError(true))
+    // Falha passageira ao recarregar não derruba o jogo: mantém a carreira já carregada.
+    getActiveCareer(user.id).then((fresh) => fresh && setCareer(fresh)).catch(() => {})
     setScreen('home')
   }
 

@@ -40,6 +40,7 @@ with sync_playwright() as p:
             data = []
             if name == 'careers':
                 data = payload['career']
+                if 'vnd.pgrst.object' not in (route.request.headers.get('accept') or ''): data = [data]  # como o PostgREST: lista sem .single()
             elif name == 'mgr_hub':
                 data = dict(payload['hub'])
                 if backend == 'legacy':

@@ -22,3 +22,4 @@
   word-break: break-word;
 }
 .app-error .btn-primary { max-width: 260px; }
+.app-error-detail { max-width: 320px; color: var(--text-secondary); font-size: 0.72rem; opacity: 0.8; word-break: break-word; }

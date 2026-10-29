@@ -19,17 +19,24 @@ export async function hasActiveCareer(userId) {
 export async function getActiveCareer(userId) {
   if (!userId) return null
 
-  const { data, error } = await supabase
-    .from('careers')
-    .select('*')
-    .eq('user_id', userId)
-    .eq('status', 'active')
-    .maybeSingle()
-
-  if (error) {
-    throw error
+  // Falhas passageiras (rede, banco ocupado) repetem a leitura antes de mostrar erro.
+  // limit(1) em vez de maybeSingle: uma carreira ativa duplicada não trava a entrada.
+  let lastError = null
+  for (let attempt = 0; attempt < 3; attempt++) {
+    if (attempt) await new Promise((resolve) => setTimeout(resolve, 700 * attempt))
+    const { data, error } = await supabase
+      .from('careers')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('status', 'active')
+      .order('created_at', { ascending: false })
+      .limit(1)
+    if (!error) return data?.[0] ? mapRowToCareer(data[0]) : null
+    lastError = error
+    if (['PGRST301', 'PGRST303', '42501', '42P01', '42703'].includes(error.code)) break
   }
-  return data ? mapRowToCareer(data) : null
+  console.error('[getActiveCareer]', lastError)
+  throw lastError
 }
 
 export async function isNicknameTaken(nickname) {
