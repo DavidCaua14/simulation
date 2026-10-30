@@ -75,7 +75,7 @@ export const GAME_MODES = [
     desc: 'Confira suas mensagens e novidades do jogo.',
     Icon: MessagesIcon,
     image: mensagens,
-    locked: true,
+    locked: false,
   },
   {
     id: 'friends',

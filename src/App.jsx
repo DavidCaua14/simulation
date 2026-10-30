@@ -19,6 +19,7 @@ import LevelUpOverlay from './features/progress/LevelUpOverlay'
 import { rememberLevel, reportLevel } from './features/progress/levelEvents'
 import UpdateWelcome from './features/update/UpdateWelcome'
 import AdminDashboard from './features/admin/AdminDashboard'
+import InboxScreen from './features/inbox/InboxScreen'
 import { isMaintenanceAdmin as isOwner } from './features/maintenance/policy'
 import { claimReleaseGift, markReleaseSeen } from './features/update/updateApi'
 import './styles/theme.css'
@@ -154,7 +155,8 @@ function Gate() {
 
   // Só estas telas estão construídas; os demais ids da barra/menu ainda não fazem nada.
   const navigate = (id, params = null) => {
-    if (id === 'home' || id === 'tips' || id === 'profile' || id === 'seasons' || id === 'store' || id === 'friends' || id === 'events') {
+    if (id === 'messages') id = 'inbox'
+    if (id === 'home' || id === 'tips' || id === 'profile' || id === 'seasons' || id === 'store' || id === 'friends' || id === 'events' || id === 'inbox') {
       setScreenParams(params)
       setScreen(id)
       if (id !== 'home') playSfx('open') // abrir telas relevantes (som curto e discreto)
@@ -185,6 +187,10 @@ function Gate() {
   function renderScreen() {
   if (screen === 'admin' && owner) {
     return <AdminDashboard onBack={backHome} />
+  }
+
+  if (screen === 'inbox') {
+    return <InboxScreen onBack={backHome} />
   }
 
   if (screen === 'tips') {

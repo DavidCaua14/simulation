@@ -251,3 +251,14 @@ ou o endereço `/#admin`. `is_admin()` exige estar em `admins` E o e-mail do tok
 `admin_*` conferem no servidor. Seções: visão geral (jogadores, carreiras, eventos, banco), eventos (evolução 13),
 jogadores (busca e envio/retirada de moedas, diamantes e energia bônus com motivo), avisos para todos (caixa de
 mensagens) e registro (`admin_actions`). Teste de tela: `tests/admin_ui_smoke.py`.
+
+## Caixa de entrada, avisos com período e painel com modo Temporadas (43)
+
+Banco no ar: rode `supabase/releases/caixa_avisos_painel.sql` (depois de `painel_admin.sql`).
+- `announcements`: título, texto, início, fim e premiação opcional; aparecem em modal na tela inicial (uma vez por
+  jogador, `announcement_reads`) e na caixa de entrada enquanto estão no período.
+- `player_notices`: toda ação do painel sobre um jogador (premiação, retirada, troca de clube, caixa, reputação) gera um
+  comunicado em modal. Premiações são resgatadas pelo jogador (`inbox_claim`, uma vez).
+- Jogador: `inbox_list`, `inbox_pending`, `inbox_seen`, `inbox_claim`. Tela: botão Mensagens na tela inicial.
+- Painel: visão geral (cadastros por dia, partidas, economia da semana, eventos, avisos, melhores jogadores, clubes),
+  Temporadas (`admin_career`, `admin_career_set_club`, `admin_career_adjust`) e Avisos (`admin_announcement_*`).

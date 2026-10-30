@@ -10,6 +10,8 @@ import PlayModeCard from './components/PlayModeCard'
 import QuickTile from './components/QuickTile'
 import useEventsBadge from '../events/useEventsBadge'
 import EventsStrip from '../events/EventsStrip'
+import NoticeModal from '../inbox/NoticeModal'
+import useInboxBadge from '../inbox/useInboxBadge'
 import BottomTabBar from './components/BottomTabBar'
 import { ChevronRight } from 'lucide-react'
 import { GAME_MODES } from './data/gameModes'
@@ -34,6 +36,7 @@ export default function HomeScreen({ career, onNavigate }) {
   // Começa com os valores da carreira e se atualiza sozinho (prêmios de palpites, etc.)
   const wallet = useWallet({ coins: player.coins, energy: player.energy, diamonds: player.diamonds })
   const events = useEventsBadge() // recompensas de evento/sequência prontas + evento especial em destaque
+  const inbox = useInboxBadge() // avisos novos e premiações para resgatar
 
   const seasons = modeById('seasons')
   const tips = modeById('tips')
@@ -80,13 +83,15 @@ export default function HomeScreen({ career, onNavigate }) {
             <h2 className="gx-title">Mais</h2>
             <div className="hm-quick-grid">
               {QUICK.map((id) => modeById(id)).filter(Boolean).map((m) => (
-                <QuickTile key={m.id} mode={m} onSelect={onNavigate} badge={m.id === 'events' ? events.count : 0} />
+                <QuickTile key={m.id} mode={m} onSelect={onNavigate} badge={m.id === 'events' ? events.count : m.id === 'messages' ? inbox : 0} />
               ))}
             </div>
           </section>
         </div>
 
         <BottomTabBar active="home" onSelect={onNavigate} />
+        {/* Avisos do período e comunicados da administração: um por vez, ao chegar na tela inicial */}
+        <NoticeModal onWalletChange={wallet.refresh} />
 
 
       </div>

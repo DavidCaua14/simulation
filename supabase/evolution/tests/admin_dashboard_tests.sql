@@ -33,13 +33,13 @@ begin
  if jsonb_array_length(public.admin_players('',10))=0 then raise exception 'Busca de jogadores vazia';end if;
  select coins into coins0 from public.careers where id=car;
  r:=public.admin_player_grant(car,'coins',250,'Compensação de teste');
- if (r->>'coins')::int<>coins0+250 then raise exception 'Moedas não enviadas: %',r;end if;
+ if not exists(select 1 from public.player_notices where career_id=car and kind='reward' and (reward->>'coins')::int=250 and claimed_at is null) then raise exception 'Premiação não foi para a caixa de entrada: %',r;end if;
  begin perform public.admin_player_grant(car,'coins',10,'');raise exception 'Envio sem motivo aceito';
  exception when raise_exception then if sqlerrm not like '%motivo%' then raise;end if;end;
  r:=public.admin_broadcast('Manutenção amanhã','O jogo fica fora do ar das 3h às 4h.');
- select count(*) into n from public.mgr_messages where career_id=car and title='Manutenção amanhã';
+ select count(*) into n from public.announcements where title='Manutenção amanhã' and starts_at<=now() and ends_at>now();
  if n<>1 or (r->>'recipients')::int<1 then raise exception 'Aviso não chegou';end if;
  if jsonb_array_length(public.admin_actions_list(10))<2 then raise exception 'Registro de ações vazio';end if;
- raise notice 'PASS dono vê a visão geral, busca jogadores, envia moedas (com motivo) e avisa todos (% carreiras)',r->>'recipients';
+ raise notice 'PASS dono vê a visão geral, busca jogadores, envia premiação (com motivo) e avisa todos (% carreiras)',r->>'recipients';
 end $test$;
 rollback;
