@@ -15,3 +15,22 @@ export const CRITERIA = [
   ['Eventos', '25 por evento concluído'],
   ['Demissões', '−150 por demissão'],
 ]
+
+// Fotos enviadas pelos jogadores do topo ({ posição: dataURL }), carregadas depois da lista.
+export async function fetchRankingPhotos(limit = 50) {
+  const { data, error } = await supabase.rpc('ranking_photos', { p_limit: limit })
+  if (error) return {}
+  return data || {}
+}
+
+// Pontos de cada critério (mesma conta do servidor).
+export function breakdown(me) {
+  return [
+    ['Nível', `Nível ${me.level} + ${me.xp ?? 0} XP`, me.level * 100 + Math.floor((me.xp ?? 0) / 10)],
+    ['Títulos', `${me.titles} × 500`, me.titles * 500],
+    ['Vitórias e empates', `${me.wins} × 20 + ${me.draws} × 7`, me.wins * 20 + me.draws * 7],
+    ['Reputação', `${String(me.reputation).replace('.', ',')} × 15`, Math.round(me.reputation * 15)],
+    ['Eventos', `${me.events} × 25`, me.events * 25],
+    ['Demissões', `${me.fired ?? 0} × −150`, -(me.fired ?? 0) * 150],
+  ]
+}

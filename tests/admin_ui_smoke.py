@@ -68,6 +68,7 @@ def open_page(browser, email, width, url):
         elif name == 'events_overview': data = game['events']
         elif name == 'release_gift_claim': data = {'eligible': False}
         elif name == 'ranking_overall': data = admin['ranking']
+        elif name == 'ranking_photos': data = admin.get('ranking_photos', {})
         route.fulfill(status=200, content_type='application/json', body=json.dumps(data))
     page.route('https://' + host + '/**', api)
     page.goto(url, wait_until='domcontentloaded')
@@ -161,11 +162,21 @@ with sync_playwright() as p:
     expect(page.get_by_role('heading', name='Ranking')).to_be_visible()
     expect(page.get_by_label('Pódio')).to_contain_text(admin['ranking']['entries'][0]['nickname'])
     expect(page.get_by_label('Sua posição')).to_contain_text(f"{admin['ranking']['me']['position']}º")
-    page.get_by_role('button', name='Como os pontos são calculados').click()
-    expect(page.get_by_text('500 pontos por título no modo Temporadas')).to_be_visible()
     assert page.locator('.rk-row').count() == len(admin['ranking']['entries'])
+    assert page.locator('.rk-podium .rk-av img').count() >= 2, 'Pódio sem avatares'
+    expect(page.locator('.rk-camp-nums .w b')).to_have_text(str(admin['ranking']['me']['wins']))
+    assert page.evaluate('[...document.querySelectorAll(".rk-camp-nums b, .rk-me-stats b")].every(b => b.scrollWidth <= b.clientWidth + 1)'), 'Números cortados no cartão'
     assert page.evaluate('document.documentElement.scrollWidth <= window.innerWidth + 1'), 'Rolagem horizontal no ranking'
+    page.wait_for_timeout(400)
     if shots: page.screenshot(path=str(shots / 'player-ranking.png'), full_page=True)
+    page.get_by_role('button', name='Pontuação').click()
+    dialog = page.get_by_role('dialog')
+    expect(dialog.get_by_text('500 pontos por título no modo Temporadas')).to_be_visible()
+    expect(dialog.get_by_text('Seus pontos')).to_be_visible()
+    expect(dialog.locator('tfoot')).to_contain_text(f"{admin['ranking']['me']['points']:,}".replace(',', '.'))
+    if shots: page.screenshot(path=str(shots / 'player-ranking-scoring.png'))
+    dialog.get_by_role('button', name='Fechar').click()
+    expect(page.get_by_role('dialog')).to_have_count(0)
     assert st['errors'] == [], st['errors']
     print('PASS jogador: avisos e comunicados em modal um por vez, resgate, caixa de entrada e ranking')
     context.close()
