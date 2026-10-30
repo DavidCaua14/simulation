@@ -15,7 +15,7 @@ export default function BasePlayerCard({ player, position, overall, width = 100,
     position: position || player.position || player.natural || player.pos,
     overall: Math.round(overall ?? player.overall ?? player.ratings?.[position || player.position] ?? 0),
     club_id: player.club_id,
-    meta: { number: player.number, nationality: player.nationality, club_name: player.club_name, colors },
+    meta: { number: player.number, nationality: player.nationality, club_name: player.club_name, age: player.age, colors },
   }
   return <CardView as="span" card={card} width={width} className={`base-player-card ${className}`} />
 }

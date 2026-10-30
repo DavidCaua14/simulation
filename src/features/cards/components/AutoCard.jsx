@@ -57,6 +57,7 @@ export default function AutoCard({ card }) {
         <span className="ac-ovr">
           <b>{card.overall}</b>
           <small>{card.position}</small>
+          {meta.age != null && <small className="ac-age">{meta.age} anos</small>}
         </span>
         <span className="ac-badges">
           {club ? <ClubCrest clubId={club.id} size={22} /> : <span className="ac-clubtxt">{(meta.club_name || '').slice(0, 3).toUpperCase()}</span>}

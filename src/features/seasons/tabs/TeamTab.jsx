@@ -389,6 +389,7 @@ export default function TeamTab({ hub, onSaved, notify, focusPlayerId = null }) 
                             {p.position}
                             {p.position_estimated ? '*' : ''}
                             {inXI ? ' · titular' : onBench ? ' · banco' : ''}
+                            {p.age != null ? ` · ${p.age} anos` : ''}
                           </small>
                           {(p.transfer_requested || p.transfer_listed || p.precontract || p.contract_expires) && (
                             <span className="sq-tags">

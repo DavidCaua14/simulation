@@ -222,3 +222,15 @@ Banco no ar: rode `supabase/releases/elenco_caixa_janela.sql` e depois `liberar_
   encerrados entre clubes da IA e o cache de requisições. A tabela `season_fixture_slots` deixa de ser usada.
 - Scripts de release com o jogo no ar usam o modo `live` do gerador (sem comparação de impressões digitais, que
   abortaria sempre com jogadores online).
+
+## Negociações realistas e idade nas cartas (40)
+
+Banco no ar: rode `supabase/releases/negociacoes_realistas.sql`.
+- Clube vendedor da IA: 3 melhores do elenco intocáveis (exceção rara: 3× o valor, de clube bem maior); titulares 4º–7º
+  por 1,6–2× o valor, 8º–11º por 1,25–1,5× (entre clubes da IA, regra normal); às vezes não negocia titular. Quem pediu
+  para sair ou está no fim do contrato segue a regra normal.
+- Atleta: não desce de divisão (salvo 32+ anos, ou quer sair e recebe +30%); na mesma divisão recusa clube bem mais fraco
+  (salvo +50% de salário, 31+ ou pedido de saída); livre muito acima do nível do clube espera proposta melhor.
+- IA escolhe alvos realistas (não mira pilares nem atletas de divisão acima, salvo 32+). Simulação de 1,5 ano: 140
+  transferências e 35 pré-contratos da IA.
+- Idade em todas as cartas (`cw_patch_players` sempre envia `age`).
