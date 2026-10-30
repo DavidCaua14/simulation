@@ -234,3 +234,12 @@ Banco no ar: rode `supabase/releases/negociacoes_realistas.sql`.
 - IA escolhe alvos realistas (não mira pilares nem atletas de divisão acima, salvo 32+). Simulação de 1,5 ano: 140
   transferências e 35 pré-contratos da IA.
 - Idade em todas as cartas (`cw_patch_players` sempre envia `age`).
+
+## Histórico de partidas enxuto (41)
+
+Banco no ar: rode `supabase/releases/historico_enxuto.sql` e depois `liberar_espaco.sql`.
+- Premiações usam `mgr_player_stats` (idêntico à soma jogo a jogo + abertura); `cw_stats_opening` esvaziada.
+- Atuações jogo a jogo por 45 dias (cláusulas de desempenho em aberto guardam desde o registro); partidas da IA por
+  7 dias; escalações da IA apagadas ao fim; lances da IA guardam gols, pênaltis e cartões.
+- Correção: amarelos não são mais apagados (desempate por fair play em `sim_standings`).
+- Agendador: `purge-cron-history` apaga diariamente o histórico com mais de 1 dia.
