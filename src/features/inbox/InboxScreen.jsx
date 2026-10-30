@@ -14,7 +14,7 @@ export function RewardChips({ reward }) {
   const list = rewardEntries(reward)
   if (!list.length) return null
   return (
-    <span className="ib-rewards">
+    <span className="gi-rewards">
       {list.map(([k, v]) => <span key={k}><GameIcon name={REWARD_ICON[k]} size={16} /> {Number(v).toLocaleString('pt-BR')} {REWARD_LABEL[k]}</span>)}
     </span>
   )
@@ -52,34 +52,34 @@ export default function InboxScreen({ onBack, onWalletChange }) {
 
   const items = (data?.items || []).filter((i) => tab === 'all' || (tab === 'announcement' ? i.type === 'announcement' : rewardEntries(i.reward).length > 0))
   return (
-    <div className="ib">
-      <header className="ib-top">
-        <button type="button" className="ib-back" onClick={onBack} aria-label="Voltar"><ArrowLeft size={20} /></button>
+    <div className="gi">
+      <header className="gi-top">
+        <button type="button" className="gi-back" onClick={onBack} aria-label="Voltar"><ArrowLeft size={20} /></button>
         <h1>Caixa de entrada</h1>
-        {data?.claimable > 0 && <span className="ib-pill">{data.claimable} para resgatar</span>}
+        {data?.claimable > 0 && <span className="gi-pill">{data.claimable} para resgatar</span>}
       </header>
-      <div className="ib-tabs" role="tablist">
+      <div className="gi-tabs" role="tablist">
         {TABS.map(([id, label]) => <button key={id} role="tab" aria-selected={tab === id} className={tab === id ? 'is-on' : ''} onClick={() => setTab(id)}>{label}</button>)}
       </div>
       {msg && <Notice kind={msg.kind} onClose={() => setMsg(null)}>{msg.text}</Notice>}
       {!data ? <Skeleton rows={4} /> : items.length === 0 ? (
         <EmptyState icon={Inbox} title="Nada por aqui" text="Avisos do jogo e premiações aparecem nesta caixa." />
       ) : (
-        <ul className="ib-list">
+        <ul className="gi-list">
           {items.map((i) => {
             const Icon = KIND_ICON[i.type === 'announcement' ? 'announcement' : i.kind] || Bell
             return (
-              <li key={`${i.type}:${i.id}`} className={`ib-item k-${i.type === 'announcement' ? 'announcement' : i.kind}`}>
-                <span className="ib-ico"><Icon size={18} /></span>
-                <div className="ib-body">
+              <li key={`${i.type}:${i.id}`} className={`gi-item k-${i.type === 'announcement' ? 'announcement' : i.kind}`}>
+                <span className="gi-ico"><Icon size={18} /></span>
+                <div className="gi-body">
                   <small>{i.type === 'announcement' ? 'Aviso' : 'Comunicado'} · {fmtDate(i.at)}{i.ends_at ? ` · até ${fmtDate(i.ends_at)}` : ''}</small>
                   <b>{i.title}</b>
                   <p>{i.body}</p>
                   <RewardChips reward={i.reward} />
                 </div>
                 {i.claimable ? (
-                  <button type="button" className="gx-btn ib-claim" disabled={busy === i.id} onClick={() => claim(i)}>{busy === i.id ? '…' : 'Resgatar'}</button>
-                ) : i.claimed_at ? <span className="ib-done">Resgatado</span> : null}
+                  <button type="button" className="gx-btn gi-claim" disabled={busy === i.id} onClick={() => claim(i)}>{busy === i.id ? '…' : 'Resgatar'}</button>
+                ) : i.claimed_at ? <span className="gi-done">Resgatado</span> : null}
               </li>
             )
           })}
