@@ -70,7 +70,7 @@ begin
  begin perform public.career_transfer_respond(v_id,'reject',0,gen_random_uuid());raise exception 'FAILED foreign negotiation accepted';exception when others then if sqlerrm='FAILED foreign negotiation accepted' then raise;end if;end;
  perform set_config('request.jwt.claim.sub','31313131-0000-0000-0000-000000000001',true);
  -- News is immutable per event and read flags stay local.
- perform public.cw_news_add(c1,'test:dedup','test','Uma notícia','Texto');perform public.cw_news_add(c1,'test:dedup','test','Uma notícia','Texto');
+ perform public.cw_news_add(c1,'test:dedup','world','Uma notícia','Texto');perform public.cw_news_add(c1,'test:dedup','world','Uma notícia','Texto');
  if(select count(*) from public.cw_news where career_id=c1 and event_key='test:dedup')<>1 then raise exception 'News duplicated';end if;
  -- Losing funding before final acceptance must leave the player and all payments untouched.
  update public.cw_clubs set cash=5000000 where career_id=c1 and club_id='flamengo';

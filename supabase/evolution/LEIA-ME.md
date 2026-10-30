@@ -184,3 +184,21 @@ estourando o limite de 8 s da API ("canceling statement due to statement timeout
 - `season_fixture_slots(fixture_id)` indexado: cada jogo criado varria a tabela inteira (que cresce com os jogadores).
 - `cw_initialize_finances`: papel prometido copiado do contrato atleta a atleta pela chave primária e criação de
   contratos sem checagem de duplicidade quando a carreira ainda não tem nenhum.
+
+## Mercado, economia e notícias (37)
+
+Banco no ar: rode `supabase/releases/mercado_economia.sql` (um comando só; pode repetir).
+- Renovar de novo antes de enviar a proposta reabre a renovação já aberta (antes: "duplicate key").
+- Venda para clube da IA: se o atleta pede salário maior, o comprador da IA aceita sozinho e a venda é registrada
+  (antes a negociação esperava o comprador, expirava e o dinheiro nunca entrava).
+- Vendas concluídas cujo valor não entrou no caixa: a diferença é creditada uma vez no clube atual do treinador
+  (lançamento "sale_fix"). É a única alteração de dados de usuários; o script libera só a impressão digital `clubs`.
+- Seu clube acumula caixa até 10× o orçamento inicial (antes 3×: o excedente virava "investimento patrimonial" todo
+  mês). Clubes da IA seguem com 3×.
+- Receita de jogo em todos os jogos do mundo: bilheteria do mandante (torcida × 0,02) e prêmio por vitória
+  (1.500 + prestígio × 30; empate = 1/3), ×1,2 em copas e ×1,6 em continentais.
+- Valor de mercado: 80 de nota ≈ 40 mil, dobrando a cada 4,5 pontos; idade e potencial ajustam. Valores guardados
+  são recalculados na instalação.
+- Busca no mercado só lê (não trava a carreira) e filtra pelo valor guardado.
+- Notícias só do seu clube (mais "world", "job", "finance" e os campeões, "title"); as antigas de outros clubes são apagadas. O gatilho de
+  resultados deixou de calcular manchetes de outros clubes a cada jogo simulado.

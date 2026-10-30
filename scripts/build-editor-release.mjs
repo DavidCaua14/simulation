@@ -2,8 +2,9 @@ import { readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 // Gera um script de colar no SQL Editor a partir de uma migração: UM ÚNICO comando (bloco DO) com a instalação,
 // a conferência das impressões digitais dos dados de usuários e a verificação. Trecho parcial não roda; completo é tudo ou nada.
-// Uso: node scripts/build-editor-release.mjs <migração> <saída> <função exigida> <função instalada> "<título>" "<mensagem de pré-requisito>"
-const [migration, output, requires, installed, title, requiresMsg] = process.argv.slice(2)
+// Uso: node scripts/build-editor-release.mjs <migração> <saída> <função exigida> <função instalada> "<título>" "<mensagem de pré-requisito>" [itens que podem mudar, ex.: clubs]
+const [migration, output, requires, installed, title, requiresMsg, allowedArg = ''] = process.argv.slice(2)
+const allowed = allowedArg.split(',').map((k) => k.trim()).filter(Boolean)
 const root = resolve(import.meta.dirname, '..')
 const body = readFileSync(resolve(root, 'supabase/evolution', migration), 'utf8')
   .trim()
@@ -39,7 +40,7 @@ begin
 ${body}
 
  ${fingerprint} into depois;
- select string_agg(k,', ') into mudou from jsonb_object_keys(antes) k where antes->k is distinct from depois->k;
+ select string_agg(k,', ') into mudou from jsonb_object_keys(antes) k where antes->k is distinct from depois->k${allowed.length ? ` and k not in(${allowed.map((k) => `'${k}'`).join(',')})` : ''};
  if mudou is not null then raise exception 'Abortado: dados de usuários mudariam (%); nada foi alterado',mudou;end if;
  if to_regprocedure('${installed}') is null then raise exception 'Instalação incompleta; nada foi alterado';end if;
  raise notice 'Instalação concluída: ${title}; dados dos usuários preservados.';
