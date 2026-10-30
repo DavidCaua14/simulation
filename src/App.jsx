@@ -18,6 +18,8 @@ import { getActiveCareer } from './features/player/playerService'
 import LevelUpOverlay from './features/progress/LevelUpOverlay'
 import { rememberLevel, reportLevel } from './features/progress/levelEvents'
 import UpdateWelcome from './features/update/UpdateWelcome'
+import AdminDashboard from './features/admin/AdminDashboard'
+import { isMaintenanceAdmin as isOwner } from './features/maintenance/policy'
 import { claimReleaseGift, markReleaseSeen } from './features/update/updateApi'
 import './styles/theme.css'
 
@@ -94,6 +96,18 @@ function Gate() {
     }
   }, [ready, user?.id])
 
+  // Painel administrativo: só o dono do jogo (o servidor confere de novo). Abre por /#admin ou pelo Perfil.
+  const owner = isOwner(user)
+  useEffect(() => {
+    if (!owner) return undefined
+    const sync = () => {
+      if (window.location.hash === '#admin') setScreen('admin')
+    }
+    sync()
+    window.addEventListener('hashchange', sync)
+    return () => window.removeEventListener('hashchange', sync)
+  }, [owner])
+
   const closeGift = () => {
     if (gift?.show) markReleaseSeen().catch(() => {})
     setGift((g) => (g ? { ...g, show: false, open: false } : g))
@@ -148,7 +162,12 @@ function Gate() {
   }
 
   // Nível, XP, moedas e clube mudam no banco enquanto se joga: ao voltar, recarrega a carreira.
+  const openAdmin = owner ? () => {
+    window.location.hash = 'admin'
+    setScreen('admin')
+  } : null
   const backHome = () => {
+    if (window.location.hash === '#admin') history.replaceState(null, '', window.location.pathname + window.location.search)
     // Falha passageira ao recarregar não derruba o jogo: mantém a carreira já carregada.
     getActiveCareer(user.id).then((fresh) => fresh && setCareer(fresh)).catch(() => {})
     setScreen('home')
@@ -164,6 +183,10 @@ function Gate() {
   )
 
   function renderScreen() {
+  if (screen === 'admin' && owner) {
+    return <AdminDashboard onBack={backHome} />
+  }
+
   if (screen === 'tips') {
     return <PredictionsScreen career={career} onBack={backHome} />
   }
@@ -185,7 +208,7 @@ function Gate() {
   }
 
   if (screen === 'profile') {
-    return <ProfileScreen career={career} onNavigate={navigate} onOpenNews={openNews} />
+    return <ProfileScreen career={career} onNavigate={navigate} onOpenNews={openNews} onOpenAdmin={openAdmin} />
   }
 
   return <HomeScreen career={career} onNavigate={navigate} />

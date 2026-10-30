@@ -243,3 +243,11 @@ Banco no ar: rode `supabase/releases/historico_enxuto.sql` e depois `liberar_esp
   7 dias; escalações da IA apagadas ao fim; lances da IA guardam gols, pênaltis e cartões.
 - Correção: amarelos não são mais apagados (desempate por fair play em `sim_standings`).
 - Agendador: `purge-cron-history` apaga diariamente o histórico com mais de 1 dia.
+
+## Painel administrativo (42)
+
+Banco no ar: rode `supabase/releases/painel_admin.sql`. Abra o jogo com contatodavidcaua@gmail.com e use Perfil → Painel
+ou o endereço `/#admin`. `is_admin()` exige estar em `admins` E o e-mail do token ser o do dono; todas as funções
+`admin_*` conferem no servidor. Seções: visão geral (jogadores, carreiras, eventos, banco), eventos (evolução 13),
+jogadores (busca e envio/retirada de moedas, diamantes e energia bônus com motivo), avisos para todos (caixa de
+mensagens) e registro (`admin_actions`). Teste de tela: `tests/admin_ui_smoke.py`.

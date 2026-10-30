@@ -29,7 +29,7 @@ import { Notice, Skeleton } from '../../components/ui/feedback'
 
 // Perfil = página de identidade do jogador. Tudo vem do servidor (avatar, insígnias, títulos,
 // estatísticas, visual e privacidade); o som e o tema continuam aqui.
-export default function ProfileScreen({ career, onNavigate, onOpenNews }) {
+export default function ProfileScreen({ career, onNavigate, onOpenNews, onOpenAdmin }) {
   const { player, userId } = career
   const { signOut } = useAuth()
   const { theme, toggleTheme } = useTheme()
@@ -105,6 +105,7 @@ export default function ProfileScreen({ career, onNavigate, onOpenNews }) {
                     <button type="button" className="pf-edit-pill" onClick={() => setSheet('avatar')}><PencilIcon size={14} /> Foto</button>
                     <button type="button" className="pf-edit-pill" onClick={() => onNavigate?.('friends')} aria-label="Amigos"><Users size={14} /></button>
                     {onOpenNews && <button type="button" className="pf-edit-pill" onClick={onOpenNews}><GameIcon name="highlight" size={14} /> Novidades</button>}
+                    {onOpenAdmin && <button type="button" className="pf-edit-pill" onClick={onOpenAdmin}><GameIcon name="crown" size={14} /> Painel</button>}
                   </>
                 }
               />
