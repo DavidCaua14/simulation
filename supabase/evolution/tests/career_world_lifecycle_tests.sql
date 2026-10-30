@@ -80,8 +80,8 @@ begin
  insert into public.cw_negotiations(career_id,player_id,seller_club,buyer_club,initiator,status,fee,valuation,monthly_salary,contract_years,created_on,reply_on,expires_on,agreed_owner_contract,decision_roll)
  values(c2,ct.player_id,ct.club_id,'arsenal','user','player_pending',100000,10000,10000,3,'2027-01-31','2027-02-03','2027-02-07',ct.id,.5) returning id into v_id;
  perform public.cw_reserve_offer(v_id);perform public.cw_market_tick(c2);
- if(select status from public.cw_negotiations where id=v_id)<>'agreed' or(select register_on from public.cw_negotiations where id=v_id)<>date '2027-06-10' or(select club_id from public.mgr_players where career_id=c2 and player_id=ct.player_id)<>ct.club_id then raise exception 'Closed-window agreement bypassed registration';end if;
- update public.cw_world set today='2027-06-10' where career_id=c2;perform public.cw_market_tick(c2);
+ if(select status from public.cw_negotiations where id=v_id)<>'agreed' or(select register_on from public.cw_negotiations where id=v_id)<>date '2027-06-14' or(select club_id from public.mgr_players where career_id=c2 and player_id=ct.player_id)<>ct.club_id then raise exception 'Closed-window agreement bypassed registration';end if;
+ update public.cw_world set today='2027-06-14' where career_id=c2;perform public.cw_market_tick(c2);
  if(select status from public.cw_negotiations where id=v_id)<>'completed' then raise exception 'Agreement failed to register in new window';end if;
  -- Natural expiry is distinct from a dismissal and does not hurt credibility.
  select fired_count into old_fired from public.mgr_coach where career_id=c2;

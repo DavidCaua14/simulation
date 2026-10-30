@@ -202,3 +202,23 @@ Banco no ar: rode `supabase/releases/mercado_economia.sql` (um comando só; pode
 - Busca no mercado só lê (não trava a carreira) e filtra pelo valor guardado.
 - Notícias só do seu clube (mais "world", "job", "finance" e os campeões, "title"); as antigas de outros clubes são apagadas. O gatilho de
   resultados deixou de calcular manchetes de outros clubes a cada jogo simulado.
+
+## Banco enxuto (38)
+
+Banco no ar: rode `supabase/releases/banco_enxuto.sql` e depois `supabase/releases/liberar_espaco.sql` (VACUUM FULL,
+devolve o espaço; sozinho numa aba). Salários dos clubes da IA viram uma linha por clube por mês (seu clube segue
+detalhado); `cw_settled_months` impede pagar um mês duas vezes. `tamanho_banco.sql` mostra o tamanho.
+
+## Elenco, caixa, janela e banco menor (39)
+
+Banco no ar: rode `supabase/releases/elenco_caixa_janela.sql` e depois `liberar_espaco.sql`.
+- Elenco: limite de 40 atletas com 21+ (elencos reais têm 40–51); a contagem usa os mesmos atletas da tela Time.
+- Caixa: o caixa do seu clube nunca vira "patrimônio"; o que foi recolhido desde que você assumiu o clube atual volta
+  ao caixa (lançamento "infra_refund", uma vez).
+- Janela: atletas livres também só são registrados com a janela aberta (IA com elenco < 18 é exceção); no máximo 6
+  contratações suas por janela. Datas: Brasil 3/jan–7/abr e 10/jul–2/ago; Inglaterra 14/jun–1/set e 1/jan–2/fev.
+- Banco: `cw_prune_career` (todo mês e uma vez na instalação) apaga partidas da IA com mais de 30 dias (o relatório
+  usa placar, estatísticas e gols guardados no jogo), finanças da IA com mais de 60 dias, negociações e contratos
+  encerrados entre clubes da IA e o cache de requisições. A tabela `season_fixture_slots` deixa de ser usada.
+- Scripts de release com o jogo no ar usam o modo `live` do gerador (sem comparação de impressões digitais, que
+  abortaria sempre com jogadores online).

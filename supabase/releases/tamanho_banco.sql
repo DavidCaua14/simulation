@@ -1,5 +1,7 @@
--- TAMANHO DO BANCO (só leitura). Mostra o total e as 15 maiores tabelas.
+-- TAMANHO DO BANCO (só leitura). Mostra o total, as carreiras com mundo e as 15 maiores tabelas.
 select 'TOTAL DO BANCO' as tabela, pg_size_pretty(pg_database_size(current_database())) as tamanho, null::bigint as linhas
+union all
+select 'Carreiras no modo Temporadas', null, (select count(*) from public.cw_world)
 union all
 select * from (
  select s.schemaname||'.'||s.relname, pg_size_pretty(pg_total_relation_size(s.relid)), s.n_live_tup

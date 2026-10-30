@@ -1,8 +1,7 @@
 -- Gerado por scripts/build-editor-release.mjs a partir de 38_storage_diet.sql: banco enxuto (salários da IA agrupados e dados auxiliares antigos removidos).
 -- Requer o modo Temporadas com mundo paralelo (supabase/releases/carreira_completa.sql). Cole o arquivo INTEIRO no SQL Editor e execute.
 -- É um único comando: ou instala tudo, ou nada muda. Pode ser executado de novo. A manutenção não é alterada.
--- Ao final compara as impressões digitais de carreiras, resultados, partidas ao vivo, elencos, contratos, caixas, negociações, mensagens
--- e satisfação; se alguma mudar, o comando é desfeito por inteiro.
+-- Feito para o jogo NO AR: não compara impressões digitais (os jogadores continuam jogando durante a instalação).
 do $install$
 declare antes jsonb;depois jsonb;mudou text;
 begin
@@ -10,16 +9,7 @@ begin
  perform set_config('lock_timeout','10s',true);
  perform pg_advisory_xact_lock(hashtext('38_storage_diet.sql'));
  if to_regprocedure('public.cw_settle_month(uuid,date)') is null then raise exception 'Requer o modo Temporadas com mundo paralelo (supabase/releases/carreira_completa.sql); nada foi alterado';end if;
- select jsonb_build_object(
-   'careers',(select md5(coalesce(string_agg(to_jsonb(c)::text,'' order by id),'')) from public.careers c),
-   'results',(select md5(coalesce(string_agg(to_jsonb(f)::text,'' order by id),'')) from public.season_fixtures f where status='played'),
-   'live',(select md5(coalesce(string_agg(to_jsonb(m)::text,'' order by fixture_id),'')) from public.mgr_matches m where status='live'),
-   'squads',(select md5(coalesce(string_agg(to_jsonb(p)::text,'' order by career_id,player_id),'')) from public.mgr_players p),
-   'contracts',(select md5(coalesce(string_agg(to_jsonb(c)::text,'' order by id),'')) from public.cw_contracts c),
-   'clubs',(select md5(coalesce(string_agg(to_jsonb(c)::text,'' order by career_id,club_id),'')) from public.cw_clubs c),
-   'negotiations',(select md5(coalesce(string_agg(to_jsonb(n)::text,'' order by id),'')) from public.cw_negotiations n),
-   'messages',(select md5(coalesce(string_agg(concat_ws('|',id,career_id,kind,title,body,club_id,read,day_no),'' order by id),'')) from public.mgr_messages),
-   'morale',(select md5(coalesce(string_agg(concat_ws('|',career_id,player_id,morale,transfer_requested,promised_role),'' order by career_id,player_id),'')) from public.cw_players)) into antes;
+ 
 
 -- ===================== 38_storage_diet.sql =====================
 create table if not exists public.cw_settled_months(
@@ -92,18 +82,7 @@ end $$;
 analyze public.cw_finance;analyze public.cw_appearances;analyze public.cw_ai_days;analyze public.cw_club_dates;
 perform pg_notify('pgrst','reload schema');
 
- select jsonb_build_object(
-   'careers',(select md5(coalesce(string_agg(to_jsonb(c)::text,'' order by id),'')) from public.careers c),
-   'results',(select md5(coalesce(string_agg(to_jsonb(f)::text,'' order by id),'')) from public.season_fixtures f where status='played'),
-   'live',(select md5(coalesce(string_agg(to_jsonb(m)::text,'' order by fixture_id),'')) from public.mgr_matches m where status='live'),
-   'squads',(select md5(coalesce(string_agg(to_jsonb(p)::text,'' order by career_id,player_id),'')) from public.mgr_players p),
-   'contracts',(select md5(coalesce(string_agg(to_jsonb(c)::text,'' order by id),'')) from public.cw_contracts c),
-   'clubs',(select md5(coalesce(string_agg(to_jsonb(c)::text,'' order by career_id,club_id),'')) from public.cw_clubs c),
-   'negotiations',(select md5(coalesce(string_agg(to_jsonb(n)::text,'' order by id),'')) from public.cw_negotiations n),
-   'messages',(select md5(coalesce(string_agg(concat_ws('|',id,career_id,kind,title,body,club_id,read,day_no),'' order by id),'')) from public.mgr_messages),
-   'morale',(select md5(coalesce(string_agg(concat_ws('|',career_id,player_id,morale,transfer_requested,promised_role),'' order by career_id,player_id),'')) from public.cw_players)) into depois;
- select string_agg(k,', ') into mudou from jsonb_object_keys(antes) k where antes->k is distinct from depois->k;
- if mudou is not null then raise exception 'Abortado: dados de usuários mudariam (%); nada foi alterado',mudou;end if;
+
  if to_regprocedure('public.cw_compact_month(uuid,date)') is null then raise exception 'Instalação incompleta; nada foi alterado';end if;
  raise notice 'Instalação concluída: banco enxuto (salários da IA agrupados e dados auxiliares antigos removidos); dados dos usuários preservados.';
 end $install$;

@@ -4,7 +4,10 @@ import { resolve } from 'node:path'
 // a conferência das impressões digitais dos dados de usuários e a verificação. Trecho parcial não roda; completo é tudo ou nada.
 // Uso: node scripts/build-editor-release.mjs <migração> <saída> <função exigida> <função instalada> "<título>" "<mensagem de pré-requisito>" [itens que podem mudar, ex.: clubs]
 const [migration, output, requires, installed, title, requiresMsg, allowedArg = ''] = process.argv.slice(2)
-const allowed = allowedArg.split(',').map((k) => k.trim()).filter(Boolean)
+// 'live': jogo no ar. Outros jogadores mudam os dados durante a instalação, então a comparação de impressões digitais
+// não faz sentido (abortaria sempre); a migração só mexe no que declara.
+const live = allowedArg === 'live'
+const allowed = live ? [] : allowedArg.split(',').map((k) => k.trim()).filter(Boolean)
 const root = resolve(import.meta.dirname, '..')
 const body = readFileSync(resolve(root, 'supabase/evolution', migration), 'utf8')
   .trim()
@@ -25,8 +28,8 @@ const fingerprint = `select jsonb_build_object(
 const out = `-- Gerado por scripts/build-editor-release.mjs a partir de ${migration}: ${title}.
 -- ${requiresMsg}. Cole o arquivo INTEIRO no SQL Editor e execute.
 -- É um único comando: ou instala tudo, ou nada muda. Pode ser executado de novo. A manutenção não é alterada.
--- Ao final compara as impressões digitais de carreiras, resultados, partidas ao vivo, elencos, contratos, caixas, negociações, mensagens
--- e satisfação; se alguma mudar, o comando é desfeito por inteiro.
+${live ? '-- Feito para o jogo NO AR: não compara impressões digitais (os jogadores continuam jogando durante a instalação).' : `-- Ao final compara as impressões digitais de carreiras, resultados, partidas ao vivo, elencos, contratos, caixas, negociações, mensagens
+-- e satisfação; se alguma mudar, o comando é desfeito por inteiro.`}
 do $install$
 declare antes jsonb;depois jsonb;mudou text;
 begin
@@ -34,14 +37,14 @@ begin
  perform set_config('lock_timeout','10s',true);
  perform pg_advisory_xact_lock(hashtext('${migration}'));
  if to_regprocedure('${requires}') is null then raise exception '${requiresMsg}; nada foi alterado';end if;
- ${fingerprint} into antes;
+ ${live ? '' : `${fingerprint} into antes;`}
 
 -- ===================== ${migration} =====================
 ${body}
 
- ${fingerprint} into depois;
+${live ? '' : ` ${fingerprint} into depois;
  select string_agg(k,', ') into mudou from jsonb_object_keys(antes) k where antes->k is distinct from depois->k${allowed.length ? ` and k not in(${allowed.map((k) => `'${k}'`).join(',')})` : ''};
- if mudou is not null then raise exception 'Abortado: dados de usuários mudariam (%); nada foi alterado',mudou;end if;
+ if mudou is not null then raise exception 'Abortado: dados de usuários mudariam (%); nada foi alterado',mudou;end if;`}
  if to_regprocedure('${installed}') is null then raise exception 'Instalação incompleta; nada foi alterado';end if;
  raise notice 'Instalação concluída: ${title}; dados dos usuários preservados.';
 end $install$;

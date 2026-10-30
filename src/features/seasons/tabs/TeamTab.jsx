@@ -223,6 +223,8 @@ export default function TeamTab({ hub, onSaved, notify, focusPlayerId = null }) 
   const shownIssues = dirty ? localIssues : issues
   const errors = shownIssues.filter((i) => i.level === 'error')
   const warns = shownIssues.filter((i) => i.level === 'warn')
+  // Mesma regra do banco, contada na lista exibida: atletas sem idade conhecida contam como adultos.
+  const adults = squad.squad ? squad.players.filter((p) => (p.age ?? squad.squad.age) >= squad.squad.age).length : 0
   const groups = LINES.map((line) => ({ line, players: squad.players.filter((p) => POS_LINE[p.position] === line && (!positionFilter || p.position === positionFilter)).sort((a, b) => POS_ORDER.indexOf(a.position) - POS_ORDER.indexOf(b.position) || b.overall - a.overall) }))
 
   return (
@@ -237,9 +239,9 @@ export default function TeamTab({ hub, onSaved, notify, focusPlayerId = null }) 
           </small>
         </div>
         {squad.squad && (
-          <span className={`tt-squad ${squad.squad.count >= squad.squad.limit ? 'is-full' : ''}`} title={`Limite de inscrição: ${squad.squad.limit} atletas com ${squad.squad.age} anos ou mais. Sub-${squad.squad.age} não contam.`}>
-            <small>Elenco {squad.squad.age}+</small>
-            <b>{squad.squad.count}/{squad.squad.limit}</b>
+          <span className={`tt-squad ${adults >= squad.squad.limit ? 'is-full' : ''}`} title={`${adults} dos ${squad.players.length} atletas têm ${squad.squad.age} anos ou mais. O limite para contratar é ${squad.squad.limit}; sub-${squad.squad.age} não contam.`}>
+            <small>{squad.squad.age}+ (limite)</small>
+            <b>{adults}/{squad.squad.limit}</b>
           </span>
         )}
         {strength && (

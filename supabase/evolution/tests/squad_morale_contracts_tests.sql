@@ -20,7 +20,7 @@ begin
 
  -- 1) elenco devolve satisfação, contrato, número e limite
  r:=public.mgr_squad();
- if not (r ? 'squad') or (r->'squad'->>'limit')::int<>30 then raise exception 'Limite de elenco ausente: %',r->'squad';end if;
+ if not (r ? 'squad') or (r->'squad'->>'limit')::int<>40 then raise exception 'Limite de elenco ausente: %',r->'squad';end if;
  if exists(select 1 from jsonb_array_elements(r->'players') e where not(e ? 'morale') or not(e ? 'contract_expires') or e->>'number' is null) then raise exception 'Elenco sem satisfação/contrato/número';end if;
  raise notice 'PASS elenco com satisfação, contrato, número e limite (%/%)',r->'squad'->>'count',r->'squad'->>'limit';
 
@@ -56,7 +56,7 @@ begin
  select mp.player_id into pid from public.mgr_players mp join public.cw_players cp using(career_id,player_id) where mp.career_id=car and mp.club_id=other and public.cw_age(car,mp.player_id)>=21 limit 1;
  begin perform public.career_transfer_bid(pid,1000,1,0,false,gen_random_uuid());raise exception 'Comprou com elenco cheio';
  exception when raise_exception then if sqlerrm not like 'Elenco cheio%' then raise;end if;end;
- update public.cw_rules set rules=rules||'{"squad_limit":30}';
+ update public.cw_rules set rules=rules||'{"squad_limit":40}';
  raise notice 'PASS limite de elenco bloqueia nova contratação de adulto';
 
  -- 5) rescisão: paga até seis salários e o atleta fica livre

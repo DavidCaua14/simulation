@@ -24,13 +24,9 @@ begin
   and (select count(*) from public.cw_contracts ct where ct.career_id=car and ct.player_id=mp.player_id and ct.status='active')<>1;
  if bad>0 then raise exception 'Atletas sem exatamente um contrato ativo: %',bad;end if;
  raise notice 'PASS contratos e papéis prometidos criados uma vez por atleta';
- select count(*) into bad from public.season_fixtures f join public.career_seasons cs on cs.id=f.season_id
-  where cs.career_id=car and (select count(*) from public.season_fixture_slots s where s.fixture_id=f.id)<>2;
- if bad>0 then raise exception 'Jogos com vagas inconsistentes: %',bad;end if;
- update public.season_fixtures f set round_no=round_no from public.career_seasons cs where cs.id=f.season_id and cs.career_id=car and f.status='pending' and f.id=(select min(f2.id) from public.season_fixtures f2 join public.career_seasons c2 on c2.id=f2.season_id where c2.career_id=car and f2.status='pending');
- select count(*) into bad from public.season_fixtures f join public.career_seasons cs on cs.id=f.season_id
-  where cs.career_id=car and (select count(*) from public.season_fixture_slots s where s.fixture_id=f.id)<>2;
- if bad>0 then raise exception 'Atualizar um jogo duplicou vagas';end if;
- raise notice 'PASS cada jogo ocupa duas vagas (mandante e visitante), também após atualização';
+ select count(*) into bad from (select f.season_id,f.competition_id,f.stage,f.round_no,c.club from public.season_fixtures f join public.career_seasons cs on cs.id=f.season_id
+   cross join lateral (values(f.home_club),(f.away_club)) c(club) where cs.career_id=car group by 1,2,3,4,5 having count(*)>1) x;
+ if bad>0 then raise exception 'Clube em dois jogos da mesma rodada: %',bad;end if;
+ raise notice 'PASS nenhum clube joga duas vezes na mesma rodada';
 end $test$;
 rollback;
