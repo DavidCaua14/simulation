@@ -49,7 +49,7 @@ export default function HomeScreen({ career, onNavigate }) {
         <div className="hm-scroll">
           <MatchdayHero club={club} player={player} onPlay={() => !seasons?.locked && onNavigate?.('seasons')} />
 
-          <RankingTicker me={player.nickname} onOpen={() => onNavigate?.('tips')} />
+          <RankingTicker me={player.nickname} onOpen={() => onNavigate?.('ranking')} />
 
           <EventsStrip count={events.count} feature={events.feature} onOpen={() => onNavigate?.('events')} />
 

@@ -1,11 +1,27 @@
+import { useEffect, useState } from 'react'
 import { Trophy } from 'lucide-react'
-import useRankingRealtime from '../../predictions/hooks/useRankingRealtime'
+import { fetchRanking } from '../../ranking/rankingApi'
+
+// Ranking geral dos treinadores (nível, Temporadas, reputação, eventos). Atualiza a cada minuto.
+function useCoachRanking() {
+  const [state, setState] = useState({ entries: [], me: null, status: 'loading' })
+  useEffect(() => {
+    let alive = true
+    const load = () => fetchRanking(10)
+      .then((d) => { if (alive) setState({ entries: d?.entries || [], me: d?.me || null, status: 'ready' }) })
+      .catch(() => { if (alive) setState((s) => ({ ...s, status: s.entries.length ? 'ready' : 'error' })) })
+    load()
+    const timer = setInterval(() => { if (!document.hidden) load() }, 60000)
+    return () => { alive = false; clearInterval(timer) }
+  }, [])
+  return state
+}
 
 function Entries({ entries, me, hidden }) {
   return (
     <div className="hm-rank-list" aria-hidden={hidden || undefined}>
       {entries.map((entry) => (
-        <span className={`hm-rank-entry ${entry.position <= 3 ? `is-top${entry.position}` : ''} ${entry.nickname === me ? 'is-me' : ''}`} key={entry.id}>
+        <span className={`hm-rank-entry ${entry.position <= 3 ? `is-top${entry.position}` : ''} ${entry.is_me || entry.nickname === me ? 'is-me' : ''}`} key={entry.position}>
           <b>#{entry.position}</b>
           <strong>{entry.nickname}</strong>
           <span>{entry.points.toLocaleString('pt-BR')} pts</span>
@@ -15,19 +31,18 @@ function Entries({ entries, me, hidden }) {
   )
 }
 
-// Ranking de palpites ao vivo + a posição do próprio jogador (se estiver no top 10).
+// Faixa da tela inicial: top 10 do ranking geral + a sua posição (mesmo fora do top 10).
 export default function RankingTicker({ me, onOpen }) {
-  const { entries, status } = useRankingRealtime()
-  const mine = entries.find((e) => e.nickname === me)
+  const { entries, me: mine, status } = useCoachRanking()
 
   let message = null
   if (status === 'loading') message = 'Carregando ranking…'
   else if (status === 'error') message = 'Ranking indisponível no momento'
-  else if (entries.length === 0) message = 'Seja o primeiro do ranking de palpites!'
+  else if (entries.length === 0) message = 'Jogue e evolua para entrar no ranking!'
 
   return (
     <div className="hm-rank">
-      <button type="button" className="hm-rank-me" onClick={onOpen} aria-label="Ver ranking de palpites">
+      <button type="button" className="hm-rank-me" onClick={onOpen} aria-label="Ver ranking dos treinadores">
         <Trophy size={16} />
         <span>
           <small>Ranking</small>

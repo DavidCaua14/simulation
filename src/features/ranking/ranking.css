@@ -1,0 +1,49 @@
+/* Ranking geral dos treinadores (cores do jogo; tema claro e escuro). */
+.rk { min-height: 100vh; max-width: 680px; margin: 0 auto; padding: 14px 16px 40px; background: var(--gx-bg); color: var(--gx-ink); display: flex; flex-direction: column; gap: 14px; }
+.rk-top { display: flex; align-items: center; gap: 10px; }
+.rk-top h1 { flex: 1; margin: 0; font: 800 1.5rem/1 var(--font-display); text-transform: uppercase; letter-spacing: .03em; }
+.rk-back { width: 38px; height: 38px; display: grid; place-items: center; border-radius: 12px; border: 1px solid var(--gx-line); background: var(--gx-panel); color: var(--gx-ink); }
+.rk-count { color: var(--gx-ink-2); font-size: .8rem; }
+.rk-podium { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: end; gap: 8px; padding: 18px 10px 0; border-radius: 20px; background: var(--gx-stage); color: #fff; overflow: hidden; }
+.rk-step { position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 0; text-align: center; }
+.rk-step strong { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 800 .92rem var(--font-body); }
+.rk-step small { color: #ffd257; font: 800 .78rem var(--font-body); font-variant-numeric: tabular-nums; }
+.rk-badge { width: 58px; height: 58px; display: grid; place-items: center; border-radius: 50%; background: rgba(255, 255, 255, .1); border: 2px solid rgba(255, 255, 255, .25); }
+.rk-step.p1 .rk-badge { width: 70px; height: 70px; border-color: #ffd257; box-shadow: 0 0 22px rgba(255, 210, 87, .45); }
+.rk-step.p2 .rk-badge { border-color: #cfd8e6; }
+.rk-step.p3 .rk-badge { border-color: #d08a52; }
+.rk-crown { color: #ffd257; margin-bottom: -2px; }
+.rk-block { width: 100%; display: grid; place-items: center; margin-top: 6px; border-radius: 12px 12px 0 0; background: rgba(255, 255, 255, .1); font: 900 1.4rem var(--font-display); }
+.rk-step.p1 .rk-block { height: 78px; background: linear-gradient(180deg, rgba(255, 210, 87, .45), rgba(255, 210, 87, .12)); }
+.rk-step.p2 .rk-block { height: 58px; background: linear-gradient(180deg, rgba(207, 216, 230, .35), rgba(207, 216, 230, .08)); }
+.rk-step.p3 .rk-block { height: 44px; background: linear-gradient(180deg, rgba(208, 138, 82, .4), rgba(208, 138, 82, .1)); }
+.rk-step.is-me strong { color: #ffd257; }
+.rk-me { padding: 14px 16px; border-radius: 18px; background: var(--gx-panel); border: 1px solid color-mix(in srgb, var(--gx-gold) 45%, var(--gx-line)); box-shadow: var(--gx-shadow); }
+.rk-me-head { display: flex; justify-content: space-between; gap: 12px; }
+.rk-me-head span { display: flex; flex-direction: column; }
+.rk-me-head span:last-child { align-items: flex-end; }
+.rk-me-head small, .rk-me-stats small { color: var(--gx-ink-2); font-size: .74rem; }
+.rk-me-head b { font: 900 1.9rem/1 var(--font-display); color: var(--gx-gold); font-variant-numeric: tabular-nums; }
+.rk-me-stats { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; margin-top: 12px; }
+.rk-me-stats span { display: flex; flex-direction: column; align-items: center; padding: 8px 2px; border-radius: 12px; background: var(--gx-panel-2); }
+.rk-me-stats b { font: 800 clamp(.74rem, 3.3vw, 1rem) var(--font-body); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.rk-how { border-radius: 14px; background: var(--gx-panel); border: 1px solid var(--gx-line); }
+.rk-how > button { width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 12px 14px; border: 0; background: none; color: var(--gx-ink); font: 700 .88rem var(--font-body); }
+.rk-how svg { transition: transform .2s; }
+.rk-how svg.is-open { transform: rotate(180deg); }
+.rk-how ul { list-style: none; margin: 0; padding: 0 14px 12px; display: flex; flex-direction: column; gap: 6px; }
+.rk-how li { display: flex; justify-content: space-between; gap: 12px; font-size: .84rem; }
+.rk-how li span { color: var(--gx-ink-2); text-align: right; }
+.rk-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.rk-row { display: grid; grid-template-columns: 30px 32px minmax(0, 1fr) auto; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 14px; background: var(--gx-panel); border: 1px solid var(--gx-line); }
+.rk-row.is-me { border-color: var(--gx-gold); background: color-mix(in srgb, var(--gx-gold) 10%, var(--gx-panel)); }
+.rk-pos { font: 900 1.1rem var(--font-display); text-align: center; color: var(--gx-ink-2); }
+.rk-row:nth-child(-n+3) .rk-pos { color: var(--gx-gold); }
+.rk-crest { display: grid; place-items: center; color: var(--gx-ink-2); }
+.rk-who { min-width: 0; display: flex; flex-direction: column; }
+.rk-who strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 800 .92rem var(--font-body); }
+.rk-who small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--gx-ink-2); font-size: .74rem; }
+.rk-pts { display: flex; flex-direction: column; align-items: flex-end; line-height: 1; }
+.rk-pts b { font: 900 1.05rem var(--font-display); font-variant-numeric: tabular-nums; }
+.rk-pts small { color: var(--gx-ink-2); font-size: .66rem; }
+@media (max-width: 380px) { .rk-me-stats { grid-template-columns: repeat(3, minmax(0, 1fr)); } }

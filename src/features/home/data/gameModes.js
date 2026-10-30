@@ -51,7 +51,7 @@ export const GAME_MODES = [
     desc: 'Veja sua posição entre os melhores técnicos!',
     Icon: RankingIcon,
     image: ranking,
-    locked: true,
+    locked: false,
   },
   {
     id: 'events',

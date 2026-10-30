@@ -55,7 +55,10 @@ def open_page(browser, email, width, url):
         elif name == 'admin_player_grant': data = {'coins': 1600, 'diamonds': 0, 'bonus_energy': 0, 'inbox': True}
         elif name == 'inbox_pending': data = state['pending']
         elif name == 'inbox_list': data = state['inbox']
-        elif name == 'inbox_seen': data = {'ok': True}
+        elif name == 'inbox_seen':
+            seen = {(i['type'], i['id']) for i in args['p_items']}
+            state['pending'] = [i for i in state['pending'] if (i['type'], i['id']) not in seen]
+            data = {'ok': True}
         elif name == 'inbox_claim':
             data = {'ok': True, 'reward': {}}
             for i in state['inbox']['items']:
@@ -64,6 +67,7 @@ def open_page(browser, email, width, url):
         elif name in ['profile_me', 'profile_migrate_local', 'profile_set_privacy']: data = game['profile']
         elif name == 'events_overview': data = game['events']
         elif name == 'release_gift_claim': data = {'eligible': False}
+        elif name == 'ranking_overall': data = admin['ranking']
         route.fulfill(status=200, content_type='application/json', body=json.dumps(data))
     page.route('https://' + host + '/**', api)
     page.goto(url, wait_until='domcontentloaded')
@@ -149,8 +153,21 @@ with sync_playwright() as p:
     page.get_by_role('tab', name='Premiações').click()
     if shots: page.screenshot(path=str(shots / 'player-inbox.png'), full_page=True)
     assert page.evaluate('document.documentElement.scrollWidth <= window.innerWidth + 1'), 'Rolagem horizontal na caixa de entrada'
+    page.get_by_role('button', name='Voltar').click()
+    # faixa da tela inicial usa o ranking geral; o card Ranking abre a tela
+    expect(page.locator('.hm-rank-entry').first).to_contain_text(admin['ranking']['entries'][0]['nickname'])
+    expect(page.locator('.hm-rank-me b')).to_have_text(f"#{admin['ranking']['me']['position']}")
+    page.get_by_role('button', name='Ranking', exact=True).click()
+    expect(page.get_by_role('heading', name='Ranking')).to_be_visible()
+    expect(page.get_by_label('Pódio')).to_contain_text(admin['ranking']['entries'][0]['nickname'])
+    expect(page.get_by_label('Sua posição')).to_contain_text(f"{admin['ranking']['me']['position']}º")
+    page.get_by_role('button', name='Como os pontos são calculados').click()
+    expect(page.get_by_text('500 pontos por título no modo Temporadas')).to_be_visible()
+    assert page.locator('.rk-row').count() == len(admin['ranking']['entries'])
+    assert page.evaluate('document.documentElement.scrollWidth <= window.innerWidth + 1'), 'Rolagem horizontal no ranking'
+    if shots: page.screenshot(path=str(shots / 'player-ranking.png'), full_page=True)
     assert st['errors'] == [], st['errors']
-    print('PASS jogador: avisos e comunicados em modal um por vez, resgate e caixa de entrada')
+    print('PASS jogador: avisos e comunicados em modal um por vez, resgate, caixa de entrada e ranking')
     context.close()
 
     # 3) outra conta não vê o painel

@@ -262,3 +262,10 @@ Banco no ar: rode `supabase/releases/caixa_avisos_painel.sql` (depois de `painel
 - Jogador: `inbox_list`, `inbox_pending`, `inbox_seen`, `inbox_claim`. Tela: botão Mensagens na tela inicial.
 - Painel: visão geral (cadastros por dia, partidas, economia da semana, eventos, avisos, melhores jogadores, clubes),
   Temporadas (`admin_career`, `admin_career_set_club`, `admin_career_adjust`) e Avisos (`admin_announcement_*`).
+
+## Ranking geral dos treinadores (44)
+
+Banco no ar: rode `supabase/releases/ranking.sql`. `ranking_overall(limite)` devolve o top (apelido, nível, clube,
+títulos, V-E-D, reputação, eventos, pontos) e a posição de quem chama. Pontos: nível×100 + XP÷10 + títulos×500 +
+vitórias×20 + empates×7 + reputação×15 + eventos concluídos×25 − demissões×150. Desempate: nível, vitórias, cadastro.
+A faixa da tela inicial e o card Ranking usam este ranking (não mais o de palpites).
