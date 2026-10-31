@@ -11,10 +11,10 @@
 // - Quer menos de 10 músicas? Apague as linhas que não vai usar.
 // ─────────────────────────────────────────────────────────────────────────────
 export const PLAYLIST = [
-  { src: 'audio/01.mp3', title: 'Faixa 1' },
-  { src: 'audio/02.mp3', title: 'Faixa 2' },
-  { src: 'audio/03.mp3', title: 'Faixa 3' },
-  { src: 'audio/04.mp3', title: 'Faixa 4' },
+  { src: 'audio/01.mp3', title: 'Cartoon, Jéja, Daniel Levi - Más Y Más [NCS Release]' },
+  { src: 'audio/02.mp3', title: 'Zeus X Crona, Warriyo, Panther - Mortals (Hindi) [NCS Release]' },
+  { src: 'audio/03.mp3', title: 'Cartoon, Daniel Levi, Jéja - On & On (feat. Daniel Levi) [NCS Release]' },
+  { src: 'audio/04.mp3', title: 'Warriyo, Laura Brehm - Mortals (feat. Laura Brehm) [NCS Release]' },
   // { src: 'audio/05.mp3', title: 'Clássico de Domingo' },
   // { src: 'audio/06.mp3', title: 'Entrada em Campo' },
   // { src: 'audio/07.mp3', title: 'Camisa 10' },
