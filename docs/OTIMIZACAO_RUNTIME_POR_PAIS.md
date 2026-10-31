@@ -1,6 +1,6 @@
 # Otimização do simulador: execução e operação
 
-> Situação da entrega: código pronto e validado; migração do Supabase aguardando a confirmação exigida pelo conector. O frontend mantém compatibilidade com o backend atual. A publicação do código, sozinha, não ativa as alterações do banco.
+> Situação da entrega: código publicado na main e migração aplicada no Supabase em 31/10/2026, às 22:39 UTC. As novas regras estão habilitadas. A instalação comparou os dados protegidos por carreira antes e depois na mesma transação e abortaria em caso de divergência.
 
 Referência: `Plano_de_otimizacao_do_simulador_de_treinador.pdf`, 31/10/2026. Implementação das etapas 0–8 nas evoluções 45–50 e no frontend de Carreira. O PostgreSQL continua sendo a fonte de verdade; não existe um JSON mutável contendo o save inteiro.
 
@@ -41,7 +41,7 @@ Referência: `Plano_de_otimizacao_do_simulador_de_treinador.pdf`, 31/10/2026. Im
 - `scripts/backup-scoped-runtime.py` e `support/scoped_backup_schema.sql`: exportação privada e restauração exclusivamente em banco local descartável.
 - `src/features/seasons`: RPCs, controle de preparação, recuperação local do UUID, banner de decisão e calendário sob demanda.
 
-Os arquivos 45–50 são as fontes editáveis. Depois de alterá-los, executar `node scripts/build-scoped-runtime.mjs`. O pacote em `supabase/migrations/20261031191218_scoped_career_runtime.sql` executa uma única transação, bloqueia as carreiras em ordem, registra contagens/hashes por carreira e tabela, instala as funções e compara novamente. Qualquer diferença protegida aborta a transação inteira. As alterações de código posteriores devem ser novas migrações; não editar uma migração já aplicada como forma de liberar um hotfix.
+Os arquivos 45–50 são as fontes editáveis. Depois de alterá-los, executar `node scripts/build-scoped-runtime.mjs`. O pacote em `supabase/migrations/20261031223935_scoped_career_runtime.sql` executa uma única transação, bloqueia as carreiras em ordem, registra contagens/hashes por carreira e tabela, instala as funções e compara novamente. Qualquer diferença protegida aborta a transação inteira. As alterações de código posteriores devem ser novas migrações; não editar uma migração já aplicada como forma de liberar um hotfix.
 
 Não reaplicar as evoluções antigas 1–44 sobre uma instalação atualizada: elas contêm definições anteriores e algumas limpezas imediatas. Os wrappers `_before_v45` são dependências privadas, não endpoints de cliente nem um comando de rollback.
 
@@ -131,4 +131,18 @@ A preparação verifica um orçamento de 1,2 segundo entre etapas/rodadas, mas u
 
 Validação local concluída: restauração em dois bancos isolados; instalação e reaplicação sem divergências nos nove saves; ciclo doméstico e continental completo; ano estrangeiro resumido sem copiar elenco ou conceder progresso pessoal; parada de decisões, fechamento com proposta pendente, mês, transferências, ida/retorno de país, partida humana e duas conexões concorrentes. Interface verificada em 320, 360, 390, 768 e 1280 pixels; build, testes JS e lint dos arquivos alterados aprovados.
 
-A instalação em produção depende da confirmação de execução solicitada pelo conector Supabase. Duas solicitações expiraram antes da aplicação. O frontend tem fallback somente para ausência da RPC nova (PGRST202), mantendo o backend anterior utilizável enquanto a confirmação está pendente; erros de sessão e outras falhas continuam sendo propagados. As otimizações do banco e as novas paradas só estarão ativas após a migração. Nenhuma aprovação de mudança de custo/plano foi solicitada.
+Migração `20261031223935` / `scoped_career_runtime` aplicada no projeto `nkdbixmfsochlprcvkxl`, às 22:39 UTC de 31/10/2026. O conector retornou sucesso; a comparação dos registros protegidos passou dentro da transação. Nenhuma carreira foi reiniciada ou restaurada sobre a produção.
+
+Verificações posteriores:
+
+- Projeto `ACTIVE_HEALTHY`, nove carreiras e cinco mundos existentes, com cinco registros de runtime e configuração global habilitada.
+- Leitura das nove carreiras em transação `READ ONLY`, com cinco hubs inicializados e cinco prévias de calendário limitadas a 30 jogos. A consulta agrupada levou 2.806,73 ms; esse total inclui as primeiras leituras e não é o p95 individual do hub.
+- Sete tabelas novas com RLS habilitado e sem SELECT direto para `anon` ou `authenticated`. Helpers privados e wrappers antigos sem EXECUTE para esses papéis; endpoints explícitos permanecem disponíveis aos proprietários.
+- Na janela inicial de 22:39:35 a 22:43:46 UTC, 29 registros de gateway e 22 de PostgreSQL não apresentaram respostas HTTP 4xx/5xx ou erros de banco. É uma observação curta, não um teste de carga ou garantia futura.
+- Um agendamento ativo de retenção por hora e um snapshot compartilhado de catálogo. A instalação não disparou limpeza imediata. Saves com motor humano em andamento têm adiamento de ativação; isso não interrompe a partida interativa.
+- Advisors: avisos de `search_path` ajustável passaram de 36 para zero; avisos de inicialização RLS passaram de 50 para zero. Chaves estrangeiras sem índice de apoio passaram de 108 para 107 após os índices direcionados.
+- Tamanho físico medido depois: 279.833.747 bytes, contra 267.816.083 bytes na medição anterior. A versão compartilhada de catálogo, estruturas/funções novas e a atividade concorrente acrescentam espaço inicialmente; não atribuir toda essa diferença exclusivamente à migração. A redução esperada é no trabalho por avanço e no crescimento futuro. Não houve promessa nem tentativa de reduzir a base a 10 MB apagando progresso.
+
+Permanecem avisos que exigem análise por finalidade: [51 tabelas com RLS sem política](https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy), [97 funções privilegiadas executáveis por usuários autenticados](https://supabase.com/docs/guides/database/database-linter?lint=0029_authenticated_security_definer_function_executable), [107 chaves estrangeiras sem índice de apoio](https://supabase.com/docs/guides/database/database-linter?lint=0001_unindexed_foreign_keys), [18 índices sem uso observado](https://supabase.com/docs/guides/database/database-linter?lint=0005_unused_index) e [proteção de senhas vazadas desativada no Auth](https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection). As tabelas novas são privadas por RPC e os endpoints privilegiados precisam de validação de proprietário; esses avisos não justificam abrir políticas ou remover privilégios e índices indiscriminadamente. Nenhuma mudança de plano ou custo foi realizada.
+
+O frontend publicado mantém fallback somente para ausência da RPC nova (`PGRST202`), preservando compatibilidade durante futuras liberações. Recibos antigos de avanço são importados sem repetir a mutação. O arquivo de migração e o gerador foram alinhados à versão registrada no Supabase para evitar uma aplicação duplicada pelo CLI.
