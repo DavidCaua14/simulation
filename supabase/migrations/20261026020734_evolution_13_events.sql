@@ -1,0 +1,10 @@
+-- Historical checkpoint for an already-applied migration.
+-- Version: 20261026020734
+-- Name: evolution_13_events
+-- Stored statement MD5: 7b27bd874192e48918c6d0f19ea17079
+--
+-- Intentionally contains no executable SQL. The existing project already ran
+-- this migration before CLI history was committed to Git. Some original
+-- entries depended on temporary HTTP responses or private owner provisioning.
+-- This checkpoint reconciles versions without replaying legacy changes.
+-- It is not a baseline for a blank database. See docs/HISTORICO_MIGRACOES.md.

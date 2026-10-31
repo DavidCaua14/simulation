@@ -1,0 +1,10 @@
+-- Historical checkpoint for an already-applied migration.
+-- Version: 20261025012416
+-- Name: manager_01_schema
+-- Stored statement MD5: 64f46ba1ea0013af8d7ca05781b4168a
+--
+-- Intentionally contains no executable SQL. The existing project already ran
+-- this migration before CLI history was committed to Git. Some original
+-- entries depended on temporary HTTP responses or private owner provisioning.
+-- This checkpoint reconciles versions without replaying legacy changes.
+-- It is not a baseline for a blank database. See docs/HISTORICO_MIGRACOES.md.

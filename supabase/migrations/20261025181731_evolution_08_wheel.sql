@@ -1,0 +1,10 @@
+-- Historical checkpoint for an already-applied migration.
+-- Version: 20261025181731
+-- Name: evolution_08_wheel
+-- Stored statement MD5: 18badd044aa3a0ce04266aea2ed322e2
+--
+-- Intentionally contains no executable SQL. The existing project already ran
+-- this migration before CLI history was committed to Git. Some original
+-- entries depended on temporary HTTP responses or private owner provisioning.
+-- This checkpoint reconciles versions without replaying legacy changes.
+-- It is not a baseline for a blank database. See docs/HISTORICO_MIGRACOES.md.
