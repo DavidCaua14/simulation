@@ -21,6 +21,31 @@ test('one click continues a partial three-day advance until the next match, then
   assert.deepEqual(trace, [3, 2], 'Never simulate the user match')
 })
 
+test('a decision response stops automatic continuation even with a remaining backlog', async () => {
+  const hub = career(); let writes = 0
+  const sim = createWorldSimulation({ requestId: () => 'decision', advance: async () => {
+    writes++; hub.attention = { key: 'offer:1' }
+    return { requires_attention: true, more: true, days: 1, matches: 0 }
+  }, refresh: async () => hub })
+  const result = await sim.prepare(hub)
+  assert.equal(writes, 1)
+  assert.equal(result.attention.key, 'offer:1')
+  await sim.prepare(result)
+  assert.equal(writes, 1, 'No advancement until the decision is resolved or explicitly deferred')
+})
+
+test('a new controller recovers an ambiguous operation from storage using the original UUID', async () => {
+  const values = new Map()
+  const storage = { getItem: k => values.get(k), setItem: (k, v) => values.set(k, v), removeItem: k => values.delete(k) }
+  const hub = career(), ids = []
+  const first = createWorldSimulation({ storage, requestId: () => 'saved-id', refresh: async () => hub, advance: async (days, id) => { ids.push(id); throw new Error('Lost response') } })
+  await assert.rejects(first.prepare(hub), /Lost response/)
+  const resumed = createWorldSimulation({ storage, requestId: () => 'wrong-new-id', refresh: async () => hub, advance: async (days, id) => { ids.push(id); hub.next_event.days_until = 0; return { days: 3 } } })
+  await resumed.prepare(hub)
+  assert.deepEqual(ids, ['saved-id', 'saved-id'])
+  assert.equal(values.size, 0)
+})
+
 test('drains bounded parallel batches, including more=true at match day', async () => {
   const hub = career(), trace = []
   hub.world.needs_sync = true
@@ -133,4 +158,36 @@ test('transient timeouts retry the same request id before failing', async () => 
   } })
   await sim.prepare(hub)
   assert.deepEqual(ids, ['same', 'same', 'same'])
+})
+
+test('a stale browser tab refreshes once and stops without a second advance', async () => {
+  const hub = { ...career(), runtime_version: 3 }; const calls = []
+  const sim = createWorldSimulation({ requestId: () => 'tab-b', refresh: async () => ({ ...hub, runtime_version: 4 }), advance: async (days, id, version) => {
+    calls.push({ days, id, version }); return { requires_refresh: true, state_version: 4, days: 0, matches: 0 }
+  } })
+  const result = await sim.prepare(hub)
+  assert.equal(calls.length, 1)
+  assert.equal(calls[0].version, 3)
+  assert.equal(result.runtime_version, 4)
+})
+
+test('a partial batch carries the returned version into its continuation', async () => {
+  const hub = { ...career(), runtime_version: 3 }; const versions = []
+  const sim = createWorldSimulation({ requestId: () => String(versions.length), refresh: async () => ({ ...hub, next_event: { kind: 'mine', days_until: 0 } }), advance: async (days, id, version) => {
+    versions.push(version); return { more: versions.length === 1, state_version: version + 1, matches: 1 }
+  } })
+  await sim.prepare(hub)
+  assert.deepEqual(versions, [3, 4])
+})
+
+
+test('an ambiguous request created on the old backend uses the migration guard after upgrade', async () => {
+  const values = new Map([['career-advance:user-a', JSON.stringify({ id: 'legacy-request', days: 3, completed: false })]])
+  const storage = { getItem: k => values.get(k), setItem: (k, v) => values.set(k, v), removeItem: k => values.delete(k) }
+  const hub = { ...career(), runtime_version: 0 }; const versions = []
+  const sim = createWorldSimulation({ storage, requestId: () => 'unused', refresh: async () => hub, advance: async (days, id, version) => {
+    assert.equal(id, 'legacy-request'); versions.push(version); return { requires_refresh: true, days: 0, matches: 0 }
+  } })
+  await sim.prepare(hub)
+  assert.deepEqual(versions, [-1], 'A legacy UUID with no receipt must not become a fresh unguarded write')
 })

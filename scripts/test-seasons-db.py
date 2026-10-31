@@ -23,7 +23,9 @@ parser.add_argument('--career-world', action='store_true')
 parser.add_argument('--world-cycle', action='store_true')
 parser.add_argument('--skip-existing-tests', action='store_true')
 parser.add_argument('--keep-db', action='store_true')
+parser.add_argument('--scoped-runtime', action='store_true')
 args = parser.parse_args()
+if args.scoped_runtime: args.career_world = True
 if args.career_world or args.world_cycle: args.base_cards = True
 CONTAINER = args.container
 DATABASE = 'simulation_validation_' + uuid.uuid4().hex[:12]
@@ -126,6 +128,15 @@ try:
             data.update(next(json.loads(line) for line in result.stdout.decode().splitlines() if line.startswith('{')))
             args.ui_fixtures.write_text(json.dumps(data))
         if args.world_cycle: subprocess.run([sys.executable,str(ROOT/'tests/career_world_season_cycle.py'),CONTAINER,DATABASE],check=True,env=ENV)
+    if args.scoped_runtime:
+        run_file('supabase/evolution/tests/support/scoped_preservation_snapshot.sql')
+        scoped = [p for p in sorted((ROOT/'supabase/evolution').glob('*.sql')) if p.name[:2].isdigit() and 45 <= int(p.name.split('_')[0]) <= 50]
+        for path in scoped: run_file(path)
+        run_file('supabase/evolution/tests/scoped_preservation_tests.sql')
+        for path in scoped: run_file(path)
+        run_file('supabase/evolution/tests/scoped_preservation_tests.sql')
+        run_file('supabase/evolution/tests/scoped_runtime_tests.sql')
+        subprocess.run([sys.executable,str(ROOT/'tests/scoped_runtime_concurrency.py'),CONTAINER,DATABASE],check=True,env=ENV)
 finally:
     if args.keep_db:
         print('Retained local test database:', DATABASE, flush=True)

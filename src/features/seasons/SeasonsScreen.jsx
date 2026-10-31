@@ -5,7 +5,7 @@ import { getClubById } from '../club/data/clubs'
 import useManagerData from './hooks/useManagerData'
 import useCountdown from './hooks/useCountdown'
 import { createWorldSimulation } from './utils/worldSimulation'
-import { advanceWorld, dateLabel, requestId } from './services/careerWorldApi'
+import { acknowledgeAttention, advanceWorld, dateLabel, requestId } from './services/careerWorldApi'
 import WorldPanel from './world/WorldPanel'
 import { advanceDays, fetchHub, markMessagesRead, resign, respondOffer, startMatch, startNextSeason } from './services/managerApi'
 import { flattenFixtures, playerHistory, projectCalendar } from './utils/seasonSelectors'
@@ -35,10 +35,10 @@ const TITLES = { home: 'Início', team: 'Time', matches: 'Jogos', comps: 'Tornei
 // MODO CARREIRA (treinador): você comanda um clube real. Tudo é decidido no banco (supabase/manager/*.sql);
 // O avanço até a próxima partida processa as competições paralelas no mesmo calendário.
 export default function SeasonsScreen({ career: account, onBack }) {
-  const { hub, byComp, loading, error, refresh } = useManagerData()
   const [tab, setTab] = useState('home')
-  const [careerView, setCareerView] = useState(null)
   const [compSel, setCompSel] = useState(null)
+  const { hub, byComp, loading, error, refresh } = useManagerData(tab, compSel)
+  const [careerView, setCareerView] = useState(null)
   const [busy, setBusy] = useState(null) // 'start' | 'advance' | 'next' | 'resign' | 'offer:<id>'
   const [live, setLive] = useState(null) // payload da partida ao vivo
   const [summary, setSummary] = useState(null) // pós-jogo
@@ -53,7 +53,7 @@ export default function SeasonsScreen({ career: account, onBack }) {
   const actionLock = useRef(false)
   const mounted = useRef(true)
   useEffect(() => { mounted.current = true; return () => { mounted.current = false } }, [])
-  const simulation = useMemo(() => createWorldSimulation({ advance: advanceWorld, refresh, peek: () => fetchHub(), requestId }), [refresh])
+  const simulation = useMemo(() => createWorldSimulation({ advance: advanceWorld, refresh, peek: () => fetchHub(), requestId, storage: window.localStorage }), [refresh])
   const [prepareProgress, setPrepareProgress] = useState(null)
   const onPrepareProgress = useCallback((h, r) => mounted.current && setPrepareProgress(dateLabel(r?.today || h?.world?.today)), [])
   const worldStatus = busy === 'prepare' || busy === 'next' ? 'syncing' : 'idle'
@@ -140,7 +140,7 @@ export default function SeasonsScreen({ career: account, onBack }) {
     run('start', async () => {
       if (hub.world && !hub.live_match) {
         const ready = await simulation.prepare(hub, { isActive: () => mounted.current })
-        if (!ready || ready.season.status === 'finished' || ready.coach.status !== 'employed') return
+        if (!ready || ready.attention || ready.season.status === 'finished' || ready.coach.status !== 'employed') return
       }
       const p = await startMatch() // idempotente: retoma a partida em andamento sem cobrar energia de novo
       setPreMatch(null)
@@ -156,7 +156,7 @@ export default function SeasonsScreen({ career: account, onBack }) {
 
   const advance = (untilOffer) =>
     run('advance', async () => {
-      const d = await advanceDays(untilOffer)
+      const d = hub.world ? await advanceWorld(untilOffer ? 14 : 1, requestId(), hub.runtime_version) : await advanceDays(untilOffer)
       setDigest(d)
       refresh({ silent: true })
       if (d.more) notify('Avançamos o máximo possível de uma vez. Toque em avançar de novo para continuar.', 'info')
@@ -176,7 +176,7 @@ export default function SeasonsScreen({ career: account, onBack }) {
     run('next', async () => {
       if (hub.world) {
         const ready = await simulation.prepare(hub, { isActive: () => mounted.current })
-        if (!ready) return
+        if (!ready || ready.attention) return
       }
       await startNextSeason()
       await refresh({ silent: true })
@@ -225,6 +225,16 @@ export default function SeasonsScreen({ career: account, onBack }) {
     // Dia de jogo: abre o pré-jogo; a partida (e o gasto de energia) só começa em "Iniciar partida"
     openPreMatch: () => setPreMatch(hub?.next_event?.fixture_id ?? null),
     prepareNext,
+    deferAttention: () => run('attention', async () => {
+      await acknowledgeAttention(hub.attention.key)
+      await refresh({ silent: true })
+    }),
+    openAttention: () => {
+      if (hub.attention?.action === 'offers') goTab('career', 'offers')
+      else if (hub.attention?.action === 'contract') goTab('career', 'profile')
+      else if (hub.attention?.action === 'contracts') { setWorldArea('contracts'); setTab('world') }
+      else { setWorldArea('deals'); setTab('world') }
+    },
     advance,
     startNext,
     goTab,

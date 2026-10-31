@@ -31,7 +31,7 @@ with sync_playwright() as p:
     if case=='career401':status=401;data={'code':'PGRST301','message':'JWT expired'}
     elif state['career500']:status=500;data={'code':'XX000','message':'database unavailable'}
     elif case=='noCareer':status=200;data=None
-    else:data=career
+    else:data=career if 'vnd.pgrst.object' in route.request.headers.get('accept','') else [career]
    elif path=='/rest/v1/rpc/mgr_match_start':status=401;data={'code':'PGRST301','message':'JWT expired'}
    route.fulfill(status=status,content_type='application/json',body='' if status==204 else json.dumps(data))
   page.route('https://'+host+'/**',api)

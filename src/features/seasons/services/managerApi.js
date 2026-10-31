@@ -13,7 +13,13 @@ async function unwrap(promise) {
 const rpc = (fn, args) => unwrap(supabase.rpc(fn, args))
 
 // Tela principal: treinador, clube, temporada, próximo evento, objetivos, mensagens e propostas
-export const fetchHub = () => rpc('mgr_hub')
+export async function fetchHub() {
+  const response = await supabase.rpc('career_hub_read')
+  // Rolling deployment: the current backend stays usable until the additive migration is installed.
+  if (response.error?.code === 'PGRST202') return rpc('mgr_hub')
+  const hub = await unwrap(Promise.resolve(response))
+  return hub.initialization_required ? rpc('career_runtime_initialize') : hub
+}
 // Resumo leve para a Home do jogo
 export const fetchCoachStatus = () => rpc('mgr_status')
 
@@ -47,16 +53,30 @@ export const fetchStandings = (seasonId, competitionId, group = null) =>
 const FIXTURE_COLS =
   'id, competition_id, stage, round_no, group_label, tie_no, leg, home_club, away_club, home_goals, away_goals, home_pens, away_pens, tie_winner, status, player_match, coach_club, played_at, day_no, extra_time'
 
-export const fetchFixtures = (seasonId, competitionId) =>
-  unwrap(
-    supabase
+export async function fetchFixtures(seasonId, competitionId) {
+  const rows = []
+  for (let from = 0; ; from += 500) {
+    const page = await unwrap(supabase
       .from('season_fixtures')
       .select(FIXTURE_COLS)
       .eq('season_id', seasonId)
       .eq('competition_id', competitionId)
       .order('round_no')
-      .order('id'),
-  )
+      .order('id')
+      .range(from, from + 499))
+    rows.push(...page)
+    if (page.length < 500) return rows
+  }
+}
+
+export async function fetchCareerCalendar(scope = 'preview', competitionId = null) {
+  const rows = []
+  for (let page = 0; ; page++) {
+    const batch = await rpc('career_calendar', { p_scope: scope, p_comp: competitionId, p_page: page })
+    rows.push(...batch)
+    if (scope === 'preview' || batch.length < 500) return rows
+  }
+}
 
 // Catálogo de competições (formato, fases, tema, calendário). Carregado uma vez por sessão.
 let compsPromise = null

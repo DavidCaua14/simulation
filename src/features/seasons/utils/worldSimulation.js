@@ -1,7 +1,7 @@
 // Dates and match results remain server-owned. A click prepares the next match;
 // partial batches continue here, without depending on a background browser timer.
 export function worldAdvanceDays(hub) {
-  if (!hub?.world || hub.live_match) return null
+  if (!hub?.world || hub.live_match || hub.attention) return null
   if (hub.world.needs_sync) return 0
   if (hub.season.status === 'finished') {
     const nextStart = `${hub.season.year + 1}-${hub.season.region === 'ENG' ? '07' : '01'}-01`
@@ -17,14 +17,21 @@ const TRANSIENT = /timeout|timed out|failed to fetch|network|fetch failed|load f
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
 // peek: leitura leve do hub entre os lotes (sem recarregar todos os jogos); o refresh completo fica para o fim.
-export function createWorldSimulation({ advance, refresh, peek = refresh, requestId, retries = 2, retryDelay = 800 }) {
+export function createWorldSimulation({ advance, refresh, peek = refresh, requestId, retries = 2, retryDelay = 800, storage = null }) {
   let pending = null
   let owner = null
   let preparing = null
-  async function send(p) {
+  const storageKey = (careerId) => `career-advance:${careerId}`
+  function persist() {
+    try {
+      if (pending) storage?.setItem(storageKey(owner), JSON.stringify(pending))
+      else storage?.removeItem(storageKey(owner))
+    } catch { /* A blocked/full storage must not prevent server-owned play. */ }
+  }
+  async function send(p, currentVersion) {
     for (let attempt = 0; ; attempt++) {
       try {
-        return await advance(p.days, p.id)
+        return await advance(p.days, p.id, p.expectedVersion ?? (currentVersion == null ? undefined : -1))
       } catch (e) {
         if (attempt >= retries || !TRANSIENT.test(e?.message || '')) throw e
         await wait(retryDelay * (attempt + 1))
@@ -32,30 +39,41 @@ export function createWorldSimulation({ advance, refresh, peek = refresh, reques
     }
   }
   async function step(hub, known) {
-    if (owner !== hub.career.id) { owner = hub.career.id; pending = null }
+    if (owner !== hub.career.id) {
+      owner = hub.career.id
+      pending = null
+      try {
+        const saved = JSON.parse(storage?.getItem(storageKey(owner)) || 'null')
+        if (typeof saved?.id === 'string' && Number.isInteger(saved.days) && saved.days >= 0 && saved.days <= 14) pending = saved
+      } catch { /* Ignore invalid local recovery data. */ }
+    }
     const days = known ?? worldAdvanceDays(hub)
     if (!pending && days === null) return null
-    pending ||= { days, id: requestId(), completed: false }
+    pending ||= { days, id: requestId(), expectedVersion: hub.runtime_version, completed: false }
+    persist()
     if (!pending.completed) {
-      pending.result = await send(pending)
+      pending.result = await send(pending, hub.runtime_version)
       pending.completed = true
+      persist()
     }
     const result = pending.result
     // Lote parcial: o servidor ainda tem partidas do dia para processar. Continua sem reler o hub.
-    if (result?.more) {
+    if (result?.more && !result.requires_attention) {
       pending = null
-      return { hub, next: 0, result }
+      persist()
+      return { hub: { ...hub, runtime_version: result.state_version ?? hub.runtime_version }, next: 0, result }
     }
     // An ambiguous write retries its UUID; a failed read retries only the read.
     const next = await peek({ silent: true })
     if (!next) throw new Error('Não foi possível consultar a carreira atualizada. Toque novamente para continuar.')
     const asked = pending.days
     pending = null
+    persist()
     // Pedido de 0 dias só sincroniza o mundo (ex.: logo após a sua partida): sem jogos nem dias é normal, segue o avanço.
-    if (asked > 0 && !result?.matches && !result?.days && worldAdvanceDays(next) !== null) {
+    if (asked > 0 && !result?.matches && !result?.days && !result?.requires_attention && !result?.requires_refresh && worldAdvanceDays(next) !== null) {
       throw new Error('O calendário não avançou. Toque novamente para continuar a preparação.')
     }
-    return { hub: next, next: undefined, result }
+    return { hub: next, next: undefined, result, stopped: result?.requires_attention || result?.requires_refresh }
   }
   return {
     prepare(hub, { isActive = () => true, onProgress = () => {} } = {}) {
@@ -72,6 +90,7 @@ export function createWorldSimulation({ advance, refresh, peek = refresh, reques
             current = out.hub
             known = out.next
             onProgress(current, out.result)
+            if (out.stopped) return current
             if (known === undefined && (current.live_match || worldAdvanceDays(current) === null)) return current
           }
           if (!isActive()) return null

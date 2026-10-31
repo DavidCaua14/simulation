@@ -69,6 +69,15 @@ export default function HomeTab({ ctx, actions }) {
 
   return (
     <div className="sn-page">
+      {hub.attention && (
+        <section className="sn-attention" role="status">
+          <h2>Uma decisão precisa da sua atenção</h2>
+          <p>Há uma proposta, resposta de negociação ou vencimento de contrato próximo. O calendário foi pausado para você decidir.</p>
+          <button type="button" className="gx-btn" disabled={!!busy} onClick={actions.openAttention}>Ver decisão</button>
+          <p>Se continuar sem responder, o prazo seguirá contando e a proposta poderá expirar.</p>
+          <button type="button" className="sn-link" disabled={!!busy} onClick={actions.deferAttention}>Continuar sem responder</button>
+        </section>
+      )}
       {hero}
 
       {firstOffer && !unemployed && (

@@ -26,8 +26,11 @@ session = {'access_token': token, 'refresh_token': 'mock', 'expires_at': expiry,
 
 with sync_playwright() as p:
     browser = p.chromium.launch(executable_path='/usr/bin/chromium', headless=True, args=['--no-sandbox'])
-    for width, region in [(320, 'BRA'), (360, 'BRA'), (390, 'BRA'), (768, 'BRA'), (1280, 'BRA')]:
+    for width, region, scenario in [(390, 'BRA', 'legacy_backend'), (390, 'BRA', 'attention'), (320, 'BRA', 'normal'), (360, 'BRA', 'normal'), (390, 'BRA', 'normal'), (768, 'BRA', 'normal'), (1280, 'BRA', 'normal')]:
         payload = json.loads(json.dumps(original_payload))
+        payload['worldHub']['world']['needs_sync'] = True
+        payload['worldHub']['next_event']['days_until'] = 14
+        payload['worldHub']['next_event']['scheduled_on'] = (date.fromisoformat(payload['worldHub']['world']['today']) + timedelta(days=14)).isoformat()
         advance_trace = []
         advance_state = {'partial': False, 'draining': False, 'backlog': 2}
         if width == 390:
@@ -37,6 +40,12 @@ with sync_playwright() as p:
             event['days_until'] = 3
             event['scheduled_on'] = (date.fromisoformat(payload['worldHub']['world']['today']) + timedelta(days=3)).isoformat()
             advance_state['backlog'] = 0
+        if width == 360:
+            payload['worldHub']['runtime_version'] = 0
+            payload['worldHub']['calendar_versions'] = {c['id']: 'v1' for c in payload['worldHub']['competitions']}
+        if scenario == 'attention':
+            payload['worldHub']['attention'] = {'key': 'job:fixture', 'kind': 'job', 'action': 'offers'}
+            payload['worldHub']['calendar_versions'] = {c['id']: 'v1' for c in payload['worldHub']['competitions']}
         context = browser.new_context(viewport={'width': width, 'height': 844})
         page = context.new_page()
         errors, calls = [], []
@@ -50,11 +59,14 @@ with sync_playwright() as p:
             name = url.path.rsplit('/', 1)[-1]
             calls.append(name)
             args = request.post_data_json if request.method == 'POST' else {}
+            if scenario == 'legacy_backend' and name == 'career_hub_read':
+                route.fulfill(status=404, content_type='application/json', body=json.dumps({'code':'PGRST202','message':'Could not find career_hub_read in the schema cache'}))
+                return
             data = []
             if name == 'careers':
                 data = {**payload['career'], 'club_id': club}
                 if 'vnd.pgrst.object' not in (request.headers.get('accept') or ''): data = [data]  # como o PostgREST: lista sem .single()
-            elif name == 'mgr_hub':
+            elif name in ['mgr_hub', 'career_hub_read', 'career_runtime_initialize']:
                 data = json.loads(json.dumps(payload['worldHub']))
                 data['coach']['club_id'] = club
                 data['career']['club_id'] = club
@@ -63,7 +75,18 @@ with sync_playwright() as p:
             elif name == 'career_news': data = payload['worldNews']
             elif name == 'career_negotiations': data = payload['worldDeals']
             elif name == 'career_finance_history': data = payload['worldFinance']
-            elif name == 'career_world_advance':
+            elif name == 'career_attention_ack':
+                payload['worldHub']['attention'] = None
+                data = {'ok': True}
+            elif name == 'career_calendar':
+                data = [f for f in payload['fixtures'] if args.get('p_comp') is None or f['competition_id'] == args['p_comp']]
+                if args.get('p_scope') in ['preview', 'mine']: data = [f for f in data if club in [f['home_club'], f['away_club']] or f.get('player_match')]
+                if args.get('p_scope') == 'preview': data = data[:30]
+                else: data = data[args.get('p_page', 0)*500:(args.get('p_page', 0)+1)*500]
+            elif name in ['career_world_advance', 'career_world_prepare']:
+                if name == 'career_world_prepare':
+                    assert args['p_expected_version'] == payload['worldHub']['runtime_version']
+                    payload['worldHub']['runtime_version'] += 1
                 requested = args.get('p_days', 0)
                 advance_trace.append(requested)
                 days = requested
@@ -110,12 +133,15 @@ with sync_playwright() as p:
             elif name == 'season_fixtures':
                 competition = parse_qs(url.query).get('competition_id', [''])[0].removeprefix('eq.')
                 data = [f for f in payload['fixtures'] if f['competition_id'] == competition]
+                offset = int(parse_qs(url.query).get('offset', ['0'])[0]); limit = int(parse_qs(url.query).get('limit', ['500'])[0])
+                data = data[offset:offset + limit]
             elif name == 'refresh_wallet': data = payload['hub']['career']
             elif name in ['profile_me', 'profile_migrate_local', 'profile_set_privacy']: data = payload['profile']
             elif name == 'cosmetics_catalog': data = payload['cosmetics']
             elif name == 'energy_catalog': data = payload['energy']
             elif name == 'events_overview': data = payload['events']
             elif name == 'wallet_history': data = []
+            if name == 'career_world_prepare': data['state_version'] = payload['worldHub']['runtime_version']
             route.fulfill(status=200, content_type='application/json', body=json.dumps(data))
         page.route('https://' + host + '/**', api)
         page.goto('http://127.0.0.1:5173/', wait_until='domcontentloaded')
@@ -123,6 +149,19 @@ with sync_playwright() as p:
         # Processing starts only from the regular next-match button.
         advance_button = page.get_by_role('button', name='Avançar para a próxima partida', exact=True)
         expect(advance_button).to_be_enabled()
+        if scenario == 'attention':
+            expect(page.get_by_role('heading', name='Uma decisão precisa da sua atenção')).to_be_visible()
+            advance_button.click()
+            page.wait_for_timeout(500)
+            assert advance_trace == [], 'Unseen proposal must stop all date movement'
+            page.get_by_role('button', name='Continuar sem responder', exact=True).click()
+            expect(page.get_by_role('heading', name='Uma decisão precisa da sua atenção')).to_have_count(0)
+            assert 'career_attention_ack' in calls and 'career_calendar' in calls
+            assert 'season_fixtures' not in calls, 'Home must use only the small calendar preview'
+            assert not errors, errors
+            print('PASS attention pause, explicit deferral and lazy calendar')
+            context.close()
+            continue
         assert advance_button.evaluate('el => el.scrollWidth <= el.clientWidth && el.scrollHeight <= el.clientHeight'), 'Advance button text clipped'
         page.wait_for_timeout(800)
         assert advance_trace == [], advance_trace
@@ -130,6 +169,7 @@ with sync_playwright() as p:
         expect(page.get_by_role('button', name='Jogar partida', exact=False)).to_be_enabled(timeout=20000)
         expected = [3, 0, 1] if width == 390 else [0, 0, 7, 0, 7, 5]
         assert advance_trace == expected, advance_trace
+        if scenario == 'legacy_backend': assert 'mgr_hub' in calls, 'Backend without migration must remain usable'
         page.wait_for_timeout(800)
         assert advance_trace == expected, 'Must stop before the user match'
         nav = page.get_by_role('navigation', name='Seções do modo Carreira')
@@ -142,7 +182,7 @@ with sync_playwright() as p:
         for button in nav.get_by_role('button').all():
             box = button.bounding_box()
             assert box['width'] >= 44 and box['height'] >= 44, box
-        expect(page.get_by_role('heading', name='Mundo do futebol')).to_be_visible()
+        expect(page.get_by_role('heading', name='Mundo do futebol', exact=True)).to_be_visible()
         expect(page.get_by_text('NOVA CONTRATAÇÃO', exact=True)).to_be_visible()
         assert page.locator('.cw-announcement .base-player-card').count() == 1
         page.get_by_role('tab', name='Finanças', exact=True).click()

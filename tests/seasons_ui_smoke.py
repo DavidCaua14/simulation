@@ -41,7 +41,7 @@ with sync_playwright() as p:
             if name == 'careers':
                 data = payload['career']
                 if 'vnd.pgrst.object' not in (route.request.headers.get('accept') or ''): data = [data]  # como o PostgREST: lista sem .single()
-            elif name == 'mgr_hub':
+            elif name in ['mgr_hub', 'career_hub_read', 'career_runtime_initialize']:
                 data = dict(payload['hub'])
                 if backend == 'legacy':
                     data.pop('simulation_version', None)
@@ -60,6 +60,8 @@ with sync_playwright() as p:
             elif name == 'season_fixtures':
                 competition = parse_qs(url.query).get('competition_id', [''])[0].removeprefix('eq.')
                 data = [f for f in payload['fixtures'] if f['competition_id'] == competition]
+                offset = int(parse_qs(url.query).get('offset', ['0'])[0]); limit = int(parse_qs(url.query).get('limit', ['500'])[0])
+                data = data[offset:offset + limit]
             elif name == 'refresh_wallet':
                 data = payload['hub']['career']
             elif name == 'get_profile':

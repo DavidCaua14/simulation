@@ -7,7 +7,10 @@ export async function worldRpc(name, args = {}) {
   return data
 }
 export const requestId = () => crypto.randomUUID()
-export const advanceWorld = (days, id = requestId()) => worldRpc('career_world_advance', { p_days: days, p_request: id })
+export const advanceWorld = (days, id = requestId(), expectedVersion = null) => expectedVersion == null
+  ? worldRpc('career_world_advance', { p_days: days, p_request: id })
+  : worldRpc('career_world_prepare', { p_days: days, p_request: id, p_expected_version: expectedVersion })
+export const acknowledgeAttention = (key) => worldRpc('career_attention_ack', { p_key: key })
 export const searchPlayers = (filters) => worldRpc('career_player_search', filters)
 export const negotiations = () => worldRpc('career_negotiations')
 export const newsFeed = (before = null) => worldRpc('career_news', { p_before: before })
