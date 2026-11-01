@@ -7,8 +7,10 @@ async function unwrap(promise) {
   return data
 }
 export const fetchEvents = () => unwrap(supabase.rpc('events_overview'))
-export const claimEvent = (completionId) => unwrap(supabase.rpc('event_claim', { p_completion: completionId }))
-export const claimStreak = () => unwrap(supabase.rpc('streak_claim'))
+export const notifyEventsChanged = () => window.dispatchEvent(new Event('game:events'))
+const claimed = (result) => { notifyEventsChanged(); return result }
+export const claimEvent = (completionId) => unwrap(supabase.rpc('event_claim', { p_completion: completionId })).then(claimed)
+export const claimStreak = () => unwrap(supabase.rpc('streak_claim')).then(claimed)
 
 // administração (o servidor recusa quem não está em `admins`)
 export const adminList = () => unwrap(supabase.rpc('admin_events_list'))

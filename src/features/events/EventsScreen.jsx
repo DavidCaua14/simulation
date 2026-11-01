@@ -9,6 +9,7 @@ import { claimEvent, claimStreak, fetchEvents } from './eventsApi'
 import { RewardChip, fmtDate, useNow } from './eventsUi'
 import EventCard from './EventCard'
 import StreakPanel from './StreakPanel'
+import PendingRewards from './PendingRewards'
 import AdminEvents from './AdminEvents'
 import '../cards/cards.css'
 import '../store/store.css'
@@ -36,14 +37,21 @@ export default function EventsScreen({ career, onBack }) {
     }
   }, [])
   useEffect(() => {
-    load()
+    const timer = setTimeout(load, 0)
+    return () => clearTimeout(timer)
   }, [load])
-  // virou o dia/semana ou terminou um evento enquanto a tela estava aberta: recarrega
+  // Renew periods and remove expired pending rewards once their deadline is reached.
   useEffect(() => {
     if (!data) return
-    const edges = [...data.active.map((e) => e.period_end), ...data.upcoming.map((e) => e.starts_at), data.streak?.resets_at].filter(Boolean)
-    if (edges.some((t) => new Date(t).getTime() <= now)) load()
-  }, [now, data, load])
+    const fetchedAt = new Date(data.now || Date.now()).getTime()
+    const edges = [...data.active.flatMap((e) => [e.period_end, e.ends_at, e.completion?.claim_until]),
+      ...data.ended.map((e) => e.completion?.claim_until), ...data.upcoming.map((e) => e.starts_at),
+      ...(data.pending_rewards || []).map((r) => r.claim_until), data.streak?.resets_at]
+      .map((t) => new Date(t).getTime()).filter((t) => t > fetchedAt)
+    if (!edges.length) return
+    const timer = setTimeout(load, Math.min(Math.max(0, Math.min(...edges) - Date.now()) + 100, 86400000))
+    return () => clearTimeout(timer)
+  }, [data, load])
 
   async function claim(ev, completionId) {
     setBusy(ev.id)
@@ -106,6 +114,7 @@ export default function EventsScreen({ career, onBack }) {
           {data && tab === 'events' && (
             <>
               <StreakPanel streak={data.streak} now={now} busy={busy === 'streak'} onClaim={claimDaily} />
+              <PendingRewards rewards={data.pending_rewards || []} busy={busy} onClaim={claim} />
               <h4 className="gx-subtitle">Acontecendo agora <small>{active.length} {active.length === 1 ? 'evento' : 'eventos'}</small></h4>
               {active.length === 0 ? (
                 <EmptyState compact icon={CalendarClock} title="Sem eventos agora" text={upcoming.length ? 'Confira abaixo o que vem por aí.' : 'Novos desafios aparecem aqui assim que começarem.'} />

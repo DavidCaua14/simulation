@@ -130,13 +130,14 @@ try:
         if args.world_cycle: subprocess.run([sys.executable,str(ROOT/'tests/career_world_season_cycle.py'),CONTAINER,DATABASE],check=True,env=ENV)
     if args.scoped_runtime:
         run_file('supabase/evolution/tests/support/scoped_preservation_snapshot.sql')
-        scoped = [p for p in sorted((ROOT/'supabase/evolution').glob('*.sql')) if p.name[:2].isdigit() and 45 <= int(p.name.split('_')[0]) <= 51]
+        scoped = [p for p in sorted((ROOT/'supabase/evolution').glob('*.sql')) if p.name[:2].isdigit() and 45 <= int(p.name.split('_')[0]) <= 52]
         for path in scoped: run_file(path)
         run_file('supabase/evolution/tests/scoped_preservation_tests.sql')
         for path in scoped: run_file(path)
         run_file('supabase/evolution/tests/scoped_preservation_tests.sql')
         run_file('supabase/evolution/tests/scoped_runtime_tests.sql')
         run_file('supabase/evolution/tests/offseason_job_acceptance_tests.sql')
+        run_file('supabase/evolution/tests/pending_event_rewards_tests.sql')
         subprocess.run([sys.executable,str(ROOT/'tests/scoped_runtime_concurrency.py'),CONTAINER,DATABASE],check=True,env=ENV)
 finally:
     if args.keep_db:

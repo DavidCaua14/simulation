@@ -34,3 +34,9 @@ Cobertura dos 13 tópicos, regras, execução das suítes e preparação da impl
 `python tests/career_world_journey.py <container> <banco>` (ou `PG_LOCAL=1` com `PGHOST`/`PGPORT`) num banco
 descartável `simulation_validation_*` com as evoluções 24–34. Joga o calendário dia a dia com uma transação por
 chamada, troca de liga duas vezes e verifica IA de mercado, janelas, satisfação, contratos, propostas e mensagens.
+
+# Recompensas pendentes de períodos anteriores
+
+Com Vite em `127.0.0.1:5173`, executar `python tests/pending_rewards_ui_smoke.py`. O teste intercepta todas as chamadas ao Supabase e verifica a navegação Home → resgate de recompensa antiga → Home sem aviso, atualização ao retornar à aba e ao vencer o prazo, e sequência diária válida. Usa sessões e recompensas fictícias, sem alterar dados reais.
+
+A cobertura SQL de isolamento, prazo e resgate idempotente integra `scripts/test-seasons-db.py --scoped-runtime`. Detalhes em [RECOMPENSAS_PENDENTES.md](../docs/RECOMPENSAS_PENDENTES.md).
