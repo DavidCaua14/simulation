@@ -167,7 +167,8 @@ export default function SeasonsScreen({ career: account, onBack }) {
       const r = await respondOffer(offerId, accept)
       await refresh({ silent: true })
       if (r.accepted) {
-        notify(`Contrato assinado! Você é o novo treinador: ${getClubById(r.club_id)?.name}. A temporada segue de onde parou.`, 'ok')
+        const timing = r.off_season ? 'Você assumiu na entressafra. A data do save foi mantida.' : 'A temporada segue de onde parou.'
+        notify(`Contrato assinado! Você é o novo treinador: ${getClubById(r.club_id)?.name}. ${timing}`, 'ok')
         setTab('home')
       } else notify('Proposta recusada.', 'info')
     })

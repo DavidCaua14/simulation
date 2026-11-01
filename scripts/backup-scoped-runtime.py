@@ -37,7 +37,12 @@ if args.action=='export':
   else:shared.append((name,'true'))
  # Include nullable/orphan technical records outside the owned save snapshots.
  for name,pred in owned.items():
-  shared.append((name,'not exists(select 1 from public.careers owner where '+pred.format(car='owner.id')+')'))
+  # One anti-join per table; correlated IN queries repeatedly scanned whole fixture lists.
+  if name=='careers':continue
+  if pred.startswith('career_id='):orphan='not exists(select 1 from public.careers owner where owner.id=t.career_id)'
+  elif pred.startswith('season_id '):orphan='not exists(select 1 from public.career_seasons s join public.careers owner on owner.id=s.career_id where s.id=t.season_id)'
+  else:orphan='not exists(select 1 from public.season_fixtures f join public.career_seasons s on s.id=f.season_id join public.careers owner on owner.id=s.career_id where f.id=t.fixture_id)'
+  shared.append((name,orphan))
  def snapshot(entries):
   statements=[]
   for name,pred in entries:
