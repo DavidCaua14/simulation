@@ -44,3 +44,7 @@ A cobertura SQL de isolamento, prazo e resgate idempotente integra `scripts/test
 # Mercado e contratos
 
 `test-seasons-db.py --scoped-runtime --skip-existing-tests` inclui a evolução 53 e os testes de cota por registro, salário, luvas, orçamento, retenção da IA e concorrência real. Para a interface, com Vite ativo: `python tests/career_world_ui_smoke.py <fixtures.json> --market-policy`. O teste usa API interceptada em 320 e 1280 pixels. Consulte [INTEGRIDADE_MERCADO.md](../docs/INTEGRIDADE_MERCADO.md) para as regras e garantias de preservação.
+
+# Escala financeira dos clubes
+
+A evolução 54 mantém os valores canônicos e apresenta reais completos nos formulários e extratos. `node --test tests/clubMoney.test.mjs` cobre a conversão e a separação da carteira pessoal. O runner `--scoped-runtime --skip-existing-tests` inclui prêmio no caixa do clube, contratação direta de atleta livre, partida ao vivo e doze fechamentos mensais de Sport e Flamengo. A interface pode ser testada com `python tests/career_world_ui_smoke.py <fixtures.json> --club-economy`, sem chamadas reais ao Supabase. Detalhes em [ECONOMIA_DOS_CLUBES.md](../docs/ECONOMIA_DOS_CLUBES.md).

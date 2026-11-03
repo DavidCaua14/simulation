@@ -1,3 +1,5 @@
+import ClubMoneyInput from '../seasons/world/ClubMoneyInput'
+import { clubMoney } from '../seasons/utils/clubMoney'
 import { useCallback, useEffect, useState } from 'react'
 import { ArrowLeft, CalendarRange, Database, Gauge, Gift, History, Megaphone, RefreshCw, Search, Send, Shield, Trophy, Users, XCircle } from 'lucide-react'
 import AdminEvents from '../events/AdminEvents'
@@ -33,7 +35,7 @@ function actionText(a) {
   if (a.action === 'broadcast') return `Aviso “${d.title}” para ${fmt(d.recipients)} jogadores`
   if (a.action === 'announcement') return `Aviso “${d.title}” · ${fmtDate(d.starts_at)} → ${fmtDate(d.ends_at)}`
   if (a.action === 'set_club') return `${a.nickname || '—'} levado de ${d.from || 'sem clube'} para ${d.to} · ${d.reason}`
-  if (a.action === 'adjust') return `${a.nickname || '—'} · ${d.field === 'cash' ? 'caixa do clube' : 'reputação'} ${d.amount > 0 ? '+' : ''}${fmt(d.amount)} · ${d.reason}`
+  if (a.action === 'adjust') return `${a.nickname || '—'} · ${d.field === 'cash' ? 'caixa do clube' : 'reputação'} ${d.amount > 0 ? '+' : ''}${d.field === 'cash' ? clubMoney(d.amount) : fmt(d.amount)} · ${d.reason}`
   return a.action
 }
 
@@ -271,7 +273,7 @@ function CareerPanel({ careerId, onBack }) {
       {done && <Notice kind="ok" onClose={() => setDone(null)}>{done}</Notice>}
       {error && <Notice kind="error" onClose={() => setError('')}>{error}</Notice>}
       <div className="ad-kpis">
-        <Kpi label="Clube" value={c?.status === 'employed' ? c.club_id : 'Sem clube'} sub={data.club ? `Caixa ${fmt(data.club.cash)} · folha ${fmt(data.club.payroll)}/mês` : '—'} />
+        <Kpi label="Clube" value={c?.status === 'employed' ? c.club_id : 'Sem clube'} sub={data.club ? `Caixa ${clubMoney(data.club.cash)} · folha ${clubMoney(data.club.payroll)}/mês` : '—'} />
         <Kpi label="Reputação" value={c?.reputation ?? '—'} sub={`Diretoria ${c?.board ?? '—'} · torcida ${c?.fans ?? '—'}`} />
         <Kpi label="Campanha" value={`${c?.wins ?? 0}V ${c?.draws ?? 0}E ${c?.losses ?? 0}D`} sub={`${c?.titles ?? 0} títulos · ${c?.fired ?? 0} demissões`} />
         <Kpi label="Data no mundo" value={data.world ? new Date(`${data.world.today}T12:00:00`).toLocaleDateString('pt-BR') : '—'} sub={`Nível ${data.career.level} · ${data.email || ''}`} />
@@ -293,8 +295,8 @@ function CareerPanel({ careerId, onBack }) {
           {reasonInput('club')}
         </ActionForm>
         <ActionForm title="Caixa do clube" busy={busy === 'cash'} disabled={!data.club || !Number(cash) || reasons.cash.trim().length < 3}
-          onSubmit={() => run('cash', () => adjustCareer(careerId, 'cash', Number(cash), reasons.cash), `Caixa ajustado em ${fmt(cash)}.`)}>
-          <label>Valor (negativo retira)<input type="number" value={cash} onChange={(e) => setCash(e.target.value)} /></label>
+          onSubmit={() => run('cash', () => adjustCareer(careerId, 'cash', Number(cash), reasons.cash), `Caixa ajustado em ${clubMoney(cash)}.`)}>
+          <label>Valor em R$ (negativo retira)<ClubMoneyInput min={-100000000} max={100000000} value={cash} onChange={setCash} /></label>
           {reasonInput('cash')}
         </ActionForm>
         <ActionForm title="Reputação do técnico (0–100)" busy={busy === 'rep'} disabled={!Number(rep) || reasons.rep.trim().length < 3}

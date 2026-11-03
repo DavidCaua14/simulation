@@ -1,3 +1,4 @@
+import ClubMoneyInput from '../world/ClubMoneyInput'
 import { useState } from 'react'
 import { FileSignature, Tag, UserMinus } from 'lucide-react'
 import MoodBadge from './MoodBadge'
@@ -30,7 +31,7 @@ export default function ContractPanel({ player: p, today, maxYears = 5, notify, 
   const openRenewal = () =>
     run(async () => {
       const r = await worldRpc('career_contract_renew', { p_player: p.id, p_request: requestId() })
-      setRenewal({ id: r.id, salary: Math.ceil((p.monthly_salary || 100) * 1.08), years: 2, signing: 0, role: p.promised_role || 'rotation' })
+      setRenewal({ id: r.id, salary: Math.max(r.salary_demand || 0, Math.ceil((p.monthly_salary || 100) * 1.08)), years: 2, signing: 0, role: p.promised_role || 'rotation' })
     })
   const sendRenewal = (e) => {
     e.preventDefault()
@@ -84,9 +85,9 @@ export default function ContractPanel({ player: p, today, maxYears = 5, notify, 
 
       {renewal ? (
         <form className="ps-renew" onSubmit={sendRenewal}>
-          <label className="cw-field">Salário mensal<input type="number" inputMode="numeric" min={1} max={10000000} required value={renewal.salary} onChange={(e) => setRenewal((r) => ({ ...r, salary: e.target.value }))} /></label>
+          <label className="cw-field">Salário mensal (R$)<ClubMoneyInput min={1} max={10000000} value={renewal.salary} onChange={(value) => setRenewal((r) => ({ ...r, salary: value }))} /></label>
           <label className="cw-field">Anos de contrato (até {maxYears})<input type="number" inputMode="numeric" min={1} max={maxYears} required value={renewal.years} onChange={(e) => setRenewal((r) => ({ ...r, years: e.target.value }))} /></label>
-          <label className="cw-field">Luvas<input type="number" inputMode="numeric" min={0} max={10000000} required value={renewal.signing} onChange={(e) => setRenewal((r) => ({ ...r, signing: e.target.value }))} /></label>
+          <label className="cw-field">Luvas (R$)<ClubMoneyInput max={10000000} value={renewal.signing} onChange={(value) => setRenewal((r) => ({ ...r, signing: value }))} /></label>
           <label className="cw-field">Papel no elenco<select value={renewal.role} onChange={(e) => setRenewal((r) => ({ ...r, role: e.target.value }))}>{Object.entries(ROLES).map(([id, label]) => <option key={id} value={id}>{label}</option>)}</select></label>
           <div className="ps-deal-actions">
             <button type="button" className="gx-btn-ghost" disabled={busy} onClick={() => setRenewal(null)}>Cancelar</button>
@@ -95,7 +96,7 @@ export default function ContractPanel({ player: p, today, maxYears = 5, notify, 
         </form>
       ) : confirmRelease ? (
         <div className="ps-deal-actions">
-          <p>Rescindir custa cerca de <b>{money(releaseCost)}</b> moedas (até seis salários) e o atleta fica livre no mercado.</p>
+          <p>Rescindir custa cerca de <b>{money(releaseCost)}</b> (até seis salários) e o atleta fica livre no mercado.</p>
           <button type="button" className="gx-btn-ghost" disabled={busy} onClick={() => setConfirmRelease(false)}>Voltar</button>
           <button type="button" className="gx-btn is-danger" disabled={busy} onClick={release}>Confirmar</button>
         </div>

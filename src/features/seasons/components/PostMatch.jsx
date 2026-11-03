@@ -1,3 +1,4 @@
+import { clubMoney } from '../utils/clubMoney'
 import GameIcon from '../../../components/ui/GameIcon'
 import { useEffect, useMemo, useState } from 'react'
 import { Ambulance, ArrowDown, ArrowUp, Ban, Building2, Megaphone, Star, Trophy, UserX } from 'lucide-react'
@@ -186,9 +187,9 @@ export default function PostMatch({ summary: s, seasonId, byComp, onClose, onOff
 
               <div className="sn-rewards">
                 {s.rewards.xp > 0 && <span className="xp">+{s.rewards.xp} XP</span>}
-                <span className="coins">
-                  <GameIcon name="coins" size={13} /> +{s.rewards.coins}
-                </span>
+                {s.rewards.coins > 0 && <span className="coins"><GameIcon name="coins" size={13} /> +{s.rewards.coins} moedas</span>}
+                {s.rewards.club?.prize > 0 && <span className="coins"><GameIcon name="coins" size={13} /> +{clubMoney(s.rewards.club.prize)} para o clube</span>}
+                {s.rewards.club?.gate > 0 && <span className="coins">Bilheteria: {clubMoney(s.rewards.club.gate)}</span>}
                 {s.rewards.energy > 0 && <span className="energy"><GameIcon name="energy" size={13} /> +{s.rewards.energy} energia</span>}
               </div>
 

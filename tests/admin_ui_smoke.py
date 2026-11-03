@@ -99,7 +99,7 @@ with sync_playwright() as p:
         expect(page.get_by_text('agora treina')).to_be_visible()
         move = [a for n, a in calls if n == 'admin_career_set_club'][-1]
         assert move['p_reason'] == 'Convite especial' and move['p_club'], move
-        page.get_by_label('Valor (negativo retira)').fill('250000')
+        page.get_by_label('Valor em R$ (negativo retira)').fill('250000000')
         page.get_by_label('Motivo (o jogador vê)').nth(1).fill('Patrocínio')
         page.get_by_role('button', name='Aplicar').first.click()
         expect(page.get_by_text('Caixa ajustado')).to_be_visible()

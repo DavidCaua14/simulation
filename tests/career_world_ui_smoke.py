@@ -27,7 +27,7 @@ session = {'access_token': token, 'refresh_token': 'mock', 'expires_at': expiry,
 with sync_playwright() as p:
     browser = p.chromium.launch(executable_path='/usr/bin/chromium', headless=True, args=['--no-sandbox'])
     cases = [(390, 'BRA', 'legacy_backend'), (390, 'BRA', 'attention'), (320, 'BRA', 'normal'), (360, 'BRA', 'normal'), (390, 'BRA', 'normal'), (768, 'BRA', 'normal'), (1280, 'BRA', 'normal')]
-    if '--market-policy' in sys.argv: cases = [(320, 'BRA', 'market_policy'), (1280, 'BRA', 'market_policy')]
+    if '--market-policy' in sys.argv or '--club-economy' in sys.argv: cases = [(320, 'BRA', 'market_policy'), (1280, 'BRA', 'market_policy')]
     for width, region, scenario in cases:
         payload = json.loads(json.dumps(original_payload))
         payload['worldHub']['world']['needs_sync'] = True
@@ -36,6 +36,7 @@ with sync_playwright() as p:
         if scenario == 'market_policy':
             payload['worldMarket'][0].update(salary_demand=5000, project_reason='O atleta considera o nível esportivo do clube insuficiente.')
             payload['worldMarket'][1].update(club_id=None, monthly_salary=None, salary_demand=1800, minimum_signing_bonus=3600, project_reason=None)
+            payload['worldMarket'][2].update(club_id='arsenal', project_reason=None)
             payload['worldDeals'][0].update(status='player_counter', buyer_club=payload['worldHub']['coach']['club_id'], monthly_salary=40, salary_demand=1800, signing_bonus=0, minimum_signing_bonus=3600)
         advance_trace = []
         advance_state = {'partial': False, 'draining': False, 'backlog': 2}
@@ -54,7 +55,7 @@ with sync_playwright() as p:
             payload['worldHub']['calendar_versions'] = {c['id']: 'v1' for c in payload['worldHub']['competitions']}
         context = browser.new_context(viewport={'width': width, 'height': 844})
         page = context.new_page()
-        errors, calls, contract_requests = [], [], []
+        errors, calls, contract_requests, free_requests, bids = [], [], [], [], []
         page.on('pageerror', lambda e: errors.append(str(e)))
         page.add_init_script('localStorage.setItem(' + json.dumps('sb-' + host.split('.')[0] + '-auth-token') + ',' + json.dumps(json.dumps(session)) + ')')
         squad = payload['squad'] if region == 'BRA' else payload['europeanSquad']
@@ -113,6 +114,14 @@ with sync_playwright() as p:
                 if event.get('scheduled_on'):
                     event['days_until'] = (date.fromisoformat(event['scheduled_on']) - today).days
                 data = {'days':days, 'matches':24, 'more':more, 'today':today.isoformat(), 'stopped_for_match': event.get('days_until', 1) <= 0}
+            elif name == 'career_free_agent_offer':
+                free_requests.append(args)
+                payload['worldDeals'][0]['status'] = 'player_pending'
+                data = {'ok': True, 'id': payload['worldDeals'][0]['id']}
+            elif name == 'career_transfer_bid':
+                bids.append(args)
+                payload['worldDeals'][0]['status'] = 'player_counter'
+                data = {'ok': True, 'id': payload['worldDeals'][0]['id']}
             elif name == 'career_player_offer':
                 contract_requests.append(args)
                 data = {'ok': True}
@@ -164,19 +173,32 @@ with sync_playwright() as p:
             expect(page.get_by_role('button', name='Enviar proposta', exact=True)).to_be_disabled()
             page.get_by_role('dialog').get_by_role('button', name='Fechar', exact=True).click()
             page.locator('.cw-player').nth(1).click()
-            expect(page.get_by_text('Salário mensal pretendido:', exact=False)).to_contain_text('1.800')
-            expect(page.get_by_text('Salário mensal pretendido:', exact=False)).to_contain_text('3.600')
+            expect(page.get_by_text('Salário mensal pretendido:', exact=False)).to_contain_text('1.800.000')
+            expect(page.get_by_text('Salário mensal pretendido:', exact=False)).to_contain_text('3.600.000')
             assert page.evaluate('document.documentElement.scrollWidth <= window.innerWidth')
+            expect(page.get_by_label('Taxa fixa (R$)', exact=True)).to_have_count(0)
+            expect(page.get_by_label('Parcelas mensais', exact=True)).to_have_count(0)
+            expect(page.get_by_label('Salário mensal (R$)', exact=True)).to_have_value('1800000')
+            expect(page.get_by_label('Luvas (R$)', exact=True)).to_have_value('3600000')
+            page.get_by_role('button', name='Apresentar proposta ao atleta', exact=True).click()
+            expect(page.get_by_text('Proposta enviada diretamente ao atleta.', exact=False)).to_be_visible()
+            expect(page.get_by_role('tab', name='Negociações', exact=True)).to_have_attribute('aria-selected','true')
+            assert len(free_requests) == 1 and free_requests[0]['p_salary'] == 1800 and free_requests[0]['p_signing'] == 3600
+            assert len(bids) == 0 and len(contract_requests) == 0, 'Free agent required a club bid or second form'
+            page.get_by_role('tab', name='Mercado', exact=True).click()
+            page.locator('.cw-player').nth(2).click()
+            page.get_by_label('Taxa fixa (R$)', exact=True).fill('80000000')
             page.get_by_role('button', name='Enviar proposta', exact=True).click()
             expect(page.get_by_role('tab', name='Negociações', exact=True)).to_have_attribute('aria-selected','true')
+            assert len(bids) == 1 and bids[0]['p_fee'] == 80000
             page.get_by_role('button', name='Ver negociação', exact=True).first.click()
-            expect(page.get_by_label('Salário mensal', exact=True)).to_have_value('1800')
-            expect(page.get_by_label('Luvas', exact=True)).to_have_value('3600')
+            expect(page.get_by_label('Salário mensal (R$)', exact=True)).to_have_value('1800000')
+            expect(page.get_by_label('Luvas (R$)', exact=True)).to_have_value('3600000')
             page.get_by_role('button', name='Apresentar contrato', exact=True).click()
             expect(page.get_by_text('Contrato enviado ao atleta.', exact=False)).to_be_visible()
             assert len(contract_requests) == 1 and contract_requests[0]['p_salary'] == 1800 and contract_requests[0]['p_signing'] == 3600
             assert advance_trace == [] and not errors, (advance_trace, errors)
-            print('PASS market policy UI', width, 'elite project warning, disabled unsuitable bid, server salary/signing defaults and no date movement', flush=True)
+            print('PASS market policy UI', width, 'BRL salary/signing, direct free-agent offer, owned transfer preserved, exact API denomination and stable date', flush=True)
             context.close()
             continue
         # Processing starts only from the regular next-match button.
@@ -228,12 +250,12 @@ with sync_playwright() as p:
         page.get_by_label('Região', exact=True).select_option('ENG')
         expect(page.locator('.cw-player-grid .base-player-card')).to_have_count(30)
         page.locator('.cw-player').first.click()
-        page.get_by_label('Taxa fixa', exact=True).fill('80000')
+        page.get_by_label('Taxa fixa (R$)', exact=True).fill('80000000')
         page.get_by_label('Parcelas mensais', exact=True).fill('3')
         page.get_by_role('button', name='Enviar proposta', exact=True).click()
         expect(page.get_by_role('tab', name='Negociações', exact=True)).to_have_attribute('aria-selected','true')
         page.get_by_role('button', name='Ver negociação', exact=True).first.click()
-        page.get_by_label('Salário mensal', exact=True).fill('1200')
+        page.get_by_label('Salário mensal (R$)', exact=True).fill('1200000')
         page.get_by_label('Anos de contrato', exact=True).fill('3')
         page.get_by_role('button', name='Apresentar contrato', exact=True).click()
         expect(page.get_by_text('Contrato enviado ao atleta.', exact=False)).to_be_visible()
