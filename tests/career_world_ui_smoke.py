@@ -28,12 +28,14 @@ with sync_playwright() as p:
     browser = p.chromium.launch(executable_path='/usr/bin/chromium', headless=True, args=['--no-sandbox'])
     cases = [(390, 'BRA', 'legacy_backend'), (390, 'BRA', 'attention'), (320, 'BRA', 'normal'), (360, 'BRA', 'normal'), (390, 'BRA', 'normal'), (768, 'BRA', 'normal'), (1280, 'BRA', 'normal')]
     if '--market-policy' in sys.argv or '--club-economy' in sys.argv: cases = [(320, 'BRA', 'market_policy'), (1280, 'BRA', 'market_policy')]
+    if '--renewal-window' in sys.argv: cases = [(w, 'BRA', mode) for w in [320,1280] for mode in ['market_policy','closed_window']]
     for width, region, scenario in cases:
         payload = json.loads(json.dumps(original_payload))
         payload['worldHub']['world']['needs_sync'] = True
         payload['worldHub']['next_event']['days_until'] = 14
         payload['worldHub']['next_event']['scheduled_on'] = (date.fromisoformat(payload['worldHub']['world']['today']) + timedelta(days=14)).isoformat()
-        if scenario == 'market_policy':
+        if scenario in ['market_policy','closed_window']:
+            payload['worldHub']['world']['club']['window_open'] = scenario == 'market_policy'
             payload['worldMarket'][0].update(salary_demand=5000, project_reason='O atleta considera o nível esportivo do clube insuficiente.')
             payload['worldMarket'][1].update(club_id=None, monthly_salary=None, salary_demand=1800, minimum_signing_bonus=3600, project_reason=None)
             payload['worldMarket'][2].update(club_id='arsenal', project_reason=None)
@@ -122,6 +124,9 @@ with sync_playwright() as p:
                 bids.append(args)
                 payload['worldDeals'][0]['status'] = 'player_counter'
                 data = {'ok': True, 'id': payload['worldDeals'][0]['id']}
+            elif name == 'career_contract_renew':
+                payload['worldDeals'][0].update(initiator='renewal', status='player_counter', buyer_club=club)
+                data = {'ok':True, 'id':payload['worldDeals'][0]['id'], 'salary_demand':1800}
             elif name == 'career_player_offer':
                 contract_requests.append(args)
                 data = {'ok': True}
@@ -164,6 +169,38 @@ with sync_playwright() as p:
         page.route('https://' + host + '/**', api)
         page.goto('http://127.0.0.1:5173/', wait_until='domcontentloaded')
         page.get_by_role('button', name='Comandar', exact=True).click()
+        if scenario == 'closed_window':
+            page.get_by_role('navigation', name='Seções do modo Carreira').get_by_role('button', name='Mundo', exact=True).click()
+            page.get_by_role('tab', name='Mercado', exact=True).click()
+            expect(page.locator('.cw-player')).to_have_count(30)
+            page.locator('.cw-player').nth(1).click()
+            expect(page.get_by_text('Janela de transferências fechada.', exact=False)).to_be_visible()
+            expect(page.get_by_role('button', name='Apresentar proposta ao atleta', exact=True)).to_be_disabled()
+            page.get_by_role('dialog').get_by_role('button', name='Fechar', exact=True).click()
+            page.locator('.cw-player').nth(2).click()
+            expect(page.get_by_role('button', name='Enviar proposta', exact=True)).to_be_disabled()
+            page.get_by_label('Pré-contrato sem taxa', exact=False).check()
+            expect(page.get_by_role('button', name='Enviar proposta', exact=True)).to_be_disabled()
+            page.get_by_role('dialog').get_by_role('button', name='Fechar', exact=True).click()
+            page.get_by_role('tab', name='Negociações', exact=True).click()
+            page.get_by_role('button', name='Ver negociação', exact=True).first.click()
+            expect(page.get_by_role('button', name='Apresentar contrato', exact=True)).to_be_disabled()
+            page.get_by_role('dialog').get_by_role('button', name='Fechar', exact=True).click()
+            page.get_by_role('tab', name='Contratos', exact=True).click()
+            page.locator('.cw-player').first.click()
+            expect(page.get_by_role('button', name='Negociar renovação', exact=True)).to_be_enabled()
+            page.get_by_role('button', name='Negociar renovação', exact=True).click()
+            expect(page.get_by_role('tab', name='Negociações', exact=True)).to_have_attribute('aria-selected','true')
+            assert 'career_contract_renew' in calls
+            page.get_by_role('button', name='Ver negociação', exact=True).first.click()
+            expect(page.get_by_role('button', name='Apresentar contrato', exact=True)).to_be_enabled()
+            page.get_by_role('button', name='Apresentar contrato', exact=True).click()
+            expect(page.get_by_text('Contrato enviado ao atleta.', exact=False)).to_be_visible()
+            assert not free_requests and not bids and len(contract_requests) == 1
+            assert advance_trace == [] and not errors, (advance_trace,errors)
+            print('PASS closed window UI',width,'free/owned/precontracts blocked; own renewal available; date unchanged',flush=True)
+            context.close()
+            continue
         if scenario == 'market_policy':
             page.get_by_role('navigation', name='Seções do modo Carreira').get_by_role('button', name='Mundo', exact=True).click()
             page.get_by_role('tab', name='Mercado', exact=True).click()

@@ -58,13 +58,14 @@ export default function ContractPanel({ player: p, today, maxYears = 5, notify, 
   const release = () =>
     run(async () => {
       const r = await worldRpc('career_player_release', { p_player: p.id, p_request: requestId() })
-      notify?.(`Contrato rescindido por ${money(r.cost)} moedas. O atleta está livre no mercado.`, 'ok')
+      notify?.(`Contrato rescindido por ${money(r.cost)}. O atleta está livre no mercado.`, 'ok')
       onChanged?.({ closed: true })
     })
 
   return (
     <section className="ps-deal" aria-label="Satisfação e contrato">
       <h4>Satisfação e contrato</h4>
+      <p className="sn-hint">Você pode negociar a renovação mesmo com a janela fechada. O atleta avalia salário e projeto esportivo e pode recusar. Sem renovação, o vínculo termina na data prevista.</p>
       <MoodBadge morale={p.morale} size={16} withLabel />
       {p.transfer_requested && <p><b>Pediu para ser negociado.</b> Insatisfeito, ele rende menos em campo até a situação mudar: dê mais minutos, combine outro papel ou negocie a saída.</p>}
       {p.precontract && <p><b>Já assinou pré-contrato com outro clube</b> e sai de graça quando o vínculo terminar.</p>}
