@@ -107,6 +107,7 @@ export default function SeasonsScreen({ career: account, onBack }) {
     setTeamFocus(null)
     setTab(id)
     if (id === 'career') setCareerView(sub)
+    if (id === 'world' && ['news','finance','market','deals','contracts'].includes(sub)) setWorldArea(sub)
   }, [])
 
   // ---- ações ----

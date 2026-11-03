@@ -1,3 +1,4 @@
+import ClubFundingCard from '../components/ClubFundingCard'
 import GameIcon from '../../../components/ui/GameIcon'
 import ExitModeButton from '../components/ExitModeButton'
 import { useMemo } from 'react'
@@ -79,6 +80,7 @@ export default function HomeTab({ ctx, actions }) {
         </section>
       )}
       {hero}
+      {!unemployed && <ClubFundingCard signal={hub.world?.investment?.signal} actions={actions} disabled={!!busy} />}
 
       {firstOffer && !unemployed && (
         <button type="button" className="sn-offerbar" onClick={() => actions.goTab('career', 'offers')}>

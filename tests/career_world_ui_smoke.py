@@ -29,17 +29,24 @@ with sync_playwright() as p:
     cases = [(390, 'BRA', 'legacy_backend'), (390, 'BRA', 'attention'), (320, 'BRA', 'normal'), (360, 'BRA', 'normal'), (390, 'BRA', 'normal'), (768, 'BRA', 'normal'), (1280, 'BRA', 'normal')]
     if '--market-policy' in sys.argv or '--club-economy' in sys.argv: cases = [(320, 'BRA', 'market_policy'), (1280, 'BRA', 'market_policy')]
     if '--renewal-window' in sys.argv: cases = [(w, 'BRA', mode) for w in [320,1280] for mode in ['market_policy','closed_window']]
+    if '--club-investment' in sys.argv: cases = [(320,'BRA','investment'),(1280,'BRA','investment'),(320,'BRA','investment_low')]
     for width, region, scenario in cases:
         payload = json.loads(json.dumps(original_payload))
         payload['worldHub']['world']['needs_sync'] = True
         payload['worldHub']['next_event']['days_until'] = 14
         payload['worldHub']['next_event']['scheduled_on'] = (date.fromisoformat(payload['worldHub']['world']['today']) + timedelta(days=14)).isoformat()
-        if scenario in ['market_policy','closed_window']:
-            payload['worldHub']['world']['club']['window_open'] = scenario == 'market_policy'
+        if scenario in ['market_policy','closed_window','investment','investment_low']:
+            payload['worldHub']['world']['club']['window_open'] = scenario != 'closed_window'
             payload['worldMarket'][0].update(salary_demand=5000, project_reason='O atleta considera o nível esportivo do clube insuficiente.')
             payload['worldMarket'][1].update(club_id=None, monthly_salary=None, salary_demand=1800, minimum_signing_bonus=3600, project_reason=None)
             payload['worldMarket'][2].update(club_id='arsenal', project_reason=None)
             payload['worldDeals'][0].update(status='player_counter', buyer_club=payload['worldHub']['coach']['club_id'], monthly_salary=40, salary_demand=1800, signing_bonus=0, minimum_signing_bonus=3600)
+        funding = {'credit':0, 'eligible':0, 'paid':0}
+        investment_requests, funding_requests = [], []
+        if scenario.startswith('investment'):
+            payload['worldHub']['career']['coins'] = 5000 if scenario == 'investment' else 10
+            payload['worldHub']['world']['club']['cash'] = 1000
+            payload['worldHub']['world']['investment'] = {'board':{'bonus_cap':200,'bonus_remaining':200,'rate_percent':20},'signal':{'key':'funding-card','kind':'negotiation','player_name':'Reforço planejado','gap':600,'coins_needed':500,'action':'deals'}}
         advance_trace = []
         advance_state = {'partial': False, 'draining': False, 'backlog': 2}
         if width == 390:
@@ -116,6 +123,35 @@ with sync_playwright() as p:
                 if event.get('scheduled_on'):
                     event['days_until'] = (date.fromisoformat(event['scheduled_on']) - today).days
                 data = {'days':days, 'matches':24, 'more':more, 'today':today.isoformat(), 'stopped_for_match': event.get('days_until', 1) <= 0}
+            elif name == 'career_funding_quote':
+                funding_requests.append(args)
+                owner = payload['worldHub']['coach']['club_id']
+                gap = max(0,600 - funding['credit'])
+                coins = next((n for n in range(gap+1) if n + min(200-funding['paid'],(funding['eligible']+n)//5-funding['paid']) >= gap),gap)
+                reason = 'O atleta considera o nível esportivo do clube insuficiente.' if args.get('p_player') == payload['worldMarket'][0]['id'] else None
+                renewal = any(n['id']==args.get('p_negotiation') and n.get('initiator')=='renewal' for n in payload['worldDeals'])
+                if not payload['worldHub']['world']['club']['window_open'] and not renewal: reason = 'Janela de transferências fechada.'
+                wallet = payload['worldHub']['career']['coins']
+                data = {'club_id':owner,'blocked_reason':reason,'gap':gap,'coins_needed':coins,'personal_coins':wallet,'board_bonus':gap-coins,'can_invest':not reason and gap>0 and wallet>=coins,'fee':0,'signing_bonus':0,'performance_bonus':0,'salary_reserve':600,'current_payroll_reserve':1000,'reserved_other':0,'debt':0,'club_cash':payload['worldHub']['world']['club']['cash']}
+            elif name == 'career_club_investment_preview':
+                amount = args['p_amount']
+                wallet = payload['worldHub']['career']['coins']
+                cash = payload['worldHub']['world']['club']['cash']
+                bonus = min(200-funding['paid'],(funding['eligible']+amount)//5-funding['paid'])
+                data = {'club_id':club,'club_name':'Clube atual','amount':amount,'personal_before':wallet,'personal_after':wallet-amount,'cash_before':cash,'cash_after':cash+amount+bonus,'board_bonus':bonus,'club_credit':amount+bonus,'can_invest':wallet>=amount}
+            elif name == 'career_club_investment_confirm':
+                investment_requests.append(args)
+                bonus = min(200-funding['paid'],(funding['eligible']+args['p_amount'])//5-funding['paid'])
+                funding['credit'] += args['p_amount']+bonus
+                funding['eligible'] = min(1000,funding['eligible']+args['p_amount'])
+                funding['paid'] += bonus
+                payload['worldHub']['career']['coins'] -= args['p_amount']
+                payload['worldHub']['world']['club']['cash'] += args['p_amount']+bonus
+                payload['worldHub']['world'].setdefault('investment',{})['board'] = {'bonus_cap':200,'bonus_remaining':200-funding['paid'],'rate_percent':20}
+                data = {'ok':True,'board_bonus':bonus,'club_credit':args['p_amount']+bonus}
+            elif name == 'career_funding_dismiss':
+                payload['worldHub']['world']['investment']['signal'] = None
+                data = {'ok':True}
             elif name == 'career_free_agent_offer':
                 free_requests.append(args)
                 payload['worldDeals'][0]['status'] = 'player_pending'
@@ -169,6 +205,70 @@ with sync_playwright() as p:
         page.route('https://' + host + '/**', api)
         page.goto('http://127.0.0.1:5173/', wait_until='domcontentloaded')
         page.get_by_role('button', name='Comandar', exact=True).click()
+        if scenario.startswith('investment'):
+            nav = page.get_by_role('navigation', name='Seções do modo Carreira')
+            card = page.get_by_role('region', name='Planejamento do clube')
+            expect(card).to_be_visible()
+            card.get_by_role('button',name='Ver negociações',exact=True).click()
+            expect(page.get_by_role('tab',name='Negociações',exact=True)).to_have_attribute('aria-selected','true')
+            nav.locator('button').filter(has_text='Início').click()
+            page.get_by_role('button',name='Dispensar aviso de planejamento',exact=True).click()
+            expect(card).to_have_count(0)
+            nav.get_by_role('button',name='Mundo',exact=True).click()
+            page.get_by_role('tab',name='Mercado',exact=True).click()
+            page.locator('.cw-player').nth(1).click()
+            advice = page.get_by_label('Planejamento da negociação',exact=True)
+            expect(advice).to_contain_text('Faltam R$ 600.000')
+            if scenario == 'investment_low':
+                expect(advice).to_contain_text('Você tem 10 moedas')
+                expect(advice.get_by_role('button',name='Planejar aporte',exact=True)).to_have_count(0)
+                assert not investment_requests and advance_trace == [] and not errors
+                print('PASS insufficient-wallet funding UI',width,'no unavailable investment offered',flush=True)
+                context.close()
+                continue
+            advice.get_by_role('button',name='Planejar aporte',exact=True).click()
+            confirmation = page.get_by_role('group',name='Confirmar aporte',exact=True)
+            expect(confirmation).to_contain_text('5.000 → 4.500 moedas')
+            expect(confirmation).to_contain_text('R$ 1.000.000 → R$ 1.600.000')
+            expect(confirmation).to_contain_text('+ R$ 100.000')
+            expect(confirmation).to_contain_text('permanece no clube se você sair')
+            assert not investment_requests and not free_requests and not bids
+            page.screenshot(path=f'/tmp/club-investment-confirmation-{width}.png',full_page=True)
+            confirmation.get_by_role('button',name='Voltar à decisão',exact=True).click()
+            expect(confirmation).to_have_count(0)
+            assert not investment_requests
+            advice.get_by_role('button',name='Planejar aporte',exact=True).click()
+            confirm = confirmation.get_by_role('button',name='Confirmar aporte de 500 moedas',exact=True)
+            expect(confirm).to_be_enabled()
+            confirm.evaluate('el => { el.click(); el.click(); }')
+            expect(confirmation).to_have_count(0)
+            expect(advice).to_contain_text('Estas condições cabem no orçamento atual.')
+            assert len(investment_requests) == 1 and investment_requests[0]['p_amount'] == 500
+            assert investment_requests[0]['p_expected_bonus'] == 100
+            assert not free_requests and not bids and not contract_requests,'Contribution submitted a player offer'
+            page.get_by_role('dialog').get_by_role('button',name='Fechar',exact=True).click()
+            page.locator('.cw-player').nth(0).click()
+            advice = page.get_by_label('Planejamento da negociação',exact=True)
+            expect(advice).to_contain_text('Um aporte não remove essa exigência.')
+            expect(advice.get_by_role('button',name='Planejar aporte',exact=True)).to_have_count(0)
+            page.get_by_role('dialog').get_by_role('button',name='Fechar',exact=True).click()
+            page.get_by_role('tab',name='Finanças',exact=True).click()
+            expect(page.get_by_label('Aporte ao clube',exact=True)).to_contain_text('Ainda disponível: R$ 100.000')
+            page.get_by_label('Investir da sua carteira',exact=False).fill('100')
+            page.get_by_role('button',name='Revisar aporte',exact=True).click()
+            expect(confirmation).to_contain_text('4.500 → 4.400 moedas')
+            confirmation.get_by_role('button',name='Confirmar aporte de 100 moedas',exact=True).click()
+            expect(confirmation).to_have_count(0)
+            expect(page.get_by_label('Aporte ao clube',exact=True)).to_contain_text('Ainda disponível: R$ 80.000')
+            nav.locator('button').filter(has_text='Início').click()
+            expect(card).to_have_count(0)
+            assert len(investment_requests)==2 and 'career_club_invest' not in calls
+            assert advance_trace==[] and not errors,(advance_trace,errors)
+            assert page.evaluate('document.documentElement.scrollWidth <= window.innerWidth'),'Funding UI overflow'
+            page.screenshot(path=f'/tmp/club-investment-{width}.png',full_page=True)
+            print('PASS funding UI',width,'context quote, full confirmation, optional cancellation, one request per double-click, board support, no implicit signing, home routing and dismissal',flush=True)
+            context.close()
+            continue
         if scenario == 'closed_window':
             page.get_by_role('navigation', name='Seções do modo Carreira').get_by_role('button', name='Mundo', exact=True).click()
             page.get_by_role('tab', name='Mercado', exact=True).click()
@@ -280,7 +380,8 @@ with sync_playwright() as p:
         page.get_by_role('tab', name='Finanças', exact=True).click()
         expect(page.get_by_role('heading', name='Finanças do clube')).to_be_visible()
         page.get_by_label('Investir da sua carteira', exact=False).fill('50')
-        page.get_by_role('button', name='Transferir ao clube', exact=True).click()
+        page.get_by_role('button', name='Revisar aporte', exact=True).click()
+        page.get_by_role('group',name='Confirmar aporte',exact=True).get_by_role('button',name='Confirmar aporte de 50 moedas',exact=True).click()
         expect(page.get_by_text('Investimento transferido ao clube.', exact=True)).to_be_visible()
         page.get_by_role('tab', name='Mercado', exact=True).click()
         expect(page.locator('.cw-player-grid .base-player-card')).to_have_count(30)
@@ -328,7 +429,7 @@ with sync_playwright() as p:
             assert advance_trace[before_match:] == [0, 7], advance_trace
             assert page.get_by_role('button', name='Abrir calendário', exact=True).count() == 0
         assert not errors, errors
-        assert 'career_transfer_bid' in calls and 'career_player_offer' in calls and 'career_club_invest' in calls
+        assert 'career_transfer_bid' in calls and 'career_player_offer' in calls and 'career_club_investment_confirm' in calls
         assert not any(n in calls for n in ['box_open','wheel_spin','market_buy','card_claim_daily'])
         print('PASS responsive career UI',width,'news, signing base card, calendar, finances, global market, athlete contract, renewals, no overflow')
         context.close()

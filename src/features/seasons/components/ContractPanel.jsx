@@ -1,3 +1,4 @@
+import { FundingAdvice } from './ClubInvestment'
 import ClubMoneyInput from '../world/ClubMoneyInput'
 import { useState } from 'react'
 import { FileSignature, Tag, UserMinus } from 'lucide-react'
@@ -90,6 +91,7 @@ export default function ContractPanel({ player: p, today, maxYears = 5, notify, 
           <label className="cw-field">Anos de contrato (até {maxYears})<input type="number" inputMode="numeric" min={1} max={maxYears} required value={renewal.years} onChange={(e) => setRenewal((r) => ({ ...r, years: e.target.value }))} /></label>
           <label className="cw-field">Luvas (R$)<ClubMoneyInput max={10000000} value={renewal.signing} onChange={(value) => setRenewal((r) => ({ ...r, signing: value }))} /></label>
           <label className="cw-field">Papel no elenco<select value={renewal.role} onChange={(e) => setRenewal((r) => ({ ...r, role: e.target.value }))}>{Object.entries(ROLES).map(([id, label]) => <option key={id} value={id}>{label}</option>)}</select></label>
+          <FundingAdvice playerId={p.id} negotiationId={renewal.id} terms={{ monthly_salary: +renewal.salary, contract_years: +renewal.years, signing_bonus: +renewal.signing, role: renewal.role, appearance_bonus: 0, goal_bonus: 0 }} disabled={busy} onInvested={async () => { notify?.('Aporte concluído. A proposta de renovação ainda precisa ser enviada.', 'ok'); await onChanged?.() }} />
           <div className="ps-deal-actions">
             <button type="button" className="gx-btn-ghost" disabled={busy} onClick={() => setRenewal(null)}>Cancelar</button>
             <button type="submit" className="gx-btn" disabled={busy}>Enviar</button>
