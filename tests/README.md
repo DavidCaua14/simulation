@@ -40,3 +40,7 @@ chamada, troca de liga duas vezes e verifica IA de mercado, janelas, satisfaçã
 Com Vite em `127.0.0.1:5173`, executar `python tests/pending_rewards_ui_smoke.py`. O teste intercepta todas as chamadas ao Supabase e verifica a navegação Home → resgate de recompensa antiga → Home sem aviso, atualização ao retornar à aba e ao vencer o prazo, e sequência diária válida. Usa sessões e recompensas fictícias, sem alterar dados reais.
 
 A cobertura SQL de isolamento, prazo e resgate idempotente integra `scripts/test-seasons-db.py --scoped-runtime`. Detalhes em [RECOMPENSAS_PENDENTES.md](../docs/RECOMPENSAS_PENDENTES.md).
+
+# Mercado e contratos
+
+`test-seasons-db.py --scoped-runtime --skip-existing-tests` inclui a evolução 53 e os testes de cota por registro, salário, luvas, orçamento, retenção da IA e concorrência real. Para a interface, com Vite ativo: `python tests/career_world_ui_smoke.py <fixtures.json> --market-policy`. O teste usa API interceptada em 320 e 1280 pixels. Consulte [INTEGRIDADE_MERCADO.md](../docs/INTEGRIDADE_MERCADO.md) para as regras e garantias de preservação.
