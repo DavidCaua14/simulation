@@ -30,6 +30,8 @@ with sync_playwright() as p:
     if '--market-policy' in sys.argv or '--club-economy' in sys.argv: cases = [(320, 'BRA', 'market_policy'), (1280, 'BRA', 'market_policy')]
     if '--renewal-window' in sys.argv: cases = [(w, 'BRA', mode) for w in [320,1280] for mode in ['market_policy','closed_window']]
     if '--club-investment' in sys.argv: cases = [(320,'BRA','investment'),(1280,'BRA','investment'),(320,'BRA','investment_low')]
+    if '--roster-refresh' in sys.argv: cases = [(320,'BRA','roster'),(1280,'BRA','roster')]
+    if '--match-revenue' in sys.argv: cases = [(390,'BRA','normal')]
     for width, region, scenario in cases:
         payload = json.loads(json.dumps(original_payload))
         payload['worldHub']['world']['needs_sync'] = True
@@ -41,6 +43,15 @@ with sync_playwright() as p:
             payload['worldMarket'][1].update(club_id=None, monthly_salary=None, salary_demand=1800, minimum_signing_bonus=3600, project_reason=None)
             payload['worldMarket'][2].update(club_id='arsenal', project_reason=None)
             payload['worldDeals'][0].update(status='player_counter', buyer_club=payload['worldHub']['coach']['club_id'], monthly_salary=40, salary_demand=1800, signing_bonus=0, minimum_signing_bonus=3600)
+        roster_control = {'mode':'initial','fresh':False}
+        held_rosters = []
+        registered = json.loads(json.dumps(payload['squad']['players'][0]))
+        registered.update(id='registered-fixture-player',name='Reforço confirmado',short_name='Reforço confirmado',position='ZAG',available=True)
+        if scenario == 'roster':
+            payload['worldDeals'][0].update(status='completed',initiator='user',arrival_status='registered',player_id=registered['id'],player_name=registered['name'],buyer_club=payload['worldHub']['coach']['club_id'])
+        if '--match-revenue' in sys.argv:
+            payload['worldHub']['world']['club']['window_open'] = True
+            payload['finishedMatch']['summary']['rewards']['club'] = {'gate':250,'prize':125,'operations':-50,'total':325}
         funding = {'credit':0, 'eligible':0, 'paid':0}
         investment_requests, funding_requests = [], []
         if scenario.startswith('investment'):
@@ -169,6 +180,13 @@ with sync_playwright() as p:
             elif name.startswith('career_'): data = {'ok': True, 'id':'11111111-0000-0000-0000-000000000099'}
             elif name == 'mgr_squad':
                 data = payload['rivalSquad'] if args.get('p_club') and args['p_club'] != club else squad
+                if scenario == 'roster':
+                    data = json.loads(json.dumps(data))
+                    if roster_control['mode'] == 'hold':
+                        held_rosters.append((route,data))
+                        return
+                    if roster_control['fresh']: data['players'].append(registered)
+
             elif name == 'mgr_player_detail':
                 data = next((x for x in squad['players'] + payload['rivalSquad']['players'] if x['id'] == args.get('p_player')), squad['players'][0])
             elif name == 'mgr_status': data = {**payload['hub']['coach'], 'club_id': club, 'next_event': payload['hub']['next_event']}
@@ -205,6 +223,46 @@ with sync_playwright() as p:
         page.route('https://' + host + '/**', api)
         page.goto('http://127.0.0.1:5173/', wait_until='domcontentloaded')
         page.get_by_role('button', name='Comandar', exact=True).click()
+        if scenario == 'roster':
+            nav = page.get_by_role('navigation',name='Seções do modo Carreira')
+            nav.get_by_role('button',name='Time',exact=True).click()
+            expect(page.get_by_role('button',name='Atualizar elenco',exact=True)).to_be_visible()
+            radios = page.get_by_role('radio')
+            choice = next(r for r in radios.all() if r.get_attribute('aria-checked') == 'false')
+            chosen_name = choice.inner_text()
+            choice.click()
+            page.get_by_role('tab',name='Elenco',exact=True).click()
+            expect(page.locator('.sq-row').filter(has_text='Reforço confirmado')).to_have_count(0)
+            for known in payload.get('registeredChecks',[]):
+                member = next(p for p in squad['players'] if p['id']==known)
+                expect(page.locator('.sq-row').filter(has_text=member['short_name'])).to_have_count(1)
+            roster_control['mode'] = 'hold'
+            page.get_by_role('button',name='Atualizar elenco',exact=True).click()
+            page.wait_for_timeout(200)
+            assert held_rosters,'Expected a delayed old roster response'
+            roster_control.update(mode='fresh',fresh=True)
+            page.get_by_role('button',name='Atualizar elenco',exact=True).click()
+            expect(page.locator('.sq-row').filter(has_text='Reforço confirmado')).to_have_count(1)
+            for old_route,old_data in held_rosters: old_route.fulfill(status=200,content_type='application/json',body=json.dumps(old_data))
+            page.wait_for_timeout(200)
+            expect(page.locator('.sq-row').filter(has_text='Reforço confirmado')).to_have_count(1)
+            page.get_by_role('tab',name='Escalação',exact=True).click()
+            expect(page.get_by_role('radio',name=chosen_name,exact=True)).to_have_attribute('aria-checked','true')
+            page.locator('button.pt-tok').first.click()
+            page.get_by_label('Buscar no elenco',exact=True).fill('reforco confirmado')
+            expect(page.locator('.pk-main')).to_have_count(1)
+            expect(page.locator('.pk-main')).to_contain_text('Reforço confirmado')
+            page.get_by_role('dialog').get_by_role('button',name='Fechar',exact=True).click()
+            nav.get_by_role('button',name='Mundo',exact=True).click()
+            page.get_by_role('tab',name='Negociações',exact=True).click()
+            page.get_by_role('button',name='Ver negociação',exact=True).first.click()
+            page.get_by_role('button',name='Ver atleta no Time',exact=True).click()
+            expect(page.get_by_role('dialog')).to_contain_text('Reforço confirmado')
+            assert 'mgr_lineup_save' not in calls and advance_trace == [] and not errors,(advance_trace,errors)
+            assert page.evaluate('document.documentElement.scrollWidth <= window.innerWidth')
+            print('PASS roster UI',width,'new registration selectable, stale response ignored, unsaved formation retained, name search and direct arrival link; no date or lineup writes',flush=True)
+            context.close()
+            continue
         if scenario.startswith('investment'):
             nav = page.get_by_role('navigation', name='Seções do modo Carreira')
             card = page.get_by_role('region', name='Planejamento do clube')
@@ -420,6 +478,13 @@ with sync_playwright() as p:
             match_dialog.get_by_role('button', name='Simular até o fim', exact=True).click()
             page.get_by_role('button', name=re.compile('Ver resumo da partida')).click(timeout=15000)
             expect(page.get_by_role('dialog', name='Resumo da partida', exact=True)).to_be_visible()
+            if '--match-revenue' in sys.argv:
+                summary = page.get_by_role('dialog',name='Resumo da partida',exact=True)
+                expect(summary).to_contain_text('Bilheteria bruta: R$ 250.000')
+                expect(summary).to_contain_text('Bônus pelo resultado: +R$ 125.000')
+                expect(summary).to_contain_text('Operação da partida: -R$ 50.000')
+                expect(summary).to_contain_text('Saldo da partida no caixa: R$ 325.000')
+
             page.get_by_role('button', name='Continuar', exact=True).click()
             expect(advance_button).to_be_enabled()
             page.wait_for_timeout(800)

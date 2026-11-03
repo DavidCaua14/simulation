@@ -5,10 +5,13 @@ import PositionFilter from './PositionFilter'
 import Sheet from '../ui/Sheet'
 import { POS_NAME, condTone, fitTone, POS_ORDER, posFit } from '../utils/managerUtils'
 
+const searchableName = value => String(value || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
+
 // Escolher quem joga numa vaga (ou no banco). Ordena pela nota NAQUELA posição e mostra
 // adequação, condição física e disponibilidade — para comparar atletas antes de decidir.
 export default function PlayerPicker({ target, players, slots, bench, onPick, onRemove, onInfo, onClose }) {
   const [positionFilter, setPositionFilter] = useState('')
+  const [query, setQuery] = useState('')
   const [onlyAvail, setOnlyAvail] = useState(true)
   const isBench = target.kind === 'bench'
   const pos = target.pos
@@ -22,11 +25,12 @@ export default function PlayerPicker({ target, players, slots, bench, onPick, on
   const list = useMemo(() => {
     const score = (p) => (isBench ? p.overall : p.ratings?.[pos] ?? 0) * (p.available ? 1 : 0.5)
     return players
+      .filter((p) => !query.trim() || searchableName(`${p.name || ''} ${p.short_name || ''}`).includes(searchableName(query.trim())))
       .filter((p) => !positionFilter || p.position === positionFilter)
       .filter((p) => !onlyAvail || p.available)
       .filter((p) => !isBench || !Object.values(slots || {}).includes(p.id))
       .sort((a, b) => POS_ORDER.indexOf(a.position) - POS_ORDER.indexOf(b.position) || score(b) - score(a))
-  }, [players, onlyAvail, isBench, pos, slots, positionFilter])
+  }, [players, onlyAvail, isBench, pos, slots, positionFilter, query])
 
   const current = target.current
   return (
@@ -37,6 +41,9 @@ export default function PlayerPicker({ target, players, slots, bench, onPick, on
       tall
     >
       <div className="pk">
+        <label className="cw-field">Buscar no elenco<input type="search" value={query} maxLength={80} onChange={e => setQuery(e.target.value)} placeholder="Nome do jogador" /></label>
+        {onlyAvail && players.some(p => !p.available) && <p className="sn-hint">Há atletas lesionados ou suspensos ocultos pelo filtro. <button type="button" className="sn-link" onClick={() => setOnlyAvail(false)}>Mostrar todos</button></p>}
+        {isBench && <p className="sn-hint">Quem já está entre os titulares não aparece nesta lista de reservas.</p>}
         <div className="pk-bar">
           <label className="pk-toggle">
             <input type="checkbox" checked={onlyAvail} onChange={(e) => setOnlyAvail(e.target.checked)} /> Só disponíveis
@@ -92,7 +99,7 @@ export default function PlayerPicker({ target, players, slots, bench, onPick, on
             )
           })}
         </ul>
-        {!list.length && <p className="sn-muted sn-center">Ninguém disponível com esse filtro.</p>}
+        {!list.length && <p className="sn-muted sn-center">Nenhum atleta encontrado com esses filtros. Confira a busca, a posição e o filtro de disponibilidade.</p>}
       </div>
     </Sheet>
   )

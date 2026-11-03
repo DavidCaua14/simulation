@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Ambulance, CircleAlert, Ban, BatteryLow, Check, Save, Sparkles, TriangleAlert, Users } from 'lucide-react'
 import Pitch, { PlayerToken } from '../components/Pitch'
 import BasePlayerCard from '../../cards/components/BasePlayerCard'
@@ -58,25 +58,42 @@ export default function TeamTab({ hub, onSaved, notify, focusPlayerId = null }) 
   const [positionFilter, setPositionFilter] = useState('')
   const [issues, setIssues] = useState([])
 
+  const loadSequence = useRef(0)
+  const dirtyDraft = useRef(false)
+  const loadedClub = useRef(null)
+  useEffect(() => { dirtyDraft.current = dirty }, [dirty])
+
   const clubId = hub.coach.club_id
   const club = getClubById(clubId)
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (preserveDraft = false) => {
+    const sequence = ++loadSequence.current
     try {
       const s = await fetchSquad()
+      if (sequence !== loadSequence.current) return
+      const keepDraft = preserveDraft === true && dirtyDraft.current && loadedClub.current === s.club_id
       setSquad(s)
-      setDraft({ formation: s.lineup.formation, slots: s.lineup.slots || {}, bench: s.lineup.bench || [], tactics: { ...DEFAULT_TACTICS, ...(s.lineup.tactics || {}) } })
-      setIssues(s.lineup.issues || [])
-      setDirty(false)
+      setDraft(previous => {
+        if (keepDraft && previous) {
+          const ids = new Set(s.players.map(p => p.id))
+          return { ...previous, slots: Object.fromEntries(Object.entries(previous.slots).filter(([, id]) => ids.has(id))), bench: previous.bench.filter(id => ids.has(id)) }
+        }
+        return { formation: s.lineup.formation, slots: s.lineup.slots || {}, bench: s.lineup.bench || [], tactics: { ...DEFAULT_TACTICS, ...(s.lineup.tactics || {}) } }
+      })
+      if (!keepDraft) { setIssues(s.lineup.issues || []); setDirty(false) }
+      loadedClub.current = s.club_id
       setError('')
     } catch (e) {
-      setError(e.message)
+      if (sequence === loadSequence.current) setError(e.message)
     }
   }, [])
 
+  const cancelLoad = useCallback(() => { loadSequence.current++ }, [])
   useEffect(() => {
-    if (clubId) load()
-  }, [clubId, hub.season.day_no, load])
+    let cancelled = false
+    queueMicrotask(() => { if (!cancelled && clubId) load(true) })
+    return () => { cancelled = true; cancelLoad() }
+  }, [clubId, hub.season.day_no, hub.world?.today, hub.world?.roster_revision, load, cancelLoad])
 
   const byId = useMemo(() => Object.fromEntries((squad?.players || []).map((p) => [p.id, p])), [squad])
   const infoPlayer = info ? byId[info.id] || (info.name ? info : null) : null
@@ -229,6 +246,7 @@ export default function TeamTab({ hub, onSaved, notify, focusPlayerId = null }) 
 
   return (
     <div className="sn-page tt">
+      <button type="button" className="sn-link" disabled={saving} onClick={() => load(true)}>Atualizar elenco</button>
       <div className="tt-club">
         <ClubCrest clubId={clubId} size={34} />
         <div>

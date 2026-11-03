@@ -188,8 +188,10 @@ export default function PostMatch({ summary: s, seasonId, byComp, onClose, onOff
               <div className="sn-rewards">
                 {s.rewards.xp > 0 && <span className="xp">+{s.rewards.xp} XP</span>}
                 {s.rewards.coins > 0 && <span className="coins"><GameIcon name="coins" size={13} /> +{s.rewards.coins} moedas</span>}
-                {s.rewards.club?.prize > 0 && <span className="coins"><GameIcon name="coins" size={13} /> +{clubMoney(s.rewards.club.prize)} para o clube</span>}
-                {s.rewards.club?.gate > 0 && <span className="coins">Bilheteria: {clubMoney(s.rewards.club.gate)}</span>}
+                {s.rewards.club?.prize > 0 && <span className="coins"><GameIcon name="coins" size={13} /> Bônus pelo resultado: +{clubMoney(s.rewards.club.prize)}</span>}
+                {s.rewards.club?.gate > 0 && <span className="coins">Bilheteria bruta: {clubMoney(s.rewards.club.gate)}</span>}
+                {s.rewards.club?.operations < 0 && <span className="coins">Operação da partida: {clubMoney(s.rewards.club.operations)}</span>}
+                {s.rewards.club && <span className="coins">Saldo da partida no caixa: {clubMoney(s.rewards.club.total)}</span>}
                 {s.rewards.energy > 0 && <span className="energy"><GameIcon name="energy" size={13} /> +{s.rewards.energy} energia</span>}
               </div>
 

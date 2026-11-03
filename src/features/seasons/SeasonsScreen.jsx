@@ -104,7 +104,7 @@ export default function SeasonsScreen({ career: account, onBack }) {
   const blockedText = worldStatus === 'syncing' ? 'Preparando a próxima partida…' : finished ? 'Temporada encerrada' : remaining != null ? `Sem energia · recarga em ${formatRemaining(remaining)}` : 'Sem energia'
 
   const goTab = useCallback((id, sub = null) => {
-    setTeamFocus(null)
+    setTeamFocus(id === 'team' ? sub : null)
     setTab(id)
     if (id === 'career') setCareerView(sub)
     if (id === 'world' && ['news','finance','market','deals','contracts'].includes(sub)) setWorldArea(sub)
@@ -289,7 +289,7 @@ export default function SeasonsScreen({ career: account, onBack }) {
           {ctx && tab === 'comps' && (
             <CompetitionsTab ctx={ctx} selected={compSel || ctx.nextEvent?.competition || hub?.competitions?.[0]?.id} onSelect={setCompSel} onOpenReport={actions.openReport} />
           )}
-          {ctx && tab === 'world' && hub.world && <WorldPanel key={worldArea} initialArea={worldArea} hub={hub} onRefresh={actions.refresh} worldStatus={worldStatus} onHome={() => goTab('home')} />}
+          {ctx && tab === 'world' && hub.world && <WorldPanel key={worldArea} initialArea={worldArea} hub={hub} onRefresh={actions.refresh} worldStatus={worldStatus} onHome={() => goTab('home')} onTeam={playerId => goTab('team', playerId)} />}
           {ctx && tab === 'career' && <CareerTab ctx={ctx} initialView={careerView} actions={actions} />}
         </div>
 
