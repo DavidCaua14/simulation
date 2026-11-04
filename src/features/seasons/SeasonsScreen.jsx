@@ -15,6 +15,8 @@ import { formatRemaining } from './utils/seasonUtils'
 import SeasonHeader from './ui/SeasonHeader'
 import { ErrorState, LoadingState } from './ui/States'
 import BottomNav from './components/BottomNav'
+import CoachAssistant from './components/CoachAssistant'
+import { assistantDone } from './utils/assistantStore'
 import PostMatch from './components/PostMatch'
 import MatchLive from './components/MatchLive'
 import PreMatch from './components/PreMatch'
@@ -49,6 +51,7 @@ export default function SeasonsScreen({ career: account, onBack }) {
   const [worldArea, setWorldArea] = useState('news')
   const [teamFocus, setTeamFocus] = useState(null)
   const [toast, setToast] = useState(null)
+  const [assistant, setAssistant] = useState(() => !assistantDone(account?.id))
 
   const actionLock = useRef(false)
   const mounted = useRef(true)
@@ -255,6 +258,7 @@ export default function SeasonsScreen({ career: account, onBack }) {
 
   return (
     <AppShell
+      wide
       header={
         <SeasonHeader
           title={live ? 'Ao vivo' : TITLES[tab]}
@@ -294,6 +298,10 @@ export default function SeasonsScreen({ career: account, onBack }) {
         </div>
 
         {ctx && !live && <BottomNav worldAvailable={!!hub.world} active={tab} onChange={(id) => goTab(id)} badges={badges} />}
+
+        {ctx && assistant && !live && !preMatch && !summary && hub.coach?.status === 'employed' && (
+          <CoachAssistant careerId={account?.id} onTab={(id) => (id !== 'world' || hub.world) && goTab(id)} onClose={() => setAssistant(false)} />
+        )}
 
         {preMatch && !live && ctx && hub.next_event?.kind === 'mine' && hub.next_event.fixture_id === preMatch && !hub.live_match && (
           <PreMatch

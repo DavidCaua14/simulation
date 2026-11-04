@@ -675,10 +675,10 @@ button.ib { flex-direction: row; align-items: flex-start; }
     border-radius: 10px;
     border: 1px solid rgba(148, 186, 255, 0.22);
     box-shadow: 0 30px 80px rgba(0, 0, 0, 0.55);
+    width: 100%;
+    height: auto;
     max-height: 100%;
-    width: auto;
-    height: 100%;
-    max-width: 100%;
+    aspect-ratio: 16 / 9;
   }
   .ml.has-broadcast > .ml-top,
   .ml.has-broadcast > .ml-tabs,
