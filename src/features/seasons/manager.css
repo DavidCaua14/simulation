@@ -647,3 +647,51 @@ button.ib { flex-direction: row; align-items: flex-start; }
 .sn-attention { padding: 18px; margin-bottom: 18px; border: 1px solid var(--accent, #258f77); border-radius: 16px; background: var(--surface, #172a31); }
 .sn-attention h2 { font-size: 1.08rem; margin: 0 0 8px; }
 .sn-attention p { font-size: .9rem; line-height: 1.5; margin: 10px 0; }
+
+/* ---------- Transmissão 2.5D dentro da partida ao vivo ---------- */
+.ml-stage { flex-shrink: 0; background: #050b17; }
+.ml.has-broadcast .ml-board,
+.ml.has-broadcast .ml-progress { display: none; }
+.ml.has-broadcast .ml-top { padding-bottom: 8px; }
+.ml-ic.is-on { color: #67e8f9; border-color: rgba(103, 232, 249, 0.5); }
+@media (min-width: 1024px) {
+  .ml.has-broadcast {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) clamp(340px, 30vw, 420px);
+    grid-template-rows: auto auto minmax(0, 1fr) auto auto;
+  }
+  .ml.has-broadcast .ml-stage {
+    grid-column: 1;
+    grid-row: 1 / -1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 18px;
+    background: radial-gradient(ellipse at 50% 30%, #12223f 0%, #050b17 70%);
+    border-right: 1px solid rgba(148, 186, 255, 0.14);
+    min-height: 0;
+  }
+  .ml.has-broadcast .ml-stage .bc {
+    border-radius: 10px;
+    border: 1px solid rgba(148, 186, 255, 0.22);
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.55);
+    max-height: 100%;
+    width: auto;
+    height: 100%;
+    max-width: 100%;
+  }
+  .ml.has-broadcast > .ml-top,
+  .ml.has-broadcast > .ml-tabs,
+  .ml.has-broadcast > .ml-body,
+  .ml.has-broadcast > .ml-pending,
+  .ml.has-broadcast > .ml-ctrl,
+  .ml.has-broadcast > .sn-hint { grid-column: 2; }
+}
+
+/* Avisos de pré-jogo */
+.pm-alerts { list-style: none; margin: 0 0 8px; padding: 8px 10px; display: flex; flex-direction: column; gap: 4px; border-radius: 10px; background: rgba(251, 191, 36, 0.08); border: 1px solid rgba(251, 191, 36, 0.35); font-size: 0.78rem; }
+.pm-alerts li.bad { color: #fca5a5; }
+.pm-alerts li.warn { color: #fcd34d; }
+.pm-alerts li::before { content: '⚠ '; }
+.pm-alerts li.pm-alerts-fix::before { content: none; }
+.pm-alerts button { margin-top: 2px; padding: 6px 10px; border-radius: 8px; border: 1px solid rgba(251, 191, 36, 0.5); background: transparent; color: #fde68a; font-weight: 700; font-size: 0.74rem; }

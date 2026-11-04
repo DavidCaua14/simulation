@@ -1,0 +1,150 @@
+/* Transmissão 2.5D: canvas + placar e avisos em HTML (texto dinâmico, nítido em qualquer tela). */
+.bc {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: #0a1426;
+  overflow: hidden;
+  border-bottom: 1px solid rgba(148, 186, 255, 0.18);
+  isolation: isolate;
+}
+.bc.is-compact {
+  aspect-ratio: 16 / 10;
+}
+@media (max-width: 520px) {
+  .bc {
+    aspect-ratio: 4 / 3;
+  }
+}
+.bc-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.bc-loading {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: #b9c7e4;
+  font-size: 0.85rem;
+  text-align: center;
+  padding: 0 16px;
+}
+
+/* placar no topo: pele do kit + textos do jogo */
+.bc-score {
+  position: absolute;
+  top: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(560px, 94%);
+  aspect-ratio: 2012 / 236;
+  background-size: 108% auto;
+  background-position: 50% 46%;
+  background-repeat: no-repeat;
+  display: grid;
+  grid-template-columns: 1fr 34px 34px 1fr;
+  align-items: center;
+  color: #eef3ff;
+  font-family: var(--font-heading);
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.45));
+  pointer-events: none;
+}
+.bc-team {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  padding: 0 10%;
+  font-size: clamp(0.62rem, 1.6vw, 0.95rem);
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+}
+.bc-team b {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.bc-team.a {
+  justify-content: flex-end;
+}
+.bc-goals {
+  text-align: center;
+  font-size: clamp(0.9rem, 2.4vw, 1.35rem);
+  font-weight: 800;
+}
+.bc-clock {
+  position: absolute;
+  left: 50%;
+  bottom: -40%;
+  transform: translateX(-50%);
+  font-size: clamp(0.58rem, 1.4vw, 0.8rem);
+  font-weight: 700;
+  color: #67e8f9;
+  letter-spacing: 1px;
+}
+.bc-clock.is-done {
+  color: #fbbf24;
+}
+
+/* fila de avisos: um por vez */
+.bc-banner {
+  position: absolute;
+  left: 50%;
+  top: 54%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  pointer-events: none;
+  animation: bc-pop 0.32s cubic-bezier(0.2, 1.4, 0.4, 1) both;
+}
+.bc-banner img {
+  max-height: 34%;
+  height: clamp(54px, 13vw, 120px);
+  width: auto;
+  filter: drop-shadow(0 8px 18px rgba(0, 0, 0, 0.55));
+}
+.bc-banner.k-goal img {
+  height: clamp(60px, 16vw, 150px);
+}
+.bc-banner span,
+.bc-banner strong {
+  padding: 3px 12px;
+  border-radius: 6px;
+  background: rgba(6, 14, 30, 0.86);
+  border: 1px solid rgba(103, 232, 249, 0.45);
+  color: #f1f5ff;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: clamp(0.72rem, 1.8vw, 1rem);
+  letter-spacing: 0.6px;
+  white-space: nowrap;
+}
+.bc-banner strong {
+  font-size: clamp(1rem, 3vw, 1.6rem);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+.bc-banner.is-mine span {
+  border-color: rgba(52, 211, 153, 0.7);
+}
+@keyframes bc-pop {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.6);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bc-banner {
+    animation: none;
+  }
+}

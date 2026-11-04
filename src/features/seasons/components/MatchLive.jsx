@@ -1,7 +1,7 @@
 import { OpponentTactics } from './OpponentScout'
 import { isSessionError } from '../../../lib/sessionRecovery'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Ambulance, ChevronsRight, FastForward, Pause, Play, Repeat2, Settings2, Square, Users } from 'lucide-react'
+import { Ambulance, ChevronsRight, FastForward, Pause, Play, Repeat2, Settings2, Square, Tv, Users } from 'lucide-react'
 import BasePlayerCard from '../../cards/components/BasePlayerCard'
 import PlayerSheet from './PlayerSheet'
 import ClubCrest from '../../club/components/ClubCrest'
@@ -13,6 +13,7 @@ import { fetchPlayer, fetchSquad, stepMatch } from '../services/managerApi'
 import { MAJOR_EVENTS, condTone, eventText, isGoal } from '../utils/managerUtils'
 import { COMP_NAME, describeMatch } from '../utils/seasonUtils'
 import useMatchAudio from '../../audio/useMatchAudio'
+import MatchBroadcast from '../../match25d/MatchBroadcast'
 
 const SPEEDS = [
   { id: 1, label: '1x', ms: 700 },
@@ -49,6 +50,23 @@ export default function MatchLive({ initial, myClub, onFinished, notify }) {
   const [playerInfo, setPlayerInfo] = useState(null)
   const [flash, setFlash] = useState(null)
   const [turbo, setTurbo] = useState(false)
+  // Transmissão 2.5D (pode ser desligada em aparelhos mais simples; preferência só deste navegador)
+  const [broadcast, setBroadcast] = useState(() => {
+    try {
+      return window.localStorage.getItem('sim.broadcast') !== 'off'
+    } catch {
+      return true
+    }
+  })
+  const toggleBroadcast = () =>
+    setBroadcast((b) => {
+      try {
+        window.localStorage.setItem('sim.broadcast', b ? 'off' : 'on')
+      } catch {
+        /* sem armazenamento: vale só nesta partida */
+      }
+      return !b
+    })
   const lastSeq = useRef(Math.max(0, ...(initial.events || []).map((e) => e.seq)))
   const flashed = useRef(new Set())
   const stopRef = useRef(null)
@@ -104,10 +122,11 @@ export default function MatchLive({ initial, myClub, onFinished, notify }) {
     if (!g) return undefined
     flashed.current.add(g.seq)
     if (clock - g.minute > 2) return undefined // retomando partida: sem animação dos gols antigos
+    if (broadcast) return undefined // a transmissão mostra o gol em campo
     setFlash({ side: g.side, name: g.player_name })
     const t = setTimeout(() => setFlash(null), 1800)
     return () => clearTimeout(t)
-  }, [visible, clock])
+  }, [visible, clock, broadcast])
 
   // ---- etapa no servidor ----
   const requestNext = useCallback(
@@ -196,7 +215,24 @@ export default function MatchLive({ initial, myClub, onFinished, notify }) {
   const feed = [...visible].reverse()
 
   return (
-    <div className="ml" role="dialog" aria-modal="true" aria-label="Partida ao vivo">
+    <div className={`ml ${broadcast ? 'has-broadcast' : ''}`} role="dialog" aria-modal="true" aria-label="Partida ao vivo">
+      {broadcast && catalog && (
+        <div className="ml-stage">
+          <MatchBroadcast
+            data={data}
+            catalog={catalog}
+            clock={clock}
+            minute={shownMinute}
+            events={visible}
+            paused={paused || Boolean(waitingDecision) || clock >= serverMin}
+            speed={turbo ? 4 : speed}
+            score={live.sc}
+            finished={finished && clock >= serverMin}
+            clockLabel={clockLabel}
+            userSide={side}
+          />
+        </div>
+      )}
       <header className="ml-top" style={{ '--hc': home?.colors?.[0] || '#1b3566', '--ac': away?.colors?.[0] || '#5a1b1b' }}>
         <div className="ml-comp">
           <CompEmblem comp={data.competition} size={18} />
@@ -364,6 +400,9 @@ export default function MatchLive({ initial, myClub, onFinished, notify }) {
             </button>
             <button type="button" className="ml-ic" onClick={simulateToEnd} disabled={busy || finished} aria-label="Simular até o fim" title="Simular até o fim (o auxiliar decide)">
               <FastForward size={18} />
+            </button>
+            <button type="button" className={`ml-ic ${broadcast ? 'is-on' : ''}`} onClick={toggleBroadcast} aria-pressed={broadcast} aria-label="Transmissão 2.5D" title={broadcast ? 'Ocultar transmissão' : 'Mostrar transmissão'}>
+              <Tv size={18} />
             </button>
           </>
         )}

@@ -16,13 +16,15 @@ import { EmptyState, ErrorState, LoadingState } from '../ui/States'
 import useCatalog from '../hooks/useCatalog'
 import useDragSwap from '../hooks/useDragSwap'
 import { autoLineup, fetchSquad, saveLineup } from '../services/managerApi'
-import { DEFAULT_TACTICS, LINE_NAME, LINES, POS_LINE, condTone, lineupStrength, ovrTone, POS_ORDER } from '../utils/managerUtils'
+import { DEFAULT_TACTICS, LINE_NAME, LINES, POS_LINE, condTone, lineupStrength, ovrTone, POS_ORDER, posFit } from '../utils/managerUtils'
 import { COMP_SHORT } from '../utils/seasonUtils'
+import ClubDevPanel from '../../clubdev/ClubDevPanel'
 
 const VIEWS = [
   { id: 'lineup', label: 'Escalação' },
   { id: 'tactics', label: 'Táticas' },
   { id: 'squad', label: 'Elenco' },
+  { id: 'club', label: 'Clube' },
 ]
 
 const SCARCITY = { GOL: 1, ZAG: 2, LD: 3, LE: 3, VOL: 4, ATA: 5, MC: 6, MEI: 7, PD: 8, PE: 8 }
@@ -152,6 +154,13 @@ export default function TeamTab({ hub, onSaved, notify, focusPlayerId = null }) 
       if (!p) out.push({ level: 'error', text: `Vaga ${s.slot} sem jogador.` })
       else if (p.injured_days > 0) out.push({ level: 'error', text: `${p.short_name} está lesionado.` })
       else if (p.suspended > 0 && (!squad.next_competition || (p.susp?.[squad.next_competition] ?? 0) > 0)) out.push({ level: 'error', text: `${p.short_name} está suspenso.` })
+      else {
+        // avisos de jogo (não impedem salvar): cansaço e posição improvisada
+        if (p.condition != null && p.condition < 70) out.push({ level: 'warn', text: `${p.short_name} está cansado (${Math.round(p.condition)}% de condição).` })
+        const fit = posFit(p, s.pos)
+        if (fit < 0.86) out.push({ level: 'warn', text: `${p.short_name} está fora de posição como ${s.pos} (rende ${Math.round(fit * 100)}%).` })
+        else if (fit < 1 && !(p.learned || []).includes(s.pos)) out.push({ level: 'warn', text: `${p.short_name} joga improvisado como ${s.pos}.` })
+      }
     }
     return out
   }, [formation, draft, byId, squad])
@@ -237,7 +246,7 @@ export default function TeamTab({ hub, onSaved, notify, focusPlayerId = null }) 
     }
   }
 
-  const shownIssues = dirty ? localIssues : issues
+  const shownIssues = dirty ? localIssues : [...issues, ...localIssues.filter((i) => i.level === 'warn' && !issues.some((x) => x.text === i.text))]
   const errors = shownIssues.filter((i) => i.level === 'error')
   const warns = shownIssues.filter((i) => i.level === 'warn')
   // Mesma regra do banco, contada na lista exibida: atletas sem idade conhecida contam como adultos.
@@ -279,6 +288,8 @@ export default function TeamTab({ hub, onSaved, notify, focusPlayerId = null }) 
       </div>
 
       {(view === 'lineup' || view === 'squad') && <PositionFilter value={positionFilter} onChange={setPositionFilter} />}
+
+      {view === 'club' && <ClubDevPanel players={squad.players} notify={notify} onChanged={() => load(true)} />}
 
       {view === 'lineup' && (
         <>

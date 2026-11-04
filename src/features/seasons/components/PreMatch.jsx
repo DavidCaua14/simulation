@@ -10,7 +10,7 @@ import FormDots from './FormDots'
 import { OpponentTactics } from './OpponentScout'
 import useCatalog from '../hooks/useCatalog'
 import { fetchOpponentReport, fetchSquad } from '../services/managerApi'
-import { lineupStrength } from '../utils/managerUtils'
+import { lineupStrength, posFit } from '../utils/managerUtils'
 import { COMP_NAME, describeMatch, ordinal, venueLabel } from '../utils/seasonUtils'
 
 const SCARCITY = { GOL: 1, ZAG: 2, LD: 3, LE: 3, VOL: 4, ATA: 5, MC: 6, MEI: 7, PD: 8, PE: 8 }
@@ -85,6 +85,20 @@ export default function PreMatch({ next, myClub, myPos, lineupErrors = 0, canPla
   const myStrength = useMemo(() => (myFormation ? lineupStrength(myFormation, mine?.lineup?.slots, myById) : null), [myFormation, mine, myById])
   const oppStrength = useMemo(() => (oppFormation ? lineupStrength(oppFormation, oppSlots, oppById) : null), [oppFormation, oppSlots, oppById])
   const myOut = (mine?.players || []).filter((p) => p.available === false)
+  // Avisos antes de entrar em campo: titular indisponível, cansado ou fora de posição
+  const alerts = useMemo(() => {
+    if (!myFormation || !mine?.lineup?.slots) return []
+    const out = []
+    for (const sl of myFormation.slots) {
+      const p = myById[mine.lineup.slots[sl.slot]]
+      if (!p) continue
+      if (p.available === false) out.push({ tone: 'bad', text: `${p.short_name} está escalado, mas não pode jogar.` })
+      else if (p.condition != null && p.condition < 70) out.push({ tone: 'warn', text: `${p.short_name} entra cansado (${Math.round(p.condition)}%).` })
+      const fit = posFit(p, sl.pos)
+      if (fit < 0.86) out.push({ tone: 'bad', text: `${p.short_name} fora de posição como ${sl.pos} (${Math.round(fit * 100)}%).` })
+    }
+    return out
+  }, [myFormation, mine, myById])
   const oppOut = (opp?.players || []).filter((p) => p.available === false)
   const venue = venueLabel(m)
   const myColors = getClubById(myClub)?.colors
@@ -162,6 +176,20 @@ export default function PreMatch({ next, myClub, myPos, lineupErrors = 0, canPla
                 <p className="pm-formation">
                   <b>{mine.lineup?.formation}</b> · sua escalação salva
                 </p>
+                {alerts.length > 0 && (
+                  <ul className="pm-alerts" aria-label="Avisos da escalação">
+                    {alerts.map((a, i) => (
+                      <li key={i} className={a.tone}>
+                        {a.text}
+                      </li>
+                    ))}
+                    <li className="pm-alerts-fix">
+                      <button type="button" onClick={onLineup}>
+                        Ajustar escalação
+                      </button>
+                    </li>
+                  </ul>
+                )}
                 <Pitch formation={myFormation} slots={mine.lineup?.slots} playersById={myById} colors={myColors} compact />
                 <OutList players={myOut} title="Desfalques do seu time" />
               </>

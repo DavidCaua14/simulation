@@ -1,0 +1,1388 @@
+-- Evolução 58 — desenvolvimento do clube (inspirado em simuladores de gestão; mecânicas próprias).
+-- Evolução de atletas por carreira (sem tocar no catálogo), treino semanal, familiaridade com formações,
+-- cobradores de bola parada, instalações com obras, comissão técnica, base com jovens fictícios marcados,
+-- declínio e aposentadoria, empréstimos, observação de atletas (névoa), vetos da diretoria, motivos de recusa
+-- com orientação e dificuldade "Difícil". A IA segue as mesmas regras.
+--
+-- Preservação: nenhuma linha existente é alterada pela instalação. Atributos, condição, contratos, finanças,
+-- resultados e partidas em andamento continuam iguais. A evolução é guardada como DIFERENÇA por carreira
+-- (cw_player_dev); sem diferença, todas as funções devolvem exatamente o valor anterior.
+begin;
+
+-- ---------------------------------------------------------------- regras
+create table if not exists public.cw_dev_rules(
+ id boolean primary key default true check(id),
+ enabled boolean not null default true,
+ growth_scale numeric not null default 1 check(growth_scale between 0 and 3),
+ youth_enabled boolean not null default true,
+ retirement_enabled boolean not null default true,
+ loans_enabled boolean not null default true,
+ fog_enabled boolean not null default true);
+insert into public.cw_dev_rules(id) values(true) on conflict do nothing;
+
+alter table public.sim_difficulty_profiles add column if not exists dev_mult numeric(4,2) not null default 1;
+alter table public.sim_difficulty_profiles add column if not exists ai_market_mult numeric(4,2) not null default 1;
+insert into public.sim_difficulty_profiles(id,label,description,seasons,board_loss_mult,fan_loss_mult,rep_gain_mult,fire_threshold,season_fire_threshold,objective_shift,dev_mult,ai_market_mult)
+values('hard','Difícil','Diretoria e torcida mais exigentes (quedas de confiança 30% maiores), reputação cresce mais devagar, '
+ ||'seus atletas evoluem 15% mais devagar e os rivais disputam o mercado com mais força. Nada é sorteado a favor da IA.',
+ 0,1.30,1.25,0.85,18,42,0,0.85,1.25)
+on conflict(id) do update set label=excluded.label,description=excluded.description,board_loss_mult=excluded.board_loss_mult,
+ fan_loss_mult=excluded.fan_loss_mult,rep_gain_mult=excluded.rep_gain_mult,fire_threshold=excluded.fire_threshold,
+ season_fire_threshold=excluded.season_fire_threshold,dev_mult=excluded.dev_mult,ai_market_mult=excluded.ai_market_mult;
+
+-- ---------------------------------------------------------------- jogadores fictícios da base (por carreira)
+alter table public.sim_players add column if not exists career_id uuid references public.careers(id) on delete cascade;
+create index if not exists sim_players_career_idx on public.sim_players(career_id) where career_id is not null;
+alter table public.cw_players add column if not exists retired_on date;
+alter table public.cw_players add column if not exists loan_listed boolean not null default false;
+
+-- ---------------------------------------------------------------- tabelas
+create table if not exists public.cw_player_dev(
+ career_id uuid not null,player_id text not null,
+ d jsonb not null default '{}',                 -- diferença acumulada por atributo (numérica)
+ d_rating numeric(6,2) not null default 0,      -- diferença da nota na posição natural (cache)
+ learned text[] not null default '{}',          -- posições aprendidas no treino (adequação 0,97)
+ learning_pos text references public.sim_positions(code),
+ learning_progress numeric(5,2) not null default 0 check(learning_progress between 0 and 100),
+ history jsonb not null default '[]',           -- [{"m":"2027-02","r":71.4}] últimos 24 meses
+ last_month date,
+ primary key(career_id,player_id),
+ foreign key(career_id,player_id) references public.mgr_players(career_id,player_id) on delete cascade);
+create table if not exists public.cw_player_pos_delta(
+ career_id uuid not null,player_id text not null,pos text not null references public.sim_positions(code),
+ d_rating numeric(6,2) not null,d_eff numeric(6,2) not null,
+ primary key(career_id,player_id,pos),
+ foreign key(career_id,player_id) references public.cw_player_dev(career_id,player_id) on delete cascade);
+create table if not exists public.cw_dev_months(career_id uuid not null references public.careers(id) on delete cascade,month date not null,primary key(career_id,month));
+create table if not exists public.cw_dev_years(career_id uuid not null references public.careers(id) on delete cascade,region text not null,year int not null,primary key(career_id,region,year));
+create table if not exists public.cw_training(
+ career_id uuid not null,club_id text not null,
+ focus text not null default 'balanced' check(focus in('balanced','physical','attack','defense','tactical','set_pieces')),
+ intensity text not null default 'normal' check(intensity in('light','normal','hard')),
+ updated_on date,
+ primary key(career_id,club_id),foreign key(career_id,club_id) references public.cw_clubs(career_id,club_id));
+create table if not exists public.cw_familiarity(
+ career_id uuid not null,club_id text not null,formation text not null references public.sim_formations(id),
+ value numeric(5,2) not null default 60 check(value between 0 and 100),last_used date,
+ primary key(career_id,club_id,formation),foreign key(career_id,club_id) references public.cw_clubs(career_id,club_id));
+create table if not exists public.cw_set_pieces(
+ career_id uuid not null,club_id text not null,penalty text,free_kick text,corner text,
+ primary key(career_id,club_id),foreign key(career_id,club_id) references public.cw_clubs(career_id,club_id));
+create table if not exists public.cw_facilities(
+ career_id uuid not null,club_id text not null,
+ kind text not null check(kind in('training','youth','medical','stadium')),
+ level smallint not null check(level between 1 and 5),initial_level smallint not null check(initial_level between 1 and 5),
+ target_level smallint check(target_level between 2 and 5),started_on date,building_until date,cost bigint,
+ primary key(career_id,club_id,kind),foreign key(career_id,club_id) references public.cw_clubs(career_id,club_id));
+create table if not exists public.cw_staff(
+ career_id uuid not null,club_id text not null,
+ role text not null check(role in('assistant','fitness','physio','psychologist','scout','youth')),
+ level smallint not null check(level between 1 and 5),initial_level smallint not null check(initial_level between 1 and 5),
+ monthly_salary bigint not null default 0 check(monthly_salary>=0),  -- 0 = equipe original, já coberta pela operação do clube
+ hired_on date,
+ primary key(career_id,club_id,role),foreign key(career_id,club_id) references public.cw_clubs(career_id,club_id));
+create table if not exists public.cw_scouting(
+ career_id uuid not null references public.careers(id) on delete cascade,player_id text not null references public.sim_players(id) on delete cascade,
+ requested_on date not null,ready_on date not null,
+ primary key(career_id,player_id));
+create table if not exists public.cw_loans(
+ id uuid primary key default gen_random_uuid(),
+ career_id uuid not null references public.careers(id) on delete cascade,player_id text not null,
+ parent_club text not null,borrower_club text not null,
+ origin text not null check(origin in('user_request','ai_offer')),
+ status text not null check(status in('offered','active','returned','rejected','cancelled','expired')),
+ wage_share numeric(3,2) not null check(wage_share between 0 and 1),
+ fee bigint not null default 0 check(fee>=0),
+ role text not null default 'rotation' check(role in('key','starter','rotation','prospect')),
+ created_on date not null,starts_on date,ends_on date not null,expires_on date not null,
+ parent_contract jsonb,borrower_contract uuid,response text,
+ foreign key(career_id,player_id) references public.mgr_players(career_id,player_id),
+ check(parent_club<>borrower_club));
+create unique index if not exists cw_loans_active_uq on public.cw_loans(career_id,player_id) where status='active';
+create index if not exists cw_loans_due_idx on public.cw_loans(career_id,status,ends_on);
+
+do $$ declare t text;begin
+ foreach t in array array['cw_dev_rules','cw_player_dev','cw_player_pos_delta','cw_dev_months','cw_dev_years','cw_training','cw_familiarity',
+  'cw_set_pieces','cw_facilities','cw_staff','cw_scouting','cw_loans'] loop
+  execute format('alter table public.%I enable row level security',t);
+  execute format('revoke all on public.%I from public,anon,authenticated',t);
+ end loop;
+end $$;
+
+-- ---------------------------------------------------------------- contexto da carreira (transação)
+create or replace function public.cw_ctx_career()
+returns uuid language sql stable set search_path=public as $$
+ select nullif(current_setting('app.cw_career',true),'')::uuid
+$$;
+create or replace function public.cw_set_ctx(p_career uuid)
+returns void language sql volatile set search_path=public as $$
+ select set_config('app.cw_career',coalesce(p_career::text,''),true);select null::void
+$$;
+create or replace function public.cw_fixture_career(p_fixture bigint)
+returns uuid language sql stable security definer set search_path=public as $$
+ select cs.career_id from public.season_fixtures f join public.career_seasons cs on cs.id=f.season_id where f.id=p_fixture
+$$;
+create or replace function public.cw_season_end(p_region text,p_date date)
+returns date language sql immutable as $$
+ select case when p_region='ENG' then make_date(extract(year from p_date)::int+case when extract(month from p_date)>=7 then 1 else 0 end,6,30)
+  else make_date(extract(year from p_date)::int,12,31) end
+$$;
+-- Falhas nos serviços novos nunca bloqueiam o avanço do jogo: ficam registradas para diagnóstico.
+create table if not exists public.cw_dev_errors(id bigint generated always as identity primary key,career_id uuid,stage text not null,
+ message text not null,created_at timestamptz not null default now());
+alter table public.cw_dev_errors enable row level security;
+revoke all on public.cw_dev_errors from public,anon,authenticated;
+create or replace function public.cw_dev_log(p_career uuid,p_stage text,p_message text)
+returns void language sql security definer set search_path=public as $$
+ insert into public.cw_dev_errors(career_id,stage,message) values(p_career,p_stage,left(p_message,2000))
+$$;
+create or replace function public.cw_dev_on()
+returns boolean language sql stable security definer set search_path=public as $$
+ select coalesce((select enabled from public.cw_dev_rules),false)
+$$;
+
+-- ---------------------------------------------------------------- níveis e catálogos
+create or replace function public.cw_level_from_prestige(p numeric)
+returns smallint language sql immutable as $$ select greatest(1,least(5,round((coalesce(p,60)-52)/9.0)::int+1))::smallint $$;
+
+create or replace function public.cw_staff_salary(p_level int)
+returns bigint language sql immutable as $$ select (array[25,50,90,160,280])[greatest(1,least(5,p_level))]::bigint $$;
+
+-- custo (milhares de reais) e prazo (meses) para chegar ao nível p_target
+create or replace function public.cw_facility_cost(p_kind text,p_target int,p_club text)
+returns bigint language sql stable set search_path=public as $$
+ select (case p_kind when 'training' then (array[0,6000,15000,35000,70000])[p_target]
+  when 'youth' then (array[0,4000,10000,22000,45000])[p_target]
+  when 'medical' then (array[0,3000,8000,18000,36000])[p_target]
+  else (array[0,12000,30000,70000,140000])[p_target] end
+  *case when public.cw_region(p_club)='ENG' then 1.6 else 1 end)::bigint
+$$;
+create or replace function public.cw_facility_months(p_kind text,p_target int)
+returns int language sql immutable as $$
+ select case p_kind when 'training' then (array[0,3,5,7,9])[p_target] when 'youth' then (array[0,3,4,6,8])[p_target]
+  when 'medical' then (array[0,2,3,4,6])[p_target] else (array[0,6,8,10,12])[p_target] end
+$$;
+
+create or replace function public.cw_dev_ensure_club(p_career uuid,p_club text)
+returns void language plpgsql security definer set search_path=public as $$
+declare lvl smallint;form text;
+begin
+ if p_club is null or not exists(select 1 from public.cw_clubs where career_id=p_career and club_id=p_club) then return;end if;
+ if exists(select 1 from public.cw_training where career_id=p_career and club_id=p_club) then return;end if;
+ select public.cw_level_from_prestige(prestige) into lvl from public.cw_clubs where career_id=p_career and club_id=p_club;
+ insert into public.cw_training(career_id,club_id) values(p_career,p_club) on conflict do nothing;
+ insert into public.cw_set_pieces(career_id,club_id) values(p_career,p_club) on conflict do nothing;
+ insert into public.cw_facilities(career_id,club_id,kind,level,initial_level)
+ select p_career,p_club,k,lvl,lvl from unnest(array['training','youth','medical','stadium']) k on conflict do nothing;
+ insert into public.cw_staff(career_id,club_id,role,level,initial_level)
+ select p_career,p_club,r,greatest(1,lvl-case when r in('psychologist','scout') then 1 else 0 end),greatest(1,lvl-case when r in('psychologist','scout') then 1 else 0 end)
+ from unnest(array['assistant','fitness','physio','psychologist','scout','youth']) r on conflict do nothing;
+ -- A formação em uso já é conhecida pelo elenco: começa entrosada (preserva o rendimento atual).
+ select coalesce((select formation from public.mgr_lineups where career_id=p_career and club_id=p_club),
+  (select formation from public.mgr_ai_clubs where career_id=p_career and club_id=p_club)) into form;
+ if form is not null and exists(select 1 from public.sim_formations where id=form) then
+  insert into public.cw_familiarity(career_id,club_id,formation,value) values(p_career,p_club,form,100) on conflict do nothing;
+ end if;
+end $$;
+
+create or replace function public.cw_fac_level(p_career uuid,p_club text,p_kind text)
+returns int language sql stable security definer set search_path=public as $$
+ select coalesce((select level from public.cw_facilities where career_id=p_career and club_id=p_club and kind=p_kind),
+  public.cw_level_from_prestige((select prestige from public.cw_clubs where career_id=p_career and club_id=p_club)))
+$$;
+create or replace function public.cw_fac_initial(p_career uuid,p_club text,p_kind text)
+returns int language sql stable security definer set search_path=public as $$
+ select coalesce((select initial_level from public.cw_facilities where career_id=p_career and club_id=p_club and kind=p_kind),
+  public.cw_fac_level(p_career,p_club,p_kind))
+$$;
+create or replace function public.cw_staff_level(p_career uuid,p_club text,p_role text)
+returns int language sql stable security definer set search_path=public as $$
+ select coalesce((select level from public.cw_staff where career_id=p_career and club_id=p_club and role=p_role),
+  public.cw_level_from_prestige((select prestige from public.cw_clubs where career_id=p_career and club_id=p_club)))
+$$;
+create or replace function public.cw_familiarity_value(p_career uuid,p_club text,p_form text)
+returns numeric language sql stable security definer set search_path=public as $$
+ select coalesce((select value from public.cw_familiarity where career_id=p_career and club_id=p_club and formation=p_form),
+  case when exists(select 1 from public.cw_familiarity where career_id=p_career and club_id=p_club) then 60 else 100 end)
+$$;
+
+-- ---------------------------------------------------------------- atributos efetivos
+create or replace function public.cw_eff_attrs(p_career uuid,p_player text)
+returns public.sim_player_attrs language sql stable security definer set search_path=public as $$
+ select jsonb_populate_record(a,coalesce((select jsonb_object_agg(e.k,greatest(1,least(99,round((to_jsonb(a)->>e.k)::numeric+e.v::numeric))))
+  from public.cw_player_dev d cross join lateral jsonb_each_text(d.d) e(k,v)
+  where d.career_id=p_career and d.player_id=p_player and to_jsonb(a) ? e.k),'{}'::jsonb))
+ from public.sim_player_attrs a where a.player_id=p_player
+$$;
+
+create or replace function public.cw_dev_refresh(p_career uuid,p_players text[])
+returns void language plpgsql security definer set search_path=public as $$
+begin
+ with ej as materialized(
+  select u.pid player_id,d.learned,to_jsonb(public.cw_eff_attrs(p_career,u.pid)) j
+  from unnest(p_players) u(pid) cross join lateral(select x.learned from public.cw_player_dev x where x.career_id=p_career and x.player_id=u.pid) d),
+ calc as materialized(
+  select e.player_id,e.learned,w.pos,sum(w.weight*(e.j->>w.attr)::numeric)/sum(w.weight) nr
+  from ej e join public.sim_role_weights w on true group by e.player_id,e.learned,w.pos)
+ insert into public.cw_player_pos_delta(career_id,player_id,pos,d_rating,d_eff)
+ select p_career,c.player_id,c.pos,round(c.nr-r.rating,2),
+  round(c.nr*greatest(case when r.rating>0 then r.eff/r.rating else 1 end,case when c.pos=any(c.learned) then .97 else 0 end)-r.eff,2)
+ from calc c cross join lateral(select pr.rating,pr.eff from public.sim_player_pos_ratings pr where pr.player_id=c.player_id and pr.pos=c.pos) r
+ on conflict(career_id,player_id,pos) do update set d_rating=excluded.d_rating,d_eff=excluded.d_eff;
+ update public.cw_player_dev d set d_rating=coalesce((select pd.d_rating from public.cw_player_pos_delta pd
+   where pd.career_id=d.career_id and pd.player_id=d.player_id and pd.pos=(select p.position from public.sim_players p where p.id=d.player_id)),0)
+ where d.career_id=p_career and d.player_id=any(p_players);
+end $$;
+
+create or replace function public.cw_rating_now(p_career uuid,p_player text)
+returns numeric language sql stable security definer set search_path=public as $$
+ select r.rating+coalesce((select d.d_rating from public.cw_player_dev d where d.career_id=p_career and d.player_id=p_player),0)
+ from public.sim_players p join public.sim_player_pos_ratings r on r.player_id=p.id and r.pos=p.position where p.id=p_player
+$$;
+
+-- ---------------------------------------------------------------- funções de nota (mesmo resultado sem evolução)
+create or replace function public.mgr_side_strength(p_fixture bigint,p_side character)
+returns numeric language sql stable set search_path to 'public','pg_temp' as $$
+  select coalesce(avg(r.eff+coalesce(dd.d_eff,0)), 60)
+    from public.mgr_match_players mp
+    join public.sim_player_pos_ratings r on r.player_id = mp.player_id and r.pos = mp.pos
+    left join public.cw_player_pos_delta dd on dd.career_id=public.cw_fixture_career(p_fixture) and dd.player_id=mp.player_id and dd.pos=mp.pos
+   where mp.fixture_id = p_fixture and mp.side = p_side and mp.status = 'on'
+$$;
+
+create or replace function public.mgr_best_bench(p_fixture bigint,p_side character,p_pos text)
+returns text language sql stable set search_path to 'public','pg_temp' as $$
+  select mp.player_id
+    from public.mgr_match_players mp
+    join public.sim_player_pos_ratings r on r.player_id = mp.player_id and r.pos = p_pos
+    left join public.cw_player_pos_delta dd on dd.career_id=public.cw_fixture_career(p_fixture) and dd.player_id=mp.player_id and dd.pos=p_pos
+   where mp.fixture_id = p_fixture and mp.side = p_side and mp.status = 'bench'
+   order by (r.eff+coalesce(dd.d_eff,0)) * public.mgr_cond_factor(mp.cond) desc
+   limit 1
+$$;
+
+create or replace function public.mgr_lineup_score(p_lineup jsonb,p_form text)
+returns numeric language sql stable set search_path to 'public','pg_temp' as $$
+  select coalesce(sum(r.eff+coalesce(dd.d_eff,0)), 0)
+    from public.sim_formations f
+    cross join lateral jsonb_array_elements(f.slots) s
+    join public.sim_player_pos_ratings r on r.player_id = p_lineup -> 'slots' ->> (s ->> 'slot') and r.pos = s ->> 'pos'
+    left join public.cw_player_pos_delta dd on dd.career_id=public.cw_ctx_career() and dd.player_id=r.player_id and dd.pos=r.pos
+   where f.id = p_form
+$$;
+
+create or replace function public.mgr_fit(p_player text,p_pos text)
+returns numeric language sql stable set search_path to 'public','pg_temp' as $$
+  select greatest(coalesce((select f.fit from public.sim_position_fit f where f.from_pos = p.position and f.to_pos = p_pos), 0.5),
+                  case when p_pos = any (p.secondary_positions) then 0.97 else 0 end,
+                  case when exists(select 1 from public.cw_player_dev d where d.career_id=public.cw_ctx_career() and d.player_id=p.id and p_pos=any(d.learned)) then 0.97 else 0 end)
+    from public.sim_players p where p.id = p_player
+$$;
+
+create or replace function public.cw_squad_rank(p_career uuid,p_club text,p_player text)
+returns integer language sql stable security definer set search_path=public as $$
+ select x.rk from(select mp.player_id,rank() over(order by r.rating+coalesce(d.d_rating,0) desc,mp.player_id) rk from public.mgr_players mp
+  join public.sim_players sp on sp.id=mp.player_id join public.sim_player_pos_ratings r on r.player_id=sp.id and r.pos=sp.position
+  left join public.cw_player_dev d on d.career_id=mp.career_id and d.player_id=mp.player_id
+  where mp.career_id=p_career and mp.club_id=p_club) x where x.player_id=p_player
+$$;
+
+create or replace function public.cw_player_value(p_career uuid,p_player text)
+returns bigint language plpgsql stable security definer set search_path=public as $$
+#variable_conflict use_column
+declare rating numeric;age numeric;pot numeric;performance numeric:=1;
+begin
+ select r.rating+coalesce(dv.d_rating,0),coalesce(cp.age_at_start,p.age,case when p.is_youth then 19 else 26 end)+coalesce(floor((w.today-w.started_on)/365.25),0),coalesce(cp.potential,r.rating)
+ into rating,age,pot from public.sim_players p join public.sim_player_pos_ratings r on r.player_id=p.id and r.pos=p.position
+ left join public.cw_players cp on cp.career_id=p_career and cp.player_id=p.id left join public.cw_world w on w.career_id=p_career
+ left join public.cw_player_dev dv on dv.career_id=p_career and dv.player_id=p.id where p.id=p_player;
+ if rating is null then raise exception 'Atleta sem avaliação';end if;
+ select greatest(.85,least(1.15,1+(coalesce(avg(x.rating),6.5)-6.5)*.06)) into performance from(
+  select a.rating from public.cw_appearances a where a.career_id=p_career and a.player_id=p_player and a.minutes>0 order by a.on_date desc,a.fixture_id desc limit 5)x;
+ -- Curva realista: 80 de nota ≈ 40 mil; dobra a cada 4,5 pontos (85 ≈ 86 mil, 90 ≈ 185 mil, 75 ≈ 18 mil, 70 ≈ 8,6 mil).
+ return round(performance*greatest(250,40000*power(2,(least(rating,99)-80)/4.5))
+  *case when age<21 then 1.3 when age<24 then 1.2 when age<28 then 1 when age<31 then .8 when age<33 then .55 else .3 end
+  *(1+greatest(0,pot-rating)*.03))::bigint;
+end $$;
+
+create or replace function public.cw_salary_floor(p_player text)
+returns bigint language sql stable security definer set search_path=public as $$
+ select greatest(50,ceil(power(greatest(1,x.rt-45),2)*.65+power(greatest(0,x.rt-75),2)*12))::bigint
+ from(select r.rating+coalesce((select d.d_rating from public.cw_player_dev d where d.career_id=public.cw_ctx_career() and d.player_id=p.id),0) rt
+  from public.sim_players p join public.sim_player_pos_ratings r on r.player_id=p.id and r.pos=p.position where p.id=p_player)x
+$$;
+
+create or replace function public.mgr_auto_lineup(p_career uuid,p_club text,p_formation text,p_comp text,p_day integer,p_bench integer default 12)
+returns jsonb language plpgsql stable security definer set search_path=public as $$
+declare
+  v_form   public.sim_formations;
+  v_pids   text[];
+  v_isgk   boolean[];
+  v_cf     float8[];
+  v_eff    float8[];
+  v_best   float8[];
+  v_used   boolean[];
+  v_n      int;
+  v_slot   record;
+  v_k      int;
+  v_i      int;
+  v_pick   int;
+  v_sc     float8;
+  v_top    float8;
+  v_slots  jsonb := '{}'::jsonb;
+  v_bench  text[] := '{}';
+  v_gk     int := 0;
+  v_order  int[];
+  v_pos    text[] := array['GOL', 'LD', 'ZAG', 'LE', 'VOL', 'MC', 'MEI', 'PD', 'PE', 'ATA'];
+begin
+  select * into v_form from public.sim_formations where id = coalesce(p_formation, '4-3-3');
+  if not found then select * into v_form from public.sim_formations where id = '4-3-3'; end if;
+
+  select array_agg(x.pid order by x.pid), array_agg(x.isgk order by x.pid), array_agg(x.cf order by x.pid),
+         array_agg(x.best order by x.pid)
+    into v_pids, v_isgk, v_cf, v_best
+    from (
+      select mp.player_id as pid, p.position = 'GOL' as isgk,
+             (public.mgr_cond_factor(mp.condition) * (case when mp.condition < 60 then 0.9 else 1 end)
+               * (case when public.mgr_available(mp.injured_until, mp.susp, p_comp, p_day) then 1 else 0.001 end))::float8 as cf,
+             (select r.eff+coalesce(dd.d_eff,0) from public.sim_player_pos_ratings r
+               left join public.cw_player_pos_delta dd on dd.career_id=p_career and dd.player_id=r.player_id and dd.pos=r.pos
+               where r.player_id = p.id and r.pos = p.position)::float8 as best
+        from public.mgr_players mp join public.sim_players p on p.id = mp.player_id and p.active
+       where mp.career_id = p_career and mp.club_id = p_club
+    ) x;
+  v_n := coalesce(array_length(v_pids, 1), 0);
+  if v_n = 0 then return jsonb_build_object('formation', v_form.id, 'slots', '{}'::jsonb, 'bench', '[]'::jsonb); end if;
+
+  select array_agg((r.eff+coalesce(dd.d_eff,0))::float8 order by mp.player_id, sp.sort)
+    into v_eff
+    from public.mgr_players mp
+    join public.sim_players p on p.id = mp.player_id and p.active
+    join public.sim_player_pos_ratings r on r.player_id = mp.player_id
+    join public.sim_positions sp on sp.code = r.pos
+    left join public.cw_player_pos_delta dd on dd.career_id=p_career and dd.player_id=r.player_id and dd.pos=r.pos
+   where mp.career_id = p_career and mp.club_id = p_club;
+
+  v_used := array_fill(false, array[v_n]);
+  for v_slot in
+    select s ->> 'slot' as slot, s ->> 'pos' as pos
+      from jsonb_array_elements(v_form.slots) s
+     order by case s ->> 'pos' when 'GOL' then 1 when 'ZAG' then 2 when 'LD' then 3 when 'LE' then 3 when 'VOL' then 4
+                               when 'ATA' then 5 when 'MC' then 6 when 'MEI' then 7 else 8 end
+  loop
+    v_k := array_position(v_pos, v_slot.pos);
+    v_pick := 0; v_top := -1;
+    for v_i in 1 .. v_n loop
+      continue when v_used[v_i];
+      v_sc := v_eff[(v_i - 1) * 10 + v_k] * v_cf[v_i];
+      if v_sc > v_top then v_top := v_sc; v_pick := v_i; end if;
+    end loop;
+    if v_pick > 0 then
+      v_used[v_pick] := true;
+      v_slots := v_slots || jsonb_build_object(v_slot.slot, v_pids[v_pick]);
+    end if;
+  end loop;
+
+  v_top := -1;
+  for v_i in 1 .. v_n loop
+    if not v_used[v_i] and v_isgk[v_i] and v_cf[v_i] > 0.01 and v_best[v_i] > v_top then v_top := v_best[v_i]; v_gk := v_i; end if;
+  end loop;
+  if v_gk > 0 then v_bench := array[v_pids[v_gk]]; v_used[v_gk] := true; end if;
+  select array_agg(i order by v_best[i] * v_cf[i] desc) into v_order
+    from generate_series(1, v_n) i where not v_used[i] and v_cf[i] > 0.01;
+  for v_i in 1 .. least(coalesce(array_length(v_order, 1), 0), greatest(p_bench - coalesce(array_length(v_bench, 1), 0), 0)) loop
+    v_bench := v_bench || v_pids[v_order[v_i]];
+  end loop;
+
+  return jsonb_build_object('formation', v_form.id, 'slots', v_slots, 'bench', to_jsonb(v_bench));
+end $$;
+
+-- ---------------------------------------------------------------- wrappers (renomeia uma única vez; reaplicável)
+do $$ declare f text;begin
+ foreach f in array array[
+  'mgr_lock()','cw_settle_month(uuid,date)','cw_step_to(uuid,date)','mgr_match_create(bigint,uuid,character,jsonb)',
+  'mgr_match_finish(bigint)','cw_match_gate(uuid,text,text)','cw_project_reason(uuid,text,text)','cw_ai_recovery_club(uuid,text)',
+  'cw_patch_players(uuid,jsonb,boolean)','career_player_search(text,text,text,text,bigint,integer,text)','mgr_player_detail(text,bigint)',
+  'career_transfer_respond(uuid,text,bigint,uuid)','career_player_release(text,uuid)'] loop
+  if to_regprocedure('public.'||replace(f,'(','_before_v58(')) is null then
+   execute format('alter function public.%s rename to %I',f,split_part(f,'(',1)||'_before_v58');
+  end if;
+ end loop;
+end $$;
+
+create or replace function public.mgr_lock()
+returns public.careers language plpgsql security definer set search_path=public as $$
+declare c public.careers;
+begin
+ c:=public.mgr_lock_before_v58();
+ perform public.cw_set_ctx(c.id);
+ return c;
+end $$;
+
+create or replace function public.cw_match_gate(p_career uuid,p_club text,p_comp text)
+returns bigint language sql stable security definer set search_path=public as $$
+ select ceil(public.cw_match_gate_before_v58(p_career,p_club,p_comp)
+  *greatest(.7,1+.08*(public.cw_fac_level(p_career,p_club,'stadium')-public.cw_fac_initial(p_career,p_club,'stadium')))
+  *case when exists(select 1 from public.cw_facilities f join public.cw_world w on w.career_id=f.career_id where f.career_id=p_career and f.club_id=p_club
+   and f.kind='stadium' and f.building_until>w.today) then .85 else 1 end)::bigint
+$$;
+
+-- Motivo de recusa do atleta + orientação de como melhorar (19A). Empréstimo e aposentadoria bloqueiam qualquer negociação.
+create or replace function public.cw_project_reason(p_career uuid,p_player text,p_buyer text)
+returns text language plpgsql stable security definer set search_path=public as $$
+declare base text;
+begin
+ if exists(select 1 from public.cw_players where career_id=p_career and player_id=p_player and retired_on is not null) then
+  return 'O atleta encerrou a carreira.';
+ end if;
+ if exists(select 1 from public.cw_loans where career_id=p_career and player_id=p_player and status='active' and borrower_club<>coalesce(p_buyer,'')) then
+  return 'O atleta está emprestado e só negocia depois de voltar ao clube de origem. Como melhorar: faça a proposta quando o empréstimo terminar.';
+ end if;
+ base:=public.cw_project_reason_before_v58(p_career,p_player,p_buyer);
+ if base is null then return null;end if;
+ if base like '%nível esportivo do clube insuficiente%' then
+  return base||' Como melhorar: aumente a reputação do clube com títulos e boas campanhas, melhore o CT e procure atletas compatíveis com o elenco.';
+ elsif base like '%divisão inferior%' then
+  return base||' Como melhorar: conquiste o acesso antes de procurar atletas de elite.';
+ end if;
+ return base;
+end $$;
+
+create or replace function public.cw_ai_recovery_club(p_career uuid,p_player text)
+returns text language plpgsql stable security definer set search_path=public as $$
+begin
+ if exists(select 1 from public.cw_players where career_id=p_career and player_id=p_player and retired_on is not null) then return null;end if;
+ if exists(select 1 from public.sim_players where id=p_player and career_id is not null) then return null;end if;
+ return public.cw_ai_recovery_club_before_v58(p_career,p_player);
+end $$;
+
+-- ---------------------------------------------------------------- partida: atributos evoluídos, entrosamento, bola parada
+create or replace function public.mgr_match_create(p_fixture bigint,p_career uuid,p_user_side character,p_user_lineup jsonb)
+returns void language plpgsql security definer set search_path=public as $$
+begin
+ perform public.cw_set_ctx(p_career);
+ perform public.mgr_match_create_before_v58(p_fixture,p_career,p_user_side,p_user_lineup);
+ if not public.cw_dev_on() then return;end if;
+ begin
+  perform public.cw_dev_match_prepare(p_fixture,p_career);
+ exception when others then perform public.cw_dev_log(p_career,'match_prepare',sqlerrm);
+ end;
+end $$;
+
+create or replace function public.cw_dev_match_prepare(p_fixture bigint,p_career uuid)
+returns void language plpgsql security definer set search_path=public as $$
+#variable_conflict use_column
+declare m public.mgr_matches;f public.season_fixtures;sd text;club text;form text;fam numeric;ff numeric;taker text;spb numeric;
+ takers jsonb:='{}';bonus numeric[]:=array[0,0];strength numeric[];
+begin
+ select * into m from public.mgr_matches where fixture_id=p_fixture for update;
+ if not found or coalesce((m.state->>'dev58')::boolean,false) or m.minute>0 then return;end if;
+ select * into f from public.season_fixtures where id=p_fixture;
+ strength:=array[coalesce((m.state->'strength'->>0)::numeric,60),coalesce((m.state->'strength'->>1)::numeric,60)];
+ -- atributos evoluídos (só quem tem diferença registrada)
+ update public.mgr_match_players mp set
+  c_att=0.35*a.finishing+0.25*a.off_ball+0.20*a.dribbling+0.20*a.pace,
+  c_cre=0.40*a.passing+0.35*a.vision+0.25*a.technique,
+  c_def=0.30*a.marking+0.30*a.tackling+0.25*a.positioning+0.15*a.heading,
+  c_ctl=0.40*a.passing+0.30*a.technique+0.15*a.vision+0.15*a.stamina,
+  c_gk=0.40*a.gk_reflexes+0.30*a.gk_handling+0.30*a.gk_positioning,
+  c_fin=a.finishing,c_head=a.heading,c_pace=a.pace,c_stam=a.stamina,c_tack=a.tackling,c_str=a.strength,
+  fit=greatest(mp.fit,case when mp.pos=any(d.learned) then .97 else 0 end)
+ from public.cw_player_dev d cross join lateral public.cw_eff_attrs(d.career_id,d.player_id) a
+ where mp.fixture_id=p_fixture and d.career_id=p_career and d.player_id=mp.player_id and (d.d<>'{}'::jsonb or cardinality(d.learned)>0);
+ foreach sd in array array['h','a'] loop
+  club:=case when sd='h' then f.home_club else f.away_club end;
+  perform public.cw_dev_ensure_club(p_career,club);
+  form:=m.state->'formation'->>(case when sd='h' then 0 else 1 end);
+  fam:=public.cw_familiarity_value(p_career,club,form);
+  ff:=.96+.04*fam/100;
+  update public.mgr_match_players set c_cre=c_cre*ff,c_ctl=c_ctl*ff,c_def=c_def*ff where fixture_id=p_fixture and side=sd;
+  strength[case when sd='h' then 1 else 2 end]:=round(public.mgr_side_strength(p_fixture,sd)*(.97+.03*fam/100),1);
+  select penalty into taker from public.cw_set_pieces where career_id=p_career and club_id=club;
+  if taker is not null and exists(select 1 from public.mgr_match_players where fixture_id=p_fixture and player_id=taker and side=sd) then
+   takers:=takers||jsonb_build_object(sd,taker);
+  end if;
+  spb:=case when (select focus from public.cw_training where career_id=p_career and club_id=club)='set_pieces' then .04 else 0 end
+   +.005*(public.cw_staff_level(p_career,club,'assistant')-1);
+  bonus[case when sd='h' then 1 else 2 end]:=spb;
+ end loop;
+ update public.mgr_matches set state=state||jsonb_build_object('dev58',true,'pen_taker',takers,'sp_bonus',to_jsonb(bonus),
+  'strength',to_jsonb(strength)) where fixture_id=p_fixture;
+end $$;
+
+-- Cobrador de pênalti escolhido e bônus de treino de bola parada (texto substituído com verificação).
+do $$ declare src text;old1 text;new1 text;old2 text;new2 text;old3 text;new3 text;begin
+ select pg_get_functiondef('public.mgr_engine_run_v2(bigint,integer,character)'::regprocedure) into src;
+ if src like '%v_pentaker%' then return;end if;
+ old1:=E'declare\n  v_m      public.mgr_matches;';
+ new1:=E'declare\n  v_pentaker text[];\n  v_spb float8[];\n  v_m      public.mgr_matches;';
+ old2:=E'  v_reload := true;\n\n  while v_min < v_end loop';
+ new2:=E'  v_reload := true;\n  v_pentaker := array[v_m.state->''pen_taker''->>''h'', v_m.state->''pen_taker''->>''a''];\n'
+  ||E'  v_spb := array[coalesce((v_m.state->''sp_bonus''->>0)::float8,0), coalesce((v_m.state->''sp_bonus''->>1)::float8,0)];\n\n  while v_min < v_end loop';
+ old3:='v_p[i].pos <> ''GOL'' and v_p[i].fin > v_e then v_e := v_p[i].fin; v_a := i; end if;';
+ new3:='v_p[i].pos <> ''GOL'' and (v_p[i].fin + (case when v_p[i].pid = v_pentaker[s] then 500 else 0 end)) > v_e then v_e := v_p[i].fin + (case when v_p[i].pid = v_pentaker[s] then 500 else 0 end); v_a := i; end if;';
+ if position(old1 in src)=0 or position(old2 in src)=0 or position(old3 in src)=0
+  or position('0.70 + 0.004 * (v_p[v_a].fin - v_gkr[d])' in src)=0 then
+  raise exception 'Motor v2 diferente do esperado; patch de bola parada não aplicado';
+ end if;
+ src:=replace(src,old1,new1);src:=replace(src,old2,new2);src:=replace(src,old3,new3);
+ src:=replace(src,'0.70 + 0.004 * (v_p[v_a].fin - v_gkr[d])','0.70 + v_spb[s] + 0.004 * (v_p[v_a].fin - v_gkr[d])');
+ execute src;
+end $$;
+
+create or replace function public.mgr_match_finish(p_fixture bigint)
+returns jsonb language plpgsql security definer set search_path=public as $$
+declare r jsonb;car uuid;m public.mgr_matches;
+begin
+ car:=public.cw_fixture_career(p_fixture);
+ select * into m from public.mgr_matches where fixture_id=p_fixture;
+ r:=public.mgr_match_finish_before_v58(p_fixture);
+ if car is null or m.fixture_id is null or not public.cw_dev_on() then return r;end if;
+ begin
+  perform public.cw_dev_match_after(p_fixture,car,m.state);
+ exception when others then perform public.cw_dev_log(car,'match_after',sqlerrm);
+ end;
+ return r;
+end $$;
+
+create or replace function public.cw_dev_match_after(p_fixture bigint,car uuid,p_state jsonb)
+returns void language plpgsql security definer set search_path=public as $$
+declare f public.season_fixtures;day int;sd text;club text;form text;gain numeric;med numeric;today date;
+begin
+ select * into f from public.season_fixtures where id=p_fixture;
+ select day_no into day from public.career_seasons where id=f.season_id;
+ select w0.today into today from public.cw_world w0 where w0.career_id=car;
+ foreach sd in array array['h','a'] loop
+  club:=case when sd='h' then f.home_club else f.away_club end;
+  if not exists(select 1 from public.cw_clubs where career_id=car and club_id=club) then continue;end if;
+  perform public.cw_dev_ensure_club(car,club);
+  -- departamento médico + fisioterapeuta: recuperação mais curta (ou mais longa) que a estrutura original
+  med:=greatest(.6,least(1.3,1-.08*(public.cw_fac_level(car,club,'medical')-public.cw_fac_initial(car,club,'medical'))
+   -.05*(public.cw_staff_level(car,club,'physio')-coalesce((select initial_level from public.cw_staff where career_id=car and club_id=club and role='physio'),public.cw_staff_level(car,club,'physio')))));
+  if med<>1 and day is not null then
+   update public.mgr_players p set injured_until=day+greatest(1,ceil((p.injured_until-day)*med))::int
+   from public.mgr_match_players mp where mp.fixture_id=p_fixture and mp.side=sd and mp.injured and p.career_id=car and p.player_id=mp.player_id and p.injured_until>day;
+  end if;
+  -- entrosamento com a formação usada
+  form:=p_state->'formation'->>(case when sd='h' then 0 else 1 end);
+  if form is not null and exists(select 1 from public.sim_formations where id=form) then
+   gain:=case when (select focus from public.cw_training where career_id=car and club_id=club)='tactical' then 8 else 5 end;
+   insert into public.cw_familiarity(career_id,club_id,formation,value,last_used) values(car,club,form,least(100,60+gain),today)
+   on conflict(career_id,club_id,formation) do update set value=least(100,cw_familiarity.value+gain),last_used=today;
+  end if;
+ end loop;
+end $$;
+
+-- ---------------------------------------------------------------- evolução mensal (todas as equipes da carreira)
+create or replace function public.cw_dev_grow(p_career uuid,p_month date)
+returns int language plpgsql security definer set search_path=public as $$
+#variable_conflict use_column
+declare p record;w public.cw_world;own text;diff_mult numeric;base numeric;gap numeric;minf numeric;trf numeric;dr numeric;k numeric;
+ attrs text[];mult jsonb;nd jsonb;att text;m numeric;wsum numeric;wm numeric;n int:=0;touched text[]:='{}';cf jsonb;wts jsonb;
+ phys text[]:=array['pace','stamina','strength'];prog numeric;scale numeric;fit_lvl int;focus text;full_refresh boolean;hist jsonb;
+ gk_attrs text[]:=array['gk_reflexes','gk_handling','gk_positioning','strength','pace','stamina'];
+ out_attrs text[]:=array['marking','tackling','positioning','heading','passing','vision','technique','stamina','finishing','off_ball','pace','dribbling','strength'];
+begin
+ select * into w from public.cw_world where career_id=p_career;
+ select club_id into own from public.mgr_coach where career_id=p_career and status='employed';
+ select coalesce((public.mgr_difficulty(p_career)).dev_mult,1) into diff_mult;
+ select growth_scale into scale from public.cw_dev_rules;
+ -- Notas por posição dos clubes da IA são recalculadas a cada trimestre; as do seu clube, todo mês.
+ full_refresh:=extract(month from p_month)::int in(1,4,7,10);
+ -- fatores de cada clube (uma consulta) e pesos das posições (uma consulta)
+ select coalesce(jsonb_object_agg(t.club_id,jsonb_build_object('focus',t.focus,
+   'trf',(.85+.075*coalesce(fa.level,3))*(1+.02*(coalesce(sa.level,3)-1))*case t.intensity when 'light' then .85 when 'hard' then 1.15 else 1 end,
+   'fit',coalesce(sf.level,3),'learn',.85+.075*coalesce(fa.level,3))),'{}')
+ into cf from public.cw_training t
+ left join public.cw_facilities fa on fa.career_id=t.career_id and fa.club_id=t.club_id and fa.kind='training'
+ left join public.cw_staff sa on sa.career_id=t.career_id and sa.club_id=t.club_id and sa.role='assistant'
+ left join public.cw_staff sf on sf.career_id=t.career_id and sf.club_id=t.club_id and sf.role='fitness'
+ where t.career_id=p_career;
+ select jsonb_object_agg(pos,x) into wts from(select pos,jsonb_object_agg(attr,weight) x from public.sim_role_weights group by pos)y;
+ for p in
+  select mp.player_id,mp.club_id,sp.position,cp.potential,cp.age_at_start+floor((w.today-w.started_on)/365.25)::int age,
+   r.rating+coalesce(d.d_rating,0) cur,coalesce(d.d,'{}') d,d.learning_pos,coalesce(d.learning_progress,0) lp,coalesce(d.history,'[]') hist,
+   coalesce((select sum(a.minutes) from public.cw_appearances a where a.career_id=p_career and a.player_id=mp.player_id
+     and a.on_date>=p_month and a.on_date<(p_month+interval '1 month')::date),0) mins
+  from public.mgr_players mp
+  cross join lateral(select c.* from public.cw_players c where c.career_id=mp.career_id and c.player_id=mp.player_id and c.retired_on is null) cp
+  cross join lateral(select s.id,s.position from public.sim_players s where s.id=mp.player_id) sp
+  cross join lateral(select pr.rating from public.sim_player_pos_ratings pr where pr.player_id=sp.id and pr.pos=sp.position) r
+  left join lateral(select x.* from public.cw_player_dev x where x.career_id=mp.career_id and x.player_id=mp.player_id) d on true
+  where mp.career_id=p_career and mp.club_id is not null and coalesce(d.last_month,'1900-01-01')<p_month
+  order by mp.player_id
+ loop
+  focus:=coalesce(cf->p.club_id->>'focus','balanced');
+  trf:=coalesce((cf->p.club_id->>'trf')::numeric,1);
+  fit_lvl:=coalesce((cf->p.club_id->>'fit')::int,3);
+  base:=case when p.age<=19 then .40 when p.age<=21 then .34 when p.age<=23 then .25 when p.age<=25 then .15 when p.age<=27 then .06
+   when p.age<=30 then 0 when p.age<=32 then -.10 when p.age<=34 then -.22 else -.38 end;
+  if base>0 then
+   gap:=greatest(0,least(1.15,(p.potential-p.cur)/12.0));
+   minf:=.6+.6*least(1,p.mins/270.0);
+   dr:=base*gap*minf*trf*case when p.club_id=own then diff_mult else 1 end*scale;
+   dr:=least(dr,greatest(0,p.potential-p.cur));
+  else
+   dr:=base*(1-.05*(fit_lvl-1))*case when p.mins>=270 then .9 else 1 end*scale;
+  end if;
+  nd:=p.d;
+  if abs(dr)>=.005 then
+   attrs:=case when p.position='GOL' then gk_attrs else out_attrs end;
+   mult:='{}';wsum:=0;wm:=0;
+   foreach att in array attrs loop
+    if dr>0 then
+     m:=case focus
+      when 'physical' then case when att=any(phys) then 1.6 else .8 end
+      when 'attack' then case when att in('finishing','off_ball','dribbling','technique') then 1.6 else .8 end
+      when 'defense' then case when att in('marking','tackling','positioning','heading','gk_positioning') then 1.6 else .8 end
+      when 'tactical' then case when att in('passing','vision','positioning','off_ball') then 1.4 else .85 end
+      when 'set_pieces' then case when att in('technique','passing','finishing','heading') then 1.3 else .9 end
+      else 1 end;
+     if att=any(phys) then m:=m*(1+.03*(fit_lvl-1));end if;
+    else
+     m:=case when att=any(phys) then 1.7 when att in('passing','vision','positioning','technique','gk_positioning') then .5 else 1 end;
+    end if;
+    mult:=mult||jsonb_build_object(att,m);
+    k:=coalesce((wts->p.position->>att)::numeric,0);
+    wsum:=wsum+k;wm:=wm+k*m;
+   end loop;
+   k:=case when wm>0 then dr/(wm/wsum) else dr end;
+   foreach att in array attrs loop
+    nd:=nd||jsonb_build_object(att,round(coalesce((nd->>att)::numeric,0)+k*(mult->>att)::numeric,3));
+   end loop;
+  end if;
+  prog:=p.lp;
+  if p.learning_pos is not null then
+   prog:=least(100,p.lp+9*coalesce((cf->p.club_id->>'learn')::numeric,1)*case when focus='tactical' then 1.3 else 1 end);
+  end if;
+  -- histórico mensal (últimos 24 meses), com a nota estimada após o mês
+  hist:=(select coalesce(jsonb_agg(e order by o),'[]') from(select e,o from jsonb_array_elements(p.hist||jsonb_build_array(
+    jsonb_build_object('m',to_char(p_month,'YYYY-MM'),'r',round(p.cur+dr,1)))) with ordinality x(e,o) order by o desc limit 24)y);
+  insert into public.cw_player_dev(career_id,player_id,d,last_month,learning_progress,history)
+  values(p_career,p.player_id,nd,p_month,prog,hist)
+  on conflict(career_id,player_id) do update set d=excluded.d,last_month=excluded.last_month,history=excluded.history,
+   d_rating=cw_player_dev.d_rating+(case when abs(dr)>=.005 then dr else 0 end),
+   learning_progress=case when cw_player_dev.learning_pos is null then 0 else excluded.learning_progress end;
+  if p.learning_pos is not null and prog>=100 then
+   update public.cw_player_dev set learned=array(select distinct unnest(learned||array[p.learning_pos])),learning_pos=null,learning_progress=0
+   where career_id=p_career and player_id=p.player_id;
+   touched:=touched||p.player_id;
+   if p.club_id=own then
+    perform public.cw_inbox_add(p_career,'learned:'||p.player_id||':'||p.learning_pos,'squad','squad',
+     public.mgr_player_name(p.player_id)||' aprendeu uma nova posição',
+     'Depois dos treinos específicos, '||public.mgr_player_name(p.player_id)||' já atua como '||p.learning_pos||' com rendimento de posição secundária.',own,p.player_id,null,'open_player');
+   end if;
+  elsif nd<>'{}'::jsonb and (full_refresh or p.club_id=own) then
+   touched:=touched||p.player_id;
+  end if;
+  n:=n+1;
+ end loop;
+ if cardinality(touched)>0 then perform public.cw_dev_refresh(p_career,touched);end if;
+ return n;
+end $$;
+
+-- nomes para atletas fictícios da base
+create or replace function public.cw_regen_name(p_country text,p_seed text)
+returns text language plpgsql immutable as $$
+declare fbr text[]:=array['Gabriel','Lucas','Matheus','Pedro','Rafael','João','Gustavo','Felipe','Vinícius','Kaique','Davi','Enzo','Thiago','Bruno','Caio','Igor','Renan','Wesley','Luan','Yuri','Arthur','Nicolas','Samuel','Henrique','Ryan','Breno','Danilo','Erick','Fábio','Otávio'];
+ lbr text[]:=array['Silva','Santos','Oliveira','Souza','Pereira','Lima','Carvalho','Ferreira','Rodrigues','Almeida','Costa','Gomes','Ribeiro','Martins','Rocha','Barbosa','Moraes','Teixeira','Moura','Cardoso','Nascimento','Araújo','Mendes','Freitas','Batista','Correia','Pinto','Vieira','Monteiro','Campos'];
+ fen text[]:=array['Jack','Harry','Oliver','Charlie','George','Alfie','Leo','Freddie','Archie','Theo','Oscar','Mason','Ethan','Lewis','Callum','Kai','Jayden','Tyler','Rhys','Owen','Finley','Reece','Jamie','Connor','Liam','Noah','Ben','Sam','Toby','Dylan'];
+ len text[]:=array['Smith','Jones','Taylor','Brown','Williams','Wilson','Johnson','Davies','Robinson','Wright','Thompson','Evans','Walker','White','Roberts','Green','Hall','Wood','Jackson','Clarke','Hughes','Edwards','Turner','Hill','Moore','Cooper','Ward','Morris','King','Baker'];
+ a int:=1+(('x'||substr(md5(p_seed||':f'),1,7))::bit(28)::int%30);b int:=1+(('x'||substr(md5(p_seed||':l'),1,7))::bit(28)::int%30);
+begin
+ if p_country in('ENG','WAL','SCO') then return fen[a]||' '||len[b];end if;
+ return fbr[a]||' '||lbr[b];
+end $$;
+
+create or replace function public.cw_dev_youth(p_career uuid,p_club text,p_date date)
+returns int language plpgsql security definer set search_path=public as $$
+#variable_conflict use_column
+declare own text;ylvl int;ycoach int;prest numeric;cnt int;i int;seed text;pid text;ppos text;age int;pot int;cur numeric;nm text;country text;
+ w public.cw_world;a jsonb;att text;v numeric;made int:=0;wonder boolean;sq int;lim int;
+ posw text[]:=array['GOL','ZAG','ZAG','LD','LE','VOL','MC','MC','MEI','PD','PE','ATA','ATA','ZAG','MC','GOL'];
+begin
+ if not (select youth_enabled from public.cw_dev_rules) then return 0;end if;
+ select * into w from public.cw_world where career_id=p_career;
+ select club_id into own from public.mgr_coach where career_id=p_career and status='employed';
+ perform public.cw_dev_ensure_club(p_career,p_club);
+ ylvl:=public.cw_fac_level(p_career,p_club,'youth');ycoach:=public.cw_staff_level(p_career,p_club,'youth');
+ select prestige into prest from public.cw_clubs where career_id=p_career and club_id=p_club;
+ select country into country from public.sim_clubs where id=p_club;
+ cnt:=case when p_club=own then 1+(ylvl>=3)::int+(ylvl>=5)::int else 1 end;
+ sq:=public.cw_squad_count(p_career,p_club);lim:=public.cw_squad_limit();
+ if sq>=lim then return 0;end if;
+ cnt:=least(cnt,lim-sq);
+ for i in 1..cnt loop
+  seed:=p_career::text||':'||p_club||':'||p_date||':'||i;
+  pid:='regen-'||substr(md5(seed),1,12);
+  continue when exists(select 1 from public.sim_players where id=pid);
+  ppos:=posw[1+(('x'||substr(md5(seed||':pos'),1,7))::bit(28)::int%array_length(posw,1))];
+  age:=16+(public.cw_random(seed||':age')>.55)::int;
+  wonder:=public.cw_random(seed||':wonder')<.04+.01*ylvl;
+  pot:=greatest(45,least(94,round(50+4*ylvl+1.5*ycoach+(coalesce(prest,65)-70)*.3+public.cw_random(seed||':pot')*16-6+case when wonder then 9 else 0 end)::int));
+  cur:=pot*(.60+.10*public.cw_random(seed||':cur'));
+  nm:=public.cw_regen_name(country,seed);
+  insert into public.sim_players(id,full_name,short_name,club_id,position,nationality,age,foot,is_youth,notes,active,position_estimated,career_id)
+  values(pid,nm,nm,null,ppos,case when country in('ENG','WAL','SCO') then 'ENG' else coalesce(country,'BRA') end,age,
+   (array['D','D','D','E','A'])[1+(('x'||substr(md5(seed||':foot'),1,7))::bit(28)::int%5)],true,'Jogador fictício revelado pela base nesta carreira',true,false,p_career);
+  a:='{}';
+  foreach att in array array['gk_reflexes','gk_handling','gk_positioning','marking','tackling','positioning','heading','passing','vision','technique','stamina','finishing','off_ball','pace','dribbling','strength'] loop
+   v:=cur+(public.cw_random(seed||':'||att)-.5)*12
+    +case when ppos='GOL' then case when att like 'gk_%' then 4 else -16 end
+      when att like 'gk_%' then -30
+      when exists(select 1 from public.sim_role_weights rw where rw.pos=ppos and rw.attr=att and rw.weight>=1) then 4 else -5 end;
+   a:=a||jsonb_build_object(att,greatest(10,least(88,round(v)::int)));
+  end loop;
+  insert into public.sim_player_attrs(player_id,gk_reflexes,gk_handling,gk_positioning,marking,tackling,positioning,heading,passing,vision,technique,stamina,finishing,off_ball,pace,dribbling,strength,estimated,method)
+  select pid,(a->>'gk_reflexes')::int,(a->>'gk_handling')::int,(a->>'gk_positioning')::int,(a->>'marking')::int,(a->>'tackling')::int,(a->>'positioning')::int,
+   (a->>'heading')::int,(a->>'passing')::int,(a->>'vision')::int,(a->>'technique')::int,(a->>'stamina')::int,(a->>'finishing')::int,(a->>'off_ball')::int,
+   (a->>'pace')::int,(a->>'dribbling')::int,(a->>'strength')::int,true,'regen';
+  insert into public.sim_player_pos_ratings(player_id,pos,rating,eff)
+  select p.id,wt.pos,round(sum(wt.weight*(to_jsonb(at)->>wt.attr)::numeric)/sum(wt.weight),2),
+   round(sum(wt.weight*(to_jsonb(at)->>wt.attr)::numeric)/sum(wt.weight)*greatest(coalesce(max(f.fit),.5),0),2)
+  from public.sim_players p join public.sim_player_attrs at on at.player_id=p.id join public.sim_role_weights wt on true
+  left join public.sim_position_fit f on f.from_pos=p.position and f.to_pos=wt.pos
+  where p.id=pid group by p.id,wt.pos on conflict do nothing;
+  insert into public.mgr_players(career_id,player_id,club_id,condition,rhythm) values(p_career,pid,p_club,100,60);
+  insert into public.cw_players(career_id,player_id,age_at_start,potential,age_estimated,morale,promised_role)
+  values(p_career,pid,age-floor((w.today-w.started_on)/365.25)::int,pot,false,72,'prospect');
+  insert into public.cw_contracts(career_id,player_id,club_id,starts_on,expires_on,monthly_salary,role)
+  values(p_career,pid,p_club,p_date,(p_date+interval '3 years')::date,least(30,greatest(8,round(cur-35)::int)),'prospect');
+  insert into public.cw_player_dev(career_id,player_id,last_month) values(p_career,pid,date_trunc('month',p_date)::date) on conflict do nothing;
+  if p_club=own then
+   perform public.cw_inbox_add(p_career,'youth:'||pid,'squad','squad','Novo jogador da base: '||nm,
+    nm||' ('||age||' anos, '||ppos||') subiu das categorias de base. '||case when wonder then 'Os observadores falam em um talento raro.' else 'Os treinadores veem margem para evoluir.' end
+    ||' Jogador fictício, criado nesta carreira.',own,pid,null,'open_player');
+  elsif wonder then
+   perform public.cw_news_add(p_career,'youth:'||pid,'transfer','Promessa revelada em '||public.mgr_club_name(p_club),
+    nm||', de '||age||' anos, sobe da base com fama de talento raro.',45,p_club,pid);
+  end if;
+  made:=made+1;
+ end loop;
+ return made;
+end $$;
+
+create or replace function public.cw_dev_retire(p_career uuid,p_region text,p_date date)
+returns int language plpgsql security definer set search_path=public as $$
+#variable_conflict use_column
+declare p record;own text;pr numeric;n int:=0;l public.cw_loans;
+begin
+ if not (select retirement_enabled from public.cw_dev_rules) then return 0;end if;
+ select club_id into own from public.mgr_coach where career_id=p_career and status='employed';
+ for p in
+  with w as materialized(select today,started_on from public.cw_world where career_id=p_career),
+  regs as materialized(select id from public.sim_clubs where public.cw_region(id)=p_region),
+  old as materialized(select cp.player_id,cp.age_at_start+floor((w.today-w.started_on)/365.25)::int age from public.cw_players cp,w
+   where cp.career_id=p_career and cp.retired_on is null and cp.age_at_start+floor((w.today-w.started_on)/365.25)::int>=34)
+  select o.player_id,mp.club_id,o.age,public.cw_rating_now(p_career,o.player_id) rt
+  from old o cross join lateral(select x.club_id from public.mgr_players x where x.career_id=p_career and x.player_id=o.player_id) mp
+  where (mp.club_id is null or mp.club_id in(select id from regs))
+   and not exists(select 1 from public.cw_negotiations x where x.career_id=p_career and x.player_id=o.player_id and x.status in('agreed','precontract'))
+  order by o.player_id
+ loop
+  pr:=case when p.age>=40 then 1 else greatest(.02,least(1,.10+.17*(p.age-34)-(coalesce(p.rt,70)-75)*.012)) end;
+  continue when public.cw_random(p_career::text||':retire:'||p.player_id||':'||extract(year from p_date))>=pr;
+  for l in select * from public.cw_loans where career_id=p_career and player_id=p.player_id and status='active' loop
+   update public.cw_loans set status='returned',response='Encerrado com a aposentadoria do atleta.' where id=l.id;
+  end loop;
+  update public.cw_contracts set status='ended',ended_on=p_date where career_id=p_career and player_id=p.player_id and status='active';
+  update public.mgr_players set club_id=null where career_id=p_career and player_id=p.player_id;
+  update public.cw_players set retired_on=p_date,transfer_listed=false,loan_listed=false where career_id=p_career and player_id=p.player_id;
+  perform public.cw_prune_lineups(p_career,p.player_id);
+  update public.cw_negotiations set status='cancelled',response='O atleta encerrou a carreira.' where career_id=p_career and player_id=p.player_id
+   and status in('seller_review','club_pending','club_counter','player_pending','player_counter');
+  if p.club_id is not null and (p.club_id=own or coalesce(p.rt,0)>=78) then
+   perform public.cw_news_add(p_career,'retire:'||p.player_id,'contract',public.mgr_player_name(p.player_id)||' anuncia aposentadoria',
+    'Aos '||p.age||' anos, '||public.mgr_player_name(p.player_id)||' pendura as chuteiras'||coalesce(' após defender '||public.mgr_club_name(p.club_id),'')||'.',
+    case when p.club_id=own then 85 else 50 end,p.club_id,p.player_id);
+  end if;
+  n:=n+1;
+ end loop;
+ return n;
+end $$;
+
+-- IA investe em estrutura com as mesmas regras de custo
+create or replace function public.cw_dev_ai_facilities(p_career uuid,p_region text,p_date date)
+returns int language plpgsql security definer set search_path=public as $$
+declare c record;f record;v_cost bigint;own text;n int:=0;
+begin
+ select club_id into own from public.mgr_coach where career_id=p_career and status='employed';
+ for c in select cc.club_id from public.cw_clubs cc join public.cw_training t on t.career_id=cc.career_id and t.club_id=cc.club_id
+  where cc.career_id=p_career and cc.club_id is distinct from own and public.cw_region(cc.club_id)=p_region order by cc.club_id loop
+  select * into f from public.cw_facilities where career_id=p_career and club_id=c.club_id and level<5 and building_until is null
+   order by level,case kind when 'training' then 1 when 'youth' then 2 when 'medical' then 3 else 4 end limit 1;
+  continue when not found;
+  v_cost:=public.cw_facility_cost(f.kind,f.level+1,c.club_id);
+  continue when public.cw_available_budget(p_career,c.club_id)<v_cost*3 or public.cw_random(p_career::text||':aifac:'||c.club_id||':'||p_date)>.35;
+  perform public.cw_cash(p_career,c.club_id,-v_cost,'facility',f.kind||':'||(f.level+1),'Obra: '||f.kind||' nível '||(f.level+1));
+  update public.cw_facilities set target_level=f.level+1,started_on=p_date,building_until=(p_date+make_interval(months=>public.cw_facility_months(f.kind,f.level+1)))::date,cost=v_cost
+  where career_id=p_career and club_id=c.club_id and kind=f.kind;
+  n:=n+1;
+ end loop;
+ return n;
+end $$;
+
+create or replace function public.cw_dev_month(p_career uuid,p_month date)
+returns void language plpgsql security definer set search_path=public as $$
+#variable_conflict use_column
+declare own text;c record;l record;amt bigint;today date;reg text;yr int;st record;
+begin
+ if not public.cw_dev_on() then return;end if;
+ insert into public.cw_dev_months(career_id,month) values(p_career,p_month) on conflict do nothing;
+ if not found then return;end if;
+ perform public.cw_set_ctx(p_career);
+ select club_id into own from public.mgr_coach where career_id=p_career and status='employed';
+ select w.today into today from public.cw_world w where w.career_id=p_career;
+ for c in select distinct mp.club_id from public.mgr_players mp join public.cw_clubs cc on cc.career_id=mp.career_id and cc.club_id=mp.club_id
+  where mp.career_id=p_career order by 1 loop
+  perform public.cw_dev_ensure_club(p_career,c.club_id);
+ end loop;
+ perform public.cw_dev_grow(p_career,p_month);
+ -- entrosamento esquecido aos poucos
+ update public.cw_familiarity set value=greatest(40,value-2) where career_id=p_career and value>40 and coalesce(last_used,'1900-01-01')<p_month;
+ -- psicólogo: moral sobe aos poucos até 75
+ update public.cw_players cp set morale=least(75,cp.morale+.6*x.level)
+ from(select mp.player_id,st.level from public.mgr_players mp join public.cw_staff st on st.career_id=mp.career_id and st.club_id=mp.club_id and st.role='psychologist'
+  where mp.career_id=p_career)x
+ where cp.career_id=p_career and cp.player_id=x.player_id and cp.morale<75;
+ -- salários da comissão contratada (equipe original já faz parte da operação)
+ for st in select club_id,sum(monthly_salary) total from public.cw_staff where career_id=p_career and monthly_salary>0 group by club_id loop
+  perform public.cw_cash(p_career,st.club_id,-(st.total::bigint),'staff',to_char(p_month,'YYYY-MM'),'Salários da comissão técnica',true);
+ end loop;
+ -- empréstimos: o clube de origem paga a parte do salário que não foi assumida
+ for l in select * from public.cw_loans where career_id=p_career and status='active' loop
+  amt:=round(coalesce((l.parent_contract->>'monthly_salary')::bigint,0)*(1-l.wage_share));
+  if amt>0 then perform public.cw_cash(p_career,l.parent_club,-amt,'loan_wage',l.id::text||':'||to_char(p_month,'YYYY-MM'),'Parte do salário de atleta emprestado',true);end if;
+ end loop;
+ -- ciclo anual no início da temporada de cada região
+ foreach reg in array array['BRA','ENG'] loop
+  if extract(month from p_month)=(case when reg='ENG' then 7 else 1 end) then
+   yr:=extract(year from p_month)::int;
+   insert into public.cw_dev_years(career_id,region,year) values(p_career,reg,yr) on conflict do nothing;
+   if found then
+    perform public.cw_dev_retire(p_career,reg,greatest(today,p_month));
+    for c in select distinct mp.club_id from public.mgr_players mp join public.cw_clubs cc on cc.career_id=mp.career_id and cc.club_id=mp.club_id
+     where mp.career_id=p_career and public.cw_region(mp.club_id)=reg and (mp.club_id=own or mp.club_id in(select public.cw_domestic_clubs(p_career))) order by 1 loop
+     perform public.cw_dev_youth(p_career,c.club_id,greatest(today,p_month));
+    end loop;
+    perform public.cw_dev_ai_facilities(p_career,reg,greatest(today,p_month));
+   end if;
+  end if;
+ end loop;
+end $$;
+
+create or replace function public.cw_settle_month(p_career uuid,p_month date)
+returns void language plpgsql security definer set search_path=public as $$
+begin
+ perform public.cw_settle_month_before_v58(p_career,p_month);
+ begin
+  perform public.cw_dev_month(p_career,p_month);
+ exception when others then perform public.cw_dev_log(p_career,'month',sqlerrm);
+ end;
+end $$;
+
+-- ---------------------------------------------------------------- serviços diários: obras, empréstimos, propostas
+create or replace function public.cw_dev_daily(p_career uuid)
+returns void language plpgsql security definer set search_path=public as $$
+#variable_conflict use_column
+declare today date;own text;l public.cw_loans;f record;p record;borrower text;ct uuid;sal bigint;
+begin
+ if not public.cw_dev_on() then return;end if;
+ select w.today into today from public.cw_world w where w.career_id=p_career;
+ select club_id into own from public.mgr_coach where career_id=p_career and status='employed';
+ -- obras concluídas
+ for f in select * from public.cw_facilities where career_id=p_career and building_until is not null and building_until<=today loop
+  update public.cw_facilities set level=f.target_level,target_level=null,building_until=null,started_on=null where career_id=p_career and club_id=f.club_id and kind=f.kind;
+  if f.club_id=own then
+   perform public.cw_inbox_add(p_career,'facility:'||f.kind||':'||f.target_level,'board','club','Obra concluída',
+    'A diretoria entregou a melhoria ('||f.kind||', nível '||f.target_level||'). Os efeitos já valem a partir de hoje.',own,null,null,null);
+  end if;
+ end loop;
+ -- fim dos empréstimos
+ for l in select * from public.cw_loans where career_id=p_career and status='active' and ends_on<=today for update loop
+  update public.cw_contracts set status='ended',ended_on=today where id=l.borrower_contract and status='active';
+  update public.cw_contracts set status='ended',ended_on=today where career_id=p_career and player_id=l.player_id and status='active';
+  if exists(select 1 from public.cw_players where career_id=p_career and player_id=l.player_id and retired_on is not null) then
+   update public.cw_loans set status='returned' where id=l.id;continue;
+  end if;
+  if (l.parent_contract->>'expires_on')::date>today then
+   insert into public.cw_contracts(career_id,player_id,club_id,starts_on,expires_on,monthly_salary,appearance_bonus,goal_bonus,role)
+   values(p_career,l.player_id,l.parent_club,today,(l.parent_contract->>'expires_on')::date,(l.parent_contract->>'monthly_salary')::bigint,
+    coalesce((l.parent_contract->>'appearance_bonus')::bigint,0),coalesce((l.parent_contract->>'goal_bonus')::bigint,0),coalesce(l.parent_contract->>'role','rotation'));
+   update public.mgr_players set club_id=l.parent_club where career_id=p_career and player_id=l.player_id;
+  else
+   update public.mgr_players set club_id=null where career_id=p_career and player_id=l.player_id;
+  end if;
+  perform public.cw_prune_lineups(p_career,l.player_id);
+  update public.cw_loans set status='returned',response='Empréstimo encerrado.' where id=l.id;
+  if own in(l.parent_club,l.borrower_club) then
+   perform public.cw_inbox_add(p_career,'loan-end:'||l.id,'transfer','market','Fim de empréstimo: '||public.mgr_player_name(l.player_id),
+    public.mgr_player_name(l.player_id)||' encerra o empréstimo em '||public.mgr_club_name(l.borrower_club)||' e volta para '||public.mgr_club_name(l.parent_club)||'.',
+    own,l.player_id,null,'open_player');
+  end if;
+ end loop;
+ update public.cw_loans set status='expired',response='A proposta expirou sem resposta.' where career_id=p_career and status='offered' and expires_on<today;
+ -- propostas de empréstimo da IA para atletas listados pelo usuário (até 1 por atleta a cada janela de consulta)
+ if own is not null and (select loans_enabled from public.cw_dev_rules) and public.cw_window_open(public.cw_region(own),today) then
+  for p in select cp.player_id,public.cw_rating_now(p_career,cp.player_id) rt from public.cw_players cp join public.mgr_players mp on mp.career_id=cp.career_id and mp.player_id=cp.player_id
+   where cp.career_id=p_career and cp.loan_listed and mp.club_id=own and cp.retired_on is null
+    and not exists(select 1 from public.cw_loans x where x.career_id=p_career and x.player_id=cp.player_id and x.status in('offered','active')) loop
+   continue when public.cw_random(p_career::text||':loanoffer:'||p.player_id||':'||today)>.18;
+   select cc.club_id into borrower from public.cw_clubs cc
+    where cc.career_id=p_career and cc.club_id<>own and cc.club_id in(select public.cw_domestic_clubs(p_career))
+     and cc.prestige between p.rt-14 and p.rt+4 and public.cw_squad_count(p_career,cc.club_id)<public.cw_squad_limit()-1
+    order by public.cw_random(p_career::text||':loanclub:'||p.player_id||':'||cc.club_id||':'||today) limit 1;
+   continue when borrower is null;
+   insert into public.cw_loans(career_id,player_id,parent_club,borrower_club,origin,status,wage_share,role,created_on,ends_on,expires_on,response)
+   values(p_career,p.player_id,own,borrower,'ai_offer','offered',(array[.5,.75,1])[1+floor(public.cw_random(p_career::text||':share:'||p.player_id||today)*3)::int],
+    case when p.rt>=(select prestige from public.cw_clubs where career_id=p_career and club_id=borrower)-3 then 'starter' else 'rotation' end,today,public.cw_season_end(public.cw_region(own),today),today+7,
+    public.mgr_club_name(borrower)||' quer o atleta por empréstimo até o fim da temporada.')
+   returning id into ct;
+   perform public.cw_inbox_add(p_career,'loan-offer:'||ct,'transfer','market','Proposta de empréstimo por '||public.mgr_player_name(p.player_id),
+    public.mgr_club_name(borrower)||' pede '||public.mgr_player_name(p.player_id)||' emprestado até o fim da temporada. Responda em Clube › Empréstimos.',own,p.player_id,null,'open_player');
+  end loop;
+ end if;
+end $$;
+
+create or replace function public.cw_step_to(p_career uuid,p_date date)
+returns date language plpgsql security definer set search_path=public as $$
+declare r date;
+begin
+ perform public.cw_set_ctx(p_career);
+ r:=public.cw_step_to_before_v58(p_career,p_date);
+ begin
+  perform public.cw_dev_daily(p_career);
+ exception when others then perform public.cw_dev_log(p_career,'daily',sqlerrm);
+ end;
+ return r;
+end $$;
+
+-- ---------------------------------------------------------------- empréstimo: efetivação
+create or replace function public.cw_loan_start(p_loan uuid)
+returns void language plpgsql security definer set search_path=public as $$
+#variable_conflict use_column
+declare l public.cw_loans;ct public.cw_contracts;today date;nid uuid;
+begin
+ select * into l from public.cw_loans where id=p_loan for update;
+ if l.status<>'offered' then raise exception 'Empréstimo indisponível';end if;
+ select w.today into today from public.cw_world w where w.career_id=l.career_id;
+ select * into ct from public.cw_contracts where career_id=l.career_id and player_id=l.player_id and club_id=l.parent_club and status='active' for update;
+ if not found then raise exception 'O atleta não tem contrato com o clube de origem';end if;
+ if exists(select 1 from public.cw_negotiations where career_id=l.career_id and player_id=l.player_id and status in('agreed','precontract')) then
+  raise exception 'O atleta já tem uma transferência acertada';
+ end if;
+ if l.fee>0 then
+  perform public.cw_cash(l.career_id,l.borrower_club,-l.fee,'loan_fee',l.id::text,'Taxa de empréstimo de '||public.mgr_player_name(l.player_id));
+  perform public.cw_cash(l.career_id,l.parent_club,l.fee,'loan_fee',l.id::text,'Taxa de empréstimo de '||public.mgr_player_name(l.player_id));
+ end if;
+ update public.cw_contracts set status='ended',ended_on=today where id=ct.id;
+ insert into public.cw_contracts(career_id,player_id,club_id,starts_on,expires_on,monthly_salary,role)
+ values(l.career_id,l.player_id,l.borrower_club,today,least(l.ends_on,ct.expires_on),greatest(1,round(ct.monthly_salary*l.wage_share)),l.role) returning id into nid;
+ update public.mgr_players set club_id=l.borrower_club where career_id=l.career_id and player_id=l.player_id;
+ perform public.cw_prune_lineups(l.career_id,l.player_id);
+ update public.cw_players set loan_listed=false,transfer_listed=false where career_id=l.career_id and player_id=l.player_id;
+ update public.cw_loans set status='active',starts_on=today,ends_on=(select expires_on from public.cw_contracts where id=nid),borrower_contract=nid,
+  parent_contract=jsonb_build_object('id',ct.id,'monthly_salary',ct.monthly_salary,'expires_on',ct.expires_on,'role',ct.role,
+   'appearance_bonus',ct.appearance_bonus,'goal_bonus',ct.goal_bonus)
+ where id=l.id;
+ update public.cw_negotiations set status='cancelled',response='O atleta foi emprestado.' where career_id=l.career_id and player_id=l.player_id
+  and status in('seller_review','club_pending','club_counter','player_pending','player_counter');
+ perform public.cw_news_add(l.career_id,'loan:'||l.id,'transfer',public.mgr_player_name(l.player_id)||' é emprestado a '||public.mgr_club_name(l.borrower_club),
+  'O atleta deixa '||public.mgr_club_name(l.parent_club)||' por empréstimo até '||to_char((select expires_on from public.cw_contracts where id=nid),'DD/MM/YYYY')||'.',55,l.borrower_club,l.player_id);
+end $$;
+
+-- ---------------------------------------------------------------- veto da diretoria (21A)
+create or replace function public.cw_board_veto(p_career uuid,p_club text,p_player text)
+returns text language plpgsql stable security definer set search_path=public as $$
+declare rk int;cnt int;wants boolean;
+begin
+ select transfer_requested into wants from public.cw_players where career_id=p_career and player_id=p_player;
+ rk:=public.cw_squad_rank(p_career,p_club,p_player);
+ select count(*) into cnt from public.mgr_players where career_id=p_career and club_id=p_club;
+ if cnt<=18 then return 'A diretoria não autoriza: o elenco ficaria curto demais (mínimo de 18 atletas).';end if;
+ if rk<=3 and not coalesce(wants,false) then
+  return 'A diretoria não libera um dos três principais atletas do elenco enquanto ele quiser ficar. Ele só sai se pedir para deixar o clube.';
+ end if;
+ return null;
+end $$;
+
+create or replace function public.career_transfer_respond(p_id uuid,p_action text,p_fee bigint,p_request uuid)
+returns jsonb language plpgsql security definer set search_path=public as $$
+declare car public.careers;n public.cw_negotiations;own text;veto text;
+begin
+ car:=public.mgr_lock();
+ select club_id into own from public.mgr_coach where career_id=car.id and status='employed';
+ select * into n from public.cw_negotiations where id=p_id and career_id=car.id;
+ if found and p_action in('accept','counter') and own is not null and n.seller_club=own and n.status='seller_review' then
+  veto:=public.cw_board_veto(car.id,own,n.player_id);
+  if veto is not null then raise exception '%',veto;end if;
+ end if;
+ return public.career_transfer_respond_before_v58(p_id,p_action,p_fee,p_request);
+end $$;
+
+create or replace function public.career_player_release(p_player text,p_request uuid)
+returns jsonb language plpgsql security definer set search_path=public as $$
+declare car public.careers;own text;veto text;
+begin
+ car:=public.mgr_lock();
+ select club_id into own from public.mgr_coach where career_id=car.id and status='employed';
+ if own is not null and exists(select 1 from public.cw_loans where career_id=car.id and player_id=p_player and status='active') then
+  raise exception 'Atleta emprestado: aguarde o fim do empréstimo.';
+ end if;
+ if own is not null and public.econ_request_get(car.id,p_request,'player_release') is null then
+  veto:=public.cw_board_veto(car.id,own,p_player);
+  if veto is not null then raise exception '%',veto;end if;
+ end if;
+ return public.career_player_release_before_v58(p_player,p_request);
+end $$;
+
+-- ---------------------------------------------------------------- leitura de listas: evolução, potencial em faixa e névoa
+create or replace function public.cw_scout_known(p_career uuid,p_player text)
+returns boolean language sql stable security definer set search_path=public as $$
+ select not coalesce((select fog_enabled from public.cw_dev_rules),false)
+  or exists(select 1 from public.mgr_players mp join public.mgr_coach c on c.career_id=mp.career_id and c.club_id=mp.club_id
+   where mp.career_id=p_career and mp.player_id=p_player)
+  or exists(select 1 from public.cw_loans l join public.mgr_coach c on c.career_id=l.career_id and c.club_id=l.parent_club
+   where l.career_id=p_career and l.player_id=p_player and l.status='active')
+  or exists(select 1 from public.cw_scouting s join public.cw_world w on w.career_id=s.career_id where s.career_id=p_career and s.player_id=p_player and s.ready_on<=w.today)
+$$;
+
+create or replace function public.cw_potential_range(p_career uuid,p_player text,p_potential int)
+returns int[] language plpgsql stable security definer set search_path=public as $$
+declare own text;scout int;width int;cur numeric;
+begin
+ if p_potential is null then return null;end if;
+ select club_id into own from public.mgr_coach where career_id=p_career and status='employed';
+ scout:=coalesce(public.cw_staff_level(p_career,own,'scout'),1);
+ cur:=public.cw_rating_now(p_career,p_player);
+ if exists(select 1 from public.cw_scouting s join public.cw_world w on w.career_id=s.career_id where s.career_id=p_career and s.player_id=p_player and s.ready_on<=w.today) then width:=1;
+ elsif exists(select 1 from public.mgr_players where career_id=p_career and player_id=p_player and club_id=own) then width:=greatest(1,4-scout/2);
+ else width:=greatest(2,9-scout);end if;
+ -- faixa estável (não muda a cada leitura) e sempre contendo o valor real
+ return array[greatest(round(coalesce(cur,1))::int,p_potential-width+(('x'||substr(md5(p_career::text||p_player),1,4))::bit(16)::int%(width+1))),
+  least(99,p_potential+width-(('x'||substr(md5(p_career::text||p_player),1,4))::bit(16)::int%(width+1)))];
+end $$;
+
+create or replace function public.cw_patch_players(p_career uuid,p_list jsonb,p_extra boolean default false)
+returns jsonb language sql stable security definer set search_path=public as $$
+ select coalesce(jsonb_agg(case when d.player_id is null and cp.player_id is null then e else
+  e||jsonb_build_object(
+   'overall',case when e ? 'overall' and e->>'overall' is not null then to_jsonb(round((e->>'overall')::numeric+coalesce(d.d_rating,0))) else e->'overall' end,
+   'dev',round(coalesce(d.d_rating,0),1),
+   'trend',coalesce(d.history,'[]'),
+   'learned',coalesce(to_jsonb(d.learned),'[]'),
+   'learning_pos',d.learning_pos,'learning_progress',round(coalesce(d.learning_progress,0)),
+   'potential_range',to_jsonb(public.cw_potential_range(p_career,e->>'id',cp.potential)),
+   'scouted',public.cw_scout_known(p_career,e->>'id'),
+   'regen',coalesce(sp.career_id is not null,false),
+   'on_loan',(select jsonb_build_object('id',l.id,'parent_club',l.parent_club,'borrower_club',l.borrower_club,'ends_on',l.ends_on)
+     from public.cw_loans l where l.career_id=p_career and l.player_id=e->>'id' and l.status='active'),
+   'loan_listed',coalesce(cp.loan_listed,false))
+  ||case when e ? 'ratings' and d.player_id is not null then jsonb_build_object('ratings',(select jsonb_object_agg(k,round(v::numeric+coalesce(pd.d_eff,0)))
+     from jsonb_each_text(e->'ratings') x(k,v) left join public.cw_player_pos_delta pd on pd.career_id=p_career and pd.player_id=e->>'id' and pd.pos=x.k)) else '{}'::jsonb end
+  ||case when e ? 'attrs' and d.player_id is not null then jsonb_build_object('attrs',(select jsonb_object_agg(k,case when e->'attrs'->k is not null and jsonb_typeof(e->'attrs'->k)='number'
+      then to_jsonb(greatest(1,least(99,round((e->'attrs'->>k)::numeric+coalesce((d.d->>k)::numeric,0))))) else e->'attrs'->k end) from jsonb_object_keys(e->'attrs') k)) else '{}'::jsonb end
+  end order by o),'[]'::jsonb)
+ from jsonb_array_elements(coalesce(public.cw_patch_players_before_v58(p_career,p_list,p_extra),'[]')) with ordinality x(e,o)
+ left join public.cw_player_dev d on d.career_id=p_career and d.player_id=e->>'id'
+ left join public.cw_players cp on cp.career_id=p_career and cp.player_id=e->>'id'
+ left join public.sim_players sp on sp.id=e->>'id'
+$$;
+
+create or replace function public.mgr_player_detail(p_player text,p_fixture bigint default null)
+returns jsonb language plpgsql security definer set search_path=public as $$
+declare r jsonb;car uuid;band jsonb;
+begin
+ r:=public.mgr_player_detail_before_v58(p_player,p_fixture);
+ car:=public.cw_current_career();
+ if car is null or public.cw_scout_known(car,p_player) or not (r ? 'attrs') then return r;end if;
+ -- atleta não observado: atributos aproximados (faixas de 5); o olheiro revela os valores exatos
+ select jsonb_object_agg(k,case when jsonb_typeof(r->'attrs'->k)='number' then to_jsonb((round((r->'attrs'->>k)::numeric/5)*5)::int) else r->'attrs'->k end)
+ into band from jsonb_object_keys(r->'attrs') k;
+ return r||jsonb_build_object('attrs',band,'attrs_estimated',true);
+end $$;
+
+create or replace function public.career_player_search(p_query text default '',p_position text default '',p_region text default '',p_club text default '',
+ p_max_value bigint default null,p_page integer default 0,p_country text default '')
+returns jsonb language plpgsql stable security definer set search_path=public as $$
+declare car uuid:=public.cw_current_career();
+begin
+ return(select coalesce(jsonb_agg(e||jsonb_build_object(
+   'overall',round((e->>'overall')::numeric+coalesce(d.d_rating,0)),
+   'potential',null,
+   'potential_range',to_jsonb(public.cw_potential_range(car,e->>'id',coalesce(cp.potential,(e->>'potential')::int))),
+   'scouted',public.cw_scout_known(car,e->>'id'),
+   'scout_ready_on',(select s.ready_on from public.cw_scouting s where s.career_id=car and s.player_id=e->>'id'),
+   'regen',sp.career_id is not null,
+   'on_loan',exists(select 1 from public.cw_loans l where l.career_id=car and l.player_id=e->>'id' and l.status='active'))
+  order by o),'[]')
+ from jsonb_array_elements(public.career_player_search_before_v58(p_query,p_position,p_region,p_club,p_max_value,p_page,p_country)) with ordinality x(e,o)
+ join public.sim_players sp on sp.id=e->>'id'
+ left join public.cw_player_dev d on d.career_id=car and d.player_id=e->>'id'
+ left join public.cw_players cp on cp.career_id=car and cp.player_id=e->>'id'
+ where (sp.career_id is null or sp.career_id=car)
+  and not exists(select 1 from public.cw_players r where r.career_id=car and r.player_id=e->>'id' and r.retired_on is not null));
+end $$;
+
+-- ---------------------------------------------------------------- RPCs do clube
+create or replace function public.cw_dev_own(p_car uuid)
+returns text language plpgsql stable security definer set search_path=public as $$
+declare own text;
+begin
+ select club_id into own from public.mgr_coach where career_id=p_car and status='employed';
+ if own is null then raise exception 'Você precisa estar empregado em um clube.';end if;
+ if not public.cw_dev_on() then raise exception 'Desenvolvimento do clube indisponível no momento.';end if;
+ return own;
+end $$;
+
+create or replace function public.career_club_dev_read()
+returns jsonb language plpgsql security definer set search_path=public as $$
+declare car public.careers;own text;w public.cw_world;
+begin
+ car:=public.mgr_lock();
+ select club_id into own from public.mgr_coach where career_id=car.id and status='employed';
+ select * into w from public.cw_world where career_id=car.id;
+ if own is null then return jsonb_build_object('enabled',public.cw_dev_on(),'employed',false);end if;
+ perform public.cw_dev_ensure_club(car.id,own);
+ return jsonb_build_object('enabled',public.cw_dev_on(),'employed',true,'club_id',own,'today',w.today,
+  'difficulty',(select jsonb_build_object('id',p.id,'label',p.label,'dev_mult',p.dev_mult) from public.sim_difficulty_profiles p where p.id=(public.mgr_difficulty(car.id)).id),
+  'window_open',public.cw_window_open(public.cw_region(own),w.today),
+  'budget',public.cw_available_budget(car.id,own),
+  'infrastructure',(select infrastructure from public.cw_clubs where career_id=car.id and club_id=own),
+  'training',(select to_jsonb(t)-'career_id' from public.cw_training t where career_id=car.id and club_id=own),
+  'facilities',(select jsonb_agg(jsonb_build_object('kind',f.kind,'level',f.level,'initial_level',f.initial_level,'target_level',f.target_level,
+    'building_until',f.building_until,'started_on',f.started_on,
+    'next_cost',case when f.level<5 then public.cw_facility_cost(f.kind,f.level+1,own) end,
+    'next_months',case when f.level<5 then public.cw_facility_months(f.kind,f.level+1) end) order by case f.kind when 'training' then 1 when 'youth' then 2 when 'medical' then 3 else 4 end)
+    from public.cw_facilities f where f.career_id=car.id and f.club_id=own),
+  'staff',(select jsonb_agg(jsonb_build_object('role',s.role,'level',s.level,'initial_level',s.initial_level,'monthly_salary',s.monthly_salary,'hired_on',s.hired_on,
+    'next_salary',case when s.level<5 then public.cw_staff_salary(s.level+1) end) order by s.role)
+    from public.cw_staff s where s.career_id=car.id and s.club_id=own),
+  'set_pieces',(select jsonb_build_object('penalty',sp.penalty,'free_kick',sp.free_kick,'corner',sp.corner) from public.cw_set_pieces sp where sp.career_id=car.id and sp.club_id=own),
+  'familiarity',(select jsonb_agg(jsonb_build_object('formation',f.id,'value',round(public.cw_familiarity_value(car.id,own,f.id))) order by f.sort)
+    from public.sim_formations f),
+  'loans',(select coalesce(jsonb_agg(jsonb_build_object('id',l.id,'player_id',l.player_id,'player',public.mgr_player_name(l.player_id),'parent_club',l.parent_club,
+    'borrower_club',l.borrower_club,'status',l.status,'origin',l.origin,'wage_share',l.wage_share,'fee',l.fee,'role',l.role,'starts_on',l.starts_on,'ends_on',l.ends_on,
+    'expires_on',l.expires_on,'response',l.response) order by l.created_on desc),'[]')
+    from public.cw_loans l where l.career_id=car.id and own in(l.parent_club,l.borrower_club) and (l.status in('offered','active') or l.created_on>w.today-60)),
+  'scouting',(select coalesce(jsonb_agg(jsonb_build_object('player_id',s.player_id,'player',public.mgr_player_name(s.player_id),'requested_on',s.requested_on,'ready_on',s.ready_on,
+    'ready',s.ready_on<=w.today) order by s.requested_on desc),'[]')
+    from public.cw_scouting s where s.career_id=car.id and s.requested_on>w.today-120),
+  'youth',(select coalesce(jsonb_agg(jsonb_build_object('player_id',p.id,'name',p.short_name,'position',p.position,'club_id',mp.club_id) order by p.imported_at desc),'[]')
+    from public.sim_players p join public.mgr_players mp on mp.career_id=car.id and mp.player_id=p.id where p.career_id=car.id and mp.club_id=own),
+  'reputation',(select jsonb_build_object('reputation',c.reputation,'credibility',cc.credibility,'titles',c.titles,'seasons',c.seasons)
+    from public.mgr_coach c left join public.cw_coach cc on cc.career_id=c.career_id where c.career_id=car.id));
+end $$;
+
+create or replace function public.career_training_set(p_focus text,p_intensity text)
+returns jsonb language plpgsql security definer set search_path=public as $$
+declare car public.careers;own text;
+begin
+ car:=public.mgr_lock();own:=public.cw_dev_own(car.id);
+ if p_focus not in('balanced','physical','attack','defense','tactical','set_pieces') or p_intensity not in('light','normal','hard') then raise exception 'Plano de treino inválido';end if;
+ perform public.cw_dev_ensure_club(car.id,own);
+ update public.cw_training set focus=p_focus,intensity=p_intensity,updated_on=(select today from public.cw_world where career_id=car.id)
+ where career_id=car.id and club_id=own;
+ return jsonb_build_object('ok',true,'focus',p_focus,'intensity',p_intensity);
+end $$;
+
+create or replace function public.career_player_learn(p_player text,p_pos text)
+returns jsonb language plpgsql security definer set search_path=public as $$
+declare car public.careers;own text;nat text;
+begin
+ car:=public.mgr_lock();own:=public.cw_dev_own(car.id);
+ if not exists(select 1 from public.mgr_players where career_id=car.id and player_id=p_player and club_id=own) then raise exception 'Atleta fora do seu elenco';end if;
+ select position into nat from public.sim_players where id=p_player;
+ if p_pos is not null and (p_pos=nat or p_pos not in(select code from public.sim_positions) or (p_pos='GOL')<>(nat='GOL')) then raise exception 'Posição inválida para este atleta';end if;
+ insert into public.cw_player_dev(career_id,player_id) values(car.id,p_player) on conflict do nothing;
+ update public.cw_player_dev set learning_pos=p_pos,learning_progress=case when learning_pos is distinct from p_pos then 0 else learning_progress end
+ where career_id=car.id and player_id=p_player;
+ return jsonb_build_object('ok',true,'learning_pos',p_pos);
+end $$;
+
+create or replace function public.career_set_pieces_set(p_penalty text,p_free_kick text,p_corner text)
+returns jsonb language plpgsql security definer set search_path=public as $$
+declare car public.careers;own text;x text;
+begin
+ car:=public.mgr_lock();own:=public.cw_dev_own(car.id);
+ foreach x in array array[p_penalty,p_free_kick,p_corner] loop
+  if x is not null and not exists(select 1 from public.mgr_players where career_id=car.id and player_id=x and club_id=own) then raise exception 'Cobrador fora do seu elenco';end if;
+ end loop;
+ perform public.cw_dev_ensure_club(car.id,own);
+ update public.cw_set_pieces set penalty=p_penalty,free_kick=p_free_kick,corner=p_corner where career_id=car.id and club_id=own;
+ return jsonb_build_object('ok',true);
+end $$;
+
+-- Pedido de obra: a diretoria aprova ou recusa conforme o caixa e o risco (13A); obras demoram (14A).
+create or replace function public.career_facility_upgrade(p_kind text,p_request uuid)
+returns jsonb language plpgsql security definer set search_path=public as $$
+declare car public.careers;own text;prev jsonb;f public.cw_facilities;v_cost bigint;club public.cw_clubs;today date;fund bigint;cash_part bigint;res jsonb;avail bigint;
+begin
+ car:=public.mgr_lock();own:=public.cw_dev_own(car.id);
+ prev:=public.econ_request_get(car.id,p_request,'facility_upgrade');if prev is not null then return prev;end if;
+ perform public.cw_dev_ensure_club(car.id,own);
+ select * into f from public.cw_facilities where career_id=car.id and club_id=own and kind=p_kind for update;
+ if not found then raise exception 'Instalação inválida';end if;
+ select w0.today into today from public.cw_world w0 where w0.career_id=car.id;
+ if f.building_until is not null then
+  res:=jsonb_build_object('ok',false,'approved',false,'reason','Já existe uma obra em andamento nesta instalação. Conclusão prevista para '||to_char(f.building_until,'DD/MM/YYYY')||'.');
+ elsif f.level>=5 then
+  res:=jsonb_build_object('ok',false,'approved',false,'reason','Esta instalação já está no nível máximo.');
+ else
+  v_cost:=public.cw_facility_cost(p_kind,f.level+1,own);
+  select * into club from public.cw_clubs where career_id=car.id and club_id=own for update;
+  avail:=public.cw_available_budget(car.id,own);
+  fund:=least(club.infrastructure,v_cost);cash_part:=v_cost-fund;
+  if club.financial_risk>=50 then
+   res:=jsonb_build_object('ok',false,'approved',false,'reason','A diretoria recusou: o risco financeiro do clube está alto. Como melhorar: reduza a folha, venda atletas excedentes ou aguarde novas receitas.');
+  elsif cash_part>avail then
+   res:=jsonb_build_object('ok',false,'approved',false,'cost',v_cost,'reason','A diretoria recusou: faltam '||public.cw_money_label(cash_part-avail)||' de orçamento livre. Como melhorar: aumente o caixa (vendas, prêmios, aporte) ou aguarde o fundo de infraestrutura crescer.');
+  else
+   if fund>0 then update public.cw_clubs set infrastructure=infrastructure-fund where career_id=car.id and club_id=own;end if;
+   if cash_part>0 then perform public.cw_cash(car.id,own,-cash_part,'facility',p_request::text,'Obra aprovada: '||p_kind||' nível '||(f.level+1));end if;
+   update public.cw_facilities set target_level=f.level+1,started_on=today,building_until=(today+make_interval(months=>public.cw_facility_months(p_kind,f.level+1)))::date,cost=v_cost
+   where career_id=car.id and club_id=own and kind=p_kind;
+   res:=jsonb_build_object('ok',true,'approved',true,'cost',v_cost,'from_fund',fund,'from_cash',cash_part,
+    'building_until',(today+make_interval(months=>public.cw_facility_months(p_kind,f.level+1)))::date);
+  end if;
+ end if;
+ return public.econ_request_save(car.id,p_request,'facility_upgrade',res);
+end $$;
+
+create or replace function public.career_staff_hire(p_role text,p_level int,p_request uuid)
+returns jsonb language plpgsql security definer set search_path=public as $$
+declare car public.careers;own text;prev jsonb;s public.cw_staff;sal bigint;res jsonb;today date;avail bigint;
+begin
+ car:=public.mgr_lock();own:=public.cw_dev_own(car.id);
+ prev:=public.econ_request_get(car.id,p_request,'staff_hire');if prev is not null then return prev;end if;
+ perform public.cw_dev_ensure_club(car.id,own);
+ select * into s from public.cw_staff where career_id=car.id and club_id=own and role=p_role for update;
+ if not found or p_level not between 1 and 5 then raise exception 'Cargo ou nível inválido';end if;
+ select w0.today into today from public.cw_world w0 where w0.career_id=car.id;
+ sal:=public.cw_staff_salary(p_level);avail:=public.cw_available_budget(car.id,own);
+ if p_level=s.level then
+  res:=jsonb_build_object('ok',false,'approved',false,'reason','Este profissional já está no cargo.');
+ elsif p_level>s.level and avail<(sal-s.monthly_salary)*6 then
+  res:=jsonb_build_object('ok',false,'approved',false,'reason','A diretoria recusou: o orçamento livre não cobre seis meses do novo salário ('||public.cw_money_label(sal)||' por mês). Como melhorar: libere folha salarial ou aumente o caixa.');
+ else
+  update public.cw_staff set level=p_level,monthly_salary=case when p_level<=initial_level then 0 else sal end,hired_on=today
+  where career_id=car.id and club_id=own and role=p_role;
+  res:=jsonb_build_object('ok',true,'approved',true,'monthly_salary',case when p_level<=s.initial_level then 0 else sal end);
+ end if;
+ return public.econ_request_save(car.id,p_request,'staff_hire',res);
+end $$;
+
+create or replace function public.career_scout_request(p_player text)
+returns jsonb language plpgsql security definer set search_path=public as $$
+declare car public.careers;own text;today date;lvl int;busy int;ready date;
+begin
+ car:=public.mgr_lock();own:=public.cw_dev_own(car.id);
+ if not exists(select 1 from public.sim_players where id=p_player and (career_id is null or career_id=car.id)) then raise exception 'Atleta inexistente';end if;
+ select w0.today into today from public.cw_world w0 where w0.career_id=car.id;
+ lvl:=public.cw_staff_level(car.id,own,'scout');
+ select count(*) into busy from public.cw_scouting where career_id=car.id and ready_on>today;
+ if busy>=1+lvl then raise exception 'Os olheiros já estão com % relatórios em andamento. Aguarde um terminar.',busy;end if;
+ ready:=today+greatest(2,14-2*lvl);
+ insert into public.cw_scouting(career_id,player_id,requested_on,ready_on) values(car.id,p_player,today,ready)
+ on conflict(career_id,player_id) do nothing;
+ return jsonb_build_object('ok',true,'ready_on',(select ready_on from public.cw_scouting where career_id=car.id and player_id=p_player));
+end $$;
+
+-- Pedido de empréstimo de um atleta da IA (decisão do clube e do atleta na hora, com motivos).
+create or replace function public.career_loan_request(p_player text,p_wage_share numeric,p_role text,p_request uuid)
+returns jsonb language plpgsql security definer set search_path=public as $$
+declare car public.careers;own text;prev jsonb;parent text;today date;rk int;age int;reason text;lid uuid;res jsonb;sal bigint;
+begin
+ car:=public.mgr_lock();own:=public.cw_dev_own(car.id);
+ prev:=public.econ_request_get(car.id,p_request,'loan_request');if prev is not null then return prev;end if;
+ if not (select loans_enabled from public.cw_dev_rules) then raise exception 'Empréstimos indisponíveis';end if;
+ if p_wage_share not between .25 and 1 or p_role not in('key','starter','rotation','prospect') then raise exception 'Condições inválidas';end if;
+ select w0.today into today from public.cw_world w0 where w0.career_id=car.id;
+ perform public.cw_materialize_club(car.id,public.cw_effective_player_club(car.id,p_player));
+ select club_id into parent from public.mgr_players where career_id=car.id and player_id=p_player;
+ if parent is null then raise exception 'Atleta sem clube: faça uma proposta de contrato.';end if;
+ if parent=own then raise exception 'O atleta já é do seu elenco';end if;
+ if not public.cw_window_open(public.cw_region(own),today) then raise exception 'Janela de transferências fechada.';end if;
+ select ct.monthly_salary into sal from public.cw_contracts ct where ct.career_id=car.id and ct.player_id=p_player and ct.club_id=parent and ct.status='active';
+ rk:=public.cw_squad_rank(car.id,parent,p_player);
+ select cp.age_at_start+floor((w.today-w.started_on)/365.25)::int into age from public.cw_players cp join public.cw_world w on w.career_id=cp.career_id where cp.career_id=car.id and cp.player_id=p_player;
+ reason:=public.cw_project_reason(car.id,p_player,own);
+ if exists(select 1 from public.cw_loans where career_id=car.id and player_id=p_player and status in('active','offered')) then
+  reason:='O atleta já está emprestado ou em negociação de empréstimo.';
+ elsif sal is null then reason:='O atleta não tem contrato ativo com o clube.';
+ elsif rk<=14 then reason:=public.mgr_club_name(parent)||' não empresta atletas que fazem parte do time principal. Como melhorar: procure jovens ou reservas (fora dos 14 melhores do elenco).';
+ elsif coalesce(age,25)>27 and rk<=20 then reason:=public.mgr_club_name(parent)||' prefere manter seus veteranos no elenco.';
+ elsif p_wage_share<(case when rk<=18 then .75 else .5 end) then reason:=public.mgr_club_name(parent)||' exige que você pague ao menos '||(case when rk<=18 then 75 else 50 end)||'% do salário. Como melhorar: aumente a parte do salário assumida.';
+ elsif p_role in('rotation','prospect') and rk<=18 then reason:='O atleta só aceita o empréstimo com promessa de ser titular. Como melhorar: ofereça o papel de titular.';
+ elsif public.cw_available_budget(car.id,own)<round(sal*p_wage_share)*6 then reason:='A diretoria recusou: o orçamento livre não cobre seis meses da parte do salário.';
+ elsif public.cw_squad_count(car.id,own)>=public.cw_squad_limit() then reason:='Seu elenco atingiu o limite de inscritos.';
+ end if;
+ if reason is not null then
+  res:=jsonb_build_object('ok',false,'approved',false,'reason',reason);
+ else
+  insert into public.cw_loans(career_id,player_id,parent_club,borrower_club,origin,status,wage_share,role,created_on,ends_on,expires_on,response)
+  values(car.id,p_player,parent,own,'user_request','offered',p_wage_share,p_role,today,public.cw_season_end(public.cw_region(own),today),today,'Acordo fechado com o clube e o atleta.')
+  returning id into lid;
+  perform public.cw_loan_start(lid);
+  res:=jsonb_build_object('ok',true,'approved',true,'loan_id',lid,'ends_on',(select ends_on from public.cw_loans where id=lid));
+ end if;
+ return public.econ_request_save(car.id,p_request,'loan_request',res);
+end $$;
+
+create or replace function public.career_loan_list(p_player text,p_listed boolean)
+returns jsonb language plpgsql security definer set search_path=public as $$
+declare car public.careers;own text;
+begin
+ car:=public.mgr_lock();own:=public.cw_dev_own(car.id);
+ if not exists(select 1 from public.mgr_players where career_id=car.id and player_id=p_player and club_id=own) then raise exception 'Atleta fora do seu elenco';end if;
+ if exists(select 1 from public.cw_loans where career_id=car.id and player_id=p_player and status='active') then raise exception 'Atleta já emprestado';end if;
+ update public.cw_players set loan_listed=coalesce(p_listed,false) where career_id=car.id and player_id=p_player;
+ return jsonb_build_object('ok',true,'listed',coalesce(p_listed,false));
+end $$;
+
+create or replace function public.career_loan_respond(p_loan uuid,p_accept boolean)
+returns jsonb language plpgsql security definer set search_path=public as $$
+declare car public.careers;own text;l public.cw_loans;veto text;today date;
+begin
+ car:=public.mgr_lock();own:=public.cw_dev_own(car.id);
+ select * into l from public.cw_loans where id=p_loan and career_id=car.id for update;
+ if not found or l.parent_club<>own or l.status<>'offered' then raise exception 'Proposta de empréstimo indisponível';end if;
+ select w0.today into today from public.cw_world w0 where w0.career_id=car.id;
+ if l.expires_on<today then update public.cw_loans set status='expired' where id=l.id;raise exception 'A proposta expirou';end if;
+ if not coalesce(p_accept,false) then
+  update public.cw_loans set status='rejected',response='Recusado pelo treinador.' where id=l.id;
+  return jsonb_build_object('ok',true,'accepted',false);
+ end if;
+ veto:=public.cw_board_veto(car.id,own,l.player_id);
+ if veto is not null then raise exception '%',veto;end if;
+ if not public.cw_window_open(public.cw_region(own),today) then raise exception 'Janela de transferências fechada.';end if;
+ perform public.cw_loan_start(l.id);
+ return jsonb_build_object('ok',true,'accepted',true);
+end $$;
+
+-- ---------------------------------------------------------------- permissões
+do $$ declare f record;begin
+ for f in select p.oid::regprocedure sig,p.proname from pg_proc p join pg_namespace n on n.oid=p.pronamespace
+  where n.nspname='public' and p.proname in(
+   'cw_ctx_career','cw_set_ctx','cw_fixture_career','cw_dev_on','cw_level_from_prestige','cw_staff_salary','cw_facility_cost','cw_facility_months',
+   'cw_dev_ensure_club','cw_fac_level','cw_fac_initial','cw_staff_level','cw_familiarity_value','cw_eff_attrs','cw_dev_refresh','cw_rating_now',
+   'mgr_side_strength','mgr_best_bench','mgr_lineup_score','mgr_fit','cw_squad_rank','cw_player_value','cw_salary_floor','mgr_auto_lineup',
+   'mgr_lock','mgr_lock_before_v58','cw_match_gate','cw_match_gate_before_v58','cw_project_reason','cw_project_reason_before_v58',
+   'cw_ai_recovery_club','cw_ai_recovery_club_before_v58','mgr_match_create','mgr_match_create_before_v58','mgr_match_finish','mgr_match_finish_before_v58',
+   'cw_dev_grow','cw_regen_name','cw_dev_youth','cw_dev_retire','cw_dev_ai_facilities','cw_dev_month','cw_settle_month','cw_settle_month_before_v58',
+   'cw_dev_daily','cw_step_to','cw_step_to_before_v58','cw_loan_start','cw_board_veto','career_transfer_respond_before_v58','career_player_release_before_v58',
+   'cw_scout_known','cw_potential_range','cw_patch_players','cw_patch_players_before_v58','mgr_player_detail_before_v58','career_player_search_before_v58',
+   'cw_dev_own','mgr_engine_run_v2','cw_season_end','cw_dev_log','cw_dev_match_prepare','cw_dev_match_after') loop
+  execute format('revoke all on function %s from public,anon,authenticated',f.sig);
+ end loop;
+ for f in select p.oid::regprocedure sig from pg_proc p join pg_namespace n on n.oid=p.pronamespace
+  where n.nspname='public' and p.proname in('career_club_dev_read','career_training_set','career_player_learn','career_set_pieces_set','career_facility_upgrade',
+   'career_staff_hire','career_scout_request','career_loan_request','career_loan_list','career_loan_respond','career_transfer_respond','career_player_release',
+   'mgr_player_detail','career_player_search') loop
+  execute format('revoke all on function %s from public,anon',f.sig);
+  execute format('grant execute on function %s to authenticated',f.sig);
+ end loop;
+end $$;
+
+notify pgrst,'reload schema';
+commit;

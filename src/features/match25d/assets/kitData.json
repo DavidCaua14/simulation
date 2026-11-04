@@ -1,0 +1,518 @@
+{
+ "scene": {
+  "reference_canvas": [
+   1672,
+   941
+  ],
+  "pitch_world_size_m": [
+   105,
+   68
+  ],
+  "projection": {
+   "origin_px": [
+    280,
+    340
+   ],
+   "x_vector_px_per_m": [
+    10.095238095238095,
+    0
+   ],
+   "y_vector_px_per_m": [
+    0.8823529411764706,
+    5.588235294117647
+   ],
+   "z_vector_px_per_m": [
+    0,
+    -8.2
+   ]
+  },
+  "pitch_corners_px": [
+   [
+    280,
+    340
+   ],
+   [
+    1340,
+    340
+   ],
+   [
+    1400,
+    720
+   ],
+   [
+    340,
+    720
+   ]
+  ],
+  "grass_destination_world_rect_xywh": [
+   -15,
+   -12,
+   135,
+   94
+  ],
+  "markings_svg_world_viewbox": [
+   -1.5,
+   -1.5,
+   108,
+   71
+  ],
+  "player_visible_height_px_at_reference_size": 30,
+  "ball_visible_diameter_px_at_reference_size": 7,
+  "notes": "Layout inicial de encaixe, ajustar no jogo; preservar escala uniforme de toda a cena.",
+  "grass_clip_screen_rect_xywh": [
+   210,
+   280,
+   1250,
+   500
+  ]
+ },
+ "scoreboard": {
+  "file": "interface/placar_base.png",
+  "text_anchors_normalized": {
+   "home_name": [
+    0.25,
+    0.48
+   ],
+   "home_score": [
+    0.453,
+    0.48
+   ],
+   "away_score": [
+    0.547,
+    0.48
+   ],
+   "away_name": [
+    0.75,
+    0.48
+   ],
+   "clock": [
+    0.5,
+    0.63
+   ]
+  },
+  "notes": "Coordenadas aproximadas no PNG completo, incluindo margens transparentes; texto é dinâmico."
+ },
+ "images": {
+  "stadium": {
+   "file": "stadium.webp",
+   "w": 1672,
+   "h": 941
+  },
+  "grass": {
+   "file": "grass.webp",
+   "w": 1100,
+   "h": 712
+  },
+  "ball": {
+   "file": "ball.webp",
+   "w": 48,
+   "h": 48
+  },
+  "scoreboard": {
+   "file": "scoreboard.webp",
+   "w": 1086,
+   "h": 362
+  },
+  "goal": {
+   "file": "goal.webp",
+   "w": 900,
+   "h": 300
+  },
+  "yellow": {
+   "file": "yellow.webp",
+   "w": 280,
+   "h": 280
+  },
+  "red": {
+   "file": "red.webp",
+   "w": 280,
+   "h": 280
+  },
+  "second_yellow": {
+   "file": "second_yellow.webp",
+   "w": 300,
+   "h": 274
+  },
+  "offside": {
+   "file": "offside.webp",
+   "w": 280,
+   "h": 280
+  },
+  "injury": {
+   "file": "injury.webp",
+   "w": 280,
+   "h": 280
+  },
+  "sub": {
+   "file": "sub.webp",
+   "w": 360,
+   "h": 240
+  },
+  "referee": {
+   "file": "referee.webp",
+   "w": 260,
+   "h": 285
+  },
+  "flag": {
+   "file": "flag.webp",
+   "w": 64,
+   "h": 128
+  },
+  "shadow": {
+   "file": "shadow.webp",
+   "w": 80,
+   "h": 32
+  },
+  "ring": {
+   "file": "ring.webp",
+   "w": 80,
+   "h": 32
+  }
+ },
+ "atlases": {
+  "atlas_red": {
+   "file": "atlas_red.webp",
+   "w": 451,
+   "h": 451,
+   "frames": {
+    "frente_parado": [
+     0.0,
+     0.0,
+     113.04,
+     113.04,
+     41.4,
+     106.92
+    ],
+    "frente_corrida_a": [
+     113.04,
+     0.0,
+     112.68,
+     113.04,
+     51.12,
+     109.44
+    ],
+    "frente_corrida_b": [
+     225.72,
+     0.0,
+     112.68,
+     113.04,
+     53.64,
+     109.08
+    ],
+    "frente_chute": [
+     338.4,
+     0.0,
+     113.04,
+     113.04,
+     60.12,
+     107.28
+    ],
+    "costas_parado": [
+     0.0,
+     113.04,
+     113.04,
+     112.68,
+     43.02,
+     107.64
+    ],
+    "costas_corrida_a": [
+     113.04,
+     113.04,
+     112.68,
+     112.68,
+     50.76,
+     110.16
+    ],
+    "costas_corrida_b": [
+     225.72,
+     113.04,
+     112.68,
+     112.68,
+     55.08,
+     109.44
+    ],
+    "costas_chute": [
+     338.4,
+     113.04,
+     113.04,
+     112.68,
+     53.28,
+     109.44
+    ],
+    "esquerda_parado": [
+     0.0,
+     225.72,
+     113.04,
+     112.68,
+     64.08,
+     109.44
+    ],
+    "esquerda_corrida_a": [
+     113.04,
+     225.72,
+     112.68,
+     112.68,
+     30.6,
+     105.12
+    ],
+    "esquerda_corrida_b": [
+     225.72,
+     225.72,
+     112.68,
+     112.68,
+     30.96,
+     104.4
+    ],
+    "esquerda_chute": [
+     338.4,
+     225.72,
+     113.04,
+     112.68,
+     60.12,
+     107.28
+    ],
+    "direita_parado": [
+     0.0,
+     338.4,
+     113.04,
+     113.04,
+     50.76,
+     109.8
+    ],
+    "direita_corrida_a": [
+     113.04,
+     338.4,
+     112.68,
+     113.04,
+     75.06,
+     106.56
+    ],
+    "direita_corrida_b": [
+     225.72,
+     338.4,
+     112.68,
+     113.04,
+     77.58,
+     105.84
+    ],
+    "direita_chute": [
+     338.4,
+     338.4,
+     113.04,
+     113.04,
+     47.7,
+     108.0
+    ]
+   },
+   "visible_height": 104.4
+  },
+  "atlas_blue": {
+   "file": "atlas_blue.webp",
+   "w": 451,
+   "h": 451,
+   "frames": {
+    "frente_parado": [
+     0.0,
+     0.0,
+     113.04,
+     113.04,
+     41.04,
+     106.92
+    ],
+    "frente_corrida_a": [
+     113.04,
+     0.0,
+     112.68,
+     113.04,
+     51.12,
+     109.08
+    ],
+    "frente_corrida_b": [
+     225.72,
+     0.0,
+     112.68,
+     113.04,
+     53.64,
+     108.72
+    ],
+    "frente_chute": [
+     338.4,
+     0.0,
+     113.04,
+     113.04,
+     60.12,
+     106.92
+    ],
+    "costas_parado": [
+     0.0,
+     113.04,
+     113.04,
+     112.68,
+     43.2,
+     107.28
+    ],
+    "costas_corrida_a": [
+     113.04,
+     113.04,
+     112.68,
+     112.68,
+     51.48,
+     110.16
+    ],
+    "costas_corrida_b": [
+     225.72,
+     113.04,
+     112.68,
+     112.68,
+     55.08,
+     109.08
+    ],
+    "costas_chute": [
+     338.4,
+     113.04,
+     113.04,
+     112.68,
+     53.28,
+     109.44
+    ],
+    "esquerda_parado": [
+     0.0,
+     225.72,
+     113.04,
+     112.68,
+     63.36,
+     109.8
+    ],
+    "esquerda_corrida_a": [
+     113.04,
+     225.72,
+     112.68,
+     112.68,
+     30.96,
+     104.76
+    ],
+    "esquerda_corrida_b": [
+     225.72,
+     225.72,
+     112.68,
+     112.68,
+     31.32,
+     104.04
+    ],
+    "esquerda_chute": [
+     338.4,
+     225.72,
+     113.04,
+     112.68,
+     60.12,
+     107.28
+    ],
+    "direita_parado": [
+     0.0,
+     338.4,
+     113.04,
+     113.04,
+     50.4,
+     109.08
+    ],
+    "direita_corrida_a": [
+     113.04,
+     338.4,
+     112.68,
+     113.04,
+     75.24,
+     105.84
+    ],
+    "direita_corrida_b": [
+     225.72,
+     338.4,
+     112.68,
+     113.04,
+     77.22,
+     105.48
+    ],
+    "direita_chute": [
+     338.4,
+     338.4,
+     113.04,
+     113.04,
+     47.16,
+     107.28
+    ]
+   },
+   "visible_height": 104.76
+  },
+  "atlas_gk": {
+   "file": "atlas_gk.webp",
+   "w": 451,
+   "h": 451,
+   "frames": {
+    "pronto_frente": [
+     0.0,
+     0.0,
+     113.04,
+     225.72,
+     18.9,
+     200.88
+    ],
+    "pronto_costas": [
+     113.04,
+     0.0,
+     112.68,
+     225.72,
+     24.48,
+     201.24
+    ],
+    "pronto_esquerda": [
+     225.72,
+     0.0,
+     112.68,
+     225.72,
+     59.76,
+     204.84
+    ],
+    "pronto_direita": [
+     338.4,
+     0.0,
+     113.04,
+     225.72,
+     52.56,
+     204.84
+    ],
+    "mergulho_esquerda": [
+     0.0,
+     225.72,
+     113.04,
+     225.72,
+     106.02,
+     148.32
+    ],
+    "mergulho_direita": [
+     113.04,
+     225.72,
+     112.68,
+     225.72,
+     6.48,
+     148.68
+    ],
+    "segurando_bola": [
+     225.72,
+     225.72,
+     112.68,
+     225.72,
+     36.54,
+     197.64
+    ],
+    "defesa_alta": [
+     338.4,
+     225.72,
+     113.04,
+     225.72,
+     35.28,
+     198.36
+    ]
+   },
+   "visible_height": 191.16
+  }
+ }
+}

@@ -1,0 +1,37 @@
+import { supabase } from '../../lib/supabaseClient'
+import { isSessionError } from '../../lib/sessionRecovery'
+
+// Desenvolvimento do clube (evolução 58). Tudo é decidido no banco; o app só envia as escolhas do treinador.
+// Enquanto a migração não estiver instalada, a leitura devolve { unavailable: true } e a tela explica isso.
+async function call(fn, args = {}) {
+  const { data, error } = await supabase.rpc(fn, args)
+  if (isSessionError(error)) throw error
+  if (error?.code === 'PGRST202') {
+    const e = new Error('Recurso disponível após a atualização do servidor.')
+    e.unavailable = true
+    throw e
+  }
+  if (error) throw new Error(error.message || 'Não foi possível concluir a operação.')
+  return data
+}
+
+const rid = () => crypto.randomUUID()
+
+export async function fetchClubDev() {
+  try {
+    return await call('career_club_dev_read')
+  } catch (e) {
+    if (e.unavailable) return { unavailable: true }
+    throw e
+  }
+}
+export const setTraining = (focus, intensity) => call('career_training_set', { p_focus: focus, p_intensity: intensity })
+export const setLearning = (playerId, pos) => call('career_player_learn', { p_player: playerId, p_pos: pos })
+export const setSetPieces = ({ penalty, freeKick, corner }) =>
+  call('career_set_pieces_set', { p_penalty: penalty || null, p_free_kick: freeKick || null, p_corner: corner || null })
+export const upgradeFacility = (kind) => call('career_facility_upgrade', { p_kind: kind, p_request: rid() })
+export const hireStaff = (role, level) => call('career_staff_hire', { p_role: role, p_level: level, p_request: rid() })
+export const requestScout = (playerId) => call('career_scout_request', { p_player: playerId })
+export const requestLoan = (playerId, wageShare, role) => call('career_loan_request', { p_player: playerId, p_wage_share: wageShare, p_role: role, p_request: rid() })
+export const listForLoan = (playerId, listed) => call('career_loan_list', { p_player: playerId, p_listed: listed })
+export const respondLoan = (loanId, accept) => call('career_loan_respond', { p_loan: loanId, p_accept: accept })
