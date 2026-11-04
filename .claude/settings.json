@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl -fsSL https://raw.githubusercontent.com/rtk-ai/rtk/master/install.sh -o /tmp/rtk-install.sh)",
+      "Bash(sh /tmp/rtk-install.sh)",
+      "Bash(rtk:*)"
+    ]
+  }
+}
