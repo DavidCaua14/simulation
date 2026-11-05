@@ -20,7 +20,7 @@ import { assistantDone, assistantKey } from './utils/assistantStore'
 import ClubCentral from './components/ClubCentral'
 import PostMatch from './components/PostMatch'
 import MatchLive from './components/MatchLive'
-import PreMatch from './components/PreMatch'
+import MatchFlow from './matchflow/MatchFlow'
 import MatchReport from './components/MatchReport'
 import ParallelDigest from './components/ParallelDigest'
 import InboxSheet from './components/InboxSheet'
@@ -45,7 +45,7 @@ export default function SeasonsScreen({ career: account, onBack }) {
   const [busy, setBusy] = useState(null) // 'start' | 'advance' | 'next' | 'resign' | 'offer:<id>'
   const [live, setLive] = useState(null) // payload da partida ao vivo
   const [summary, setSummary] = useState(null) // pós-jogo
-  const [preMatch, setPreMatch] = useState(null) // id da partida no pré-jogo (escalações e análise do rival)
+  const [preMatch, setPreMatch] = useState(null) // próximo jogo aberto no fluxo da partida (Formação → pré-jogo)
   const [digest, setDigest] = useState(null)
   const [report, setReport] = useState(null)
   const [inbox, setInbox] = useState(null)
@@ -109,6 +109,8 @@ export default function SeasonsScreen({ career: account, onBack }) {
   const canPlay = calendarReady && (hasEnergy || Boolean(hub?.live_match)) && !finished && !busy && worldStatus !== 'syncing'
   // Rodada a rodada: o botão JOGAR fica disponível mesmo antes do dia do jogo — ele resolve a rodada e abre o pré-jogo.
   const canGo = (hasEnergy || Boolean(hub?.live_match)) && !finished && !busy
+  // Fluxo da partida: o jogo aberto está pronto quando o calendário do servidor chegou ao dia dele.
+  const matchReady = Boolean(preMatch && hub?.next_event?.kind === 'mine' && hub.next_event.fixture_id === preMatch.fixture_id && !(hub.next_event.days_until > 0) && !hub.world?.needs_sync && busy !== 'prepare')
   const blockedText = worldStatus === 'syncing' ? 'Preparando a próxima partida…' : finished ? 'Temporada encerrada' : remaining != null ? `Sem energia · recarga em ${formatRemaining(remaining)}` : 'Sem energia'
 
   const goTab = useCallback((id, sub = null) => {
@@ -148,28 +150,36 @@ export default function SeasonsScreen({ career: account, onBack }) {
 
   // JOGAR: resolve o mundo até o dia da sua partida (jogos da IA, mercado, mensagens) e abre o pré-jogo.
   // Decisões urgentes (propostas, prazos) interrompem antes do jogo, como os e-mails do CM.
-  const goToMatch = () =>
+  // Como no CM17, os dias não aparecem passando: a tela de Formação abre na hora e o mundo é resolvido
+  // em segundo plano até o dia do jogo. O Pontapé inicial só libera quando o servidor chega lá.
+  const prepareInBackground = (from) =>
     run('prepare', async () => {
-      let current = hub
-      if (hub.world && (hub.world.needs_sync || hub.next_event?.days_until > 0)) {
-        try {
-          current = await simulation.prepare(hub, { isActive: () => mounted.current, onProgress: onPrepareProgress })
-        } finally {
-          if (mounted.current) setPrepareProgress(null)
-        }
-      }
+      const current = await simulation.prepare(from, { isActive: () => mounted.current })
       if (!current || !mounted.current) return
-      if (current.attention) return notify('Uma decisão precisa da sua atenção antes do jogo.', 'offer')
-      if (current.season?.status === 'finished') return notify('Temporada encerrada. Veja o balanço no Início.', 'ok')
-      const next = current.next_event
-      if (next?.kind === 'mine' && !(next.days_until > 0) && !current.world?.needs_sync) setPreMatch(next.fixture_id)
+      if (current.season?.status === 'finished' || current.coach?.status !== 'employed') {
+        setPreMatch(null)
+        notify(current.season?.status === 'finished' ? 'Temporada encerrada. Veja o balanço no Início.' : 'Sua situação no clube mudou. Veja as mensagens.', 'info')
+      }
+    })
+  const goToMatch = () => {
+    const next = hub?.next_event
+    if (next?.kind !== 'mine') return
+    setPreMatch(next)
+    if (hub.world && !hub.attention && (hub.world.needs_sync || next.days_until > 0)) prepareInBackground(hub)
+  }
+  // E-mail urgente durante o fluxo: "Depois" segue a preparação sem responder (o prazo continua contando).
+  const laterAttention = () =>
+    run('attention', async () => {
+      await acknowledgeAttention(hub.attention.key)
+      const h = await refresh({ silent: true })
+      if (h && mounted.current) setTimeout(() => prepareInBackground(h), 0)
     })
 
   const play = () =>
     run('start', async () => {
       if (hub.world && !hub.live_match) {
         const ready = await simulation.prepare(hub, { isActive: () => mounted.current })
-        if (!ready || ready.attention || ready.season.status === 'finished' || ready.coach.status !== 'employed') return
+        if (!ready || ready.season.status === 'finished' || ready.coach.status !== 'employed') return
       }
       const p = await startMatch() // idempotente: retoma a partida em andamento sem cobrar energia de novo
       setPreMatch(null)
@@ -254,7 +264,7 @@ export default function SeasonsScreen({ career: account, onBack }) {
     refresh: () => refresh({ silent: true }),
     play,
     // Dia de jogo: abre o pré-jogo; a partida (e o gasto de energia) só começa em "Iniciar partida"
-    openPreMatch: () => setPreMatch(hub?.next_event?.fixture_id ?? null),
+    openPreMatch: goToMatch,
     goToMatch,
     prepareNext,
     deferAttention: () => run('attention', async () => {
@@ -347,21 +357,26 @@ export default function SeasonsScreen({ career: account, onBack }) {
           <CoachAssistant careerId={account?.id} onTab={(id) => (id !== 'world' || hub.world) && goTab(id)} onClose={() => setAssistant(false)} />
         )}
 
-        {preMatch && !live && ctx && hub.next_event?.kind === 'mine' && hub.next_event.fixture_id === preMatch && !hub.live_match && (
-          <PreMatch
-            next={hub.next_event}
+        {preMatch && !live && ctx && !hub.live_match && (
+          <MatchFlow
+            hub={hub}
+            next={hub.next_event?.kind === 'mine' && hub.next_event.fixture_id === preMatch.fixture_id ? hub.next_event : preMatch}
             myClub={ctx.myClub}
-            myPos={hub.competitions.find((c) => c.id === hub.next_event.competition)?.table?.played ? hub.competitions.find((c) => c.id === hub.next_event.competition).table.pos : null}
-            lineupErrors={hub.lineup?.errors ?? 0}
-            canPlay={canPlay}
+            myPos={hub.competitions.find((c) => c.id === preMatch.competition)?.table?.played ? hub.competitions.find((c) => c.id === preMatch.competition).table.pos : null}
+            ready={matchReady}
+            waitingText={busy === 'prepare' ? 'Preparando a partida…' : hub.attention ? 'Veja o e-mail' : 'Aguarde…'}
+            attention={Boolean(hub.attention) && busy !== 'prepare'}
+            canPlay={(hasEnergy || Boolean(hub.live_match)) && !finished}
             blockedText={blockedText}
             starting={busy === 'start'}
-            engineVersion={hub.simulation_version ?? 1}
-            onStart={play}
-            onLineup={() => {
+            notify={notify}
+            onAttention={() => {
               setPreMatch(null)
-              goTab('team')
+              actions.openAttention()
             }}
+            onLater={laterAttention}
+            onSaved={() => refresh({ silent: true })}
+            onStart={play}
             onClose={() => setPreMatch(null)}
           />
         )}

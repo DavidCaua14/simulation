@@ -1,13 +1,14 @@
 import { OpponentTactics } from './OpponentScout'
 import { isSessionError } from '../../../lib/sessionRecovery'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Ambulance, ChevronsRight, ClipboardList, FastForward, Pause, Play, Repeat2, Settings2, Square, Tv, Users } from 'lucide-react'
+import { Ambulance, ChevronsRight, ClipboardList, FastForward, Flag, Pause, Play, Repeat2, Settings2, Square, Tv, Users } from 'lucide-react'
 import BasePlayerCard from '../../cards/components/BasePlayerCard'
 import PlayerSheet from './PlayerSheet'
 import ClubCrest from '../../club/components/ClubCrest'
 import { getClubById } from '../../club/data/clubs'
 import CompEmblem from '../ui/CompEmblem'
 import MatchLineupEditor, { draftFromMatch } from './MatchLineupEditor'
+import FunctionsPanel from '../matchflow/FunctionsPanel'
 import useCatalog from '../hooks/useCatalog'
 import { fetchPlayer, fetchSquad, stepMatch } from '../services/managerApi'
 import { MAJOR_EVENTS, condTone, eventText, isGoal } from '../utils/managerUtils'
@@ -44,6 +45,7 @@ export default function MatchLive({ initial, myClub, onFinished, notify }) {
   const [overlay, setOverlay] = useState(null) // {kind:'ht'|'injury'|'red'|'et'|'et_ht', minute}
   const [ack, setAck] = useState(null) // parada já vista (minuto)
   const [panel, setPanel] = useState(false)
+  const [roles, setRoles] = useState(false)
   const [tab, setTab] = useState('feed')
   const [pending, setPending] = useState(EMPTY)
   const [squadById, setSquadById] = useState(null)
@@ -275,8 +277,9 @@ export default function MatchLive({ initial, myClub, onFinished, notify }) {
 
       <div className="sn-seg ml-tabs" role="tablist">
         {[
-          ['feed', 'Lances'],
-          ['stats', 'Estatísticas'],
+          ['feed', 'Ação'],
+          ['stats', 'Est. da partida'],
+          ['ratings', 'Classif.'],
           ['lineups', 'Times'],
         ].map(([id, label]) => (
           <button key={id} type="button" role="tab" aria-selected={tab === id} className={tab === id ? 'is-on' : ''} onClick={() => setTab(id)}>
@@ -332,6 +335,40 @@ export default function MatchLive({ initial, myClub, onFinished, notify }) {
         )}
 
         {data.engine_version === 1 && <p className="sn-hint">Esta partida começou antes da atualização e mantém as regras de simulação anteriores até terminar.</p>}
+        {tab === 'ratings' && (
+          <div className="ml-ratings">
+            {['h', 'a'].map((sd) => (
+              <table key={sd} className={`ml-rtable ${sd === side ? 'is-mine' : ''}`}>
+                <caption>{getClubById(sd === 'h' ? data.home : data.away)?.name}</caption>
+                <thead>
+                  <tr>
+                    <th>Pos</th>
+                    <th className="left">Jogador</th>
+                    <th>Clas</th>
+                    <th>Cond</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {players
+                    .filter((p) => p.side === sd && p.status !== 'bench')
+                    .map((p) => (
+                      <tr key={p.id} className={`st-${p.status}`}>
+                        <td className="pos">{p.pos || p.natural}</td>
+                        <td className="left">
+                          {p.name}
+                          {p.yellow > 0 && <i className="mcard y" />}
+                          {p.red > 0 && <i className="mcard r" />}
+                        </td>
+                        <td>{Number(p.rating).toFixed(1)}</td>
+                        <td className={`cond ${condTone(p.cond)}`}>{Math.round(p.cond)}%</td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
+            ))}
+          </div>
+        )}
+
         {tab === 'lineups' && (
           <div className="ml-lineups">
             {['h', 'a'].map((sd) => (
@@ -385,6 +422,9 @@ export default function MatchLive({ initial, myClub, onFinished, notify }) {
           </button>
           <button type="button" className="gx-btn-ghost" disabled={finished} onClick={() => setPanel('tactics')}>
             <ClipboardList size={16} /> Instruções
+          </button>
+          <button type="button" className="gx-btn-ghost" disabled={finished} onClick={() => setRoles(true)}>
+            <Flag size={16} /> Funções
           </button>
         </nav>
       )}
@@ -475,6 +515,12 @@ export default function MatchLive({ initial, myClub, onFinished, notify }) {
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {roles && (
+        <div className="ml-roles">
+          <FunctionsPanel notify={notify} onDone={() => setRoles(false)} />
         </div>
       )}
 

@@ -9,7 +9,7 @@ export function worldAdvanceDays(hub) {
   }
   if (hub.coach.status !== 'employed') return null
   if (hub.next_event?.kind === 'mine' && hub.next_event.days_until <= 0) return null
-  return Math.min(7, Math.max(1, hub.next_event?.days_until || 7))
+  return Math.min(14, Math.max(1, hub.next_event?.days_until || 7))
 }
 
 // Falhas passageiras (rede, tempo limite do banco): repete a MESMA requisição (mesmo UUID, o servidor não duplica).

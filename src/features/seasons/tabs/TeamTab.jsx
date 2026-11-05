@@ -48,7 +48,8 @@ function remap(slots, formation, byId) {
 
 // TIME: escalação no campo (protagonista), táticas e elenco completo.
 // focusPlayerId: vindo de uma mensagem (ex.: atleta insatisfeito), abre o elenco já com a ficha dele.
-export default function TeamTab({ hub, onSaved, notify, focusPlayerId = null, initialView = null, initialSection = null }) {
+// flow: usado dentro do fluxo da partida (Formação → pré-jogo). { onConfirm, onBack, onRoles }
+export default function TeamTab({ hub, onSaved, notify, focusPlayerId = null, initialView = null, initialSection = null, flow = null }) {
   const { catalog, error: catErr } = useCatalog()
   const [squad, setSquad] = useState(null)
   const [error, setError] = useState('')
@@ -185,6 +186,7 @@ export default function TeamTab({ hub, onSaved, notify, focusPlayerId = null, in
   const fam = familiarity && draft.formation in familiarity ? Math.round(familiarity[draft.formation]) : null
   // Funções (batedores de pênalti, falta e escanteio) ficam no treino da gestão do clube.
   const openRoles = () => {
+    if (flow?.onRoles) return flow.onRoles()
     setClubSection((c) => ({ id: 'training', n: c.n + 1 }))
     setView('club')
   }
@@ -239,14 +241,21 @@ export default function TeamTab({ hub, onSaved, notify, focusPlayerId = null, in
       const r = await saveLineup(draft)
       setIssues(r.issues || [])
       setDirty(false)
-      notify?.('Escalação salva!', 'ok')
+      if (!flow) notify?.('Escalação salva!', 'ok')
       onSaved?.()
       load()
+      return true
     } catch (e) {
       notify?.(e.message, 'alert')
+      return false
     } finally {
       setSaving(false)
     }
+  }
+  // No fluxo da partida: CONFIRMAR salva (se mudou) e segue para o pré-jogo.
+  async function confirmFlow() {
+    if (dirty && !(await handleSave())) return
+    flow.onConfirm()
   }
 
   async function handleAuto() {
@@ -275,8 +284,8 @@ export default function TeamTab({ hub, onSaved, notify, focusPlayerId = null, in
 
   return (
     <div className="sn-page tt">
-      <button type="button" className="sn-link" disabled={saving} onClick={() => load(true)}>Atualizar elenco</button>
-      <div className="tt-club">
+      {!flow && <button type="button" className="sn-link" disabled={saving} onClick={() => load(true)}>Atualizar elenco</button>}
+      {!flow && <div className="tt-club">
         <ClubCrest clubId={clubId} size={34} />
         <div>
           <b>{club?.name}</b>
@@ -297,15 +306,15 @@ export default function TeamTab({ hub, onSaved, notify, focusPlayerId = null, in
             <b>{strength.overall}</b>
           </span>
         )}
-      </div>
+      </div>}
 
-      <div className="sn-seg" role="tablist" aria-label="Gestão do time">
+      {!flow && <div className="sn-seg" role="tablist" aria-label="Gestão do time">
         {VIEWS.map((v) => (
           <button key={v.id} type="button" role="tab" aria-selected={view === v.id} className={view === v.id ? 'is-on' : ''} onClick={() => setView(v.id)}>
             {v.label}
           </button>
         ))}
-      </div>
+      </div>}
 
       {(view === 'lineup' || view === 'squad') && <PositionFilter value={positionFilter} onChange={setPositionFilter} />}
 
@@ -501,19 +510,30 @@ export default function TeamTab({ hub, onSaved, notify, focusPlayerId = null, in
       )}
 
       {view === 'lineup' && (
-        <div className={`tt-cmbar ${drag ? 'is-hidden' : ''}`}>
-          <button type="button" className={`gx-btn tt-confirm ${dirty ? 'is-dirty' : ''}`} onClick={handleSave} disabled={saving || !dirty}>
-            <Check size={18} /> {saving ? 'Salvando…' : dirty ? 'Confirmar' : 'Confirmado'}
-          </button>
+        <div className={`tt-cmbar ${drag ? 'is-hidden' : ''} ${flow ? 'is-flow' : ''}`}>
+          {flow ? (
+            <>
+              <button type="button" className="gx-btn-ghost tt-cancel" onClick={flow.onBack} disabled={saving}>
+                Cancelar
+              </button>
+              <button type="button" className="gx-btn tt-confirm" onClick={confirmFlow} disabled={saving || errors.length > 0}>
+                <Check size={18} /> {saving ? 'Salvando…' : 'Confirmar'}
+              </button>
+            </>
+          ) : (
+            <button type="button" className={`gx-btn tt-confirm ${dirty ? 'is-dirty' : ''}`} onClick={handleSave} disabled={saving || !dirty}>
+              <Check size={18} /> {saving ? 'Salvando…' : dirty ? 'Confirmar' : 'Confirmado'}
+            </button>
+          )}
         </div>
       )}
 
       {view === 'tactics' && (
         <div className={`tt-actions ${drag ? "is-hidden" : ""}`}>
-          <button type="button" className="gx-btn-ghost" onClick={() => setView('lineup')}>
+          <button type="button" className="gx-btn-ghost" onClick={() => (flow && initialView === 'tactics' ? flow.onBack() : setView('lineup'))}>
             <ChevronLeft size={17} /> Voltar
           </button>
-          <button type="button" className={`gx-btn tt-save ${dirty ? 'is-dirty' : ''}`} onClick={handleSave} disabled={saving || !dirty}>
+          <button type="button" className={`gx-btn tt-save ${dirty ? 'is-dirty' : ''}`} onClick={flow && initialView === 'tactics' ? confirmFlow : handleSave} disabled={saving || (!dirty && !(flow && initialView === 'tactics'))}>
             <Check size={17} /> {saving ? 'Salvando…' : dirty ? 'Confirmar' : 'Confirmado'}
           </button>
         </div>

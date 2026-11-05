@@ -27,8 +27,16 @@ export async function fetchClubDev() {
 }
 export const setTraining = (focus, intensity) => call('career_training_set', { p_focus: focus, p_intensity: intensity })
 export const setLearning = (playerId, pos) => call('career_player_learn', { p_player: playerId, p_pos: pos })
-export const setSetPieces = ({ penalty, freeKick, corner }) =>
-  call('career_set_pieces_set', { p_penalty: penalty || null, p_free_kick: freeKick || null, p_corner: corner || null })
+// Capitão chegou na evolução 64; antes dela o servidor só conhece os três batedores.
+export async function setSetPieces({ penalty, freeKick, corner, captain }) {
+  const base = { p_penalty: penalty || null, p_free_kick: freeKick || null, p_corner: corner || null }
+  try {
+    return await call('career_set_pieces_set', { ...base, p_captain: captain || null })
+  } catch (e) {
+    if (!e.unavailable) throw e
+    return call('career_set_pieces_set', base)
+  }
+}
 export const upgradeFacility = (kind) => call('career_facility_upgrade', { p_kind: kind, p_request: rid() })
 export const hireStaff = (role, level) => call('career_staff_hire', { p_role: role, p_level: level, p_request: rid() })
 export const requestScout = (playerId) => call('career_scout_request', { p_player: playerId })
