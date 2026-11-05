@@ -21,6 +21,7 @@ import UpdateWelcome from './features/update/UpdateWelcome'
 import AdminDashboard from './features/admin/AdminDashboard'
 import InboxScreen from './features/inbox/InboxScreen'
 import RankingScreen from './features/ranking/RankingScreen'
+import MaintenanceGate from './features/maintenance/MaintenanceGate'
 import { isMaintenanceAdmin as isOwner } from './features/maintenance/policy'
 import { claimReleaseGift, markReleaseSeen } from './features/update/updateApi'
 import './styles/theme.css'
@@ -235,11 +236,13 @@ function App() {
       <ErrorBoundary>
         <AuthProvider>
           {/* Acima do Gate: a música não para em telas de loading nem em trocas de tela */}
-          {/* Manutenção desativada: para reativar, envolva o AudioProvider com <MaintenanceGate> (ver supabase/maintenance/README.md) */}
-          <AudioProvider>
-            <Gate />
-            <LevelUpOverlay />
-          </AudioProvider>
+          {/* Manutenção: para desativar, publique enabled: false em public/maintenance.json (ver supabase/maintenance/README.md) */}
+          <MaintenanceGate>
+            <AudioProvider>
+              <Gate />
+              <LevelUpOverlay />
+            </AudioProvider>
+          </MaintenanceGate>
         </AuthProvider>
       </ErrorBoundary>
     </ThemeProvider>
