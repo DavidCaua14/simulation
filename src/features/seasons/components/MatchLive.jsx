@@ -52,6 +52,7 @@ export default function MatchLive({ initial, myClub, onFinished, notify }) {
   const [playerInfo, setPlayerInfo] = useState(null)
   const [flash, setFlash] = useState(null)
   const [turbo, setTurbo] = useState(false)
+  const [holdAt, setHoldAt] = useState(null) // minuto de um lance que a transmissão ainda está mostrando
   // Transmissão 2.5D (pode ser desligada em aparelhos mais simples; preferência só deste navegador)
   const [broadcast, setBroadcast] = useState(() => {
     try {
@@ -86,9 +87,14 @@ export default function MatchLive({ initial, myClub, onFinished, notify }) {
   const waitingDecision = overlay || panel || playerInfo
   useEffect(() => {
     if (paused || waitingDecision || clock >= serverMin) return undefined
-    const id = setInterval(() => setClock((c) => Math.min(serverMin, c + 100 / msPerMin)), 100)
+    // com a transmissão ligada, o relógio não passa do lance que ainda está sendo mostrado em campo
+    const cap = broadcast && !turbo && holdAt != null ? Math.max(clock, holdAt - 0.01) : Infinity
+    if (clock >= cap) return undefined
+    const id = setInterval(() => setClock((c) => Math.min(serverMin, cap, c + 100 / msPerMin)), 100)
     return () => clearInterval(id)
-  }, [paused, waitingDecision, clock, serverMin, msPerMin])
+  }, [paused, waitingDecision, clock, serverMin, msPerMin, broadcast, turbo, holdAt])
+  // a transmissão recebe os lances 1 minuto antes, para montar a jogada desde onde a bola está
+  const upcoming = useMemo(() => events.filter((e) => e.minute <= Math.floor(clock) + 1), [events, clock])
 
   const shownMinute = Math.floor(clock)
   const visible = useMemo(() => events.filter((e) => e.minute <= shownMinute || (finished && clock >= serverMin)), [events, shownMinute, finished, clock, serverMin])
@@ -225,7 +231,8 @@ export default function MatchLive({ initial, myClub, onFinished, notify }) {
             catalog={catalog}
             clock={clock}
             minute={shownMinute}
-            events={visible}
+            events={upcoming}
+            onHold={setHoldAt}
             paused={paused || Boolean(waitingDecision) || clock >= serverMin}
             speed={turbo ? 4 : speed}
             score={live.sc}

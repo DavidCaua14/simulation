@@ -1,18 +1,37 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import ClubCrest from '../club/components/ClubCrest'
 import { getClubById } from '../club/data/clubs'
-import { GROUND, KIT, SCENE, colorDistance, imageUrl, loadKit, project, tintAtlas } from './kit'
-import { L, W, createDirector } from './director'
+import { GROUND, SCENE, SPRITES, colorDistance, imageUrl, loadKit, project, tintAtlas } from './kit'
+import { DIRS, L, W, createDirector } from './director'
 import './match25d.css'
 
 const REF_W = SCENE.reference_canvas[0]
 const REF_H = SCENE.reference_canvas[1]
-const PLAYER_PX = 34 // altura visível do atleta na cena de referência (kit: 30)
+const PLAYER_PX = 40 // altura visível do atleta na cena de referência (o kit sugere 30; maior para ler os movimentos no celular)
 const GOAL_W = 7.32
 const GOAL_H = 2.44
 const GOAL_D = 1.8
 
-const dirName = (vx, vy) => (Math.abs(vx) * 1.3 > Math.abs(vy) ? (vx >= 0 ? 'direita' : 'esquerda') : vy >= 0 ? 'frente' : 'costas')
+const PLAYER_ATLAS = SPRITES.atlases.player
+const KEEPER_ATLAS = SPRITES.atlases.keeper
+const SPRITE_SCALE = PLAYER_PX / PLAYER_ATLAS.visible_height
+
+// Quadro do atleta: animação especial (mergulho, defesa, comemoração), corrida pela passada ou parado na direção do corpo.
+function frameOf(p) {
+  const atlas = p.gk ? KEEPER_ATLAS : PLAYER_ATLAS
+  const f = atlas.frames
+  const a = p.anim
+  if (a) {
+    const i = Math.min(7, Math.floor((a.t / a.dur) * 8))
+    if (a.name === 'kick' && !p.gk) return f[`run_${DIRS[p.face]}_3`]
+    if (a.name === 'stumble') return f[`run_${DIRS[p.face]}_${(Math.floor(a.t * 20) % 2) + 5}`]
+    const name = `${a.name}_${a.name === 'celebrate' ? Math.floor(a.t * 7) % 8 : i}`
+    if (f[name]) return f[name]
+  }
+  const sp = Math.hypot(p.vx, p.vy)
+  if (sp > 0.7) return f[`run_${DIRS[p.face]}_${Math.floor(p.stride) % 8}`]
+  return f[`idle_${p.face}`]
+}
 
 function drawMarkings(g) {
   g.save()
@@ -60,8 +79,9 @@ function goalLines(side) {
   const y1 = W / 2 + GOAL_W / 2
   return { x, back, y0, y1 }
 }
-function drawGoalBack(g, side) {
-  const { x, back, y0, y1 } = goalLines(side)
+function drawGoalBack(g, side, shake = 0) {
+  const { x, y0, y1 } = goalLines(side)
+  const back = goalLines(side).back + (side ? shake : -shake)
   const p = (a, b, c) => project(a, b, c)
   g.save()
   g.strokeStyle = 'rgba(235,240,255,0.42)'
@@ -103,7 +123,8 @@ function drawGoalFront(g, side) {
   g.restore()
 }
 
-export default function MatchBroadcast({ data, catalog, clock, events, paused, speed = 1, minute, score, finished, clockLabel, userSide, compact = false }) {
+// onHold(minuto|null): o relógio da partida não passa do minuto de um lance que a transmissão ainda está mostrando.
+export default function MatchBroadcast({ data, catalog, clock, events, paused, speed = 1, minute, score, finished, clockLabel, userSide, compact = false, onHold }) {
   const wrap = useRef(null)
   const canvas = useRef(null)
   const imgs = useRef(null)
@@ -111,7 +132,6 @@ export default function MatchBroadcast({ data, catalog, clock, events, paused, s
   const [ready, setReady] = useState(false)
   const [failed, setFailed] = useState(false)
   const [banner, setBanner] = useState(null)
-  const [pending, setPending] = useState({ h: 0, a: 0 })
   const live = useRef({ paused, speed })
   useEffect(() => {
     live.current = { paused, speed }
@@ -132,7 +152,7 @@ export default function MatchBroadcast({ data, catalog, clock, events, paused, s
     loadKit()
       .then((k) => {
         if (!alive) return
-        imgs.current = { ...k, atlas_h: tintAtlas(k.atlas_red, colors.h), atlas_a: tintAtlas(k.atlas_red, colors.a) }
+        imgs.current = { ...k, atlas_h: tintAtlas(k.sprite_player, colors.h), atlas_a: tintAtlas(k.sprite_player, colors.a) }
         setReady(true)
       })
       .catch(() => alive && setFailed(true))
@@ -162,17 +182,30 @@ export default function MatchBroadcast({ data, catalog, clock, events, paused, s
     director.current?.setHalf(half)
   }, [minute])
 
-  // eventos reais → jogadas roteirizadas (lances antigos de uma partida retomada não são reencenados)
+  // eventos reais → jogadas roteirizadas. Lances anteriores à abertura da transmissão (partida retomada) não são reencenados.
+  const startClock = useRef(clock)
   useEffect(() => {
     const d = director.current
     if (!d) return
     for (const e of events) {
       if (seen.current.has(e.seq)) continue
       seen.current.add(e.seq)
-      if (clock - e.minute > 2.5) continue
+      if (e.minute < startClock.current - 0.5) continue
       d.enqueue(e)
     }
-  }, [events, clock])
+  }, [events])
+  // sem transmissão pronta (arte falhou) ou desmontada: o relógio não fica preso
+  const holdRef = useRef(onHold)
+  useEffect(() => {
+    holdRef.current = onHold
+  }, [onHold])
+  useEffect(() => {
+    if (failed) {
+      director.current?.releaseAll()
+      holdRef.current?.(null)
+    }
+    return () => holdRef.current?.(null)
+  }, [failed])
 
   // laço de desenho
   useEffect(() => {
@@ -183,7 +216,8 @@ export default function MatchBroadcast({ data, catalog, clock, events, paused, s
     let last = performance.now()
     let cam = { x: REF_W / 2 }
     let lastBanner = null
-    let lastPending = { h: 0, a: 0 }
+    let lastHold
+    let zoomBoost = 1
 
     const resize = () => {
       const r = wrap.current.getBoundingClientRect()
@@ -210,7 +244,9 @@ export default function MatchBroadcast({ data, catalog, clock, events, paused, s
       const cw = cv.width
       const ch = cv.height
       const fit = Math.max(cw / REF_W, ch / REF_H)
-      const zoom = cw / ch < 1.5 ? 1.55 : 1.22
+      const attack = st.script && ['attack', 'penalty'].includes(st.script.kind) && ['build', 'aim', 'flight', 'runup', 'celebrate'].includes(st.script.phase)
+      zoomBoost += ((attack ? 1.12 : 1) - zoomBoost) * Math.min(1, dtReal * 1.5)
+      const zoom = (cw / ch < 1.5 ? 1.55 : 1.22) * zoomBoost
       const s = fit * zoom
       const [bx] = project(st.ball.x, st.ball.y, 0)
       const halfView = cw / s / 2
@@ -255,8 +291,9 @@ export default function MatchBroadcast({ data, catalog, clock, events, paused, s
         g.drawImage(I.flag, px - 3, py - 15, 8, 16)
       }
 
-      drawGoalBack(g, 0)
-      drawGoalBack(g, 1)
+      const shake = st.netShake ? Math.sin(st.netShake.t * 28) * Math.max(0, 1 - st.netShake.t) * 0.6 : 0
+      drawGoalBack(g, 0, st.netShake?.side === 0 ? shake : 0)
+      drawGoalBack(g, 1, st.netShake?.side === 1 ? shake : 0)
 
       // atletas ordenados pela posição dos pés (fundo → frente)
       const list = [...st.players].sort((a, b) => a.y - b.y)
@@ -294,18 +331,10 @@ export default function MatchBroadcast({ data, catalog, clock, events, paused, s
           continue
         }
         const p = it.p
-        const atlasKey = p.gk ? 'atlas_gk' : p.side === 'h' ? 'atlas_h' : 'atlas_a'
-        const meta = p.gk ? KIT.atlases.atlas_gk : KIT.atlases.atlas_red
-        const sheet = p.gk ? I.atlas_gk : I[atlasKey]
-        const moving = Math.hypot(p.vx, p.vy) > 0.6
-        const face = moving ? dirName(p.vx, p.vy) : dirName(st.ball.x - p.x, st.ball.y - p.y)
-        let fname
-        if (p.gk) fname = p.pose || `pronto_${face}`
-        else if (p.kickT > 0) fname = `${face}_chute`
-        else if (moving) fname = `${face}_corrida_${Math.floor(p.runT * 3.2) % 2 ? 'a' : 'b'}`
-        else fname = `${face}_parado`
-        const fr = meta.frames[fname] || meta.frames[Object.keys(meta.frames)[0]]
-        const k = PLAYER_PX / (meta.visible_height * (p.gk ? 0.62 : 1))
+        const sheet = p.gk ? I.sprite_keeper : p.side === 'h' ? I.atlas_h : I.atlas_a
+        const fr = frameOf(p)
+        if (!fr) continue
+        const k = SPRITE_SCALE
         const [x, y] = project(p.x, p.y, 0)
         g.drawImage(sheet, fr[0], fr[1], fr[2], fr[3], x - fr[4] * k, y - fr[5] * k, fr[2] * k, fr[3] * k)
         if (p.id === owner) {
@@ -320,13 +349,11 @@ export default function MatchBroadcast({ data, catalog, clock, events, paused, s
         }
       }
 
-      // placar da transmissão acompanha o gol mostrado em campo (o resultado real já está no relato)
-      let ph = 0
-      let pa = 0
-      for (const sd of st.pendingGoals.values()) sd === 'h' ? (ph += 1) : (pa += 1)
-      if (ph !== lastPending.h || pa !== lastPending.a) {
-        lastPending = { h: ph, a: pa }
-        setPending(lastPending)
+      // o relógio da partida espera o lance em andamento (gol só aparece no placar quando a bola entra)
+      const hold = d.holdMinute()
+      if (hold !== lastHold) {
+        lastHold = hold
+        holdRef.current?.(hold)
       }
       // banner atual (fila no diretor)
       const top = st.banners[0] || null
@@ -362,8 +389,8 @@ export default function MatchBroadcast({ data, catalog, clock, events, paused, s
           <ClubCrest clubId={data.home} size={18} />
           <b>{home?.short || home?.name}</b>
         </span>
-        <b className="bc-goals h">{Math.max(0, score.h - pending.h)}</b>
-        <b className="bc-goals a">{Math.max(0, score.a - pending.a)}</b>
+        <b className="bc-goals h">{score.h}</b>
+        <b className="bc-goals a">{score.a}</b>
         <span className="bc-team a">
           <b>{away?.short || away?.name}</b>
           <ClubCrest clubId={data.away} size={18} />

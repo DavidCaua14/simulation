@@ -1,4 +1,5 @@
 import kitData from './assets/kitData.json'
+import sprites from './assets/sprites.json'
 
 // Arte do kit 2.5D (WebP gerados por scripts/build-kit-assets.py a partir dos PNGs originais).
 const urls = import.meta.glob('./assets/*.webp', { eager: true, query: '?url', import: 'default' })
@@ -6,6 +7,8 @@ const url = (file) => urls[`./assets/${file}`]
 
 export const KIT = kitData
 export const SCENE = kitData.scene
+// Animações dos atletas (scripts/build-sprite-atlases.py): parado e corrida em 8 direções, comemoração, goleiro.
+export const SPRITES = sprites
 
 // Projeção do manifesto: mundo em metros (x 0–105 no comprimento, y 0–68 na largura, z altura) → cena 1672×941.
 const P = SCENE.projection
@@ -29,10 +32,10 @@ let cache = null
 export function loadKit() {
   if (cache) return cache
   const names = Object.keys(kitData.images)
-  const atlases = Object.keys(kitData.atlases)
+  const atlases = Object.keys(sprites.atlases)
   cache = Promise.all([
     ...names.map((n) => loadImage(url(kitData.images[n].file)).then((img) => [n, img])),
-    ...atlases.map((n) => loadImage(url(kitData.atlases[n].file)).then((img) => [n, img])),
+    ...atlases.map((n) => loadImage(url(sprites.atlases[n].file)).then((img) => [`sprite_${n}`, img])),
   ]).then((pairs) => Object.fromEntries(pairs))
   cache.catch(() => {
     cache = null
