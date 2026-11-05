@@ -41,7 +41,8 @@ begin
   update public.cw_contracts set status='expired',ended_on=d-1 where career_id=cid and player_id=other and status='active';
   update public.mgr_players set club_id=null where career_id=cid and player_id=other;
   payroll:=public.cw_payroll(cid,'sport');needed:=public.cw_salary_demand(cid,other,'sport');
-  update public.cw_clubs set cash=2*payroll+8*needed-600,debt=0 where career_id=cid and club_id='sport';
+  -- Modelo CM: a verba cobre só taxa, luvas e bônus; o salário entra no teto salarial.
+  update public.cw_clubs set cash=2*needed-600,debt=0,wage_budget=payroll+100000 where career_id=cid and club_id='sport';
   terms:=jsonb_build_object('monthly_salary',needed,'contract_years',2,'signing_bonus',2*needed,'role','rotation');
   q:=public.career_funding_quote(other,null,terms);
   if(q->>'gap')::bigint<>600 or(q->>'coins_needed')::bigint<>500 then raise exception 'Direct free-agent quote differs from contract rule: %',q;end if;
@@ -52,14 +53,14 @@ begin
   if not exists(select 1 from public.cw_negotiations where id=(r->>'id')::uuid and status='player_pending') then raise exception 'Funded direct free-agent offer failed';end if;
   raise exception using errcode='P5601',message='rollback free-agent rehearsal';
  exception when sqlstate 'P5601' then null;end;
- -- Exact funding gap includes debt, current payroll reserve and six months of the salary increase.
+ -- Modelo CM: a falta é só luvas/bônus menos a verba livre (sem reserva de folha nem dívida).
  payroll:=public.cw_payroll(cid,'sport');
- update public.cw_clubs set cash=2*payroll+100,debt=50 where career_id=cid and club_id='sport';
+ update public.cw_clubs set cash=50,debt=0,wage_budget=payroll+100000 where career_id=cid and club_id='sport';
  r:=public.career_contract_renew(pid,gen_random_uuid());oid:=(r->>'id')::uuid;
  terms:=jsonb_build_object('monthly_salary',greatest(200,(r->>'salary_demand')::bigint),'contract_years',2,'signing_bonus',100,'role','rotation');
  q:=public.career_funding_quote(pid,oid,terms);
- needed:=100+6*greatest(0,public.cw_contract_cost(pid,(terms->>'monthly_salary')::bigint,0,0,'rotation')-80);
- if(q->>'gap')::bigint<>needed+50-100 or q->>'blocked_reason' is not null or not(q->>'can_invest')::boolean then raise exception 'Incorrect actionable funding plan: %',q;end if;
+ needed:=100;
+ if(q->>'gap')::bigint<>needed-50 or q->>'blocked_reason' is not null or not(q->>'can_invest')::boolean then raise exception 'Incorrect actionable funding plan: %',q;end if;
  gap:=(q->>'gap')::bigint;needed:=(q->>'coins_needed')::bigint;b:=q->'board';
  if needed+public.cw_board_bonus(b,needed)<gap or needed-1+public.cw_board_bonus(b,needed-1)>=gap then raise exception 'Suggested coin amount is not minimal';end if;
  req:=gen_random_uuid();q:=public.career_club_investment_preview(needed::int);

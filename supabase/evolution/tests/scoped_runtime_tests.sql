@@ -101,7 +101,7 @@ begin
  perform public.mgr_player_detail(pid,null);
  if not exists(select 1 from public.cw_contracts where career_id=cid and player_id=pid and status='active') then raise exception 'Foreign contract not materialized';end if;
  if(select count(*) from public.cw_seasons where career_id=cid)<>1 then raise exception 'Player detail activated foreign league';end if;
- update public.cw_clubs set cash=5000000 where career_id=cid and club_id='flamengo';
+ update public.cw_clubs set cash=5000000,wage_budget=100000000 where career_id=cid and club_id='flamengo';
  r:=public.career_transfer_bid(pid,1000000,1,0,false,gen_random_uuid());nid:=(r->>'id')::uuid;
  update public.cw_negotiations set decision_roll=.5 where id=nid;
  update public.cw_world set today=today+2 where career_id=cid;perform public.cw_market_tick(cid);

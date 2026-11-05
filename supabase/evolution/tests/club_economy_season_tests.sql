@@ -37,8 +37,13 @@ begin
    -coalesce(sum(amount)filter(where kind in('wages','coach_salary')),0),coalesce(sum(amount)filter(where kind='commercial'),0),
    -coalesce(sum(amount)filter(where kind in('operations','matchday_operations')),0)
    into gate_total,prize_total,wages_total,commercial_total,ops_total from public.cw_finance where career_id=cid and club_id=own;
-  if gate_total<=0 or prize_total<=0 or wages_total<=0 or commercial_total<=0 then raise exception 'Annual rehearsal did not exercise income and payroll';end if;
-  if final_cash<>initial_cash+gate_total+prize_total+commercial_total-wages_total-ops_total then raise exception 'Unexplained club cash movement in annual rehearsal';end if;
+  -- Modelo CM (evolução 62): bilheteria, prêmios e orçamento da diretoria entram na verba; salários não saem dela.
+  if gate_total<=0 or prize_total<=0 then raise exception 'Annual rehearsal did not exercise match income';end if;
+  if wages_total<>0 or commercial_total<>0 then raise exception 'Wages or monthly commercial entries still move the transfer funds';end if;
+  if not exists(select 1 from public.cw_finance where career_id=cid and club_id=own and kind='board_budget') then raise exception 'Board season budget missing';end if;
+  if (select wage_budget from public.cw_clubs where career_id=cid and club_id=own)<public.cw_payroll(cid,own) then raise exception 'Wage budget below payroll';end if;
+  if final_cash<>initial_cash+gate_total+prize_total-ops_total+coalesce((select sum(amount) from public.cw_finance where career_id=cid and club_id=own and kind='board_budget'),0)
+   then raise exception 'Unexplained club cash movement in annual rehearsal';end if;
   if(select coins from public.careers where id=cid)<>start_coins+coalesce((select sum(delta) from public.wallet_ledger where career_id=cid and reason='coach_salary' and currency='coins'),0) then raise exception 'Match income or denomination inflated the personal wallet';end if;
   raise notice 'PASS annual %: initial %, final %, minimum %, gate %, result prizes %, payroll %, commercial %, operations % (all R$)',own,
    initial_cash*1000,final_cash*1000,cash_floor*1000,gate_total*1000,prize_total*1000,wages_total*1000,commercial_total*1000,ops_total*1000;

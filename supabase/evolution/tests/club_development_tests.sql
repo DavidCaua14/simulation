@@ -87,7 +87,9 @@ begin
  if lvl<5 and not (r->>'approved')::boolean then raise exception 'Contratação recusada: %',r;end if;
  cash0:=(select cash from public.cw_clubs where career_id=cid and club_id='sport');
  perform public.cw_dev_month(cid,'2026-09-01');
- if lvl<5 and not exists(select 1 from public.cw_finance where career_id=cid and club_id='sport' and kind='staff' and reference='2026-09') then raise exception 'Salário da comissão não cobrado';end if;
+ if lvl<5 and (select sum(monthly_salary) from public.cw_staff where career_id=cid and club_id='sport')<=0 then raise exception 'Salário da comissão não registrado';end if;
+ -- Modelo CM: o salário entra na folha (teto salarial) e não sai da verba.
+ if lvl<5 and exists(select 1 from public.cw_finance where career_id=cid and club_id='sport' and kind='staff' and reference='2026-09') then raise exception 'Salário da comissão descontado da verba';end if;
  raise notice 'PASS comissão técnica';
 
  -- 6) Observação: atleta de outro clube aparece aproximado até o relatório ficar pronto.

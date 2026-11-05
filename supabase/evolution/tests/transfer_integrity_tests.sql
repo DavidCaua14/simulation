@@ -118,7 +118,7 @@ begin
   exception when raise_exception then if sqlerrm not like 'Atleta livre exige%' then raise;end if;end;
   update public.cw_clubs set cash=100 where career_id=cid and club_id='sport';
   begin perform public.career_player_offer(oid,wage,3,2*wage,'rotation',0,0,gen_random_uuid());raise exception 'Expected financial rejection';
-  exception when raise_exception then if sqlerrm not like 'Orçamento livre insuficiente%' then raise;end if;end;
+  exception when raise_exception then if sqlerrm not like 'Orçamento livre insuficiente%' and sqlerrm not like 'Verba de transferências insuficiente%' then raise;end if;end;
   update public.cw_clubs set cash=20000000 where career_id=cid and club_id='sport';
   for i in 1..5 loop insert into public.cw_transfer_registrations values(cid,gen_random_uuid(),pid,'sport',d);end loop;
   update public.cw_negotiations set monthly_salary=wage,signing_bonus=2*wage,contract_years=3,status='agreed',register_on=d where id=oid;

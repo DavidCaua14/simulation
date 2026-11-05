@@ -85,9 +85,9 @@ export function FundingAdvice({ playerId, negotiationId = null, terms, onInveste
         <p><b>{q.gap > 0 ? `Faltam ${money(q.gap)} para sustentar estas condições.` : 'Estas condições cabem no orçamento atual.'}</b></p>
         <details><summary>Como calculamos</summary><dl className="ci-values">
           <div><dt>Taxa, luvas e bônus de transferência</dt><dd>{money(q.fee + q.signing_bonus + q.performance_bonus)}</dd></div>
-          <div><dt>Reserva do acréscimo da folha</dt><dd>{money(q.salary_reserve)}</dd></div>
-          <div><dt>Reserva da folha atual</dt><dd>{money(q.current_payroll_reserve)}</dd></div>
-          <div><dt>Outros compromissos e dívidas</dt><dd>{money(q.reserved_other + q.debt)}</dd></div>
+          {q.wage_budget == null ? <div><dt>Reserva do acréscimo da folha</dt><dd>{money(q.salary_reserve)}</dd></div> : <div><dt>Folga no teto salarial</dt><dd>{money(q.wage_room)}</dd></div>}
+          {q.wage_budget == null && <div><dt>Reserva da folha atual</dt><dd>{money(q.current_payroll_reserve)}</dd></div>}
+          <div><dt>{q.wage_budget == null ? 'Outros compromissos e dívidas' : 'Reservado em outras negociações'}</dt><dd>{money(q.reserved_other + q.debt)}</dd></div>
           <div><dt>Caixa atual</dt><dd>{money(q.club_cash)}</dd></div>
         </dl></details>
         <p className="sn-hint">Estimativa para as condições exibidas. Salário, luvas e projeto esportivo continuam sujeitos à avaliação do atleta.</p>
