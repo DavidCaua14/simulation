@@ -170,6 +170,8 @@ export default function TransfersPanel({ hub, onRefresh, notify, onTeam, initial
   )
 
   const openDeals = deals.filter((n) => !CLOSED.has(n.status))
+  // Só conta o que depende de você: contraproposta do clube, contrato a negociar, aceite a confirmar ou proposta pelo seu atleta.
+  const pending = openDeals.filter((n) => (n.seller_club === own ? n.status === 'seller_review' : ['club_counter', 'player_counter', 'player_accepted'].includes(n.status))).length
   const doneDeals = deals.filter((n) => CLOSED.has(n.status))
 
   return (
@@ -195,7 +197,7 @@ export default function TransfersPanel({ hub, onRefresh, notify, onTeam, initial
         {AREAS.map(([id, label]) => (
           <button key={id} type="button" role="tab" aria-selected={area === id} className={area === id ? 'is-on' : ''} onClick={() => setArea(id)}>
             {label}
-            {id === 'deals' && openDeals.length > 0 && <em>{openDeals.length}</em>}
+            {id === 'deals' && pending > 0 && <em>{pending}</em>}
           </button>
         ))}
       </div>

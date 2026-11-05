@@ -59,10 +59,17 @@
 .pp-actions .gx-btn-ghost { min-height: 44px; justify-content: center; text-transform: uppercase; font-size: 0.72rem; }
 .tr-sub { display: none; font-size: 0.64rem; color: var(--gx-ink-2); max-width: 130px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .tr-table th, .tr-table td { padding: 7px 4px; }
-@media (max-width: 560px) {
-  .tr-col-club { display: none; }
-  .tr-sub { display: block; }
-}
+/* A tela tem sempre a largura de celular (também no desktop): o clube vai embaixo do nome. */
+.tr-col-club { display: none; }
+.tr-sub { display: block; }
+.tr-table { width: 100%; table-layout: fixed; }
+.tr-table th:first-child, .tr-table td:first-child { width: auto; }
+.tr-table th:nth-child(3), .tr-table td:nth-child(3) { width: 40px; }
+.tr-table th:nth-child(4), .tr-table td:nth-child(4) { width: 44px; }
+.tr-table th:nth-child(5), .tr-table td:nth-child(5) { width: 40px; }
+.tr-table th:nth-child(6), .tr-table td:nth-child(6) { width: 82px; }
+.tr-table td.left { overflow: hidden; }
+.tr-name, .tr-sub { max-width: 100%; }
 
 /* Elenco em tabela (CM17: Gestão do time — Elenco) */
 .sqt { display: flex; flex-direction: column; gap: 8px; }
