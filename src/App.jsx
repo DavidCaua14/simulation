@@ -25,6 +25,7 @@ import { isMaintenanceAdmin as isOwner } from './features/maintenance/policy'
 import { claimReleaseGift, markReleaseSeen } from './features/update/updateApi'
 import './styles/theme.css'
 import './styles/desktop.css' // por último: tema de jogo, sem barras de rolagem e layout de computador
+import './styles/cm-skin.css' // pele CM (Championship Manager 17) para todas as telas
 
 function Gate() {
   const { status, user } = useAuth()

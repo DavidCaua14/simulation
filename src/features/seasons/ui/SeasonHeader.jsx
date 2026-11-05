@@ -1,10 +1,11 @@
 import GameIcon from '../../../components/ui/GameIcon'
 import { ChevronLeft } from 'lucide-react'
+import ClubCrest from '../../club/components/ClubCrest'
 import { FREE_ENERGY, XP_PER_LEVEL, fmt, formatRemaining, seasonLabel } from '../utils/seasonUtils'
 
 // Cabeçalho padrão dos modos de jogo (Temporadas, Palpites): voltar discreto, título esportivo e recursos (energia/moedas).
 // A borda de baixo é a barra de XP do nível atual. Sem botão de tema (fica no Perfil).
-export default function SeasonHeader({ title, career, season, remaining, onBack, backLabel = 'Voltar ao menu', kicker }) {
+export default function SeasonHeader({ title, career, season, remaining, onBack, backLabel = 'Voltar ao menu', kicker, clubId = null }) {
   const xpPct = career ? Math.max(0, Math.min(100, (career.xp / XP_PER_LEVEL) * 100)) : 0
   const energy = career && career.energy != null ? career.energy + (career.bonus_energy ?? 0) : null
   const recharging = career && career.energy < FREE_ENERGY && remaining != null
@@ -17,6 +18,11 @@ export default function SeasonHeader({ title, career, season, remaining, onBack,
         </button>
       )}
 
+      {clubId && (
+        <span className="sh-crest" aria-hidden="true">
+          <ClubCrest clubId={clubId} size={34} />
+        </span>
+      )}
       <div className="sh-title">
         <small>
           {kicker ?? (season ? `Temporada ${seasonLabel(season.year, season.region)}` : 'Carreira')}

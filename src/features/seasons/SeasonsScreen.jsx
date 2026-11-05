@@ -283,6 +283,7 @@ export default function SeasonsScreen({ career: account, onBack }) {
       header={
         <SeasonHeader
           title={live ? 'Ao vivo' : TITLES[tab]}
+          clubId={hub?.coach?.status === 'employed' ? hub.coach.club_id : null}
           career={hub?.career}
           season={hub?.season}
           remaining={remaining}

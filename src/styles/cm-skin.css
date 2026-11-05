@@ -1,0 +1,318 @@
+/* =====================================================================
+   PELE "CM" (referência: Championship Manager 17) — carregada por último, vale para TODAS as telas.
+   Painéis azul-marinho com borda prata, botões azuis em gradiente, ação principal verde-limão,
+   títulos amarelos em caixa alta, menu inferior em blocos e fundo de estádio.
+   As telas continuam com a mesma estrutura: só os tokens e os componentes comuns mudam aqui.
+   ===================================================================== */
+
+:root {
+  --cm-yellow: #ffd23f;
+  --cm-yellow-2: #ffbf1a;
+  --cm-navy: #0a1a38;
+  --cm-navy-2: #12285a;
+  --cm-silver: rgba(170, 190, 225, 0.45);
+  --cm-silver-hi: rgba(215, 228, 250, 0.7);
+  --cm-blue: linear-gradient(180deg, #3d7bea 0%, #1f4fbf 55%, #163a94 100%);
+  --cm-blue-hover: linear-gradient(180deg, #4a88f2 0%, #275bd0 55%, #1b44a6 100%);
+  --cm-green: linear-gradient(180deg, #c8f54a 0%, #8ad61f 50%, #5aa80f 100%);
+  --cm-green-ink: #0b1d05;
+  --cm-panel: linear-gradient(180deg, rgba(20, 40, 82, 0.94) 0%, rgba(9, 21, 46, 0.95) 100%);
+  --cm-shadow: 0 6px 18px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+/* O jogo usa a pele CM no tema escuro (padrão). */
+[data-theme='dark'] {
+  --bg: #071430;
+  --bg-glow: transparent;
+  --surface: rgba(16, 33, 70, 0.94);
+  --surface-alt: rgba(22, 44, 90, 0.92);
+  --surface-strong: rgba(30, 58, 115, 0.95);
+  --border: rgba(170, 190, 225, 0.38);
+  --text-primary: #f2f6ff;
+  --text-secondary: #b6c4e2;
+  --primary: #7cc91b;
+  --primary-hover: #8fdb27;
+  --primary-contrast: #0b1d05;
+  --ring: #c8f54a;
+  --gold: var(--cm-yellow);
+  --header-bg: linear-gradient(180deg, #16305f 0%, #0a1a38 100%);
+  --header-line: rgba(255, 255, 255, 0.1);
+  --gx-panel: rgba(13, 29, 62, 0.93);
+  --gx-panel-2: rgba(22, 44, 90, 0.92);
+  --gx-line: rgba(170, 190, 225, 0.36);
+  --gx-ink: #f2f6ff;
+  --gx-ink-2: #b6c4e2;
+  --gx-gold: var(--cm-yellow);
+  --gx-gold-hi: #ffe27a;
+  --gx-green: #8ad61f;
+  --gx-shadow: var(--cm-shadow);
+  --gx-radius: 10px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+}
+
+/* ---------- fundo de estádio atrás de todas as telas ---------- */
+[data-theme='dark'] .app-viewport,
+[data-theme='dark'] .app-frame {
+  background: #071430;
+}
+[data-theme='dark'] .app-content {
+  background:
+    linear-gradient(180deg, rgba(6, 16, 38, 0.55) 0%, rgba(6, 16, 38, 0.72) 45%, rgba(4, 22, 12, 0.78) 100%),
+    url('../features/match25d/assets/stadium.webp') center 20% / cover no-repeat,
+    linear-gradient(180deg, #1a3770 0%, #0b1b3c 55%, #0f3a1c 100%);
+}
+[data-theme='dark'] .app-content::after {
+  /* gramado listrado no pé da tela */
+  content: '';
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 34%;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.035) 0 46px, transparent 46px 92px),
+    linear-gradient(180deg, transparent 0%, rgba(30, 110, 40, 0.28) 60%, rgba(30, 110, 40, 0.4) 100%);
+}
+[data-theme='dark'] .app-content > * {
+  position: relative;
+  z-index: 1;
+}
+/* telas que pintavam o próprio fundo sólido passam a mostrar o estádio */
+[data-theme='dark'] .sn-screen,
+[data-theme='dark'] .hm-shell,
+[data-theme='dark'] .gi,
+[data-theme='dark'] .rk,
+[data-theme='dark'] .co,
+[data-theme='dark'] .cc-screen {
+  background: transparent;
+}
+/* barras fixas continuam sólidas (não deixam o conteúdo vazar por trás) */
+[data-theme='dark'] .tt-actions,
+[data-theme='dark'] .pk-bar {
+  background: linear-gradient(180deg, rgba(10, 26, 56, 0.97), rgba(7, 18, 40, 0.98));
+}
+
+/* ---------- títulos ---------- */
+[data-theme='dark'] .gx-title {
+  color: var(--cm-yellow);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.55);
+}
+[data-theme='dark'] .gx-title::before {
+  display: none;
+}
+
+/* ---------- painéis ---------- */
+[data-theme='dark'] .gx-panel,
+[data-theme='dark'] .card,
+[data-theme='dark'] .cd-card,
+[data-theme='dark'] .cw-card,
+[data-theme='dark'] .cd-fac,
+[data-theme='dark'] .cd-staff,
+[data-theme='dark'] .cd-hero,
+[data-theme='dark'] .cd-rep {
+  background: var(--cm-panel);
+  border: 1px solid var(--cm-silver);
+  box-shadow: var(--cm-shadow);
+  border-radius: 10px;
+}
+
+/* ---------- botões ---------- */
+[data-theme='dark'] .gx-btn:not(:disabled),
+[data-theme='dark'] .gx-btn:not(:disabled):not(.is-advance),
+[data-theme='dark'] .btn-primary:not(:disabled),
+[data-theme='dark'] .cd-btn:not(.ghost):not(:disabled) {
+  background: var(--cm-green);
+  color: var(--cm-green-ink);
+  text-shadow: none;
+  border: 1px solid #b7ef4a;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35), 0 6px 16px rgba(120, 200, 30, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.55);
+  border-radius: 10px;
+}
+[data-theme='dark'] .gx-btn-ghost,
+[data-theme='dark'] .cd-btn.ghost,
+[data-theme='dark'] .icon-btn {
+  background: var(--cm-blue);
+  color: #fff;
+  border: 1px solid var(--cm-silver-hi);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  border-radius: 10px;
+  font-weight: 800;
+}
+[data-theme='dark'] .gx-btn-ghost:hover:not(:disabled) {
+  background: var(--cm-blue-hover);
+}
+[data-theme='dark'] .gx-btn:disabled,
+[data-theme='dark'] .gx-btn-ghost:disabled {
+  background: rgba(40, 60, 100, 0.6);
+  color: #9fb0d2;
+  box-shadow: inset 0 0 0 1px rgba(170, 190, 225, 0.25);
+}
+
+/* ---------- abas (segmentos) ---------- */
+[data-theme='dark'] .sn-seg,
+[data-theme='dark'] .cd-tabs {
+  background: transparent;
+  border: 0;
+  padding: 0;
+  gap: 6px;
+  box-shadow: none;
+}
+[data-theme='dark'] .sn-seg button,
+[data-theme='dark'] .cd-tabs button,
+[data-theme='dark'] .cd-seg button,
+[data-theme='dark'] .cd-diff button,
+[data-theme='dark'] .sn-chips button,
+[data-theme='dark'] .ib-cats button,
+[data-theme='dark'] .tt-forms button,
+[data-theme='dark'] .tp-opts button {
+  background: var(--cm-blue);
+  color: #fff;
+  border: 1px solid var(--cm-silver-hi);
+  border-radius: 8px;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.22);
+  font-weight: 800;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+[data-theme='dark'] .sn-seg button.is-on,
+[data-theme='dark'] .cd-tabs button.is-on,
+[data-theme='dark'] .cd-seg button.is-on,
+[data-theme='dark'] .cd-diff button.is-on,
+[data-theme='dark'] .sn-chips button.is-on,
+[data-theme='dark'] .tt-forms button.is-on,
+[data-theme='dark'] .tp-opts button.is-on {
+  background: var(--cm-green);
+  color: var(--cm-green-ink);
+  border-color: #c8f54a;
+  text-shadow: none;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35), 0 0 12px rgba(150, 220, 40, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.55);
+}
+[data-theme='dark'] .cd-chips button {
+  background: var(--cm-panel);
+  border: 1px solid var(--cm-silver);
+}
+[data-theme='dark'] .cd-chips button.is-on {
+  border-color: #c8f54a;
+  box-shadow: 0 0 0 1px #c8f54a, 0 0 14px rgba(150, 220, 40, 0.3);
+}
+
+/* ---------- menu inferior em blocos ---------- */
+[data-theme='dark'] .sn-nav,
+[data-theme='dark'] .tab-bar {
+  gap: 4px;
+  padding: 6px 6px calc(6px + env(safe-area-inset-bottom));
+  background: linear-gradient(180deg, #0e2148 0%, #071430 100%);
+  border-top: 2px solid var(--cm-silver);
+  box-shadow: 0 -8px 20px rgba(0, 0, 0, 0.45);
+}
+[data-theme='dark'] .sn-nav button,
+[data-theme='dark'] .tab-item {
+  border-radius: 8px;
+  border: 1px solid rgba(170, 190, 225, 0.35);
+  background: linear-gradient(180deg, #1b3768 0%, #0f2148 100%);
+  color: #e6eeff;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  min-height: 56px;
+}
+[data-theme='dark'] .sn-nav button small,
+[data-theme='dark'] .tab-item span {
+  font-weight: 800;
+  color: inherit;
+}
+[data-theme='dark'] .sn-nav button.is-on,
+[data-theme='dark'] .tab-item.is-active {
+  background: var(--cm-green);
+  color: var(--cm-green-ink);
+  border-color: #c8f54a;
+  box-shadow: 0 0 12px rgba(150, 220, 40, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.55);
+}
+[data-theme='dark'] .sn-nav button.is-on .sn-nav-icon {
+  background: transparent;
+  box-shadow: none;
+  color: var(--cm-green-ink);
+}
+[data-theme='dark'] .tab-item.is-active::before {
+  display: none;
+}
+
+/* ---------- cabeçalhos (HUD) ---------- */
+[data-theme='dark'] .sh,
+[data-theme='dark'] .hud,
+[data-theme='dark'] .app-topbar {
+  background: linear-gradient(180deg, #1a3470 0%, #0c1d42 100%);
+  border-bottom: 2px solid var(--cm-silver);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+[data-theme='dark'] .sh-title h1,
+[data-theme='dark'] .app-topbar-title {
+  text-transform: uppercase;
+  color: #fff;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.55);
+}
+[data-theme='dark'] .sh-pill {
+  background: rgba(5, 14, 32, 0.75);
+  border: 1px solid var(--cm-silver);
+  border-radius: 8px;
+}
+
+/* ---------- tabelas: cabeçalho amarelo ---------- */
+[data-theme='dark'] .sn-table thead th {
+  background: linear-gradient(180deg, var(--cm-yellow) 0%, var(--cm-yellow-2) 100%);
+  color: #1a1400;
+  font-weight: 800;
+  text-transform: none;
+}
+[data-theme='dark'] .sn-table-wrap {
+  border: 1px solid var(--cm-silver);
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--cm-panel);
+}
+[data-theme='dark'] .sn-table tr.is-mine td {
+  background: rgba(150, 220, 40, 0.85);
+  color: var(--cm-green-ink);
+  font-weight: 800;
+}
+
+/* ---------- campos ---------- */
+[data-theme='dark'] .input,
+[data-theme='dark'] select,
+[data-theme='dark'] input[type='search'],
+[data-theme='dark'] input[type='text'],
+[data-theme='dark'] input[type='number'] {
+  background: rgba(5, 14, 32, 0.8);
+  border: 1px solid var(--cm-silver);
+  color: #f2f6ff;
+  border-radius: 8px;
+}
+
+/* ---------- toasts e etiquetas ---------- */
+[data-theme='dark'] .sn-toast {
+  background: linear-gradient(180deg, #16305f, #0a1a38);
+  border: 1px solid var(--cm-silver-hi);
+}
+[data-theme='dark'] .gx-tag {
+  border: 1px solid var(--cm-silver);
+}
+
+/* escudo do clube no cabeçalho do modo Carreira */
+.sh-crest {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.5));
+}
+
+/* cartões grandes com cantos retos de painel (como no CM) */
+[data-theme='dark'] .nm,
+[data-theme='dark'] .hm-hero,
+[data-theme='dark'] .hm-mode,
+[data-theme='dark'] .hm-store,
+[data-theme='dark'] .uh,
+[data-theme='dark'] .sn-attention,
+[data-theme='dark'] .sn-offerbar {
+  border-radius: 12px;
+  border: 1px solid var(--cm-silver);
+}
