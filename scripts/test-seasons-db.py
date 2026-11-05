@@ -130,7 +130,7 @@ try:
         if args.world_cycle: subprocess.run([sys.executable,str(ROOT/'tests/career_world_season_cycle.py'),CONTAINER,DATABASE],check=True,env=ENV)
     if args.scoped_runtime:
         run_file('supabase/evolution/tests/support/scoped_preservation_snapshot.sql')
-        scoped = [p for p in sorted((ROOT/'supabase/evolution').glob('*.sql')) if p.name[:2].isdigit() and 45 <= int(p.name.split("_")[0]) <= 60]
+        scoped = [p for p in sorted((ROOT/'supabase/evolution').glob('*.sql')) if p.name[:2].isdigit() and 45 <= int(p.name.split("_")[0]) <= 61]
         for path in scoped: run_file(path)
         run_file('supabase/evolution/tests/scoped_preservation_tests.sql')
         for path in scoped: run_file(path)
