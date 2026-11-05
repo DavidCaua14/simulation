@@ -13,10 +13,9 @@ import './AppShell.css'
  * O tema claro/escuro não fica mais no topo das telas: a escolha está no Perfil → Conta
  * (e no menu do avatar na Home).
  */
-export default function AppShell({ header, left, center, right, title, children, wide = false }) {
-  // wide: no computador, a tela usa a largura toda (menu lateral + painéis), como um jogo de gestão em paisagem.
+export default function AppShell({ header, left, center, right, title, children }) {
   return (
-    <div className={`app-viewport ${wide ? 'is-wide' : ''}`}>
+    <div className="app-viewport">
       <div className="app-frame">
         {header ?? (
           <header className="app-topbar">

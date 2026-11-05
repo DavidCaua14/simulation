@@ -69,7 +69,7 @@ export default function HomeTab({ ctx, actions }) {
   else hero = <EmptyState icon={CalendarDays} title="Nenhum jogo pendente agora" text="Acompanhe os campeonatos na aba Torneios." />
 
   return (
-    <div className="sn-page is-dash">
+    <div className="sn-page">
       {hub.attention && (
         <section className="sn-attention" role="status">
           <h2>Uma decisão precisa da sua atenção</h2>

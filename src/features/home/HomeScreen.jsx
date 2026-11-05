@@ -44,7 +44,7 @@ export default function HomeScreen({ career, onNavigate }) {
   const store = modeById('store')
 
   return (
-    <AppShell wide header={<PlayerHeader player={player} wallet={wallet} avatarSrc={prefs.avatarUrl || photo?.src} />}>
+    <AppShell header={<PlayerHeader player={player} wallet={wallet} avatarSrc={prefs.avatarUrl || photo?.src} />}>
       <div className="hm-shell">
         <div className="hm-scroll">
           <MatchdayHero club={club} player={player} onPlay={() => !seasons?.locked && onNavigate?.('seasons')} />

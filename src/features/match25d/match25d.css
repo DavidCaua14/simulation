@@ -11,7 +11,7 @@
 .bc.is-compact {
   aspect-ratio: 16 / 10;
 }
-@media (max-width: 520px) {
+@container (max-width: 520px) {
   .bc {
     aspect-ratio: 4 / 3;
   }

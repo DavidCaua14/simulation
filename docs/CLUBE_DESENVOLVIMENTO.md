@@ -27,7 +27,7 @@ Decisões do treinador (respostas 1A–29A). O APK de referência serviu só par
 
 - **Transmissão 2.5D:** campo, estádio e atletas do kit, com a projeção do manifesto. As camisas são recoloridas com as cores do clube. Os lances reais do motor viram jogadas encenadas, com avisos em fila: gol, cartões, impedimento, lesão e substituição. O placar da transmissão só muda quando o gol aparece em campo. A pausa e as velocidades existentes continuam valendo, e o botão de TV desliga a transmissão.
 - **Celular:** cara de jogo, sem barra de rolagem e no modo escuro, com a transmissão no topo da partida.
-- **Computador (≥ 1024 px):** menu lateral no estilo de jogo de gestão e painéis em grade. Na partida, a transmissão fica à esquerda e lances, estatísticas e times à direita.
+- **Computador:** mesmo layout do celular, numa coluna de jogo centralizada sobre o fundo do estádio, e que se ajusta ao tamanho da janela.
 - **Time › Clube:** treino, estrutura, comissão, base, empréstimos e olheiros, com a arte do kit de instalações.
 - **Avisos (28A):** a escalação e o pré-jogo mostram titulares cansados, indisponíveis ou fora de posição.
 - **Assistente (29A):** acompanha a primeira visita ao modo, é opcional e tem botão para pular.

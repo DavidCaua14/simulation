@@ -258,7 +258,6 @@ export default function SeasonsScreen({ career: account, onBack }) {
 
   return (
     <AppShell
-      wide
       header={
         <SeasonHeader
           title={live ? 'Ao vivo' : TITLES[tab]}

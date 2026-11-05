@@ -2,8 +2,7 @@
    CAMADA FINAL DO VISUAL (carregada por último)
    1) Sem barras de rolagem em nenhuma tela: o conteúdo continua rolando por toque, roda e teclado.
    2) Tema escuro de "transmissão": azul-marinho, prata e ciano (mesma paleta dos kits 2.5D e de gestão).
-   3) Computador (≥ 1024 px): telas marcadas como `wide` viram painel de jogo de gestão em paisagem —
-      menu lateral fixo, cabeçalho e painéis em grade. Demais telas ficam centralizadas sobre o "estádio".
+   3) Computador: mesmo layout do celular, centralizado sobre o fundo do "estádio".
    ===================================================================== */
 
 * {
@@ -144,176 +143,17 @@
   }
 }
 
-/* ===================================================================== COMPUTADOR */
-@media (min-width: 1024px) {
+/* ===================================================================== COMPUTADOR
+   Mesmo layout do celular (coluna de jogo centralizada); só o fundo ao redor ganha o brilho do estádio. */
+@media (min-width: 768px) {
   .app-viewport {
     background:
       radial-gradient(ellipse 70% 50% at 50% -5%, rgba(34, 211, 238, 0.12), transparent 70%),
       radial-gradient(ellipse 60% 60% at 100% 100%, rgba(30, 64, 175, 0.18), transparent 70%),
       var(--bg);
   }
-  /* telas que ainda são de coluna única: centralizadas, mais largas que um celular */
   .app-frame {
-    max-width: 560px;
     box-shadow: 0 0 0 1px rgba(148, 186, 255, 0.1), 0 30px 90px rgba(0, 0, 0, 0.55);
-  }
-  .app-viewport.is-wide .app-frame {
-    max-width: 1480px;
-    border-left: 0;
-    border-right: 0;
-    box-shadow: none;
-  }
-
-  /* menu lateral (Home e modo Carreira) */
-  .is-wide .tab-bar,
-  .is-wide .sn-nav {
-    grid-column: 1;
-    grid-row: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    gap: 4px;
-    padding: 18px 12px;
-    border-top: 0;
-    border-right: 1px solid rgba(148, 186, 255, 0.14);
-    background: linear-gradient(180deg, #0c172d 0%, #060c19 100%);
-    box-shadow: inset -12px 0 24px rgba(0, 0, 0, 0.25);
-    overflow-y: auto;
-  }
-  .is-wide .tab-item,
-  .is-wide .sn-nav button {
-    flex-direction: row;
-    justify-content: flex-start;
-    gap: 12px;
-    min-height: 46px;
-    padding: 8px 12px;
-    border-radius: 10px;
-    font-size: 0.86rem;
-  }
-  .is-wide .sn-nav button small {
-    font-size: 0.88rem;
-    letter-spacing: 0.3px;
-  }
-  .is-wide .tab-item svg {
-    width: 20px;
-    height: 20px;
-  }
-  .is-wide .tab-item.is-active,
-  .is-wide .sn-nav button.is-on {
-    background: linear-gradient(90deg, rgba(34, 211, 238, 0.18), rgba(34, 211, 238, 0.02));
-    box-shadow: inset 3px 0 0 #22d3ee;
-    color: #e0faff;
-  }
-  .is-wide .tab-item.is-active::before {
-    display: none;
-  }
-  .is-wide .sn-nav-icon {
-    width: 32px;
-    height: 32px;
-  }
-  .is-wide .sn-nav button:hover,
-  .is-wide .tab-item:hover {
-    background: rgba(148, 186, 255, 0.06);
-  }
-
-  /* ---------- Home: painel de jogo ---------- */
-  .is-wide .hm-shell {
-    display: grid;
-    grid-template-columns: 228px minmax(0, 1fr);
-    grid-template-rows: minmax(0, 1fr);
-  }
-  .is-wide .hm-scroll {
-    grid-column: 2;
-    grid-row: 1;
-    display: grid;
-    grid-template-columns: repeat(12, minmax(0, 1fr));
-    align-content: start;
-    gap: 18px;
-    padding: 24px 32px 32px;
-    max-width: 1240px;
-    width: 100%;
-    margin: 0 auto;
-  }
-  .is-wide .hm-scroll > :nth-child(1) {
-    grid-column: 1 / span 7;
-    grid-row: 1 / span 2;
-  }
-  .is-wide .hm-scroll > :nth-child(2) {
-    grid-column: 8 / -1;
-    align-self: start;
-  }
-  .is-wide .hm-scroll > :nth-child(3) {
-    grid-column: 8 / -1;
-  }
-  .is-wide .hm-scroll > :nth-child(4),
-  .is-wide .hm-scroll > :nth-child(5) {
-    grid-column: span 6;
-  }
-  .is-wide .hm-scroll > :nth-child(n + 6) {
-    grid-column: 1 / -1;
-  }
-  .is-wide .hm-quick-grid {
-    grid-template-columns: repeat(8, 1fr);
-  }
-
-  /* ---------- Modo Carreira ---------- */
-  .is-wide .sn-screen {
-    display: grid;
-    grid-template-columns: 228px minmax(0, 1fr);
-    grid-template-rows: minmax(0, 1fr);
-  }
-  .is-wide .sn-scroll {
-    grid-column: 2;
-    grid-row: 1;
-    padding: 22px 32px 32px;
-  }
-  .is-wide .sn-scroll > * {
-    max-width: 1240px;
-    margin-left: auto;
-    margin-right: auto;
-  }
-  /* páginas feitas de seções empilhadas viram duas colunas de painéis */
-  .is-wide .sn-scroll > .sn-page.is-dash {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    align-items: start;
-    gap: 18px 22px;
-  }
-  .is-wide .sn-scroll > .sn-page.is-dash > * {
-    min-width: 0;
-  }
-  .is-wide .sn-scroll > .sn-page.is-dash > :first-child {
-    grid-column: 1 / -1;
-  }
-  .is-wide .ca {
-    left: auto;
-    right: 28px;
-    bottom: 28px;
-    width: 420px;
-  }
-  .is-wide .sn-toast {
-    left: calc(228px + 50%);
-  }
-}
-
-@media (min-width: 1440px) {
-  .is-wide .hm-shell,
-  .is-wide .sn-screen {
-    grid-template-columns: 252px minmax(0, 1fr);
-  }
-}
-
-@media (min-width: 1024px) {
-  /* Time: o campo não precisa ocupar a largura toda */
-  .is-wide .sn-scroll .pt:not(.is-compact) {
-    max-width: 620px;
-    margin-left: auto;
-    margin-right: auto;
-  }
-  .is-wide .sn-scroll .tt-lines {
-    max-width: 620px;
-    margin-left: auto;
-    margin-right: auto;
   }
 }
 
