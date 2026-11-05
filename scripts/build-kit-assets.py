@@ -23,7 +23,7 @@ def save(src, dst, width=None, scale=None, q=82):
     im.save(dst, 'WEBP', quality=q, method=6)
     return im.size
 
-data = {'scene': man['scene'], 'scoreboard': man['scoreboard'], 'images': {}, 'atlases': {}}
+data = {'scene': man['scene'], 'scoreboard': man['scoreboard'], 'images': {}}
 for name, rel, width in [('stadium', 'cenario/estadio.png', 1672), ('grass', 'cenario/gramado.png', 1100), ('ball', 'cenario/bola.png', 48),
                          ('scoreboard', 'interface/placar_base.png', 1086), ('goal', 'interface/gol.png', 900), ('yellow', 'interface/cartao_amarelo.png', 280),
                          ('red', 'interface/cartao_vermelho.png', 280), ('second_yellow', 'interface/segundo_amarelo_expulsao.png', 300),
@@ -33,18 +33,7 @@ for name, rel, width in [('stadium', 'cenario/estadio.png', 1672), ('grass', 'ce
     w, h = save(MATCH / rel, OUT / f'{name}.webp', width=width)
     data['images'][name] = {'file': f'{name}.webp', 'w': w, 'h': h}
 
-ATLAS_SCALE = 0.36
-for key, out in [('jogadores_vermelhos_4x4', 'atlas_red'), ('jogadores_azuis_4x4', 'atlas_blue'), ('goleiro_4x2', 'atlas_gk')]:
-    a = man['atlases'][key]
-    w, h = save(MATCH / a['file'], OUT / f'{out}.webp', scale=ATLAS_SCALE, q=88)
-    frames = {}
-    for f in a['frames']:
-        x, y, fw, fh = f['source_rect_xywh']
-        ax, ay = f['foot_anchor_in_cell_px']
-        frames[f['name']] = [round(x * ATLAS_SCALE, 2), round(y * ATLAS_SCALE, 2), round(fw * ATLAS_SCALE, 2), round(fh * ATLAS_SCALE, 2),
-                             round(ax * ATLAS_SCALE, 2), round(ay * ATLAS_SCALE, 2)]
-    data['atlases'][out] = {'file': f'{out}.webp', 'w': w, 'h': h, 'frames': frames,
-                            'visible_height': round(max(f['visible_rect_in_cell_xywh'][3] for f in a['frames']) * ATLAS_SCALE, 2)}
+# Os atletas animados vêm de scripts/build-sprite-atlases.py (8 direções); os atlas antigos de 4 direções saíram.
 (OUT / 'kitData.json').write_text(json.dumps(data, ensure_ascii=False, indent=1))
 
 for rel in ['instalacoes/centro_treinamento_nivel_1.png', 'instalacoes/centro_treinamento_nivel_2.png', 'instalacoes/centro_treinamento_nivel_3.png',
