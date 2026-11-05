@@ -1,0 +1,243 @@
+-- Evolução 59 — banco mais leve (medição em produção, 05/11/2026: 172 MB; maiores: partidas, lances e escalações,
+-- diferenças por posição, atuações, finanças, histórico de negociações, evolução e decisões diárias da IA).
+-- Nenhuma regra de jogo muda. O que muda:
+-- * Diferença de nota por posição (evolução 58): uma linha JSON por atleta em cw_player_dev.pos, em vez de 10 linhas
+--   numa tabela própria (cw_player_pos_delta, removida). Mesmos valores, mesmos cálculos.
+-- * Histórico mensal de evolução: só do seu elenco (12 meses); os demais atletas guardam só a evolução acumulada.
+-- * Suas partidas com mais de 45 dias: ficam placar, estatísticas e lances principais (o relatório já funciona assim);
+--   a escalação completa e o estado do jogo são apagados. Partidas ao vivo nunca são tocadas.
+-- * Datas auxiliares de temporadas encerradas, decisões diárias da IA já passadas, mensagens lidas com mais de 180 dias
+--   e histórico de propostas encerradas com mais de 180 dias.
+-- * A limpeza diária (cw_prune_career) passa a aplicar essas regras e roda uma vez agora em todas as carreiras.
+begin;
+
+alter table public.cw_player_dev add column if not exists pos jsonb not null default '{}';
+do $$ begin
+ if to_regclass('public.cw_player_pos_delta') is not null then
+  update public.cw_player_dev d set pos=x.pos from(
+   select career_id,player_id,jsonb_object_agg(pos,jsonb_build_array(d_rating,d_eff)) pos from public.cw_player_pos_delta group by career_id,player_id)x
+  where d.career_id=x.career_id and d.player_id=x.player_id;
+ end if;
+end $$;
+
+create or replace function public.cw_dev_refresh(p_career uuid,p_players text[])
+returns void language plpgsql security definer set search_path=public as $$
+begin
+ -- Diferença de nota por posição guardada como JSON no registro de evolução: {"ZAG":[d_nota,d_rendimento],...}
+ with ej as materialized(
+  select u.pid player_id,d.learned,to_jsonb(public.cw_eff_attrs(p_career,u.pid)) j
+  from unnest(p_players) u(pid) cross join lateral(select x.learned from public.cw_player_dev x where x.career_id=p_career and x.player_id=u.pid) d),
+ calc as materialized(
+  select e.player_id,e.learned,w.pos,sum(w.weight*(e.j->>w.attr)::numeric)/sum(w.weight) nr
+  from ej e join public.sim_role_weights w on true group by e.player_id,e.learned,w.pos),
+ agg as(
+  select c.player_id,jsonb_object_agg(c.pos,jsonb_build_array(round(c.nr-r.rating,2),
+   round(c.nr*greatest(case when r.rating>0 then r.eff/r.rating else 1 end,case when c.pos=any(c.learned) then .97 else 0 end)-r.eff,2))) pos
+  from calc c cross join lateral(select pr.rating,pr.eff from public.sim_player_pos_ratings pr where pr.player_id=c.player_id and pr.pos=c.pos) r
+  group by c.player_id)
+ update public.cw_player_dev d set pos=a.pos,d_rating=coalesce((a.pos->(select p.position from public.sim_players p where p.id=d.player_id)->>0)::numeric,0)
+ from agg a where d.career_id=p_career and d.player_id=a.player_id;
+end $$;
+
+create or replace function public.mgr_side_strength(p_fixture bigint,p_side character)
+returns numeric language sql stable set search_path to 'public','pg_temp' as $$
+  select coalesce(avg(r.eff+coalesce(dd.d_eff,0)), 60)
+    from public.mgr_match_players mp
+    join public.sim_player_pos_ratings r on r.player_id = mp.player_id and r.pos = mp.pos
+    left join lateral(select (pdv.pos->mp.pos->>1)::numeric d_eff,(pdv.pos->mp.pos->>0)::numeric d_rating from public.cw_player_dev pdv where pdv.career_id=public.cw_fixture_career(p_fixture) and pdv.player_id=mp.player_id) dd on true
+   where mp.fixture_id = p_fixture and mp.side = p_side and mp.status = 'on'
+$$;
+
+create or replace function public.mgr_best_bench(p_fixture bigint,p_side character,p_pos text)
+returns text language sql stable set search_path to 'public','pg_temp' as $$
+  select mp.player_id
+    from public.mgr_match_players mp
+    join public.sim_player_pos_ratings r on r.player_id = mp.player_id and r.pos = p_pos
+    left join lateral(select (pdv.pos->p_pos->>1)::numeric d_eff,(pdv.pos->p_pos->>0)::numeric d_rating from public.cw_player_dev pdv where pdv.career_id=public.cw_fixture_career(p_fixture) and pdv.player_id=mp.player_id) dd on true
+   where mp.fixture_id = p_fixture and mp.side = p_side and mp.status = 'bench'
+   order by (r.eff+coalesce(dd.d_eff,0)) * public.mgr_cond_factor(mp.cond) desc
+   limit 1
+$$;
+
+create or replace function public.mgr_lineup_score(p_lineup jsonb,p_form text)
+returns numeric language sql stable set search_path to 'public','pg_temp' as $$
+  select coalesce(sum(r.eff+coalesce(dd.d_eff,0)), 0)
+    from public.sim_formations f
+    cross join lateral jsonb_array_elements(f.slots) s
+    join public.sim_player_pos_ratings r on r.player_id = p_lineup -> 'slots' ->> (s ->> 'slot') and r.pos = s ->> 'pos'
+    left join lateral(select (pdv.pos->r.pos->>1)::numeric d_eff,(pdv.pos->r.pos->>0)::numeric d_rating from public.cw_player_dev pdv where pdv.career_id=public.cw_ctx_career() and pdv.player_id=r.player_id) dd on true
+   where f.id = p_form
+$$;
+
+create or replace function public.mgr_auto_lineup(p_career uuid,p_club text,p_formation text,p_comp text,p_day integer,p_bench integer default 12)
+returns jsonb language plpgsql stable security definer set search_path=public as $$
+declare
+  v_form   public.sim_formations;
+  v_pids   text[];
+  v_isgk   boolean[];
+  v_cf     float8[];
+  v_eff    float8[];
+  v_best   float8[];
+  v_used   boolean[];
+  v_n      int;
+  v_slot   record;
+  v_k      int;
+  v_i      int;
+  v_pick   int;
+  v_sc     float8;
+  v_top    float8;
+  v_slots  jsonb := '{}'::jsonb;
+  v_bench  text[] := '{}';
+  v_gk     int := 0;
+  v_order  int[];
+  v_pos    text[] := array['GOL', 'LD', 'ZAG', 'LE', 'VOL', 'MC', 'MEI', 'PD', 'PE', 'ATA'];
+begin
+  select * into v_form from public.sim_formations where id = coalesce(p_formation, '4-3-3');
+  if not found then select * into v_form from public.sim_formations where id = '4-3-3'; end if;
+
+  select array_agg(x.pid order by x.pid), array_agg(x.isgk order by x.pid), array_agg(x.cf order by x.pid),
+         array_agg(x.best order by x.pid)
+    into v_pids, v_isgk, v_cf, v_best
+    from (
+      select mp.player_id as pid, p.position = 'GOL' as isgk,
+             (public.mgr_cond_factor(mp.condition) * (case when mp.condition < 60 then 0.9 else 1 end)
+               * (case when public.mgr_available(mp.injured_until, mp.susp, p_comp, p_day) then 1 else 0.001 end))::float8 as cf,
+             (select r.eff+coalesce(dd.d_eff,0) from public.sim_player_pos_ratings r
+               left join lateral(select (pdv.pos->r.pos->>1)::numeric d_eff,(pdv.pos->r.pos->>0)::numeric d_rating from public.cw_player_dev pdv where pdv.career_id=p_career and pdv.player_id=r.player_id) dd on true
+               where r.player_id = p.id and r.pos = p.position)::float8 as best
+        from public.mgr_players mp join public.sim_players p on p.id = mp.player_id and p.active
+       where mp.career_id = p_career and mp.club_id = p_club
+    ) x;
+  v_n := coalesce(array_length(v_pids, 1), 0);
+  if v_n = 0 then return jsonb_build_object('formation', v_form.id, 'slots', '{}'::jsonb, 'bench', '[]'::jsonb); end if;
+
+  select array_agg((r.eff+coalesce(dd.d_eff,0))::float8 order by mp.player_id, sp.sort)
+    into v_eff
+    from public.mgr_players mp
+    join public.sim_players p on p.id = mp.player_id and p.active
+    join public.sim_player_pos_ratings r on r.player_id = mp.player_id
+    join public.sim_positions sp on sp.code = r.pos
+    left join lateral(select (pdv.pos->r.pos->>1)::numeric d_eff,(pdv.pos->r.pos->>0)::numeric d_rating from public.cw_player_dev pdv where pdv.career_id=p_career and pdv.player_id=r.player_id) dd on true
+   where mp.career_id = p_career and mp.club_id = p_club;
+
+  v_used := array_fill(false, array[v_n]);
+  for v_slot in
+    select s ->> 'slot' as slot, s ->> 'pos' as pos
+      from jsonb_array_elements(v_form.slots) s
+     order by case s ->> 'pos' when 'GOL' then 1 when 'ZAG' then 2 when 'LD' then 3 when 'LE' then 3 when 'VOL' then 4
+                               when 'ATA' then 5 when 'MC' then 6 when 'MEI' then 7 else 8 end
+  loop
+    v_k := array_position(v_pos, v_slot.pos);
+    v_pick := 0; v_top := -1;
+    for v_i in 1 .. v_n loop
+      continue when v_used[v_i];
+      v_sc := v_eff[(v_i - 1) * 10 + v_k] * v_cf[v_i];
+      if v_sc > v_top then v_top := v_sc; v_pick := v_i; end if;
+    end loop;
+    if v_pick > 0 then
+      v_used[v_pick] := true;
+      v_slots := v_slots || jsonb_build_object(v_slot.slot, v_pids[v_pick]);
+    end if;
+  end loop;
+
+  v_top := -1;
+  for v_i in 1 .. v_n loop
+    if not v_used[v_i] and v_isgk[v_i] and v_cf[v_i] > 0.01 and v_best[v_i] > v_top then v_top := v_best[v_i]; v_gk := v_i; end if;
+  end loop;
+  if v_gk > 0 then v_bench := array[v_pids[v_gk]]; v_used[v_gk] := true; end if;
+  select array_agg(i order by v_best[i] * v_cf[i] desc) into v_order
+    from generate_series(1, v_n) i where not v_used[i] and v_cf[i] > 0.01;
+  for v_i in 1 .. least(coalesce(array_length(v_order, 1), 0), greatest(p_bench - coalesce(array_length(v_bench, 1), 0), 0)) loop
+    v_bench := v_bench || v_pids[v_order[v_i]];
+  end loop;
+
+  return jsonb_build_object('formation', v_form.id, 'slots', v_slots, 'bench', to_jsonb(v_bench));
+end $$;
+
+create or replace function public.cw_patch_players(p_career uuid,p_list jsonb,p_extra boolean default false)
+returns jsonb language sql stable security definer set search_path=public as $$
+ select coalesce(jsonb_agg(case when d.player_id is null and cp.player_id is null then e else
+  e||jsonb_build_object(
+   'overall',case when e ? 'overall' and e->>'overall' is not null then to_jsonb(round((e->>'overall')::numeric+coalesce(d.d_rating,0))) else e->'overall' end,
+   'dev',round(coalesce(d.d_rating,0),1),
+   'trend',coalesce(d.history,'[]'),
+   'learned',coalesce(to_jsonb(d.learned),'[]'),
+   'learning_pos',d.learning_pos,'learning_progress',round(coalesce(d.learning_progress,0)),
+   'potential_range',to_jsonb(public.cw_potential_range(p_career,e->>'id',cp.potential)),
+   'scouted',public.cw_scout_known(p_career,e->>'id'),
+   'regen',coalesce(sp.career_id is not null,false),
+   'on_loan',(select jsonb_build_object('id',l.id,'parent_club',l.parent_club,'borrower_club',l.borrower_club,'ends_on',l.ends_on)
+     from public.cw_loans l where l.career_id=p_career and l.player_id=e->>'id' and l.status='active'),
+   'loan_listed',coalesce(cp.loan_listed,false))
+  ||case when e ? 'ratings' and d.player_id is not null then jsonb_build_object('ratings',(select jsonb_object_agg(k,round(v::numeric+coalesce(pd.d_eff,0)))
+     from jsonb_each_text(e->'ratings') x(k,v) left join lateral(select (pdv.pos->x.k->>1)::numeric d_eff,(pdv.pos->x.k->>0)::numeric d_rating from public.cw_player_dev pdv where pdv.career_id=p_career and pdv.player_id=e->>'id') pd on true)) else '{}'::jsonb end
+  ||case when e ? 'attrs' and d.player_id is not null then jsonb_build_object('attrs',(select jsonb_object_agg(k,case when e->'attrs'->k is not null and jsonb_typeof(e->'attrs'->k)='number'
+      then to_jsonb(greatest(1,least(99,round((e->'attrs'->>k)::numeric+coalesce((d.d->>k)::numeric,0))))) else e->'attrs'->k end) from jsonb_object_keys(e->'attrs') k)) else '{}'::jsonb end
+  end order by o),'[]'::jsonb)
+ from jsonb_array_elements(coalesce(public.cw_patch_players_before_v58(p_career,p_list,p_extra),'[]')) with ordinality x(e,o)
+ left join public.cw_player_dev d on d.career_id=p_career and d.player_id=e->>'id'
+ left join public.cw_players cp on cp.career_id=p_career and cp.player_id=e->>'id'
+ left join public.sim_players sp on sp.id=e->>'id'
+$$;
+
+drop table if exists public.cw_player_pos_delta;
+
+-- ---------------------------------------------------------------- limpeza (diária e agora)
+do $$ begin
+ if to_regprocedure('public.cw_prune_career_before_v59(uuid)') is null then
+  alter function public.cw_prune_career(uuid) rename to cw_prune_career_before_v59;
+ end if;
+end $$;
+
+create or replace function public.cw_prune_career(p_career uuid)
+returns void language plpgsql security definer set search_path=public as $$
+#variable_conflict use_column
+declare today date;own text;
+begin
+ perform public.cw_prune_career_before_v59(p_career);
+ select w.today into today from public.cw_world w where w.career_id=p_career;
+ if today is null then return;end if;
+ select club_id into own from public.mgr_coach where career_id=p_career and status='employed';
+ -- Suas partidas antigas: o relatório usa placar, estatísticas e lances guardados (mgr_match_report).
+ delete from public.mgr_match_players mp using public.mgr_matches m,public.cw_fixture_dates fd
+  where m.career_id=p_career and m.status='finished' and mp.fixture_id=m.fixture_id and fd.fixture_id=m.fixture_id and fd.due_on<today-45;
+ delete from public.mgr_match_events e using public.mgr_matches m,public.cw_fixture_dates fd
+  where m.career_id=p_career and m.status='finished' and e.fixture_id=m.fixture_id and fd.fixture_id=m.fixture_id and fd.due_on<today-45
+   and e.kind not in('goal','pen_goal','own_goal','so_goal','so_miss','yellow','red','second_yellow','pen_miss','sub','injury');
+ delete from public.mgr_matches m using public.cw_fixture_dates fd
+  where m.career_id=p_career and m.status='finished' and fd.fixture_id=m.fixture_id and fd.due_on<today-45;
+ -- Datas auxiliares de temporadas encerradas e de jogos já disputados, e decisões diárias da IA já passadas.
+ delete from public.cw_club_dates cd using public.season_fixtures f,public.career_seasons cs
+  where cd.career_id=p_career and cd.fixture_id=f.id and f.season_id=cs.id and cs.career_id=p_career and cs.status<>'active';
+ delete from public.cw_club_dates cd using public.season_fixtures f
+  where cd.career_id=p_career and cd.fixture_id=f.id and f.status='played' and cd.due_on<today-7;
+ delete from public.cw_ai_days where career_id=p_career and on_date<today-1;
+ -- Histórico de evolução só do seu elenco (12 meses).
+ update public.cw_player_dev d set history='[]' where d.career_id=p_career and d.history<>'[]'::jsonb
+  and not exists(select 1 from public.mgr_players mp where mp.career_id=p_career and mp.player_id=d.player_id and mp.club_id=own);
+ update public.cw_player_dev d set history=(select coalesce(jsonb_agg(e order by o),'[]') from(
+   select e,o from jsonb_array_elements(d.history) with ordinality x(e,o) order by o desc limit 12)y)
+  where d.career_id=p_career and jsonb_array_length(d.history)>12;
+ -- Mensagens lidas antigas e histórico de propostas encerradas antigas.
+ delete from public.mgr_messages where career_id=p_career and read and created_at<now()-interval '180 days';
+ delete from public.cw_offer_history h using public.cw_negotiations n
+  where h.negotiation_id=n.id and n.career_id=p_career and n.status in('completed','rejected','expired','cancelled','failed_funds') and n.created_on<today-180;
+end $$;
+
+revoke all on function public.cw_prune_career(uuid),public.cw_prune_career_before_v59(uuid),public.cw_dev_refresh(uuid,text[]),
+ public.mgr_side_strength(bigint,character),public.mgr_best_bench(bigint,character,text),public.mgr_lineup_score(jsonb,text),
+ public.mgr_auto_lineup(uuid,text,text,text,integer,integer),public.cw_patch_players(uuid,jsonb,boolean) from public,anon,authenticated;
+
+-- Limpeza agora em todas as carreiras (sem partida ao vivo) e no histórico do agendador.
+do $$ declare rc record;begin
+ for rc in select cr.id from public.careers cr where exists(select 1 from public.cw_world w where w.career_id=cr.id)
+  and not exists(select 1 from public.mgr_matches m where m.career_id=cr.id and m.status='live') order by cr.id loop
+  perform public.cw_prune_career(rc.id);
+ end loop;
+ if to_regclass('cron.job_run_details') is not null then
+  execute 'delete from cron.job_run_details where end_time<now()-interval ''1 day''';
+ end if;
+end $$;
+
+notify pgrst,'reload schema';
+commit;

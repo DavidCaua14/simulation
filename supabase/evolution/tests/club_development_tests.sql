@@ -48,7 +48,7 @@ begin
  if public.cw_player_value(cid,young)<=before_value then raise exception 'Valor de mercado ignorou a evolução';end if;
  perform public.cw_dev_month(cid,'2026-07-01');
  if (select d_rating from public.cw_player_dev where career_id=cid and player_id=young)<>v then raise exception 'Mês repetido alterou a evolução';end if;
- if (select count(*) from public.cw_player_pos_delta where career_id=cid and player_id=young)<>10 then raise exception 'Notas por posição não recalculadas';end if;
+ if (select count(*) from jsonb_object_keys((select pos from public.cw_player_dev where career_id=cid and player_id=young)))<>10 then raise exception 'Notas por posição não recalculadas';end if;
  if jsonb_array_length((select history from public.cw_player_dev where career_id=cid and player_id=young))<6 then raise exception 'Histórico mensal incompleto';end if;
  raise notice 'PASS evolução: jovem +%, veterano %, mês idempotente',round(v,2),(select round(d_rating,2) from public.cw_player_dev where career_id=cid and player_id=old);
 
@@ -59,8 +59,8 @@ begin
  update public.cw_player_dev set learning_progress=95 where career_id=cid and player_id=young;
  perform public.cw_dev_month(cid,'2026-08-01');
  if cardinality((select learned from public.cw_player_dev where career_id=cid and player_id=young))<>1 then raise exception 'Posição não aprendida';end if;
- if not exists(select 1 from public.cw_player_pos_delta pd join public.cw_player_dev d using(career_id,player_id)
-   where pd.career_id=cid and pd.player_id=young and pd.pos=any(d.learned) and pd.d_eff>0) then raise exception 'Posição aprendida sem ganho de adequação';end if;
+ if not exists(select 1 from public.cw_player_dev d cross join unnest(d.learned) lp
+   where d.career_id=cid and d.player_id=young and (d.pos->lp->>1)::numeric>0) then raise exception 'Posição aprendida sem ganho de adequação';end if;
  raise notice 'PASS treino e nova posição';
 
  -- 4) Instalações: diretoria aprova com caixa, recusa com motivo, obra demora e conclui.
