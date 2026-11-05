@@ -537,3 +537,30 @@
     grid-template-columns: 84px 1fr;
   }
 }
+.cd-diff {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.74rem;
+  color: var(--text-secondary);
+  font-weight: 700;
+}
+.cd-diff span {
+  margin-right: auto;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  font-size: 0.66rem;
+}
+.cd-diff button {
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface-alt);
+  color: var(--text-secondary);
+  font-weight: 700;
+}
+.cd-diff button.is-on {
+  border-color: var(--primary);
+  color: var(--text-primary);
+  opacity: 1;
+}

@@ -162,6 +162,13 @@ begin
  if (select count(*) from public.sim_players where career_id=cid)<>n then raise exception 'Ciclo anual da base repetido';end if;
  raise notice 'PASS base (jogador fictício marcado) e aposentadoria';
 
+ -- 11) Dificuldade escolhida pelo treinador
+ r:=public.career_difficulty_set('hard');
+ if (public.mgr_difficulty(cid)).dev_mult<>0.85 then raise exception 'Dificuldade Difícil não aplicada';end if;
+ begin perform public.career_difficulty_set('accessible');raise exception 'Aceitou dificuldade restrita';
+ exception when others then if sqlerrm not like '%inválida%' then raise;end if;end;
+ raise notice 'PASS dificuldade escolhida';
+
  if exists(select 1 from public.cw_dev_errors where career_id=cid) then raise exception 'Erros registrados: %',(select string_agg(stage||': '||message,' | ') from public.cw_dev_errors where career_id=cid);end if;
 end $test$;
 rollback;

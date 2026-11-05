@@ -35,3 +35,4 @@ export const requestScout = (playerId) => call('career_scout_request', { p_playe
 export const requestLoan = (playerId, wageShare, role) => call('career_loan_request', { p_player: playerId, p_wage_share: wageShare, p_role: role, p_request: rid() })
 export const listForLoan = (playerId, listed) => call('career_loan_list', { p_player: playerId, p_listed: listed })
 export const respondLoan = (loanId, accept) => call('career_loan_respond', { p_loan: loanId, p_accept: accept })
+export const setDifficulty = (id) => call('career_difficulty_set', { p_difficulty: id })

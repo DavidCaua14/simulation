@@ -1383,6 +1383,18 @@ begin
  return jsonb_build_object('ok',true,'accepted',true);
 end $$;
 
+-- Dificuldade escolhida pelo treinador (24A). "Início acessível" continua sendo concedido só pela proposta inicial.
+create or replace function public.career_difficulty_set(p_difficulty text)
+returns jsonb language plpgsql security definer set search_path=public as $$
+declare car public.careers;
+begin
+ car:=public.mgr_lock();
+ if p_difficulty not in('standard','hard') then raise exception 'Dificuldade inválida';end if;
+ if exists(select 1 from public.mgr_matches where career_id=car.id and status='live' and user_side is not null) then raise exception 'Termine a partida em andamento';end if;
+ update public.careers set difficulty=p_difficulty where id=car.id;
+ return jsonb_build_object('ok',true,'difficulty',p_difficulty);
+end $$;
+
 -- ---------------------------------------------------------------- permissões
 do $$ declare f record;begin
  for f in select p.oid::regprocedure sig,p.proname from pg_proc p join pg_namespace n on n.oid=p.pronamespace
@@ -1400,7 +1412,7 @@ do $$ declare f record;begin
  end loop;
  for f in select p.oid::regprocedure sig from pg_proc p join pg_namespace n on n.oid=p.pronamespace
   where n.nspname='public' and p.proname in('career_club_dev_read','career_training_set','career_player_learn','career_set_pieces_set','career_facility_upgrade',
-   'career_staff_hire','career_scout_request','career_loan_request','career_loan_list','career_loan_respond','career_transfer_respond','career_player_release',
+   'career_staff_hire','career_scout_request','career_loan_request','career_loan_list','career_loan_respond','career_transfer_respond','career_player_release','career_difficulty_set',
    'mgr_player_detail','career_player_search') loop
   execute format('revoke all on function %s from public,anon',f.sig);
   execute format('grant execute on function %s to authenticated',f.sig);

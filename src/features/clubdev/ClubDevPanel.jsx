@@ -6,7 +6,7 @@ import { getClubById } from '../club/data/clubs'
 import { imageUrl } from '../match25d/kit'
 import { POS_NAME, POS_ORDER } from '../seasons/utils/managerUtils'
 import { ART, FACILITIES, FOCUS, INTENSITY, REPUTATION_STEPS, STAFF } from './clubDevData'
-import { fetchClubDev, hireStaff, listForLoan, requestLoan, requestScout, respondLoan, setLearning, setSetPieces, setTraining, upgradeFacility } from './clubDevApi'
+import { fetchClubDev, hireStaff, listForLoan, requestLoan, requestScout, respondLoan, setDifficulty, setLearning, setSetPieces, setTraining, upgradeFacility } from './clubDevApi'
 import './clubdev.css'
 
 const SECTIONS = [
@@ -87,6 +87,7 @@ export default function ClubDevPanel({ players = [], notify, onChanged }) {
   return (
     <div className="cd">
       <ReputationCard rep={dev.reputation} />
+      <DifficultyCard current={dev.difficulty} busy={busy} act={act} />
       <nav className="cd-tabs" aria-label="Gestão do clube">
         {SECTIONS.map(({ id, label, Icon }) => (
           <button key={id} type="button" className={section === id ? 'is-on' : ''} aria-pressed={section === id} onClick={() => setSection(id)}>
@@ -137,6 +138,26 @@ function ReputationCard({ rep }) {
         Credibilidade {Math.round(Number(rep.credibility || 0))}.
       </p>
     </section>
+  )
+}
+
+function DifficultyCard({ current, busy, act }) {
+  if (!current) return null
+  if (current.id === 'accessible')
+    return <p className="cd-note">Dificuldade: {current.label} (concedida pela proposta inicial; termina sozinha após as primeiras temporadas).</p>
+  return (
+    <div className="cd-diff" role="radiogroup" aria-label="Dificuldade">
+      <span>Dificuldade</span>
+      {[
+        ['standard', 'Padrão'],
+        ['hard', 'Difícil'],
+      ].map(([id, label]) => (
+        <button key={id} type="button" role="radio" aria-checked={current.id === id} className={current.id === id ? 'is-on' : ''} disabled={Boolean(busy) || current.id === id}
+          onClick={() => act('diff', () => setDifficulty(id), id === 'hard' ? 'Dificuldade Difícil ativada: diretoria mais exigente e evolução 15% mais lenta.' : 'Dificuldade Padrão ativada.')}>
+          {label}
+        </button>
+      ))}
+    </div>
   )
 }
 
