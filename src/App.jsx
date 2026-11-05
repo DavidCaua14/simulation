@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { Suspense, lazy, useEffect, useState } from 'react'
 import { ThemeProvider } from './context/ThemeContext'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import AppLoadingScreen from './components/layout/AppLoadingScreen'
@@ -7,20 +7,20 @@ import LoginScreen from './features/auth/LoginScreen'
 import CreateCharacterScreen from './features/player/CreateCharacterScreen'
 import ClubOfferScreen from './features/club/ClubOfferScreen'
 import HomeScreen from './features/home/HomeScreen'
-import PredictionsScreen from './features/predictions/PredictionsScreen'
-import SeasonsScreen from './features/seasons/SeasonsScreen'
-import ProfileScreen from './features/profile/ProfileScreen'
-import StoreScreen from './features/store/StoreScreen'
-import FriendsScreen from './features/friends/FriendsScreen'
-import EventsScreen from './features/events/EventsScreen'
+const PredictionsScreen = lazy(() => import('./features/predictions/PredictionsScreen')) // carregada sob demanda
+const SeasonsScreen = lazy(() => import('./features/seasons/SeasonsScreen')) // carregada sob demanda
+const ProfileScreen = lazy(() => import('./features/profile/ProfileScreen')) // carregada sob demanda
+const StoreScreen = lazy(() => import('./features/store/StoreScreen')) // carregada sob demanda
+const FriendsScreen = lazy(() => import('./features/friends/FriendsScreen')) // carregada sob demanda
+const EventsScreen = lazy(() => import('./features/events/EventsScreen')) // carregada sob demanda
 import { AudioProvider, useAudio } from './features/audio/AudioContext'
 import { getActiveCareer } from './features/player/playerService'
 import LevelUpOverlay from './features/progress/LevelUpOverlay'
 import { rememberLevel, reportLevel } from './features/progress/levelEvents'
 import UpdateWelcome from './features/update/UpdateWelcome'
-import AdminDashboard from './features/admin/AdminDashboard'
-import InboxScreen from './features/inbox/InboxScreen'
-import RankingScreen from './features/ranking/RankingScreen'
+const AdminDashboard = lazy(() => import('./features/admin/AdminDashboard')) // carregada sob demanda
+const InboxScreen = lazy(() => import('./features/inbox/InboxScreen')) // carregada sob demanda
+const RankingScreen = lazy(() => import('./features/ranking/RankingScreen')) // carregada sob demanda
 import MaintenanceGate from './features/maintenance/MaintenanceGate'
 import { isMaintenanceAdmin as isOwner } from './features/maintenance/policy'
 import { claimReleaseGift, markReleaseSeen } from './features/update/updateApi'
@@ -154,7 +154,7 @@ function Gate() {
     return <CreateCharacterScreen userId={user.id} onCreated={setCareer} />
   }
 
-  if (!career.player.clubId) {
+  if (!career.player.clubId && !career.worldStarted) {
     return <ClubOfferScreen career={career} onClubChosen={setCareer} />
   }
 
@@ -184,7 +184,7 @@ function Gate() {
   const view = renderScreen()
   return (
     <>
-      {view}
+      <Suspense fallback={<AppLoadingScreen label="Carregando..." />}>{view}</Suspense>
       {giftLayer}
     </>
   )

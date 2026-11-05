@@ -4,6 +4,8 @@ export function mapRowToCareer(row) {
     userId: row.user_id,
     status: row.status,
     createdAt: row.created_at,
+    // Carreira reiniciada (nov/2026): o mundo já existe e o técnico escolhe clube pelas propostas, não pela tela inicial.
+    worldStarted: row.world_started === true,
     player: {
       nickname: row.nickname,
       photoId: row.photo_id,

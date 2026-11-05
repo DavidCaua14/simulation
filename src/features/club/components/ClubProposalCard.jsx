@@ -35,12 +35,6 @@ export default function ClubProposalCard({ offer, selected, onSelect, style }) {
       </span>
       <span className="of-card-pitch">“{offer.pitch}”
       </span>
-      {offer.difficulty && offer.difficulty !== 'standard' && (
-        <span className="of-card-diff" title={offer.difficulty_text}>
-          <GameIcon name="highlight" size={14} /> <strong>{offer.difficulty_label}</strong>
-          <small>{offer.difficulty_text}</small>
-        </span>
-      )}
       <span className="of-card-foot">
         <span className="of-card-bonus">
           <GameIcon name="coins" size={14} /> +{Number(offer.bonus_coins).toLocaleString('pt-BR')}

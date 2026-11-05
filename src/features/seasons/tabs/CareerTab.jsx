@@ -10,7 +10,7 @@ import TrophyCabinet from '../components/TrophyCabinet'
 import { Meter, Stars } from '../components/CoachStatusCard'
 import CompEmblem from '../ui/CompEmblem'
 import { EmptyState } from '../ui/States'
-import { fetchHistory } from '../services/managerApi'
+import { applyVacancy, fetchHistory, fetchOfferClub, fetchVacancies, fetchVacancyClub } from '../services/managerApi'
 import { END_REASON, boardMood, fansMood, objectiveProgress, reputationTier, winRate } from '../utils/managerUtils'
 import { COMPETITIONS, COMP_SHORT, fmt, seasonLabel } from '../utils/seasonUtils'
 
@@ -23,10 +23,144 @@ const VIEWS = [
 
 const when = (year, day) => `${year}${day != null ? ` · dia ${day}` : ''}`
 
+const POS_GROUPS = [
+  { label: 'Goleiros', codes: ['GOL'] },
+  { label: 'Defensores', codes: ['ZAG', 'LD', 'LE'] },
+  { label: 'Meio-campistas', codes: ['VOL', 'MC', 'MEI'] },
+  { label: 'Atacantes', codes: ['PD', 'PE', 'ATA'] },
+]
+
+// Elenco do clube da proposta, por posição (só leitura)
+function OfferSquad({ info, clubName, onClose }) {
+  const squad = info?.squad || []
+  const groups = POS_GROUPS.map((g) => ({ ...g, players: squad.filter((p) => g.codes.includes(p.pos)) }))
+  const other = squad.filter((p) => !POS_GROUPS.some((g) => g.codes.includes(p.pos)))
+  if (other.length) groups.push({ label: 'Outros', players: other })
+  return (
+    <div className="sn-overlay" role="dialog" aria-modal="true" aria-label={`Elenco do ${clubName}`} onClick={onClose}>
+      <div className="sn-modal" onClick={(e) => e.stopPropagation()}>
+        <header className="sn-modal-head">
+          <span>
+            <small>{info?.division ? `${info.division} · ` : ''}Força {info?.strength ?? '—'}</small>
+            <b>{clubName}</b>
+          </span>
+        </header>
+        {groups.filter((g) => g.players.length).map((g) => (
+          <section key={g.label} className="of-squad">
+            <h4>{g.label}</h4>
+            <table className="sn-table">
+              <thead>
+                <tr><th>Jogador</th><th>Pos</th><th>Idade</th><th>Força</th></tr>
+              </thead>
+              <tbody>
+                {g.players.map((p) => (
+                  <tr key={p.id}>
+                    <td className="club">{p.name}</td>
+                    <td>{p.pos}</td>
+                    <td>{p.age ?? '—'}</td>
+                    <td><b>{p.rating}</b></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </section>
+        ))}
+        <div className="of-actions">
+          <button type="button" className="gx-btn" onClick={onClose}>Fechar</button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// Vagas abertas por demissões da IA: candidatura com resposta em alguns dias (limite de candidaturas abertas)
+function Vacancies({ employed, version }) {
+  const [data, setData] = useState(null)
+  const [busy, setBusy] = useState(null)
+  const [error, setError] = useState('')
+  const [preview, setPreview] = useState(null)
+  useEffect(() => {
+    let alive = true
+    fetchVacancies().then((d) => { if (alive) setData(d) }).catch(() => {})
+    return () => { alive = false }
+  }, [version])
+  if (!data) return null
+  const full = data.open_applications >= data.limit
+  const apply = async (id) => {
+    setBusy(id)
+    setError('')
+    try {
+      setData(await applyVacancy(id))
+    } catch (e) {
+      setError(e.message)
+    } finally {
+      setBusy(null)
+    }
+  }
+  const openSquad = async (v) => {
+    try {
+      setPreview({ name: getClubById(v.club_id)?.name || v.club_id, info: await fetchVacancyClub(v.id) })
+    } catch (e) {
+      setError(e.message)
+    }
+  }
+  return (
+    <section className="sn-sec">
+      <h2 className="gx-title">
+        <Megaphone size={16} /> Vagas abertas
+      </h2>
+      <p className="of-vac-note">
+        {employed ? 'Empregado ou não, você pode se candidatar.' : 'Sem clube: candidate-se às vagas abertas.'} Candidaturas abertas: {data.open_applications} de {data.limit}. Sua reputação: {data.reputation}.
+      </p>
+      {error && <p className="of-vac-err">{error}</p>}
+      {data.vacancies.length === 0 ? (
+        <p className="of-vac-note">Nenhuma vaga aberta. Clubes que vão mal demitem o técnico ao longo da temporada.</p>
+      ) : (
+        <ul className="of-vac">
+          {data.vacancies.map((v) => (
+            <li key={v.id}>
+              <ClubCrest clubId={v.club_id} size={28} />
+              <span className="of-vac-txt">
+                <b>{getClubById(v.club_id)?.name || v.club_id}</b>
+                <small>
+                  {v.division ? `${v.division} · ` : ''}Força {v.strength} · {v.reason} · pede reputação {Math.round(v.required_reputation)}
+                </small>
+                <small>
+                  {v.rejected
+                    ? 'O clube recusou sua candidatura.'
+                    : v.applied
+                      ? `Candidatura enviada: resposta em até ${v.answer_in} dia${v.answer_in === 1 ? '' : 's'}`
+                      : `Fecha em ${v.closes_in} dia${v.closes_in === 1 ? '' : 's'}`}
+                </small>
+              </span>
+              <span className="of-vac-actions">
+                <button type="button" className="gx-btn-ghost" onClick={() => openSquad(v)}>Ver time</button>
+                {!v.applied && !v.rejected && (
+                  <button type="button" className="gx-btn" disabled={full || busy === v.id} onClick={() => apply(v.id)}>
+                    {busy === v.id ? <span className="nm-spin" /> : null} Candidatar-se
+                  </button>
+                )}
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
+      {preview && <OfferSquad info={preview.info} clubName={preview.name} onClose={() => setPreview(null)} />}
+    </section>
+  )
+}
+
 function OfferCard({ o, employed, busy, onRespond, onRefresh }) {
   const [confirm, setConfirm] = useState(false)
+  const [info, setInfo] = useState(null)
+  const [showSquad, setShowSquad] = useState(false)
   const club = getClubById(o.club_id)
   const ctx = o.context || {}
+  useEffect(() => {
+    let alive = true
+    fetchOfferClub(o.id).then((d) => { if (alive) setInfo(d) }).catch(() => {})
+    return () => { alive = false }
+  }, [o.id])
   return (
     <article className="of" style={{ '--cc': club?.colors?.[0] || '#2a3550' }}>
       <h3 className="of-title">Oferta de emprego</h3>
@@ -55,7 +189,20 @@ function OfferCard({ o, employed, busy, onRespond, onRefresh }) {
             <GameIcon name="coins" size={13} /> Luvas: {fmt(o.bonus_coins)} moedas
           </li>
         )}
+        {info && (
+          <li>
+            <Building2 size={13} /> Força do time: <b>{info.strength}</b>
+            {info.division ? ` · ${info.division}` : ''}
+            {employed && info.current_strength != null ? ` · seu clube atual: ${info.current_strength}` : ''}
+          </li>
+        )}
       </ul>
+      {info && (
+        <button type="button" className="gx-btn-ghost of-squad-btn" onClick={() => setShowSquad(true)}>
+          Ver time
+        </button>
+      )}
+      {showSquad && <OfferSquad info={info} clubName={club?.name || o.club_id} onClose={() => setShowSquad(false)} />}
       {o.salary != null && <JobTerms key={`${o.id}:${o.negotiation_round}`} offer={o} onRefresh={onRefresh} />}
       {confirm ? (
         <div className="of-confirm">
@@ -334,6 +481,7 @@ export default function CareerTab({ ctx, initialView, actions }) {
           ) : (
             hub.offers.map((o) => <OfferCard key={o.id} o={o} employed={coach.status === 'employed'} busy={busy === `offer:${o.id}`} onRespond={actions.respondOffer} onRefresh={actions.refresh} />)
           )}
+          <Vacancies employed={coach.status === 'employed'} version={hub.runtime_version} />
           {hub.offer_history?.length > 0 && (
             <section className="sn-sec">
               <h2 className="gx-title">Respondidas</h2>

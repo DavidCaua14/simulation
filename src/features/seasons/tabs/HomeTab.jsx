@@ -15,6 +15,27 @@ import CompCard from '../components/CompCard'
 import { EmptyState } from '../ui/States'
 import { MSG_CATEGORIES, MSG_KIND, msgCategory, objectiveProgress } from '../utils/managerUtils'
 
+const RISK_TEXT = {
+  ok: () => 'Dentro da meta.',
+  attention: () => 'Fora da meta, ainda sem risco de demissão.',
+  danger: (tol) => `Perigo: mais de ${tol} posições abaixo da meta. A diretoria pode demitir.`,
+}
+
+// Meta da liga e risco: só ela decide a demissão; copas mexem com a confiança e o prêmio.
+function LeagueRisk({ status }) {
+  if (!status || status.pos == null) return null
+  return (
+    <div className={`ob-risk is-${status.risk}`} role="status">
+      <b>
+        Meta da liga: até o {status.target}º · hoje {status.pos}º
+      </b>
+      <small>
+        {RISK_TEXT[status.risk]?.(status.tolerance ?? 2) || ''} Só a liga decide a demissão; copas mexem com confiança e prêmio.
+      </small>
+    </div>
+  )
+}
+
 // INÍCIO: o que acontece HOJE (jogo, folga, sem clube, fim de temporada), a situação do treinador
 // (diretoria, torcida, reputação), objetivos, caixa de mensagens, calendário e campeonatos.
 export default function HomeTab({ ctx, actions }) {
@@ -107,6 +128,7 @@ export default function HomeTab({ ctx, actions }) {
           <h2 className="gx-title">
             <Target size={16} /> Objetivos da diretoria
           </h2>
+          <LeagueRisk status={hub.league_status} />
           <ul className="ob-list">
             {hub.objectives.map((o) => {
               const pr = objectiveProgress(o, o.kind === 'league_pos' ? hub.competitions.find((c) => c.id === o.competition)?.table?.played ?? leaguePlayed : null)

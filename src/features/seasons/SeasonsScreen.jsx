@@ -24,6 +24,7 @@ import MatchLive from './components/MatchLive'
 import MatchFlow from './matchflow/MatchFlow'
 import MatchReport from './components/MatchReport'
 import ParallelDigest from './components/ParallelDigest'
+import SeasonReward from './components/SeasonReward'
 import InboxSheet from './components/InboxSheet'
 import '../cards/cards.css'
 import HomeTab from './tabs/HomeTab'
@@ -436,7 +437,10 @@ export default function SeasonsScreen({ career: account, onBack }) {
         )}
 
         {report && <MatchReport fixtureId={report} onClose={() => setReport(null)} />}
-        {central && ctx && !live && <ClubCentral hub={hub} actions={actions} onClose={() => setCentral(false)} />}
+        {hub?.season_reward && !live && !preMatch && !digest && !report && (
+          <SeasonReward reward={hub.season_reward} onClose={() => refresh({ silent: true })} />
+        )}
+        {central && ctx && !live &&<ClubCentral hub={hub} actions={actions} onClose={() => setCentral(false)} />}
         {inbox && hub && <InboxSheet messages={[...hub.messages, ...worldMail]} focusId={inbox.focusId} initialCategory={inbox.category} onSeen={seenInbox} onAction={inboxAction} onClose={() => setInbox(null)} />}
 
 

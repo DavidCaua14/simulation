@@ -14,17 +14,30 @@ export default function useManagerData(tab = 'home', selected = null) {
   const alive = useRef(true)
   const reqId = useRef(0)
   const fixtureCache = useRef(new Map())
+  const previewCache = useRef(new Map())
+  const hubRef = useRef(null)
   const hasLoaded = useRef(false)
 
-  const refresh = useCallback(async ({ silent = false } = {}) => {
+  // reuseHub: troca de aba reaproveita o hub já carregado; só ações (refresh) voltam ao servidor.
+  const load = useCallback(async ({ silent = false, reuseHub = false } = {}) => {
     const mine = ++reqId.current
     if (!silent) setLoading(true)
     try {
-      const [h, comps] = await Promise.all([fetchHub(), fetchCompetitions()])
+      const cachedHub = reuseHub ? hubRef.current : null
+      const [h, comps] = await Promise.all([cachedHub || fetchHub(), fetchCompetitions()])
       registerCompetitions(comps)
       const ids = (h.competitions || []).map((c) => c.id)
       const modern = h.calendar_versions != null
-      const preview = modern ? await fetchCareerCalendar(tab === 'matches' ? 'mine' : 'preview') : null
+      const scope = tab === 'matches' ? 'mine' : 'preview'
+      const previewKey = `${h.career.id}:${h.season.id}:${scope}:${JSON.stringify(h.calendar_versions || {})}`
+      let preview = modern ? previewCache.current.get(previewKey) : null
+      if (modern && !preview) {
+        preview = await fetchCareerCalendar(scope)
+        if (alive.current && mine === reqId.current) {
+          previewCache.current.clear()
+          previewCache.current.set(previewKey, preview)
+        }
+      }
       const lists = await Promise.all(ids.map(async (c) => {
         const key = `${h.career.id}:${h.season.id}:${c}`
         const version = h.calendar_versions?.[c]
@@ -39,6 +52,7 @@ export default function useManagerData(tab = 'home', selected = null) {
       if (!alive.current || mine !== reqId.current) return null
       setSeasonCompetitions(ids)
       hasLoaded.current = true
+      hubRef.current = h
       setHub(h)
       setByComp(Object.fromEntries(ids.map((id, i) => [id, lists[i]])))
       setError('')
@@ -52,15 +66,25 @@ export default function useManagerData(tab = 'home', selected = null) {
     }
   }, [tab, selected])
 
+  const refresh = useCallback((opts = {}) => load({ ...opts, reuseHub: false }), [load])
+
   useEffect(() => {
     alive.current = true
     let cancelled = false
-    queueMicrotask(() => { if (!cancelled) refresh({ silent: hasLoaded.current }) })
+    queueMicrotask(() => { if (!cancelled) load({ silent: hasLoaded.current, reuseHub: hasLoaded.current }) })
     return () => {
       cancelled = true
       alive.current = false
     }
-  }, [refresh])
+  }, [load])
 
-  return { hub, byComp, loading, error, refresh, setHub }
+  const setHubCached = useCallback((next) => {
+    setHub((prev) => {
+      const value = typeof next === 'function' ? next(prev) : next
+      hubRef.current = value
+      return value
+    })
+  }, [])
+
+  return { hub, byComp, loading, error, refresh, setHub: setHubCached }
 }

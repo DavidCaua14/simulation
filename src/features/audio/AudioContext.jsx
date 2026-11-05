@@ -88,7 +88,7 @@ export function AudioProvider({ children }) {
       return undefined
     }
     const audio = new Audio()
-    audio.preload = 'auto'
+    audio.preload = 'none' // baixa a faixa só ao tocar, sem disputar banda com a primeira tela
     audio.src = TRACKS[0].url
     audio.volume = live.current.volume / 100
     audio.muted = live.current.muted

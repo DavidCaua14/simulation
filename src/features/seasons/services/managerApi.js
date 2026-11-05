@@ -40,6 +40,14 @@ export const fetchMatchReport = (fixtureId) => rpc('mgr_match_report', { p_fixtu
 export const advanceDays = (untilOffer = false) => rpc('mgr_advance', { p_until_offer: untilOffer })
 
 export const respondOffer = (offerId, accept) => rpc('mgr_offer_respond', { p_offer: offerId, p_accept: accept })
+// Proposta aberta: força coletiva do clube (mesmo cálculo para todos) e elenco, sem gravar nada
+export const fetchOfferClub = (offerId) => rpc('career_offer_club', { p_offer: offerId })
+// Vagas abertas (demissões da IA), candidatura e prévia do clube da vaga
+export const fetchVacancies = () => rpc('career_vacancies')
+export const applyVacancy = (vacancyId) => rpc('career_vacancy_apply', { p_vacancy: vacancyId })
+export const fetchVacancyClub = (vacancyId) => rpc('career_vacancy_club', { p_vacancy: vacancyId })
+// Prêmio de fim de temporada: marca como visto depois de exibido
+export const markSeasonRewardSeen = (seasonId) => rpc('career_season_reward_seen', { p_season: seasonId })
 export const resign = () => rpc('mgr_resign')
 export const startNextSeason = () => rpc('mgr_season_next')
 export const fetchHistory = () => rpc('mgr_history')
