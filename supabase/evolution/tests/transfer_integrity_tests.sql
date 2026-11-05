@@ -32,11 +32,8 @@ begin
   for i in 1..6 loop
    insert into public.cw_transfer_registrations values(cid,gen_random_uuid(),pid,'sport',d);
   end loop;
-  begin perform public.career_transfer_bid(p2,100000,1,0,false,gen_random_uuid());raise exception 'Expected six-registration cap';
-  exception when raise_exception then if sqlerrm not like 'Limite de 6 contratações registradas%' or sqlerrm not like '%10/07/2026%' then raise;end if;end;
-  update public.cw_world set today='2026-07-10' where career_id=cid;
+  -- Evolução 69 (CM17): não há limite de contratações por janela.
   r:=public.career_transfer_bid(p2,100000,1,0,false,gen_random_uuid());
-  if public.cw_registered_in_window(cid,'sport','2026-07-10')<>0 then raise exception 'Quota did not reset at next window';end if;
   raise exception using errcode='P5301',message='rollback window trial';
  exception when sqlstate 'P5301' then null;end;
  -- Stars refuse an unsuitable club even after their estimated age reaches veteran status.
@@ -126,16 +123,15 @@ begin
   select cash into starting_cash from public.cw_clubs where career_id=cid and club_id='sport';
   if not public.cw_register_transfer(oid) or not public.cw_register_transfer(oid) then raise exception 'Valid sixth registration failed';end if;
   if public.cw_registered_in_window(cid,'sport',d)<>6 or(select cash from public.cw_clubs where career_id=cid and club_id='sport')<>starting_cash-2*wage then raise exception 'Registration/bonus duplicated';end if;
-  -- A seventh valid agreement stays valid for the next window; it is never silently lost.
+  -- Evolução 69 (CM17): sem limite por janela; o sétimo acordo também entra no elenco na hora.
   wage:=public.cw_salary_demand(cid,p2,'sport');
   insert into public.cw_negotiations(career_id,player_id,buyer_club,initiator,status,fee,valuation,monthly_salary,signing_bonus,contract_years,created_on,reply_on,expires_on,register_on)
    values(cid,p2,'sport','user','agreed',0,1000,wage,2*wage,3,d,d,d+7,d) returning id into oid2;
-  if public.cw_register_transfer(oid2) or public.cw_register_transfer(oid2) then raise exception 'Seventh registration exceeded cap';end if;
-  if not exists(select 1 from public.cw_negotiations where id=oid2 and status='agreed' and register_on='2026-07-10') then raise exception 'Seventh agreement lost or postponed a year';end if;
+  if not public.cw_register_transfer(oid2) then raise exception 'Seventh agreement was not registered';end if;
   delete from public.cw_offer_history where negotiation_id=oid;
   delete from public.cw_commitments where negotiation_id=oid;
   delete from public.cw_negotiations where id=oid;
-  if public.cw_registered_in_window(cid,'sport',d)<>6 then raise exception 'Pruning restored consumed quota';end if;
+  if public.cw_registered_in_window(cid,'sport',d)<>7 then raise exception 'Pruning restored consumed quota';end if;
   raise exception using errcode='P5301',message='rollback registration trial';
  exception when sqlstate 'P5301' then null;end;
  if(select to_jsonb(c)-array['energy','energy_reset_at'] from public.careers c where id=cid)<>car-array['energy','energy_reset_at'] then raise exception 'Policy changed human level, XP, wallet or club';end if;

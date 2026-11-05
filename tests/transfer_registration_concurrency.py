@@ -1,4 +1,4 @@
-"""Two simultaneous registrations share the sixth slot. Local disposable PostgreSQL only."""
+"""Two simultaneous registrations (CM17, evolução 69: sem limite por janela) register once each. Local disposable PostgreSQL only."""
 from concurrent.futures import ThreadPoolExecutor
 import json, os, subprocess, sys, uuid
 container, database = sys.argv[1:3]
@@ -36,16 +36,16 @@ ids = sql(f"select id from public.cw_negotiations where career_id='{cid}' order 
 assert len(ids) == 2
 with ThreadPoolExecutor(max_workers=2) as pool:
     results = list(pool.map(lambda oid: sql(header + f"select public.cw_register_transfer('{oid}');commit;"), ids))
-assert sorted(lines[-2 if lines[-1] == 'COMMIT' else -1] for lines in results) == ['f', 't'], results
+assert sorted(lines[-2 if lines[-1] == 'COMMIT' else -1] for lines in results) == ['t', 't'], results
 state = json.loads(sql(f"""select jsonb_build_object(
  'registered',public.cw_registered_in_window('{cid}','sport','2026-01-05'),
  'completed',(select count(*) from public.cw_negotiations where career_id='{cid}' and status='completed'),
  'queued',(select count(*) from public.cw_negotiations where career_id='{cid}' and status='agreed' and register_on='2026-07-10'),
  'coins',(select coins from public.careers where id='{cid}'),
  'today',(select today from public.cw_world where career_id='{cid}'))""")[0])
-assert state == {'registered': 6, 'completed': 1, 'queued': 1, 'coins': 1000, 'today': '2026-01-05'}, state
-winner = sql(f"select id from public.cw_negotiations where career_id='{cid}' and status='completed'")[0]
+assert state == {'registered': 7, 'completed': 2, 'queued': 0, 'coins': 1000, 'today': '2026-01-05'}, state
+winner = sql(f"select id from public.cw_negotiations where career_id='{cid}' and status='completed' order by id")[0]
 assert 't' in sql(header + f"select public.cw_register_transfer('{winner}');commit;")
-assert sql(f"select count(*) from public.cw_transfer_registrations where career_id='{cid}'") == ['6']
-assert sql(f"select count(*) from public.cw_finance where career_id='{cid}' and kind='player_signing'") == ['1']
-print('PASS simultaneous registrations: one sixth signing, one preserved July agreement, one bonus payment, stable date and personal wallet')
+assert sql(f"select count(*) from public.cw_transfer_registrations where career_id='{cid}'") == ['7']
+assert sql(f"select count(*) from public.cw_finance where career_id='{cid}' and kind='player_signing'") == ['2']
+print('PASS simultaneous registrations: both signings registered once, one bonus payment each, stable date and personal wallet')

@@ -59,33 +59,14 @@ begin
  begin perform public.career_transfer_respond(rid,'accept',null,gen_random_uuid());raise exception 'Expected closed counteroffer';
  exception when raise_exception then if sqlerrm not like 'Janela de transferências fechada.%' then raise;end if;end;
  perform public.career_transfer_respond(rid,'reject',null,gen_random_uuid());
- -- Legacy, AI short-roster and human agreements all wait. No cash, contract or quota changes.
- next_date:=public.cw_next_window('BRA',d);
- select cash into before_cash from public.cw_clubs where career_id=cid and club_id='sport';
- for st in select unnest(array['agreed','precontract']) loop
-  foreach legacy in array array[false,true] loop
-   insert into public.cw_negotiations(career_id,player_id,buyer_club,initiator,status,fee,valuation,monthly_salary,contract_years,signing_bonus,created_on,reply_on,expires_on,register_on)
-    values(cid,other,'sport','user',st,0,1000,10000,2,20000,d,d,d+7,d) returning id into rid;
-   if legacy then insert into public.cw_market_legacy_agreements values(rid,cid);end if;
-   registered:=public.cw_register_transfer(rid);
-   if registered or not exists(select 1 from public.cw_negotiations where id=rid and status=st and register_on=next_date) then raise exception 'Agreement was lost or registered outside window: %, expected % / % / %',(select row_to_json(n) from public.cw_negotiations n where id=rid),next_date,st,legacy;end if;
-   if legacy then
-    begin
-     update public.cw_world set today=next_date+10 where career_id=cid;
-     registered:=public.cw_register_transfer(rid);
-     if not registered or not exists(select 1 from public.cw_negotiations where id=rid and status='completed') then raise exception 'Preserved agreement failed to register in next open window';end if;
-     raise exception using errcode='P5501',message='rollback future arrival';
-    exception when sqlstate 'P5501' then null;end;
-   end if;
-   perform public.cw_neg_close(rid,'rejected','test cleanup');
-  end loop;
- end loop;
- if(select cash from public.cw_clubs where career_id=cid and club_id='sport')<>before_cash or exists(select 1 from public.cw_transfer_registrations where career_id=cid) or (select club_id from public.mgr_players where career_id=cid and player_id=other) is not null then raise exception 'Deferred deal changed progress';end if;
- perform public.cw_ensure_club_finance(cid,'arsenal');
- insert into public.cw_negotiations(career_id,player_id,buyer_club,initiator,status,fee,valuation,monthly_salary,contract_years,created_on,reply_on,expires_on,register_on)
-  values(cid,other,'arsenal','ai','agreed',0,1000,10000,2,d,d,d+7,d) returning id into rid;
- registered:=public.cw_register_transfer(rid);
- if registered or (select register_on from public.cw_negotiations where id=rid)<>public.cw_next_window('ENG',d) then raise exception 'AI free-agent exception bypassed closed window';end if;
+ -- Evolução 69 (CM17): acordo fechado entra no elenco na hora, mesmo com a janela fechada.
+ begin
+  insert into public.cw_negotiations(career_id,player_id,buyer_club,initiator,status,fee,valuation,monthly_salary,contract_years,signing_bonus,created_on,reply_on,expires_on,register_on)
+   values(cid,other,'sport','user','agreed',0,1000,10000,2,0,d,d,d+7,d) returning id into rid;
+  registered:=public.cw_register_transfer(rid);
+  if not registered or (select club_id from public.mgr_players where career_id=cid and player_id=other)<>'sport' then raise exception 'Agreement did not register immediately';end if;
+  raise exception using errcode='P6901',message='rollback immediate arrival';
+ exception when sqlstate 'P6901' then null;end;
  -- Reproduce an old elite bargain signing: refusal never terminates the current contract early.
  perform public.cw_materialize_club(cid,'arsenal');
  select sp.id into elite from public.sim_players sp join public.sim_player_pos_ratings pr on pr.player_id=sp.id and pr.pos=sp.position where sp.club_id='arsenal' and pr.rating>=85 order by (sp.full_name ilike '%raya%') desc,sp.id limit 1;

@@ -20,7 +20,7 @@ const AREAS = [
 ]
 const STATES = {
   seller_review: 'Proposta pelo seu atleta', club_pending: 'Clube analisando', club_counter: 'Clube pede mais', player_pending: 'Atleta analisando',
-  player_counter: 'Negocie o contrato', player_accepted: 'Aceitou · confirme', agreed: 'Aguardando janela', precontract: 'Pré-contrato', completed: 'Concluída', rejected: 'Recusada',
+  player_counter: 'Negocie o contrato', player_accepted: 'Aceitou · confirme', agreed: 'Registrando', precontract: 'Registrando', completed: 'Concluída', rejected: 'Recusada',
   expired: 'Expirada', cancelled: 'Cancelada', failed_funds: 'Sem verba',
 }
 const CLOSED = new Set(['completed', 'rejected', 'expired', 'cancelled', 'failed_funds'])
