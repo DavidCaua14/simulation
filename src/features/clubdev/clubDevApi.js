@@ -44,3 +44,6 @@ export const requestLoan = (playerId, wageShare, role) => call('career_loan_requ
 export const listForLoan = (playerId, listed) => call('career_loan_list', { p_player: playerId, p_listed: listed })
 export const respondLoan = (loanId, accept) => call('career_loan_respond', { p_loan: loanId, p_accept: accept })
 export const setDifficulty = (id) => call('career_difficulty_set', { p_difficulty: id })
+// Exercícios pré-jogo (evolução 64): cobrados em moedas, valem por alguns jogos.
+export const fetchDrills = () => call('career_drills')
+export const buyDrill = (kind) => call('career_drill_buy', { p_kind: kind, p_request: rid() })

@@ -1,0 +1,104 @@
+-- Evolução 66 — negociação e renovação como no Championship Manager 17.
+--  * Contratar: oferta só de valor (sem parcelas, bônus nem pré-contrato). O clube aceita, pede uma oferta melhor ou recusa.
+--  * Contrato: salário SEMANAL e duração em anos. Abaixo do que o atleta pede, ele recusa e diz quanto quer
+--    ("deseja negociar mais?"); muito abaixo, recusa avisando que a oferta está longe do aceitável.
+--  * Renovar: mesmo contrato (salário semanal + anos).
+--  * Sem luvas, bônus por jogo/gol, papel prometido nem pré-contratos (a IA também deixa de fazê-los).
+-- Progresso preservado: contratos vigentes mantêm salário e duração; negociações em andamento seguem até o fim;
+-- parcelas de transferências já fechadas continuam sendo pagas. Bônus por jogo e gol deixam de existir.
+begin;
+
+-- Salário semanal (CM17) ↔ mensal (unidade guardada no banco)
+create or replace function public.cw_weekly(p_monthly numeric)
+returns bigint language sql immutable as $$ select round(coalesce(p_monthly,0)*12/52)::bigint $$;
+create or replace function public.cw_monthly(p_weekly numeric)
+returns bigint language sql immutable as $$ select greatest(1,round(coalesce(p_weekly,0)*52/12))::bigint $$;
+
+-- Folha = só salários (sem bônus por jogo e gol)
+create or replace function public.cw_contract_cost(p_player text,p_salary bigint,p_appearance bigint,p_goal bigint,p_role text)
+returns bigint language sql stable security definer set search_path=public as $$ select coalesce(p_salary,0) $$;
+update public.cw_contracts set appearance_bonus=0,goal_bonus=0 where status='active' and (appearance_bonus<>0 or goal_bonus<>0);
+
+-- Sem luvas mínimas para atleta livre
+create or replace function public.cw_minimum_signing(p_career uuid,p_player text,p_buyer text)
+returns bigint language sql stable as $$ select 0::bigint $$;
+
+-- A IA não faz mais pré-contratos (texto substituído com verificação)
+do $$ declare src text;begin
+ select pg_get_functiondef('public.cw_v32_tick(uuid)'::regprocedure) into src;
+ if src like '%pré-contratos desativados (CM17)%' then return;end if;
+ if position('-- Atleta satisfeito tende a esperar a renovação do clube atual.' in src)=0 then raise exception 'cw_v32_tick diferente do esperado';end if;
+ execute replace(src,'-- Atleta satisfeito tende a esperar a renovação do clube atual.',
+  E'-- pré-contratos desativados (CM17)\n   continue;\n   -- Atleta satisfeito tende a esperar a renovação do clube atual.');
+end $$;
+
+-- Papel interno do contrato (não aparece ao jogador): titular se estaria entre os 11 melhores do clube comprador
+create or replace function public.cw_cm_role(p_career uuid,p_player text,p_club text)
+returns text language sql stable security definer set search_path=public as $$
+ select case when (select count(*) from public.mgr_players mp join public.sim_players sp on sp.id=mp.player_id
+   join public.sim_player_pos_ratings r on r.player_id=sp.id and r.pos=sp.position
+   where mp.career_id=p_career and mp.club_id=p_club and mp.player_id<>p_player
+     and r.rating>(select r2.rating from public.sim_players s2 join public.sim_player_pos_ratings r2 on r2.player_id=s2.id and r2.pos=s2.position where s2.id=p_player))<11
+  then 'starter' else 'rotation' end
+$$;
+
+-- Oferta de transferência: só o valor (CM17)
+create or replace function public.career_transfer_offer(p_player text,p_fee bigint,p_request uuid)
+returns jsonb language plpgsql security definer set search_path=public as $$
+begin
+ if p_fee is null or p_fee<0 then raise exception 'Valor inválido';end if;
+ return public.career_transfer_bid(p_player,p_fee,1,0,false,p_request);
+end $$;
+
+-- Contrato com o atleta: salário semanal + anos
+create or replace function public.career_contract_offer(p_negotiation uuid,p_weekly_wage bigint,p_years int,p_request uuid)
+returns jsonb language plpgsql security definer set search_path=public as $$
+declare car public.careers;n public.cw_negotiations;own text;demand bigint;monthly bigint;r jsonb;
+begin
+ car:=public.mgr_lock();
+ select club_id into own from public.mgr_coach where career_id=car.id and status='employed';
+ select * into n from public.cw_negotiations where id=p_negotiation and career_id=car.id and buyer_club=own;
+ if not found then raise exception 'Negociação não encontrada';end if;
+ if p_weekly_wage is null or p_weekly_wage<1 then raise exception 'Salário inválido';end if;
+ monthly:=public.cw_monthly(p_weekly_wage);
+ demand:=public.cw_salary_demand(car.id,n.player_id,own);
+ if monthly<demand then
+  if monthly<demand*.75 then
+   raise exception using errcode='P6601',message=format('Recusei sua oferta de %s por semana. Ela está muito longe do que considero aceitável; para eu pensar no assunto, os termos precisam melhorar bastante.',public.cw_money_label(public.cw_weekly(monthly))),
+    detail=public.cw_weekly(demand)::text;
+  end if;
+  raise exception using errcode='P6602',message=format('Recusei sua oferta de %s por semana. Peço pelo menos %s por semana. Deseja negociar mais?',public.cw_money_label(public.cw_weekly(monthly)),public.cw_money_label(public.cw_weekly(demand))),
+   detail=public.cw_weekly(demand)::text;
+ end if;
+ r:=public.career_player_offer(p_negotiation,monthly,p_years,0,public.cw_cm_role(car.id,n.player_id,own),0,0,p_request);
+ return r||jsonb_build_object('weekly_wage',public.cw_weekly(monthly),'years',p_years);
+end $$;
+
+-- Renovação: abre (ou reaproveita) a negociação e já apresenta o contrato
+create or replace function public.career_contract_renew_offer(p_player text,p_weekly_wage bigint,p_years int,p_request uuid)
+returns jsonb language plpgsql security definer set search_path=public as $$
+declare r jsonb;
+begin
+ r:=public.career_contract_renew(p_player,p_request);
+ return public.career_contract_offer((r->>'id')::uuid,p_weekly_wage,p_years,md5(p_request::text||':offer')::uuid)||jsonb_build_object('id',r->>'id');
+end $$;
+
+-- Pedida do atleta em salário semanal (para a tela mostrar antes da oferta)
+create or replace function public.career_wage_demand(p_player text)
+returns jsonb language plpgsql security definer set search_path=public as $$
+declare car public.careers;own text;
+begin
+ car:=public.mgr_lock();
+ select club_id into own from public.mgr_coach where career_id=car.id and status='employed';
+ return jsonb_build_object('weekly_demand',public.cw_weekly(public.cw_salary_demand(car.id,p_player,own)),
+  'max_years',(select max_contract_years from public.cw_rules),'reason',public.cw_project_reason(car.id,p_player,own));
+end $$;
+
+revoke all on function public.cw_cm_role(uuid,text,text),public.cw_weekly(numeric),public.cw_monthly(numeric) from public,anon,authenticated;
+revoke all on function public.career_transfer_offer(text,bigint,uuid),public.career_contract_offer(uuid,bigint,int,uuid),
+ public.career_contract_renew_offer(text,bigint,int,uuid),public.career_wage_demand(text) from public,anon;
+grant execute on function public.career_transfer_offer(text,bigint,uuid),public.career_contract_offer(uuid,bigint,int,uuid),
+ public.career_contract_renew_offer(text,bigint,int,uuid),public.career_wage_demand(text) to authenticated;
+
+notify pgrst,'reload schema';
+commit;

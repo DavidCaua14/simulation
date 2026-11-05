@@ -1,22 +1,21 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Ambulance, ArrowLeftRight, CircleAlert, Ban, BatteryLow, Check, ChevronLeft, ChevronRight, ClipboardList, Flag, Sparkles, TriangleAlert, Users } from 'lucide-react'
+import { ArrowLeftRight, CircleAlert, Check, ChevronLeft, ChevronRight, ClipboardList, Flag, Sparkles, TriangleAlert, Users } from 'lucide-react'
 import Pitch, { PlayerToken } from '../components/Pitch'
-import BasePlayerCard from '../../cards/components/BasePlayerCard'
 import PositionFilter from '../components/PositionFilter'
 import PlayerPicker from '../components/PlayerPicker'
 import PlayerSheet from '../components/PlayerSheet'
 import TacticsPanel from '../components/TacticsPanel'
-import MoodBadge from '../components/MoodBadge'
-import { MOODS } from '../utils/mood'
+import MoraleTag from '../components/MoraleTag'
 import ContractPanel from '../components/ContractPanel'
-import { dateLabel } from '../services/careerWorldApi'
+import { dateLabel, weekly } from '../services/careerWorldApi'
+import { clubMoneyShort } from '../utils/clubMoney'
 import ClubCrest from '../../club/components/ClubCrest'
 import { getClubById } from '../../club/data/clubs'
 import { EmptyState, ErrorState, LoadingState } from '../ui/States'
 import useCatalog from '../hooks/useCatalog'
 import useDragSwap from '../hooks/useDragSwap'
 import { autoLineup, fetchSquad, saveLineup } from '../services/managerApi'
-import { DEFAULT_TACTICS, LINE_NAME, LINES, POS_LINE, condTone, lineupStrength, ovrTone, POS_ORDER, posFit } from '../utils/managerUtils'
+import { DEFAULT_TACTICS, LINES, POS_LINE, condTone, lineupStrength, ovrTone, POS_ORDER, posFit } from '../utils/managerUtils'
 import { COMP_SHORT } from '../utils/seasonUtils'
 import ClubDevPanel from '../../clubdev/ClubDevPanel'
 import { fetchClubDev } from '../../clubdev/clubDevApi'
@@ -61,6 +60,7 @@ export default function TeamTab({ hub, onSaved, notify, focusPlayerId = null, in
   const [saving, setSaving] = useState(false)
   const [positionFilter, setPositionFilter] = useState('')
   const [issues, setIssues] = useState([])
+  const [squadCols, setSquadCols] = useState('general')
   const [clubSection, setClubSection] = useState({ id: initialSection, n: 0 })
   const [familiarity, setFamiliarity] = useState(null) // entrosamento por formação (0–100), da gestão do clube
 
@@ -429,15 +429,6 @@ export default function TeamTab({ hub, onSaved, notify, focusPlayerId = null, in
               <Check size={14} /> Escalação pronta para o próximo jogo
             </p>
           )}
-          {squad.players.some((p) => p.morale != null) && (
-            <ul className="tt-moods" aria-label="Legenda de satisfação">
-              {MOODS.map((m) => (
-                <li key={m.id}>
-                  <MoodBadge morale={m.at < 0 ? 0 : m.at} size={13} /> {m.label}
-                </li>
-              ))}
-            </ul>
-          )}
           <p className="sn-hint">
             Arraste um jogador até outra vaga ou até o banco para trocar de lugar — ou toque nele para escolher da lista. A etiqueta abaixo do nome é a posição: no campo, a da vaga ("é MC" mostra a posição de origem de quem está improvisado); no banco, a posição de cada reserva. Fora de posição ele rende menos; cansado também. Mudar a formação toda hora reduz o entrosamento
             tático ({squad.lineup.formation_games} jogo{squad.lineup.formation_games === 1 ? '' : 's'} seguidos nesta formação).
@@ -448,64 +439,104 @@ export default function TeamTab({ hub, onSaved, notify, focusPlayerId = null, in
       {view === 'tactics' && (
         <>
           <h2 className="cm-screen-title">Instruções táticas</h2>
-          <TacticsPanel engineVersion={hub.simulation_version ?? 1} tactics={draft.tactics} onChange={(tactics) => update({ tactics })} />
+          <TacticsPanel tactics={draft.tactics} onChange={(tactics) => update({ tactics })} />
           <p className="sn-hint">As táticas valem a partir do próximo jogo. Durante a partida você ainda pode ajustá-las.</p>
         </>
       )}
 
       {view === 'squad' && (
-        <div className="sq">
-          {groups.filter((g) => g.players.length > 0).map((g) => (
-            <section key={g.line} className="sq-group">
-              <h3 className="gx-title">
-                {LINE_NAME[g.line]} <small>{g.players.length}</small>
-              </h3>
-              <ul>
-                {g.players.map((p) => {
-                  const inXI = Object.values(draft.slots).includes(p.id)
-                  const onBench = draft.bench.includes(p.id)
-                  return (
-                    <li key={p.id}>
-                      <button type="button" className={`sq-row ${p.available ? '' : 'is-out'}`} onClick={() => setInfo(p)}>
-                        <BasePlayerCard player={{ ...p, club_id: clubId }} width={112} />
-                        <span className="sq-name">
-                          <b>{p.short_name}</b>
-                          <small>
-                            {p.position}
-                            {p.position_estimated ? '*' : ''}
-                            {inXI ? ' · titular' : onBench ? ' · banco' : ''}
-                            {p.age != null ? ` · ${p.age} anos` : ''}
-                          </small>
-                          {(p.transfer_requested || p.transfer_listed || p.precontract || p.contract_expires) && (
-                            <span className="sq-tags">
-                              {p.transfer_requested && <em className="sq-tag bad">Pede para sair</em>}
-                              {p.precontract && <em className="sq-tag bad">Pré-contrato</em>}
-                              {p.transfer_listed && <em className="sq-tag warn">À venda</em>}
-                              {p.contract_expires && <em className={`sq-tag ${expiringSoon(p.contract_expires) ? 'warn' : ''}`}>Até {dateLabel(p.contract_expires).slice(3)}</em>}
-                            </span>
-                          )}
-                        </span>
-                        <MoodBadge morale={p.morale} size={16} />
-                        <span className="sq-flags">
-                          {p.injured_days > 0 && <Ambulance size={13} className="bad" />}
-                          {p.suspended > 0 && <Ban size={13} className="bad" />}
-                          {p.condition < 70 && !p.injured_days && <BatteryLow size={13} className="warn" />}
-                        </span>
-                        <span className={`sq-cond ${condTone(p.condition)}`} title={`Condição ${p.condition}%`}>
-                          <i style={{ width: `${p.condition}%` }} />
-                        </span>
-                        <span className="sq-st">
-                          {p.stats?.apps || 0}J {p.stats?.goals || 0}G
-                        </span>
-                        <span className={`sq-ovr o-${ovrTone(p.overall)}`}>{p.overall}</span>
-                      </button>
-                    </li>
-                  )
-                })}
-              </ul>
-            </section>
-          ))}
-          <p className="sn-hint">* posição detalhada estimada (a fonte do elenco só informava o setor). Atributos são estimativas de gameplay.</p>
+        <div className="sqt">
+          <div className="sn-seg sqt-tabs" role="tablist" aria-label="Colunas do elenco">
+            {[
+              ['general', 'Geral'],
+              ['stats', 'Estatísticas'],
+              ['finance', 'Financeiro'],
+            ].map(([id, label]) => (
+              <button key={id} type="button" role="tab" aria-selected={squadCols === id} className={squadCols === id ? 'is-on' : ''} onClick={() => setSquadCols(id)}>
+                {label}
+              </button>
+            ))}
+          </div>
+          <table className="sn-table sqt-table">
+            <thead>
+              <tr>
+                <th>Sel</th>
+                <th className="left">Jogador</th>
+                <th>Hab.</th>
+                {squadCols === 'general' && (
+                  <>
+                    <th>Status</th>
+                    <th>Moral</th>
+                    <th>Condição</th>
+                  </>
+                )}
+                {squadCols === 'stats' && (
+                  <>
+                    <th>J</th>
+                    <th>G</th>
+                    <th>A</th>
+                    <th>Nota</th>
+                  </>
+                )}
+                {squadCols === 'finance' && (
+                  <>
+                    <th>Salário/sem</th>
+                    <th>Contrato</th>
+                  </>
+                )}
+              </tr>
+            </thead>
+            <tbody>
+              {groups.flatMap((g) => g.players).map((p) => {
+                const inXI = Object.values(draft.slots).includes(p.id)
+                const onBench = draft.bench.includes(p.id)
+                const status = p.injured_days > 0 ? 'Lesão' : p.suspended > 0 ? 'Susp.' : p.transfer_listed ? 'À venda' : 'OK'
+                return (
+                  <tr key={p.id} className={`is-link ${p.available ? '' : 'is-out'}`} onClick={() => setInfo(p)}>
+                    <td>
+                      <span className={`sqt-sel ${inXI ? 'is-xi' : onBench ? 'is-bench' : ''}`} title={inXI ? 'Titular' : onBench ? 'Reserva' : 'Fora'}>
+                        {p.position}
+                      </span>
+                    </td>
+                    <td className="left">
+                      <b className="sqt-name">{p.short_name}</b>
+                    </td>
+                    <td>
+                      <b className={`sqt-ovr o-${ovrTone(p.overall)}`}>{p.overall}</b>
+                    </td>
+                    {squadCols === 'general' && (
+                      <>
+                        <td className={status === 'OK' ? '' : 'sqt-bad'}>{status}</td>
+                        <td>
+                          <MoraleTag morale={p.morale} trend={p.morale_trend} />
+                        </td>
+                        <td>
+                          <span className={`sqt-cond ${condTone(p.condition)}`}>
+                            <i style={{ width: `${Math.max(3, p.condition)}%` }} />
+                            <b>{Math.round(p.condition)}%</b>
+                          </span>
+                        </td>
+                      </>
+                    )}
+                    {squadCols === 'stats' && (
+                      <>
+                        <td>{p.stats?.apps || 0}</td>
+                        <td>{p.stats?.goals || 0}</td>
+                        <td>{p.stats?.assists || 0}</td>
+                        <td>{p.stats?.rating ? Number(p.stats.rating).toFixed(1) : '-'}</td>
+                      </>
+                    )}
+                    {squadCols === 'finance' && (
+                      <>
+                        <td>{p.monthly_salary != null ? clubMoneyShort(weekly(p.monthly_salary)) : '—'}</td>
+                        <td className={p.contract_expires && expiringSoon(p.contract_expires) ? 'sqt-bad' : ''}>{p.contract_expires ? dateLabel(p.contract_expires) : '—'}</td>
+                      </>
+                    )}
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
         </div>
       )}
 
@@ -534,7 +565,7 @@ export default function TeamTab({ hub, onSaved, notify, focusPlayerId = null, in
             <ChevronLeft size={17} /> Voltar
           </button>
           <button type="button" className={`gx-btn tt-save ${dirty ? 'is-dirty' : ''}`} onClick={flow && initialView === 'tactics' ? confirmFlow : handleSave} disabled={saving || (!dirty && !(flow && initialView === 'tactics'))}>
-            <Check size={17} /> {saving ? 'Salvando…' : dirty ? 'Confirmar' : 'Confirmado'}
+            <Check size={17} /> {saving ? 'Salvando…' : dirty || flow ? 'Confirmar' : 'Confirmado'}
           </button>
         </div>
       )}

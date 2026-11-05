@@ -21,88 +21,91 @@ export const ATTR_GROUPS = [
   { id: 'phy', label: 'Físico', attrs: [['pace', 'Velocidade'], ['stamina', 'Resistência'], ['strength', 'Força']] },
 ]
 
-// ---- Táticas: mesmas opções e efeitos do motor (03_engine.sql) ----
-export const DEFAULT_TACTICS = { mentality: 0, pressing: 'medium', line: 'medium', tempo: 'normal', build: 'mixed', width: 'mixed', manage: 'normal', tackles: 'normal' }
-
-export const MENTALITY = [
-  { v: -2, label: 'Retranca', short: 'Retranca' },
-  { v: -1, label: 'Defensiva', short: 'Defens.' },
-  { v: 0, label: 'Equilibrada', short: 'Equil.' },
-  { v: 1, label: 'Ofensiva', short: 'Ofens.' },
-  { v: 2, label: 'Tudo ao ataque', short: 'Ataque' },
-]
+// ---- Táticas do CM17 (evolução 64): o servidor deriva as chaves internas do motor a partir destas ----
+export const DEFAULT_TACTICS = { style: 'neutral', attack: 'mixed', passing: 'mixed', tackling: 'balanced', tempo: 'normal', marking: 'medium', long_shots: 'sometimes', set_pieces: 'cross', crossing: 'mixed' }
 
 export const TACTIC_GROUPS = [
   {
-    id: 'tackles',
-    label: 'Entradas',
+    id: 'style',
+    label: 'Estilo',
+    column: true,
     options: [
-      { v: 'cautious', label: 'Cautelosas', effect: 'Menos faltas e risco disciplinar. Útil para proteger atletas já advertidos.' },
-      { v: 'normal', label: 'Normais', effect: 'Disputa equilibrada. Técnica, disciplina, cansaço e rigor da arbitragem influenciam os cartões.' },
-      { v: 'aggressive', label: 'Firmes', effect: 'Mais contato e faltas, com maior risco de cartões e expulsões. Use com cuidado.' },
+      { v: 'defensive', label: 'Defensivo', effect: 'Time recuado: sofre menos gols e cria menos.' },
+      { v: 'neutral', label: 'Neutro', effect: 'Equilíbrio entre atacar e defender.' },
+      { v: 'attacking', label: 'Ataque', effect: 'Mais gente no ataque: cria mais e se expõe mais.' },
+      { v: 'counter', label: 'Contra', effect: 'Defende baixo e sai rápido: transições perigosas, menos posse.' },
     ],
   },
   {
-    id: 'pressing',
-    label: 'Pressão na saída de bola',
+    id: 'attack',
+    label: 'Ataque',
+    column: true,
     options: [
-      { v: 'low', label: 'Baixa', effect: 'Time compacto e descansado: cansa bem menos e faz menos faltas, mas o rival fica mais com a bola.' },
-      { v: 'medium', label: 'Média', effect: 'Equilíbrio entre recuperar a bola e poupar energia.' },
-      { v: 'high', label: 'Alta', effect: 'Rouba mais bolas e cria mais jogadas, mas o desgaste físico sobe muito e saem mais faltas e cartões.' },
+      { v: 'left', label: 'Ponta esquerda', effect: 'Jogadas pelo lado esquerdo, com cruzamentos.' },
+      { v: 'right', label: 'Ala direita', effect: 'Jogadas pelo lado direito, com cruzamentos.' },
+      { v: 'both', label: 'Duas alas', effect: 'Ataque aberto pelos dois lados.' },
+      { v: 'central', label: 'Central', effect: 'Jogadas por dentro, finalizações um pouco melhores.' },
+      { v: 'mixed', label: 'Misto', effect: 'Usa o meio e as pontas.' },
     ],
   },
-  {
-    id: 'line',
-    label: 'Linha defensiva',
-    options: [
-      { v: 'low', label: 'Recuada', effect: 'Menos espaço nas costas e quase nenhum impedimento do rival, porém ele chega mais vezes à sua área.' },
-      { v: 'medium', label: 'Média', effect: 'Posição padrão da defesa.' },
-      { v: 'high', label: 'Adiantada', effect: 'O rival ataca menos e cai mais em impedimento, mas atacantes rápidos levam vantagem nas costas.' },
-    ],
-  },
-  {
-    id: 'tempo',
-    label: 'Ritmo de jogo',
-    options: [
-      { v: 'slow', label: 'Cadenciado', effect: 'Mais posse e menos cansaço, com menos finalizações.' },
-      { v: 'normal', label: 'Normal', effect: 'Ritmo padrão.' },
-      { v: 'fast', label: 'Acelerado', effect: 'Mais transições e chutes, mais cansaço e menos controle da posse.' },
-    ],
-  },
-  {
-    id: 'build',
-    label: 'Construção',
-    options: [
-      { v: 'short', label: 'Passes curtos', effect: 'Mais posse e chances de melhor qualidade, porém menos frequentes.' },
-      { v: 'mixed', label: 'Mista', effect: 'Alterna passes curtos e longos.' },
-      { v: 'direct', label: 'Bola longa', effect: 'Chega mais vezes ao ataque, com finalizações piores e mais impedimentos.' },
-    ],
-  },
-  {
-    id: 'width',
-    label: 'Foco do ataque',
-    options: [
-      { v: 'center', label: 'Pelo meio', effect: 'Jogadas trabalhadas por dentro: menos cruzamentos, finalizações um pouco melhores.' },
-      { v: 'mixed', label: 'Variado', effect: 'Usa o meio e as pontas.' },
-      { v: 'wide', label: 'Pelas pontas', effect: 'Muitos cruzamentos: cabeceadores e jogo aéreo ganham importância.' },
-    ],
-  },
-  {
-    id: 'manage',
-    label: 'Gestão do resultado',
-    options: [
-      { v: 'keep', label: 'Segurar', effect: 'Quando estiver vencendo, recua automaticamente a partir dos 70 minutos.' },
-      { v: 'normal', label: 'Normal', effect: 'Mantém a postura escolhida o jogo todo.' },
-      { v: 'push', label: 'Buscar', effect: 'Sem estar vencendo, avança automaticamente a partir dos 60 minutos.' },
-    ],
-  },
+  { id: 'passing', label: 'Passe', options: [
+    { v: 'short', label: 'Curto', effect: 'Mais posse e chances melhores, porém menos frequentes.' },
+    { v: 'mixed', label: 'Misto', effect: 'Alterna passes curtos e longos.' },
+    { v: 'long', label: 'Longo', effect: 'Chega mais vezes ao ataque, com finalizações piores e mais impedimentos.' },
+  ] },
+  { id: 'tackling', label: 'Desarme', options: [
+    { v: 'light', label: 'Leve', effect: 'Menos faltas e cartões.' },
+    { v: 'balanced', label: 'Equilibrado', effect: 'Disputa normal.' },
+    { v: 'heavy', label: 'Pesado', effect: 'Rouba mais bolas, com mais faltas e cartões.' },
+  ] },
+  { id: 'tempo', label: 'Ritmo', options: [
+    { v: 'slow', label: 'Lento', effect: 'Mais posse e menos cansaço, com menos finalizações.' },
+    { v: 'normal', label: 'Médio', effect: 'Ritmo padrão.' },
+    { v: 'fast', label: 'Rápido', effect: 'Mais chegadas e chutes, mais cansaço.' },
+  ] },
+  { id: 'marking', label: 'Marcação', options: [
+    { v: 'low', label: 'Pouca', effect: 'Time compacto e descansado; o rival fica mais com a bola.' },
+    { v: 'medium', label: 'Média', effect: 'Equilíbrio entre pressionar e poupar energia.' },
+    { v: 'high', label: 'Alta', effect: 'Pressão e linha alta: recupera mais bolas, cansa mais e deixa espaço nas costas.' },
+  ] },
+  { id: 'long_shots', label: 'Chutes longos', options: [
+    { v: 'often', label: 'Freq', effect: 'Chuta muito de fora da área: mais finalizações, de qualidade menor. Bom com bons finalizadores.' },
+    { v: 'sometimes', label: 'Às vezes', effect: 'Chuta de fora quando aparece a chance.' },
+    { v: 'rarely', label: 'Raro', effect: 'Só finaliza de perto: menos chutes, mais qualidade.' },
+  ] },
+  { id: 'set_pieces', label: 'Bola parada', options: [
+    { v: 'shoot', label: 'Chute', effect: 'Faltas cobradas direto pelo batedor de falta.' },
+    { v: 'cross', label: 'Cruz.', effect: 'Faltas e escanteios levantados na área: bom com cabeceadores.' },
+    { v: 'short', label: 'Curto', effect: 'Cobranças curtas: mantém a posse, gera pouco perigo.' },
+  ] },
+  { id: 'crossing', label: 'Cruzamento', options: [
+    { v: 'byline', label: 'Fundo', effect: 'Vai à linha de fundo: muitos cabeceios.' },
+    { v: 'deep', label: 'L. de fundo', effect: 'Cruza de trás: cabeceios frequentes.' },
+    { v: 'mixed', label: 'Misto', effect: 'Varia os cruzamentos.' },
+    { v: 'rarely', label: 'Raro', effect: 'Quase não cruza: jogo pelo chão.' },
+  ] },
 ]
 
-export const MENTALITY_EFFECT =
-  'Mais ofensiva = mais chances criadas e defesa mais exposta. Mais defensiva = menos gols sofridos e menos presença no ataque.'
-
+// Táticas gravadas antes da evolução 64 (ou vindas da IA) só têm as chaves internas: converte para o CM17.
+export function toCM(t = {}) {
+  if (!t) return { ...DEFAULT_TACTICS }
+  const m = Number(t.mentality || 0)
+  return {
+    ...DEFAULT_TACTICS,
+    style: t.style || (m < 0 ? 'defensive' : m > 0 ? 'attacking' : 'neutral'),
+    attack: t.attack || ({ wide: 'both', center: 'central' }[t.width] ?? 'mixed'),
+    passing: t.passing || ({ short: 'short', direct: 'long' }[t.build] ?? 'mixed'),
+    tackling: t.tackling || ({ cautious: 'light', aggressive: 'heavy' }[t.tackles] ?? 'balanced'),
+    tempo: t.tempo || 'normal',
+    marking: t.marking || t.pressing || 'medium',
+    long_shots: t.long_shots || 'sometimes',
+    set_pieces: t.set_pieces || 'cross',
+    crossing: t.crossing || ({ wide: 'byline', center: 'rarely' }[t.width] ?? 'mixed'),
+  }
+}
+// Só as chaves do CM17 vão ao servidor: ele deriva as internas (postura, construção, pressão...).
+export const cmOnly = (t) => Object.fromEntries(Object.keys(DEFAULT_TACTICS).map((k) => [k, toCM(t)[k]]))
 export const tacticLabel = (group, v) => TACTIC_GROUPS.find((g) => g.id === group)?.options.find((o) => o.v === v)?.label ?? v
-export const mentalityLabel = (v) => MENTALITY.find((m) => m.v === Number(v))?.label ?? 'Equilibrada'
 
 // ---- Tons visuais ----
 export const fitTone = (fit) => (fit >= 0.97 ? 'ok' : fit >= 0.86 ? 'warn' : 'bad')
@@ -211,10 +214,11 @@ export const MSG_KIND = {
 // Assuntos da caixa de mensagens (categoria gravada no banco; mensagens antigas sem categoria ficam em Clube).
 export const MSG_CATEGORIES = [
   { id: 'all', label: 'Todas' },
-  { id: 'squad', label: 'Elenco', hint: 'Satisfação, pedidos de saída e contratos' },
+  { id: 'squad', label: 'Elenco', hint: 'Moral, lesões e contratos' },
   { id: 'market', label: 'Mercado', hint: 'Propostas recebidas e respostas das negociações' },
   { id: 'club', label: 'Clube', hint: 'Diretoria, torcida, departamento médico e resultados' },
   { id: 'career', label: 'Carreira', hint: 'Propostas de trabalho para você' },
+  { id: 'world', label: 'Mundo', hint: 'Notícias do futebol: contratações, técnicos e resultados' },
 ]
 export const msgCategory = (m) => m.category || (m.kind === 'offer' ? 'career' : 'club')
 export const MSG_ACTIONS = {

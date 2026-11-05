@@ -5,8 +5,9 @@ import { getClubById } from '../club/data/clubs'
 import useManagerData from './hooks/useManagerData'
 import useCountdown from './hooks/useCountdown'
 import { createWorldSimulation } from './utils/worldSimulation'
-import { acknowledgeAttention, advanceWorld, dateLabel, requestId } from './services/careerWorldApi'
+import { acknowledgeAttention, advanceWorld, dateLabel, newsFeed, readNews, requestId } from './services/careerWorldApi'
 import WorldPanel from './world/WorldPanel'
+import TransfersPanel from './transfers/TransfersPanel'
 import { advanceDays, fetchHub, markMessagesRead, resign, respondOffer, startMatch, startNextSeason } from './services/managerApi'
 import { flattenFixtures, playerHistory, projectCalendar } from './utils/seasonSelectors'
 import { msgCategory } from './utils/managerUtils'
@@ -33,7 +34,7 @@ import CareerTab from './tabs/CareerTab'
 import './seasons.css'
 import './manager.css'
 
-const TITLES = { home: 'Início', team: 'Time', matches: 'Jogos', comps: 'Torneios', career: 'Carreira', world: 'Mundo' }
+const TITLES = { home: 'Início', team: 'Time', matches: 'Jogos', comps: 'Torneios', career: 'Carreira', world: 'Finanças', transfers: 'Transferências' }
 
 // MODO CARREIRA (treinador): você comanda um clube real. Tudo é decidido no banco (supabase/manager/*.sql);
 // O avanço até a próxima partida processa as competições paralelas no mesmo calendário.
@@ -113,12 +114,15 @@ export default function SeasonsScreen({ career: account, onBack }) {
   const matchReady = Boolean(preMatch && hub?.next_event?.kind === 'mine' && hub.next_event.fixture_id === preMatch.fixture_id && !(hub.next_event.days_until > 0) && !hub.world?.needs_sync && busy !== 'prepare')
   const blockedText = worldStatus === 'syncing' ? 'Preparando a próxima partida…' : finished ? 'Temporada encerrada' : remaining != null ? `Sem energia · recarga em ${formatRemaining(remaining)}` : 'Sem energia'
 
-  const goTab = useCallback((id, sub = null) => {
+  // CM17: o antigo "Mundo" virou Transferências (busca, pré-seleção, negociações, venda); Finanças fica no Clube.
+  const goTab = useCallback((target, sub = null) => {
+    const id = target === 'world' && sub !== 'finance' ? 'transfers' : target
     setTeamFocus(id === 'team' ? sub : null)
     setCentral(false)
     setTab(id)
     if (id === 'career') setCareerView(sub)
-    if (id === 'world' && ['news','finance','market','deals','contracts'].includes(sub)) setWorldArea(sub)
+    if (id === 'world') setWorldArea('finance')
+    if (id === 'transfers') setWorldArea(sub === 'deals' ? 'deals' : sub === 'shortlist' ? 'shortlist' : 'search')
   }, [])
 
   // ---- ações ----
@@ -232,16 +236,30 @@ export default function SeasonsScreen({ career: account, onBack }) {
       notify('Você deixou o clube. Avance os dias para receber propostas.', 'info')
     })
 
-  const openInbox = (focus = null) => setInbox({ focusId: typeof focus === 'number' ? focus : null, category: typeof focus === 'string' ? focus : 'all' })
+  // E-mail (CM17): mensagens do clube + notícias do mundo do futebol numa só caixa de entrada.
+  const [worldMail, setWorldMail] = useState([])
+  const openInbox = (focus = null) => {
+    setInbox({ focusId: typeof focus === 'number' ? focus : null, category: typeof focus === 'string' ? focus : 'all' })
+    if (hub?.world)
+      newsFeed()
+        .then((rows) =>
+          mounted.current &&
+          setWorldMail((rows || []).map((n) => ({ id: `n${n.id}`, newsId: n.id, kind: 'news', category: 'world', title: n.title, body: n.body, read: n.read, club_id: n.club_id, day_label: dateLabel(n.on_date) }))),
+        )
+        .catch(() => {})
+  }
   const seenInbox = (ids) => {
-    if (ids?.length) markMessagesRead(ids).then(() => refresh({ silent: true })).catch(() => {})
+    const news = (ids || []).filter((id) => typeof id === 'string' && id.startsWith('n')).map((id) => Number(id.slice(1)))
+    const msgs = (ids || []).filter((id) => typeof id === 'number')
+    if (msgs.length) markMessagesRead(msgs).then(() => refresh({ silent: true })).catch(() => {})
+    if (news.length) readNews(news).then(() => setWorldMail((list) => list.map((m) => (news.includes(m.newsId) ? { ...m, read: true } : m)))).catch(() => {})
   }
   // Atalho de cada mensagem: leva à tela onde a decisão é tomada.
   const inboxAction = (m) => {
     setInbox(null)
     if (m.action === 'open_negotiations' || m.action === 'open_finance') {
       setWorldArea(m.action === 'open_finance' ? 'finance' : 'deals')
-      setTab('world')
+      setTab(m.action === 'open_finance' ? 'world' : 'transfers')
     } else if (m.action === 'open_player') {
       setTeamFocus(m.player_id || null)
       setTab('team')
@@ -274,7 +292,7 @@ export default function SeasonsScreen({ career: account, onBack }) {
     openAttention: () => {
       if (hub.attention?.action === 'offers') goTab('career', 'offers')
       else if (hub.attention?.action === 'contract') goTab('career', 'profile')
-      else if (hub.attention?.action === 'contracts') { setWorldArea('contracts'); setTab('world') }
+      else if (hub.attention?.action === 'contracts') goTab('team')
       else { setWorldArea('deals'); setTab('world') }
     },
     advance,
@@ -347,7 +365,8 @@ export default function SeasonsScreen({ career: account, onBack }) {
           {ctx && tab === 'comps' && (
             <CompetitionsTab ctx={ctx} selected={compSel || ctx.nextEvent?.competition || hub?.competitions?.[0]?.id} onSelect={setCompSel} onOpenReport={actions.openReport} />
           )}
-          {ctx && tab === 'world' && hub.world && <WorldPanel key={worldArea} initialArea={worldArea} hub={hub} onRefresh={actions.refresh} worldStatus={worldStatus} onHome={() => goTab('home')} onTeam={playerId => goTab('team', playerId)} />}
+          {ctx && tab === 'transfers' && hub.world && <TransfersPanel key={worldArea} initialArea={worldArea} hub={hub} notify={notify} onRefresh={actions.refresh} onTeam={(playerId) => goTab('team', playerId)} />}
+          {ctx && tab === 'world' && hub.world && <WorldPanel key={worldArea} initialArea="finance" financeOnly hub={hub} onRefresh={actions.refresh} worldStatus={worldStatus} onHome={() => goTab('home')} onTeam={playerId => goTab('team', playerId)} />}
           {ctx && tab === 'career' && <CareerTab key={careerView || 'profile'} ctx={ctx} initialView={careerView} actions={actions} />}
         </div>
 
@@ -418,7 +437,7 @@ export default function SeasonsScreen({ career: account, onBack }) {
 
         {report && <MatchReport fixtureId={report} onClose={() => setReport(null)} />}
         {central && ctx && !live && <ClubCentral hub={hub} actions={actions} onClose={() => setCentral(false)} />}
-        {inbox && hub && <InboxSheet messages={hub.messages} focusId={inbox.focusId} initialCategory={inbox.category} onSeen={seenInbox} onAction={inboxAction} onClose={() => setInbox(null)} />}
+        {inbox && hub && <InboxSheet messages={[...hub.messages, ...worldMail]} focusId={inbox.focusId} initialCategory={inbox.category} onSeen={seenInbox} onAction={inboxAction} onClose={() => setInbox(null)} />}
 
 
       </div>

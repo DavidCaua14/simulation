@@ -1,52 +1,44 @@
-import { DEFAULT_TACTICS, MENTALITY, MENTALITY_EFFECT, TACTIC_GROUPS } from '../utils/managerUtils'
+import { TACTIC_GROUPS, cmOnly, toCM } from '../utils/managerUtils'
 
-// Instruções do time. Cada escolha mostra o efeito principal — o mesmo que o motor aplica na partida.
-export default function TacticsPanel({ tactics, onChange, compact = false, engineVersion = 1 }) {
-  const t = { ...DEFAULT_TACTICS, ...(tactics || {}) }
-  const set = (k, v) => onChange({ ...t, [k]: v })
-  const ment = MENTALITY.find((m) => m.v === Number(t.mentality)) || MENTALITY[2]
+// INSTRUÇÕES TÁTICAS no formato do CM17: Estilo e Ataque em colunas, e as linhas Passe, Desarme, Ritmo,
+// Marcação, Chutes longos, Bola parada e Cruzamento. Valem antes do jogo e durante a partida.
+export default function TacticsPanel({ tactics, onChange, compact = false }) {
+  const t = toCM(tactics)
+  const set = (k, v) => onChange(cmOnly({ ...t, [k]: v }))
+  const columns = TACTIC_GROUPS.filter((g) => g.column)
+  const rows = TACTIC_GROUPS.filter((g) => !g.column)
+  const effect = (g) => g.options.find((o) => o.v === t[g.id])?.effect
+
   return (
-    <div className={`tp ${compact ? 'is-compact' : ''}`}>
-      <section className="tp-group tp-ment">
-        <header>
-          <b>Postura</b>
-          <span className="tp-val">{ment.label}</span>
-        </header>
-        <div className="tp-ment-scale" role="radiogroup" aria-label="Postura">
-          {MENTALITY.map((m) => (
-            <button
-              key={m.v}
-              type="button"
-              role="radio"
-              aria-checked={Number(t.mentality) === m.v}
-              className={`m${m.v + 2} ${Number(t.mentality) === m.v ? 'is-on' : ''}`}
-              onClick={() => set('mentality', m.v)}
-            >
-              {m.short}
-            </button>
-          ))}
-        </div>
-        {!compact && <p>{MENTALITY_EFFECT}</p>}
-      </section>
-
-      {TACTIC_GROUPS.filter((g) => engineVersion >= 2 || g.id !== 'tackles').map((g) => {
-        const cur = g.options.find((o) => o.v === t[g.id]) || g.options[1]
-        return (
-          <section key={g.id} className="tp-group">
-            <header>
-              <b>{g.label}</b>
-            </header>
-            <div className="tp-opts" role="radiogroup" aria-label={g.label}>
+    <div className={`tpc ${compact ? 'is-compact' : ''}`}>
+      <div className="tpc-cols">
+        {columns.map((g) => (
+          <section key={g.id} className="tpc-col" role="radiogroup" aria-label={g.label}>
+            <h4>{g.label}</h4>
+            {g.options.map((o) => (
+              <button key={o.v} type="button" role="radio" aria-checked={t[g.id] === o.v} className={t[g.id] === o.v ? 'is-on' : ''} title={o.effect} onClick={() => set(g.id, o.v)}>
+                {o.label}
+              </button>
+            ))}
+            {!compact && <p>{effect(g)}</p>}
+          </section>
+        ))}
+      </div>
+      <div className="tpc-rows">
+        {rows.map((g) => (
+          <section key={g.id} className="tpc-row" role="radiogroup" aria-label={g.label}>
+            <h4>{g.label}</h4>
+            <div style={{ gridTemplateColumns: `repeat(${g.options.length}, minmax(0, 1fr))` }}>
               {g.options.map((o) => (
-                <button key={o.v} type="button" role="radio" aria-checked={t[g.id] === o.v} className={t[g.id] === o.v ? 'is-on' : ''} onClick={() => set(g.id, o.v)}>
+                <button key={o.v} type="button" role="radio" aria-checked={t[g.id] === o.v} className={t[g.id] === o.v ? 'is-on' : ''} title={o.effect} onClick={() => set(g.id, o.v)}>
                   {o.label}
                 </button>
               ))}
             </div>
-            <p>{cur.effect}</p>
+            {!compact && <p>{effect(g)}</p>}
           </section>
-        )
-      })}
+        ))}
+      </div>
     </div>
   )
 }

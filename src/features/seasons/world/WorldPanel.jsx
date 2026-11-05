@@ -27,7 +27,7 @@ function NumberField({ label, value, onChange, min = 0, max = 100000000, cash = 
 }
 function ClubLine({ id }) { return <span className="cw-club"><ClubCrest clubId={id} size={22} />{clubName(id)}</span> }
 
-export default function WorldPanel({ hub, onRefresh, initialArea = 'news', worldStatus = 'idle', onHome, onTeam }) {
+export default function WorldPanel({ hub, onRefresh, initialArea = 'news', worldStatus = 'idle', onHome, onTeam, financeOnly = false }) {
   const [area, updateArea] = useState(initialArea)
   const areaRef = useRef(initialArea)
   const [showFilters, setShowFilters] = useState(false)
@@ -72,8 +72,8 @@ export default function WorldPanel({ hub, onRefresh, initialArea = 'news', world
   const edit = field => value => setTerms(t => ({ ...t, [field]: value }))
   if (!w) return null
   return <div className="cw-panel">
-    <h2 className="cm-screen-title">Mundo • {AREA_TITLE[area]}</h2>
-    <section className="cw-hero">
+    <h2 className="cm-screen-title">{financeOnly ? 'Clube • Finanças' : `Mundo • ${AREA_TITLE[area]}`}</h2>
+    {!financeOnly && <section className="cw-hero">
       <div className="cw-hero-top">
         <span className="cw-hero-icon"><Globe2 size={22} /></span>
         <div className="cw-hero-txt"><small>Brasil e Europa</small><h2>Mundo do futebol</h2></div>
@@ -87,11 +87,11 @@ export default function WorldPanel({ hub, onRefresh, initialArea = 'news', world
       <p role="status" className="cw-hero-note">{worldStatus === 'retrying' ? 'Aguardando conexão para continuar a simulação automaticamente…' : 'Competições, mercado e contratos avançam juntos a cada rodada, quando você toca em JOGAR.'}</p>
       {onHome && hub.season.status === 'finished' && <button type="button" className="sn-link" onClick={onHome}>Ver a próxima temporada no Início</button>}
       {onHome && !w.needs_sync && hub.next_event?.kind === 'mine' && !(hub.next_event.days_until > 0) && <button type="button" className="sn-link" onClick={onHome}>Ir para a partida no Início</button>}
-    </section>
+    </section>}
     {error && <p className="cw-alert" role="alert">{error}</p>}{message && <p className="cw-notice" role="status">{message}</p>}
-    <div className="sn-seg cw-nav" role="tablist" aria-label="Gestão do clube">
+    {!financeOnly && <div className="sn-seg cw-nav" role="tablist" aria-label="Gestão do clube">
       {[['news','Notícias'],['finance','Finanças'],['market','Mercado'],['deals','Negociações'],['contracts','Contratos']].map(([id,label]) => <button key={id} role="tab" aria-selected={area===id} className={area===id?'is-on':''} onClick={() => setArea(id)}>{label}{id==='news'&&w.news_unread>0&&<em aria-hidden="true">{w.news_unread}</em>}</button>)}
-    </div>
+    </div>}
     {area === 'news' && <div className="sn-stack">{rows.length===0 && <p className="sn-hint">Nenhuma notícia neste momento.</p>}{rows.map(n => <article key={n.id} className={`cw-card cw-news ${n.read?'':'is-new'}`}>
       <small><Newspaper size={13}/> {dateLabel(n.on_date)}</small><h3>{n.title}</h3>
       {n.metadata?.big_signing && <div className="cw-announcement"><b>NOVA CONTRATAÇÃO</b><button className="cw-card-button" onClick={() => run(async () => setDetail(await fetchPlayer(n.player_id)))}><BasePlayerCard player={n.player || { id:n.player_id,name:n.title.split(' assina')[0],club_id:n.club_id,overall:n.metadata.overall,position:n.metadata.position }} width={128}/></button><span>{clubName(n.metadata.from_club)} → {clubName(n.metadata.to_club)}</span><b>{money(n.metadata.fee)}</b></div>}
@@ -122,7 +122,7 @@ export default function WorldPanel({ hub, onRefresh, initialArea = 'news', world
       {player.club_id!==own && player.project_reason && <p className="cw-alert" role="status">{player.project_reason}</p>}
       <button className="gx-btn-ghost" disabled={busy} onClick={()=>run(async()=>setDetail(await fetchPlayer(player.id)))}>Atributos e estatísticas</button>
       {player.club_id===own && <RenewalNotice expiresOn={player.expires_on} today={w.today} demand={player.salary_demand} projectReason={player.project_reason} />}
-      {player.club_id===own ? <div className="sn-stack"><h3>Gestão do contrato</h3><p>{player.transfer_requested?'O atleta quer sair. Procure melhorar seu papel e os pagamentos.':'Cumpra o papel prometido com oportunidades em campo.'}</p><label className="cw-field">Papel prometido<select aria-label="Papel prometido" value={player.promised_role} onChange={e=>{const role=e.target.value;run(async()=>{await worldRpc('career_player_role',{p_player:player.id,p_role:role});setPlayer(p=>({...p,promised_role:role}))})}}>{Object.entries(roles).map(([id,label])=><option key={id} value={id}>{label}</option>)}</select></label><button className="gx-btn" disabled={busy} onClick={()=>run(async()=>{await invoke('career_contract_renew',{p_player:player.id});setPlayer(null);setArea('deals')})}>Negociar renovação</button></div> : player.club_id == null ? <form onSubmit={freeContract} className="sn-stack">
+      {player.club_id===own ? <div className="sn-stack"><h3>Gestão do contrato</h3><p>Moral {Math.round(player.morale ?? 0)}%: sobe com minutos em campo e vitórias.</p><button className="gx-btn" disabled={busy} onClick={()=>run(async()=>{await invoke('career_contract_renew',{p_player:player.id});setPlayer(null);setArea('deals')})}>Negociar renovação</button></div> : player.club_id == null ? <form onSubmit={freeContract} className="sn-stack">
         <h3>Negociar com o atleta livre</h3>
         <p className="sn-hint">Sem taxa de transferência. O jogador decide conforme salário, luvas e projeto esportivo.</p>
         <NumberField cash label="Salário mensal (R$)" min={1} max={10000000} value={terms.salary} onChange={edit('salary')} />

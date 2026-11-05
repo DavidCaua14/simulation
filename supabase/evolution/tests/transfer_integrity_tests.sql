@@ -114,8 +114,8 @@ begin
   wage:=public.cw_salary_demand(cid,pid,'sport');
   begin perform public.career_player_offer(oid,1,3,1000000,'rotation',100000,100000,gen_random_uuid());raise exception 'Expected monthly salary floor';
   exception when raise_exception then if sqlerrm not like 'Salário mensal insuficiente%' then raise;end if;end;
-  begin perform public.career_player_offer(oid,wage,3,0,'rotation',0,0,gen_random_uuid());raise exception 'Expected signing bonus floor';
-  exception when raise_exception then if sqlerrm not like 'Atleta livre exige%' then raise;end if;end;
+  -- Evolução 66 (CM17): atleta livre não exige mais luvas mínimas.
+  if public.cw_minimum_signing(cid,pid,'sport')<>0 then raise exception 'Luvas mínimas ainda exigidas';end if;
   update public.cw_clubs set cash=100 where career_id=cid and club_id='sport';
   begin perform public.career_player_offer(oid,wage,3,2*wage,'rotation',0,0,gen_random_uuid());raise exception 'Expected financial rejection';
   exception when raise_exception then if sqlerrm not like 'Orçamento livre insuficiente%' and sqlerrm not like 'Verba de transferências insuficiente%' then raise;end if;end;

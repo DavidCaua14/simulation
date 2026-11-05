@@ -9,7 +9,7 @@ const STEPS = [
   { tab: 'team', title: 'Monte o time', text: 'Em Time você escala, define a tática e vê o elenco. Avisos mostram quem está cansado ou fora de posição.' },
   { tab: 'team', title: 'Desenvolva o clube', text: 'Na aba Clube (dentro de Time) ficam treino, estrutura, comissão técnica, base, empréstimos e olheiros. Os atletas evoluem todo mês.' },
   { tab: 'matches', title: 'Calendário', text: 'Em Jogos ficam suas partidas e resultados. No dia do jogo você confere o rival e entra em campo — a transmissão mostra cada lance.' },
-  { tab: 'world', title: 'Mercado e finanças', text: 'Mundo reúne notícias, mercado, negociações, contratos e o caixa do clube. A diretoria só aprova o que o orçamento sustenta.' },
+  { tab: 'transfers', title: 'Transferências', text: 'Transferências reúne busca, pré-seleção, negociações, contratos e o caixa do clube. A diretoria só aprova o que o orçamento sustenta.' },
   { tab: 'career', title: 'Sua carreira', text: 'Reputação e títulos abrem portas para clubes maiores. Resultados ruins derrubam a confiança da diretoria. Boa sorte!' },
 ]
 

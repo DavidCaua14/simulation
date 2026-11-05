@@ -173,3 +173,48 @@
 .ml-rtable td.cond.bad { color: #ff5b6e; }
 .ml-rtable tr.st-off td, .ml-rtable tr.st-sent_off td { opacity: 0.45; }
 .ml-roles { position: absolute; inset: 0; z-index: 80; overflow-y: auto; padding: 14px 12px; background: rgba(4, 10, 24, 0.97); }
+
+/* Exercícios pré-jogo */
+.dr { display: grid; grid-template-columns: 1fr; gap: 6px; }
+.dr-all {
+  display: flex; justify-content: space-between; align-items: center; gap: 8px;
+  padding: 8px 12px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.2);
+  background: #0b1222; color: #fff; font-weight: 800; font-size: 0.78rem; cursor: pointer;
+}
+.dr-all b, .dr-item b { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 6px; background: var(--cm-green, #8ad61f); color: #0b1d05; }
+.dr-list { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 5px; }
+.dr-item {
+  position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px;
+  padding: 6px 2px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.2);
+  background: #0b1222; color: #fff; cursor: pointer;
+}
+.dr-item small { font: 900 0.66rem var(--font-display); color: #ffd23f; }
+.dr-item b { font-size: 0.66rem; padding: 1px 5px; }
+.dr-item em { position: absolute; top: 2px; right: 2px; font: 800 0.52rem var(--font-body); font-style: normal; padding: 1px 4px; border-radius: 4px; background: #8ad61f; color: #0b1d05; }
+.dr-item.is-on { border-color: #c8f54a; box-shadow: 0 0 0 1px #8ad61f inset; }
+.dr-all:disabled, .dr-item:disabled { opacity: 0.55; cursor: default; }
+
+/* Instruções táticas (CM17) */
+.tpc { display: flex; flex-direction: column; gap: 8px; }
+.tpc-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.tpc-col { display: flex; flex-direction: column; gap: 5px; padding: 8px; border-radius: 10px; border: 1px solid var(--cm-silver, rgba(255,255,255,.2)); background: var(--cm-panel, #0b1222); }
+.tpc h4 { margin: 0; font: 900 0.8rem var(--font-display); letter-spacing: 0.05em; text-transform: uppercase; color: var(--cm-yellow, #ffd23f); text-align: center; }
+.tpc button {
+  min-height: 36px; padding: 6px 4px; border-radius: 7px; border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04); color: #e6ecf8; font: 800 0.74rem var(--font-body); text-transform: uppercase; cursor: pointer;
+}
+.tpc button.is-on { border-color: #fff; background: rgba(255, 255, 255, 0.1); color: #fff; box-shadow: 0 0 0 1px #fff inset; }
+.tpc p { margin: 0; font-size: 0.68rem; color: #9fb0d2; line-height: 1.35; }
+.tpc-rows { display: flex; flex-direction: column; gap: 6px; }
+.tpc-row { display: grid; grid-template-columns: 104px 1fr; gap: 6px; align-items: center; padding: 6px; border-radius: 10px; border: 1px solid var(--cm-silver, rgba(255,255,255,.2)); background: var(--cm-panel, #0b1222); }
+.tpc-row h4 { text-align: left; font-size: 0.74rem; line-height: 1.1; }
+.tpc-row > div { display: grid; gap: 4px; }
+.tpc-row p { grid-column: 1 / -1; }
+.tpc.is-compact .tpc-col { gap: 3px; }
+
+/* Moral % (CM17) */
+.mrl { display: inline-flex; align-items: center; gap: 2px; font: 900 0.8rem var(--font-display); white-space: nowrap; }
+.mrl svg { color: #3d9bff; }
+.mrl.t-ok { color: #8ad61f; }
+.mrl.t-mid { color: #f5c542; }
+.mrl.t-bad { color: #ff5b6e; }

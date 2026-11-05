@@ -1,6 +1,5 @@
 import { Ambulance, Ban, BatteryLow } from 'lucide-react'
 import { POS_NAME, fitTone, posFit } from '../utils/managerUtils'
-import MoodBadge from './MoodBadge'
 import './pitch-cm.css'
 
 // Campo visto de cima (ataque para cima). Cada vaga da formação fica na posição real do campo
@@ -71,7 +70,6 @@ export function PlayerToken({ player, pos, colors, selected, live, onClick, labe
           <b>+</b>
         </span>
       )}
-      {player?.morale != null && !live && <MoodBadge morale={player.morale} size={14} className="pt-mood" />}
       <span className="pt-status">
         {injured && (
           <i className="pt-flag inj" title="Lesionado">

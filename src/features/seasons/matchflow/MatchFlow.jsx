@@ -5,6 +5,7 @@ import { getClubById } from '../../club/data/clubs'
 import TeamTab from '../tabs/TeamTab'
 import PreMatchVS from './PreMatchVS'
 import FunctionsPanel from './FunctionsPanel'
+import DrillsStrip from './DrillsStrip'
 import { COMP_SHORT } from '../utils/seasonUtils'
 import './matchflow.css'
 
@@ -81,7 +82,7 @@ export default function MatchFlow({ hub, next, myClub, myPos, ready, waitingText
             blockedText={blockedText}
             starting={starting}
             engineVersion={hub.simulation_version ?? 1}
-            drills={drills}
+            drills={drills ?? <DrillsStrip notify={notify} onCoins={onSaved} />}
             onLineup={() => setStep('lineup')}
             onTactics={() => setStep('tactics')}
             onRoles={() => setStep('roles')}

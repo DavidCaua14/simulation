@@ -1,25 +1,26 @@
 import { useEffect, useState } from 'react'
 import { fetchOpponentReport } from '../services/managerApi'
 import { isSessionError } from '../../../lib/sessionRecovery'
-import { MENTALITY, TACTIC_GROUPS } from '../utils/managerUtils'
+import { TACTIC_GROUPS, toCM } from '../utils/managerUtils'
 import './opponent-scout.css'
 
 const STYLES = { possession: 'Posse de bola', press: 'Pressão intensa', counter: 'Contra-ataque', wide: 'Jogo pelas pontas', balanced: 'Equilibrado' }
 
-export function OpponentTactics({ formation, tactics, style, live = false }) {
-  if (!tactics) return null
-  const posture = MENTALITY.find((m) => m.v === Number(tactics.mentality))?.label || 'Equilibrada'
+export function OpponentTactics({ formation, tactics: raw, style, live = false }) {
+  if (!raw) return null
+  const tactics = toCM(raw)
+  const posture = TACTIC_GROUPS[0].options.find((o) => o.v === tactics.style)?.label || 'Neutro'
   const advice = []
-  if (tactics.line === 'high') advice.push('Procure o espaço nas costas da defesa com atacantes rápidos.')
-  if (tactics.pressing === 'high') advice.push('Prepare saídas de bola seguras; o rival pressiona, mas também se desgasta mais.')
-  if (tactics.build === 'direct') advice.push('Proteja a profundidade e prepare sua defesa para as disputas aéreas.')
-  if (tactics.width === 'wide') advice.push('Acompanhe as pontas e reforce a cobertura dos laterais.')
+  if (tactics.marking === 'high') advice.push('Marcação alta: procure o espaço nas costas com atacantes rápidos e saia jogando com segurança.')
+  if (tactics.style === 'counter') advice.push('O rival joga no contra-ataque: não deixe a defesa desprotegida.')
+  if (tactics.passing === 'long') advice.push('Bola longa: proteja a profundidade e as disputas aéreas.')
+  if (['byline', 'deep'].includes(tactics.crossing)) advice.push('Muitos cruzamentos: zagueiros fortes no jogo aéreo fazem diferença.')
+  if (tactics.long_shots === 'often') advice.push('Chuta muito de fora: aproxime a marcação na entrada da área.')
   if (!advice.length) advice.push('Observe os primeiros minutos e ajuste seu time ao espaço que o rival oferecer.')
   return (
     <div className="opponent-analysis">
       <p><b>{formation || 'Formação a definir'}</b> · {STYLES[style] || posture}</p>
       <dl>
-        <div><dt>Postura</dt><dd>{posture}</dd></div>
         {TACTIC_GROUPS.map((g) => (
           <div key={g.id}><dt>{g.label}</dt><dd>{g.options.find((o) => o.v === tactics[g.id])?.label || 'Normal'}</dd></div>
         ))}

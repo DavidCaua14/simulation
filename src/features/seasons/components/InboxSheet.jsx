@@ -4,7 +4,7 @@ import ClubCrest from '../../club/components/ClubCrest'
 import Sheet from '../ui/Sheet'
 import { MSG_ACTIONS, MSG_CATEGORIES, MSG_KIND, msgCategory } from '../utils/managerUtils'
 
-// Caixa de mensagens organizada por assunto: Elenco (satisfação, pedidos de saída, contratos), Mercado (propostas e
+// Caixa de mensagens (e-mail do CM17) por assunto: Elenco (moral, lesões, contratos), Mercado (propostas e
 // respostas das negociações), Clube (diretoria, torcida, médico, resultados) e Carreira (propostas de trabalho).
 export default function InboxSheet({ messages, focusId, initialCategory = 'all', onClose, onSeen, onAction }) {
   const focus = messages.find((m) => m.id === focusId)
@@ -56,7 +56,7 @@ export default function InboxSheet({ messages, focusId, initialCategory = 'all',
                   {m.club_id ? <ClubCrest clubId={m.club_id} size={28} /> : <span className="ib-dot" />}
                   <span className="ib-txt">
                     <small>
-                      {k.label} · dia {m.day_no}
+                      {m.category === 'world' ? 'Mundo' : k.label} · {m.day_label || `dia ${m.day_no}`}
                     </small>
                     <b>{m.title}</b>
                     {isOpen && <p>{m.body}</p>}

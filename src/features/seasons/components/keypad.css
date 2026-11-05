@@ -1,0 +1,32 @@
+/* Teclado de oferta no formato CM17 */
+.kp-overlay { position: absolute; inset: 0; z-index: 90; display: grid; place-items: center; padding: 12px; background: rgba(2, 8, 20, 0.78); }
+.kp {
+  width: min(100%, 420px); max-height: 100%; overflow-y: auto; scrollbar-width: none;
+  display: flex; flex-direction: column; gap: 8px; padding: 12px;
+  border-radius: 14px; border: 1px solid var(--cm-silver-hi, rgba(255, 255, 255, 0.3));
+  background: linear-gradient(180deg, #13284f, #0a1730); color: #fff;
+}
+.kp header { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.kp header b { font: 900 0.9rem var(--font-display); letter-spacing: 0.06em; text-transform: uppercase; color: #ffd23f; }
+.kp-x { width: 34px; height: 34px; display: grid; place-items: center; border: 0; border-radius: 8px; background: #e0313f; color: #fff; cursor: pointer; }
+.kp h3 { margin: 0; text-align: center; font: 900 1rem var(--font-display); color: #ffd23f; }
+.kp-info { display: grid; grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)); gap: 4px; margin: 0; }
+.kp-info div { padding: 5px 7px; border-radius: 8px; background: rgba(0, 0, 0, 0.3); }
+.kp-info dt { font-size: 0.64rem; color: #ffd23f; font-weight: 800; }
+.kp-info dd { margin: 0; font-weight: 800; font-size: 0.82rem; }
+.kp-value { display: flex; flex-direction: column; align-items: center; padding: 8px; border-radius: 10px; background: #050b18; border: 1px solid rgba(255, 255, 255, 0.2); }
+.kp-value small { color: #ffd23f; font-weight: 800; font-size: 0.72rem; }
+.kp-value b { font: 900 1.6rem var(--font-display); }
+.kp-units { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; border-radius: 10px; overflow: hidden; background: #1f4fbf; }
+.kp-units button { min-height: 40px; border: 0; background: #2d6be0; color: rgba(255, 255, 255, 0.6); font: 900 1rem var(--font-display); cursor: pointer; }
+.kp-units button.is-on { background: #8ad61f; color: #0b1d05; }
+.kp-keys { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.kp-keys button { min-height: 50px; border: 0; border-radius: 8px; background: linear-gradient(180deg, #3d7bea, #1f4fbf); color: #fff; font: 900 1.4rem var(--font-display); display: grid; place-items: center; cursor: pointer; }
+.kp-keys button:active { transform: scale(0.97); }
+.kp-error { margin: 0; padding: 8px 10px; border-radius: 8px; background: rgba(224, 49, 63, 0.18); border: 1px solid #e0313f; font-size: 0.8rem; }
+.kp-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.kp-clear { min-height: 48px; border: 0; border-radius: 8px; background: #e0313f; color: #fff; font: 900 1rem var(--font-display); text-transform: uppercase; cursor: pointer; }
+.kp-actions .gx-btn { justify-content: center; min-height: 48px; text-transform: uppercase; }
+.kp-years { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; }
+.kp-years button { min-height: 36px; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.2); background: #0b1222; color: #fff; font-weight: 900; cursor: pointer; }
+.kp-years button.is-on { background: #8ad61f; color: #0b1d05; border-color: #c8f54a; }

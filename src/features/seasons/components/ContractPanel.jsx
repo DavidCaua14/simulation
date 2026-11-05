@@ -1,18 +1,19 @@
-import { FundingAdvice } from './ClubInvestment'
-import ClubMoneyInput from '../world/ClubMoneyInput'
+import MoneyKeypad from './MoneyKeypad'
 import { useState } from 'react'
 import { FileSignature, Tag, UserMinus } from 'lucide-react'
-import MoodBadge from './MoodBadge'
-import { dateLabel, money, requestId, worldRpc } from '../services/careerWorldApi'
+import MoraleTag from './MoraleTag'
+import { dateLabel, money, renewOffer, requestId, wageDemand, weekly, worldRpc } from '../services/careerWorldApi'
+import { clubMoney, clubMoneyShort } from '../utils/clubMoney'
 import { isSessionError } from '../../../lib/sessionRecovery'
 
-const ROLES = { key: 'Peça-chave', starter: 'Titular', rotation: 'Rotação', prospect: 'Promessa' }
 const monthsLeft = (until, today) => (until && today ? Math.max(0, Math.ceil((Date.parse(until) - Date.parse(today)) / (30 * 86400000))) : null)
 
-// Satisfação e contrato do atleta do SEU elenco: renovar (até 5 anos), colocar na lista de transferências ou rescindir.
+// Moral e contrato do atleta do SEU elenco: renovar (até 5 anos), colocar na lista de transferências ou rescindir.
 export default function ContractPanel({ player: p, today, maxYears = 5, notify, onChanged }) {
   const [busy, setBusy] = useState(false)
-  const [renewal, setRenewal] = useState(null) // { id, salary, years, signing, role }
+  const [renewal, setRenewal] = useState(null) // { demand, maxYears }
+  const [years, setYears] = useState(2)
+  const [padError, setPadError] = useState(null)
   const [confirmRelease, setConfirmRelease] = useState(false)
   if (p.contract_expires == null && p.morale == null) return null
   const left = monthsLeft(p.contract_expires, today)
@@ -29,27 +30,29 @@ export default function ContractPanel({ player: p, today, maxYears = 5, notify, 
       setBusy(false)
     }
   }
+  // Renovação (CM17): salário semanal + anos. Abaixo da pedida o atleta recusa e diz quanto quer.
   const openRenewal = () =>
     run(async () => {
-      const r = await worldRpc('career_contract_renew', { p_player: p.id, p_request: requestId() })
-      setRenewal({ id: r.id, salary: Math.max(r.salary_demand || 0, Math.ceil((p.monthly_salary || 100) * 1.08)), years: 2, signing: 0, role: p.promised_role || 'rotation' })
+      const d = await wageDemand(p.id)
+      setPadError(null)
+      setYears(2)
+      setRenewal({ demand: d?.weekly_demand, maxYears: d?.max_years || maxYears })
     })
-  const sendRenewal = (e) => {
-    e.preventDefault()
-    run(async () => {
-      await worldRpc('career_player_offer', { p_id: renewal.id, p_salary: +renewal.salary, p_years: +renewal.years, p_signing: +renewal.signing, p_role: renewal.role, p_appearance: 0, p_goal: 0, p_request: requestId() })
+  async function sendRenewal(wage) {
+    if (busy) return
+    setBusy(true)
+    setPadError(null)
+    try {
+      await renewOffer(p.id, wage, years)
       setRenewal(null)
-      notify?.('Proposta de renovação enviada. O atleta responde nos próximos dias (Mundo → Negociações).', 'ok')
+      notify?.('Proposta de renovação enviada. O atleta responde em breve (e-mail).', 'ok')
       onChanged?.()
-    })
+    } catch (e) {
+      if (!isSessionError(e)) setPadError(e.message)
+    } finally {
+      setBusy(false)
+    }
   }
-  // Papel combinado com o atleta: quem promete "Titular" e não escala deixa o jogador insatisfeito.
-  const changeRole = (role) =>
-    run(async () => {
-      await worldRpc('career_player_role', { p_player: p.id, p_role: role })
-      notify?.(`Papel combinado: ${ROLES[role]}. A satisfação passa a considerar o novo papel.`, 'ok')
-      onChanged?.()
-    })
   const toggleList = () =>
     run(async () => {
       await worldRpc('career_player_list', { p_player: p.id, p_listed: !p.transfer_listed })
@@ -64,40 +67,21 @@ export default function ContractPanel({ player: p, today, maxYears = 5, notify, 
     })
 
   return (
-    <section className="ps-deal" aria-label="Satisfação e contrato">
-      <h4>Satisfação e contrato</h4>
+    <section className="ps-deal" aria-label="Moral e contrato">
+      <h4>Moral e contrato</h4>
       <p className="sn-hint">Você pode negociar a renovação mesmo com a janela fechada. O atleta avalia salário e projeto esportivo e pode recusar. Sem renovação, o vínculo termina na data prevista.</p>
-      <MoodBadge morale={p.morale} size={16} withLabel />
-      {p.transfer_requested && <p><b>Pediu para ser negociado.</b> Insatisfeito, ele rende menos em campo até a situação mudar: dê mais minutos, combine outro papel ou negocie a saída.</p>}
+      <p>
+        Moral <MoraleTag morale={p.morale} trend={p.morale_trend} />
+      </p>
       {p.precontract && <p><b>Já assinou pré-contrato com outro clube</b> e sai de graça quando o vínculo terminar.</p>}
       <dl>
         <div><dt>Contrato até</dt><dd>{dateLabel(p.contract_expires)}{left != null && left <= 6 ? ` · ${left} mês(es)` : ''}</dd></div>
-        <div><dt>Salário mensal</dt><dd>{money(p.monthly_salary)}</dd></div>
-        <div>
-          <dt>Papel prometido</dt>
-          <dd>
-            <select className="ps-role" aria-label="Papel prometido" value={p.promised_role || 'rotation'} disabled={busy || renewal} onChange={(e) => changeRole(e.target.value)}>
-              {Object.entries(ROLES).map(([id, label]) => <option key={id} value={id}>{label}</option>)}
-            </select>
-          </dd>
-        </div>
+        <div><dt>Salário semanal</dt><dd>{clubMoney(weekly(p.monthly_salary))}</dd></div>
         <div><dt>Situação</dt><dd>{p.transfer_listed ? 'Na lista de transferências' : 'No elenco'}</dd></div>
       </dl>
       {left != null && left <= 6 && !p.precontract && <p>Nos seis meses finais outros clubes podem oferecer pré-contrato. Sem renovação, ele sai de graça.</p>}
 
-      {renewal ? (
-        <form className="ps-renew" onSubmit={sendRenewal}>
-          <label className="cw-field">Salário mensal (R$)<ClubMoneyInput min={1} max={10000000} value={renewal.salary} onChange={(value) => setRenewal((r) => ({ ...r, salary: value }))} /></label>
-          <label className="cw-field">Anos de contrato (até {maxYears})<input type="number" inputMode="numeric" min={1} max={maxYears} required value={renewal.years} onChange={(e) => setRenewal((r) => ({ ...r, years: e.target.value }))} /></label>
-          <label className="cw-field">Luvas (R$)<ClubMoneyInput max={10000000} value={renewal.signing} onChange={(value) => setRenewal((r) => ({ ...r, signing: value }))} /></label>
-          <label className="cw-field">Papel no elenco<select value={renewal.role} onChange={(e) => setRenewal((r) => ({ ...r, role: e.target.value }))}>{Object.entries(ROLES).map(([id, label]) => <option key={id} value={id}>{label}</option>)}</select></label>
-          <FundingAdvice playerId={p.id} negotiationId={renewal.id} terms={{ monthly_salary: +renewal.salary, contract_years: +renewal.years, signing_bonus: +renewal.signing, role: renewal.role, appearance_bonus: 0, goal_bonus: 0 }} disabled={busy} onInvested={async () => { notify?.('Aporte concluído. A proposta de renovação ainda precisa ser enviada.', 'ok'); await onChanged?.() }} />
-          <div className="ps-deal-actions">
-            <button type="button" className="gx-btn-ghost" disabled={busy} onClick={() => setRenewal(null)}>Cancelar</button>
-            <button type="submit" className="gx-btn" disabled={busy}>Enviar</button>
-          </div>
-        </form>
-      ) : confirmRelease ? (
+      {confirmRelease ? (
         <div className="ps-deal-actions">
           <p>Rescindir custa cerca de <b>{money(releaseCost)}</b> (até seis salários) e o atleta fica livre no mercado.</p>
           <button type="button" className="gx-btn-ghost" disabled={busy} onClick={() => setConfirmRelease(false)}>Voltar</button>
@@ -109,6 +93,32 @@ export default function ContractPanel({ player: p, today, maxYears = 5, notify, 
           <button type="button" className="gx-btn-ghost" disabled={busy} onClick={toggleList}><Tag size={15} /> {p.transfer_listed ? 'Tirar da venda' : 'Vender'}</button>
           <button type="button" className="gx-btn-ghost" disabled={busy || p.precontract} onClick={() => setConfirmRelease(true)}><UserMinus size={15} /> Rescindir</button>
         </div>
+      )}
+      {renewal && (
+        <MoneyKeypad
+          title="Renovar contrato"
+          subtitle={p.name || p.short_name}
+          info={[
+            ['Salário atual', `${clubMoneyShort(weekly(p.monthly_salary))}/sem`],
+            ['Pedida do atleta', renewal.demand ? `${clubMoneyShort(renewal.demand)}/sem` : '—'],
+          ]}
+          label="Salário por semana"
+          initial={renewal.demand || weekly(p.monthly_salary)}
+          busy={busy}
+          error={padError}
+          confirmText="Oferecer"
+          extra={
+            <div className="kp-years" role="radiogroup" aria-label="Duração">
+              {Array.from({ length: renewal.maxYears }, (_, i) => i + 1).map((y) => (
+                <button key={y} type="button" className={years === y ? 'is-on' : ''} onClick={() => setYears(y)}>
+                  {y} {y === 1 ? 'ano' : 'anos'}
+                </button>
+              ))}
+            </div>
+          }
+          onClose={() => setRenewal(null)}
+          onConfirm={sendRenewal}
+        />
       )}
     </section>
   )
