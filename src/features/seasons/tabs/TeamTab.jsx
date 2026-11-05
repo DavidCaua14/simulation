@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Ambulance, CircleAlert, Ban, BatteryLow, Check, Save, Sparkles, TriangleAlert, Users } from 'lucide-react'
+import { Ambulance, ArrowLeftRight, CircleAlert, Ban, BatteryLow, Check, ChevronLeft, ChevronRight, ClipboardList, Flag, Save, Sparkles, TriangleAlert, Users } from 'lucide-react'
 import Pitch, { PlayerToken } from '../components/Pitch'
 import BasePlayerCard from '../../cards/components/BasePlayerCard'
 import PositionFilter from '../components/PositionFilter'
@@ -19,6 +19,7 @@ import { autoLineup, fetchSquad, saveLineup } from '../services/managerApi'
 import { DEFAULT_TACTICS, LINE_NAME, LINES, POS_LINE, condTone, lineupStrength, ovrTone, POS_ORDER, posFit } from '../utils/managerUtils'
 import { COMP_SHORT } from '../utils/seasonUtils'
 import ClubDevPanel from '../../clubdev/ClubDevPanel'
+import { fetchClubDev } from '../../clubdev/clubDevApi'
 
 const VIEWS = [
   { id: 'lineup', label: 'Escalação' },
@@ -47,11 +48,11 @@ function remap(slots, formation, byId) {
 
 // TIME: escalação no campo (protagonista), táticas e elenco completo.
 // focusPlayerId: vindo de uma mensagem (ex.: atleta insatisfeito), abre o elenco já com a ficha dele.
-export default function TeamTab({ hub, onSaved, notify, focusPlayerId = null }) {
+export default function TeamTab({ hub, onSaved, notify, focusPlayerId = null, initialView = null, initialSection = null }) {
   const { catalog, error: catErr } = useCatalog()
   const [squad, setSquad] = useState(null)
   const [error, setError] = useState('')
-  const [view, setView] = useState(focusPlayerId ? 'squad' : 'lineup')
+  const [view, setView] = useState(focusPlayerId ? 'squad' : initialView || 'lineup')
   const [draft, setDraft] = useState(null) // { formation, slots, bench, tactics }
   const [dirty, setDirty] = useState(false)
   const [picker, setPicker] = useState(null)
@@ -59,6 +60,8 @@ export default function TeamTab({ hub, onSaved, notify, focusPlayerId = null }) 
   const [saving, setSaving] = useState(false)
   const [positionFilter, setPositionFilter] = useState('')
   const [issues, setIssues] = useState([])
+  const [clubSection, setClubSection] = useState({ id: initialSection, n: 0 })
+  const [familiarity, setFamiliarity] = useState(null) // entrosamento por formação (0–100), da gestão do clube
 
   const loadSequence = useRef(0)
   const dirtyDraft = useRef(false)
@@ -91,6 +94,15 @@ export default function TeamTab({ hub, onSaved, notify, focusPlayerId = null }) 
   }, [])
 
   const cancelLoad = useCallback(() => { loadSequence.current++ }, [])
+  useEffect(() => {
+    let alive = true
+    fetchClubDev()
+      .then((d) => alive && setFamiliarity(Object.fromEntries((d?.familiarity || []).map((f) => [f.formation, f.value]))))
+      .catch(() => {})
+    return () => {
+      alive = false
+    }
+  }, [clubId, hub.world?.today])
   useEffect(() => {
     let cancelled = false
     queueMicrotask(() => { if (!cancelled && clubId) load(true) })
@@ -168,6 +180,14 @@ export default function TeamTab({ hub, onSaved, notify, focusPlayerId = null }) 
   if (!clubId) return <EmptyState icon={Users} title="Sem clube" text="Você está sem clube. Aguarde propostas na aba Carreira." />
   if (error || catErr) return <ErrorState message={error || catErr} onRetry={load} />
   if (!squad || !draft || !catalog) return <LoadingState />
+
+  const formIdx = Math.max(0, catalog.formations.findIndex((f) => f.id === draft.formation))
+  const fam = familiarity && draft.formation in familiarity ? Math.round(familiarity[draft.formation]) : null
+  // Funções (batedores de pênalti, falta e escanteio) ficam no treino da gestão do clube.
+  const openRoles = () => {
+    setClubSection((c) => ({ id: 'training', n: c.n + 1 }))
+    setView('club')
+  }
 
   const update = (patch) => {
     setDraft((d) => ({ ...d, ...patch }))
@@ -289,17 +309,28 @@ export default function TeamTab({ hub, onSaved, notify, focusPlayerId = null }) 
 
       {(view === 'lineup' || view === 'squad') && <PositionFilter value={positionFilter} onChange={setPositionFilter} />}
 
-      {view === 'club' && <ClubDevPanel players={squad.players} notify={notify} onChanged={() => load(true)} />}
+      {view === 'club' && <ClubDevPanel key={clubSection.n} initialSection={clubSection.id} players={squad.players} notify={notify} onChanged={() => load(true)} />}
 
       {view === 'lineup' && (
         <>
-          <div className="tt-forms" role="radiogroup" aria-label="Formação">
-            {catalog.formations.map((f) => (
-              <button key={f.id} type="button" role="radio" aria-checked={draft.formation === f.id} className={draft.formation === f.id ? 'is-on' : ''} onClick={() => changeFormation(f.id)}>
-                {f.name}
-              </button>
-            ))}
+          <div className="tt-formstep" aria-label="Formação">
+            <button type="button" aria-label="Formação anterior" onClick={() => changeFormation(catalog.formations[(formIdx - 1 + catalog.formations.length) % catalog.formations.length].id)}>
+              <ChevronLeft size={20} />
+            </button>
+            <b>{formation?.name || draft.formation}</b>
+            <button type="button" aria-label="Próxima formação" onClick={() => changeFormation(catalog.formations[(formIdx + 1) % catalog.formations.length].id)}>
+              <ChevronRight size={20} />
+            </button>
           </div>
+          {fam != null && (
+            <div className="tt-fam" title="Entrosamento do elenco com esta formação. Cada jogo nela aumenta; formações esquecidas perdem um pouco por mês.">
+              <small>Treinamento</small>
+              <i>
+                <em className={fam >= 85 ? 'ok' : fam >= 65 ? 'mid' : 'low'} style={{ width: `${fam}%` }} />
+              </i>
+              <b>{fam}%</b>
+            </div>
+          )}
 
           <Pitch
             formation={formation}
@@ -311,6 +342,18 @@ export default function TeamTab({ hub, onSaved, notify, focusPlayerId = null }) 
             bind={bind}
             drag={drag}
           />
+
+          <div className="tt-cmrow">
+            <button type="button" className="gx-btn-ghost" onClick={() => setView('tactics')}>
+              <ClipboardList size={16} /> Instruções
+            </button>
+            <button type="button" className="gx-btn-ghost" onClick={openRoles}>
+              <Flag size={16} /> Funções
+            </button>
+            <button type="button" className="gx-btn-ghost" onClick={handleAuto} disabled={saving}>
+              <Sparkles size={16} /> Seleção automática
+            </button>
+          </div>
 
           {strength && (
             <div className="tt-lines" aria-label="Força por setor">
@@ -333,7 +376,7 @@ export default function TeamTab({ hub, onSaved, notify, focusPlayerId = null }) 
 
           <section className="sn-sec">
             <h2 className="gx-title">
-              Banco <small>{draft.bench.length}/{squad.rules.bench} reservas</small>
+              Reservas <small>{draft.bench.length}/{squad.rules.bench}</small>
             </h2>
             <div className={`tt-bench ${drag ? 'is-dragging' : ''}`}>
               {draft.bench.map((pid, i) => (!positionFilter || byId[pid]?.position === positionFilter) && (
@@ -345,6 +388,9 @@ export default function TeamTab({ hub, onSaved, notify, focusPlayerId = null }) 
                     colors={club?.colors}
                     onClick={() => setPicker({ kind: 'bench', index: i, pos: byId[pid]?.position, current: pid })}
                   />
+                  <button type="button" className="tt-swap" aria-label={`Trocar ${byId[pid]?.short_name || 'reserva'}`} onClick={() => setPicker({ kind: 'bench', index: i, pos: byId[pid]?.position, current: pid })}>
+                    <ArrowLeftRight size={13} />
+                  </button>
                 </div>
               ))}
               {draft.bench.length < squad.rules.bench && (
@@ -453,7 +499,15 @@ export default function TeamTab({ hub, onSaved, notify, focusPlayerId = null }) 
         </div>
       )}
 
-      {(view === 'lineup' || view === 'tactics') && (
+      {view === 'lineup' && (
+        <div className={`tt-cmbar ${drag ? 'is-hidden' : ''}`}>
+          <button type="button" className={`gx-btn tt-confirm ${dirty ? 'is-dirty' : ''}`} onClick={handleSave} disabled={saving || !dirty}>
+            <Check size={18} /> {saving ? 'Salvando…' : dirty ? 'Confirmar' : 'Confirmado'}
+          </button>
+        </div>
+      )}
+
+      {view === 'tactics' && (
         <div className={`tt-actions ${drag ? "is-hidden" : ""}`}>
           <button type="button" className="gx-btn-ghost" onClick={handleAuto} disabled={saving}>
             <Sparkles size={16} /> Auxiliar escala

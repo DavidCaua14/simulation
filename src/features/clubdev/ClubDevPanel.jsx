@@ -39,10 +39,10 @@ function Trend({ p }) {
 }
 
 // CLUBE: treino, estrutura, comissão técnica, base, empréstimos e observação (decisões validadas no servidor).
-export default function ClubDevPanel({ players = [], notify, onChanged }) {
+export default function ClubDevPanel({ players = [], notify, onChanged, initialSection = null }) {
   const [dev, setDev] = useState(null)
   const [error, setError] = useState('')
-  const [section, setSection] = useState('training')
+  const [section, setSection] = useState(initialSection || 'training')
   const [busy, setBusy] = useState(null)
 
   const load = useCallback(async () => {

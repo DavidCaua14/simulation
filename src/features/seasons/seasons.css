@@ -74,6 +74,19 @@
 }
 .sh-back:hover { background: rgba(255, 255, 255, 0.12); }
 .sh-back:active { transform: scale(0.94); }
+.sh-menu {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  border: 1px solid var(--cm-silver-hi, rgba(255, 255, 255, 0.2));
+  background: var(--cm-green, var(--gx-gold));
+  color: var(--cm-green-ink, #111);
+  cursor: pointer;
+}
+.sh-menu:active { transform: scale(0.94); }
 .sh-title { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 .sh-title small {
   font: 800 0.62rem/1.2 var(--font-display);

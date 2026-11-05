@@ -1,6 +1,7 @@
 import ClubFundingCard from '../components/ClubFundingCard'
 import GameIcon from '../../../components/ui/GameIcon'
 import ExitModeButton from '../components/ExitModeButton'
+import ClubCentral from '../components/ClubCentral'
 import { useMemo } from 'react'
 import { CalendarDays, ChevronRight, Inbox, Target } from 'lucide-react'
 import ClubCrest from '../../club/components/ClubCrest'
@@ -83,6 +84,7 @@ export default function HomeTab({ ctx, actions }) {
         </section>
       )}
       {hero}
+      <ClubCentral embedded hub={hub} actions={actions} />
       {!unemployed && <ClubFundingCard signal={hub.world?.investment?.signal} actions={actions} disabled={!!busy} />}
 
       {firstOffer && !unemployed && (

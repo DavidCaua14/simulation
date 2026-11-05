@@ -1,0 +1,139 @@
+/* Campo no estilo Championship Manager: gramado escuro, camisas com número e etiqueta com posição,
+   nota na vaga e condição física. Vale para a escalação, o pré-jogo e as substituições. */
+div.pt {
+  background:
+    radial-gradient(120% 70% at 50% 50%, rgba(40, 70, 40, 0.28), transparent 70%),
+    repeating-linear-gradient(180deg, #0b0f0c 0 9.09%, #0e130f 9.09% 18.18%);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14), 0 6px 18px rgba(0, 0, 0, 0.5);
+}
+div.pt .pt-lines { stroke: rgba(255, 255, 255, 0.22); }
+div.pt .pt-lines .dot { fill: rgba(255, 255, 255, 0.35); }
+
+.pt-tok .pt-shirt.is-kit {
+  width: 44px;
+  height: 40px;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  filter: drop-shadow(0 3px 4px rgba(0, 0, 0, 0.6));
+}
+.pt-jersey { width: 100%; height: 100%; overflow: visible; }
+.pt-jersey text { font: 900 20px var(--font-display); }
+.pt-tok.is-sel .pt-shirt.is-kit { transform: scale(1.14); box-shadow: none; filter: drop-shadow(0 0 6px var(--cm-yellow, #ffd23f)); }
+.pt-slot.is-drop .pt-shirt.is-kit { box-shadow: none; filter: drop-shadow(0 0 8px var(--cm-yellow, #ffd23f)); }
+
+/* etiqueta: nome, posição + nota, barra de condição */
+.pt-label {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 1px;
+  min-width: 58px;
+  max-width: 70px;
+  margin-top: 1px;
+  padding: 2px 3px 3px;
+  border-radius: 5px;
+  border: 1px solid rgba(170, 190, 225, 0.35);
+  background: rgba(6, 12, 26, 0.88);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+}
+.pt-label .pt-name { max-width: none; text-align: center; font: 800 0.6rem/1.2 var(--font-body); text-shadow: none; color: #fff; }
+.pt-meta { display: flex; align-items: center; justify-content: space-between; gap: 3px; }
+.pt-label .pt-pos {
+  margin: 0;
+  padding: 0 4px;
+  border-radius: 3px;
+  background: var(--fit, #2d6be0);
+  color: #06120a;
+  font: 900 0.52rem/1.45 var(--font-body);
+}
+.pt-label .pt-pos.fit-ok { background: #3d7bea; color: #fff; }
+.pt-label .pt-pos em { color: inherit; opacity: 0.85; }
+.pt-rate { font: 900 0.7rem/1 var(--font-display); color: var(--cm-yellow, #ffd23f); }
+.pt-label .pt-cond { width: 100%; height: 3px; margin-top: 1px; background: rgba(255, 255, 255, 0.14); }
+.pt-label .pt-cond.ok i { background: #8ad61f; }
+.pt-label .pt-cond.warn i { background: #f5a524; }
+.pt-label .pt-cond.bad i { background: #ff5b6e; }
+.pt-tok.is-empty .pt-label { background: rgba(6, 12, 26, 0.6); }
+
+.pt.is-compact .pt-label { min-width: 48px; max-width: 58px; }
+.pt.is-compact .pt-tok .pt-shirt.is-kit { width: 36px; height: 33px; }
+
+@media (max-width: 380px) {
+  .pt-tok .pt-shirt.is-kit { width: 38px; height: 35px; }
+  .pt-label { min-width: 52px; max-width: 62px; }
+}
+
+/* Escalação: seletor de formação, barra de treinamento, reservas e botões no estilo CM */
+.tt-formstep {
+  display: grid;
+  grid-template-columns: 44px 1fr 44px;
+  align-items: center;
+  gap: 6px;
+  padding: 4px;
+  border-radius: 10px;
+  border: 1px solid var(--cm-silver, var(--gx-line));
+  background: var(--cm-blue, var(--surface-2));
+  color: #fff;
+}
+.tt-formstep b { text-align: center; font: 900 1.05rem var(--font-display); letter-spacing: 0.04em; }
+.tt-formstep button {
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 8px;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.25);
+  cursor: pointer;
+}
+.tt-fam {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--cm-silver, var(--gx-line));
+  background: var(--cm-panel, var(--surface-1));
+}
+.tt-fam small { font: 800 0.7rem var(--font-body); text-transform: uppercase; letter-spacing: 0.06em; color: var(--gx-ink-2, inherit); }
+.tt-fam i { height: 8px; border-radius: 4px; background: rgba(255, 255, 255, 0.12); overflow: hidden; }
+.tt-fam em { display: block; height: 100%; background: #8ad61f; }
+.tt-fam em.mid { background: #f5a524; }
+.tt-fam em.low { background: #ff5b6e; }
+.tt-fam b { font: 900 0.86rem var(--font-display); color: var(--cm-yellow, var(--gx-gold)); }
+
+.tt-bench { grid-template-columns: repeat(auto-fill, minmax(76px, 1fr)); }
+.tt-bslot { position: relative; padding: 4px 0; }
+.tt-swap {
+  position: absolute;
+  top: 0;
+  right: 2px;
+  z-index: 2;
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  border-radius: 7px;
+  border: 1px solid var(--cm-silver-hi, var(--gx-line));
+  color: #fff;
+  background: var(--cm-blue, var(--surface-2));
+  cursor: pointer;
+}
+.tt-bench .pt-label .pt-name { color: #fff; }
+
+.tt-cmbar {
+  position: sticky;
+  bottom: -1px;
+  z-index: 4;
+  margin: 0 -2px;
+  padding: 12px 2px 6px;
+  background: linear-gradient(180deg, transparent, var(--gx-bg) 12px);
+}
+.tt-cmbar.is-hidden { visibility: hidden; }
+.tt-confirm { width: 100%; }
+.tt-cmrow { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.tt-cmrow .gx-btn-ghost { min-height: 44px; padding: 6px 4px; justify-content: center; font-size: 0.72rem; line-height: 1.1; text-align: center; }
+.tt-confirm { min-height: 50px; justify-content: center; font-size: 1rem; text-transform: uppercase; letter-spacing: 0.06em; }
+.tt-confirm.is-dirty { animation: nm-glow 2s ease-in-out infinite; }

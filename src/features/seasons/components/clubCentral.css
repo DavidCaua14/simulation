@@ -1,0 +1,98 @@
+/* Central do clube: grade de botões grandes no estilo Championship Manager. */
+.ctl-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 12px;
+  overflow-y: auto;
+  scrollbar-width: none;
+  background: rgba(2, 8, 20, 0.72);
+  backdrop-filter: blur(4px);
+}
+.ctl-overlay::-webkit-scrollbar { display: none; }
+.ctl-overlay .ctl {
+  width: min(100%, 560px);
+  padding: 12px;
+  border-radius: 14px;
+  border: 1px solid var(--cm-silver-hi, var(--gx-line));
+  background: var(--cm-panel, var(--surface-1));
+  box-shadow: var(--cm-shadow, 0 10px 30px rgba(0, 0, 0, 0.4));
+}
+.ctl-head { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.ctl-head span { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+.ctl-head small,
+.ctl-title {
+  font: 900 0.72rem var(--font-display);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--cm-yellow, var(--gx-gold));
+}
+.ctl-title { margin: 2px 0 8px; font-size: 0.8rem; }
+.ctl-head b { font: 800 1.05rem var(--font-display); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ctl-close {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  border: 1px solid var(--cm-silver-hi, var(--gx-line));
+  color: #fff;
+  background: var(--cm-blue, var(--surface-2));
+  cursor: pointer;
+}
+
+.ctl-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+@media (min-width: 520px) {
+  .ctl-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+.ctl-tile {
+  position: relative;
+  min-height: 84px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 10px 4px;
+  border-radius: 10px;
+  border: 1px solid var(--cm-silver-hi, var(--gx-line));
+  color: #fff;
+  background: var(--cm-blue, var(--surface-2));
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  font: 800 0.74rem var(--font-body);
+  text-align: center;
+  line-height: 1.15;
+  cursor: pointer;
+  transition: transform 0.12s ease, filter 0.12s ease;
+}
+.ctl-tile:hover:not(:disabled) { filter: brightness(1.12); }
+.ctl-tile:active:not(:disabled) { transform: scale(0.97); }
+.ctl-tile:disabled { opacity: 0.4; cursor: default; }
+.ctl-tile.t-home,
+.ctl-tile.is-on {
+  color: var(--cm-green-ink, #0b1d05);
+  background: var(--cm-green, var(--gx-gold));
+}
+.ctl-tile em {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  font: 900 0.68rem var(--font-body);
+  font-style: normal;
+  color: #fff;
+  background: #e0313f;
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.35);
+}
+.ctl-settings { display: grid; gap: 8px; margin-top: 10px; }
+.ctl-settings .gx-btn-ghost { justify-content: center; }
+.ctl-tile span { max-width: 100%; overflow-wrap: anywhere; hyphens: auto; }
+.ctl-settings .gx-btn.gx-btn-ghost { background: var(--cm-blue, var(--surface-2)); color: #fff; }

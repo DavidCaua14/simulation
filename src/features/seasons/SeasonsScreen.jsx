@@ -16,7 +16,8 @@ import SeasonHeader from './ui/SeasonHeader'
 import { ErrorState, LoadingState } from './ui/States'
 import BottomNav from './components/BottomNav'
 import CoachAssistant from './components/CoachAssistant'
-import { assistantDone } from './utils/assistantStore'
+import { assistantDone, assistantKey } from './utils/assistantStore'
+import ClubCentral from './components/ClubCentral'
 import PostMatch from './components/PostMatch'
 import MatchLive from './components/MatchLive'
 import PreMatch from './components/PreMatch'
@@ -50,6 +51,8 @@ export default function SeasonsScreen({ career: account, onBack }) {
   const [inbox, setInbox] = useState(null)
   const [worldArea, setWorldArea] = useState('news')
   const [teamFocus, setTeamFocus] = useState(null)
+  const [teamView, setTeamView] = useState({ view: null, section: null, n: 0 }) // aberto pela Central do clube
+  const [central, setCentral] = useState(false)
   const [toast, setToast] = useState(null)
   const [assistant, setAssistant] = useState(() => !assistantDone(account?.id))
 
@@ -110,6 +113,7 @@ export default function SeasonsScreen({ career: account, onBack }) {
 
   const goTab = useCallback((id, sub = null) => {
     setTeamFocus(id === 'team' ? sub : null)
+    setCentral(false)
     setTab(id)
     if (id === 'career') setCareerView(sub)
     if (id === 'world' && ['news','finance','market','deals','contracts'].includes(sub)) setWorldArea(sub)
@@ -241,6 +245,7 @@ export default function SeasonsScreen({ career: account, onBack }) {
     setReport(null)
     setInbox(null)
     setCompSel(null)
+    setCentral(false)
     setTab('home')
   }
 
@@ -265,6 +270,22 @@ export default function SeasonsScreen({ career: account, onBack }) {
     advance,
     startNext,
     goTab,
+    goHome,
+    openTeam: (view, section = null) => {
+      setTeamFocus(null)
+      setTeamView((t) => ({ view, section, n: t.n + 1 }))
+      setTab('team')
+    },
+    openCentral: () => setCentral(true),
+    restartAssistant: () => {
+      try {
+        window.localStorage.removeItem(assistantKey(account?.id))
+      } catch {
+        /* armazenamento indisponível */
+      }
+      setTab('home')
+      setAssistant(true)
+    },
     openInbox,
     respondOffer: respond,
     resign: doResign,
@@ -288,6 +309,7 @@ export default function SeasonsScreen({ career: account, onBack }) {
           season={hub?.season}
           remaining={remaining}
           onBack={!hub ? onBack : live || atHome ? null : goHome}
+          onMenu={hub && !live ? () => setCentral((c) => !c) : null}
           backLabel={!hub ? 'Voltar ao menu' : 'Voltar ao início da temporada'}
         />
       }
@@ -310,8 +332,8 @@ export default function SeasonsScreen({ career: account, onBack }) {
           {error && !hub && <ErrorState message={error} onRetry={() => refresh()} />}
 
           {ctx && tab === 'home' && <HomeTab ctx={ctx} actions={actions} />}
-          {ctx && tab === 'team' && <TeamTab hub={hub} notify={notify} onSaved={() => refresh({ silent: true })} focusPlayerId={teamFocus} />}
-          {ctx && tab === 'matches' && <MatchesTab ctx={ctx} onOpenReport={actions.openReport} />}
+          {ctx && tab === 'team' && <TeamTab key={teamView.n} hub={hub} notify={notify} onSaved={() => refresh({ silent: true })} focusPlayerId={teamFocus} initialView={teamView.view} initialSection={teamView.section} actions={actions} />}
+          {ctx && tab === 'matches' && <MatchesTab ctx={ctx} actions={actions} />}
           {ctx && tab === 'comps' && (
             <CompetitionsTab ctx={ctx} selected={compSel || ctx.nextEvent?.competition || hub?.competitions?.[0]?.id} onSelect={setCompSel} onOpenReport={actions.openReport} />
           )}
@@ -380,6 +402,7 @@ export default function SeasonsScreen({ career: account, onBack }) {
         )}
 
         {report && <MatchReport fixtureId={report} onClose={() => setReport(null)} />}
+        {central && ctx && !live && <ClubCentral hub={hub} actions={actions} onClose={() => setCentral(false)} />}
         {inbox && hub && <InboxSheet messages={hub.messages} focusId={inbox.focusId} initialCategory={inbox.category} onSeen={seenInbox} onAction={inboxAction} onClose={() => setInbox(null)} />}
 
 

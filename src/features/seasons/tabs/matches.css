@@ -1,0 +1,148 @@
+/* JOGOS no formato Championship Manager: Calendário / Rodada / Resultados. */
+.jg { display: flex; flex-direction: column; gap: 12px; }
+
+.jg-select,
+.jg-round {
+  display: grid;
+  grid-template-columns: 40px 1fr 40px;
+  align-items: center;
+  gap: 6px;
+  padding: 4px;
+  border-radius: 10px;
+  border: 1px solid var(--cm-silver, var(--gx-line));
+  background: var(--cm-blue, var(--surface-2));
+  color: #fff;
+  box-shadow: var(--cm-shadow, none);
+}
+.jg-select span,
+.jg-round span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 0;
+  font: 800 0.9rem var(--font-display);
+  text-align: center;
+}
+.jg-round span { flex-direction: column; gap: 0; }
+.jg-round small { font: 700 0.66rem var(--font-body); opacity: 0.8; text-transform: uppercase; letter-spacing: 0.06em; }
+.jg-round small.is-open { color: var(--cm-yellow, var(--gx-gold)); opacity: 1; }
+.jg-select button,
+.jg-round button {
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 8px;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.22);
+  cursor: pointer;
+}
+.jg-select button:disabled,
+.jg-round button:disabled { opacity: 0.35; cursor: default; }
+
+/* Próximo jogo */
+.jg-next {
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid var(--cm-silver-hi, var(--gx-line));
+  background: var(--cm-panel, var(--surface-1));
+  box-shadow: var(--cm-shadow, none);
+}
+.jg-next header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.74rem;
+  color: var(--gx-ink-2, inherit);
+}
+.jg-next header b { color: var(--gx-ink); }
+.jg-next header span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.jg-next header em {
+  margin-left: auto;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font: 800 0.7rem var(--font-body);
+  font-style: normal;
+  white-space: nowrap;
+  color: #1a1400;
+  background: var(--cm-yellow, var(--gx-gold));
+}
+.jg-next-vs {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 8px;
+  margin: 12px 0;
+}
+.jg-next-vs span { display: flex; flex-direction: column; align-items: center; gap: 6px; min-width: 0; }
+.jg-next-vs b {
+  max-width: 100%;
+  font: 800 0.86rem var(--font-display);
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.jg-next-vs span.is-mine b { color: var(--cm-yellow, var(--gx-gold)); }
+.jg-next-vs i { font: 900 1.3rem var(--font-display); font-style: normal; opacity: 0.6; }
+.jg-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.jg-actions .gx-btn, .jg-actions .gx-btn-ghost { justify-content: center; text-transform: uppercase; letter-spacing: 0.04em; }
+.jg-blocked { display: block; margin-top: 6px; text-align: center; font-size: 0.72rem; color: var(--gx-ink-2, inherit); }
+
+/* Tabela Data / Confronto / Placar */
+.jg-table {
+  border: 1px solid var(--cm-silver, var(--gx-line));
+  border-radius: 10px;
+  overflow: hidden;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: var(--cm-panel, var(--surface-1));
+}
+.jg-table th:first-child { border-top-left-radius: 9px; }
+.jg-table th:last-child { border-top-right-radius: 9px; }
+.jg-table td { vertical-align: middle; }
+.jg-table td.jg-date { width: 52px; font-weight: 800; font-size: 0.74rem; color: var(--gx-ink-2, inherit); }
+.jg-table td.jg-vs { text-align: left; }
+.jg-vs span { display: flex; align-items: center; gap: 6px; padding: 1px 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.jg-vs span.is-me { font-weight: 800; color: var(--cm-yellow, var(--gx-gold)); }
+.jg-table td.jg-score { width: 76px; white-space: nowrap; }
+.jg-score b { font: 800 0.95rem var(--font-display); }
+.jg-score small { margin-left: 3px; font-size: 0.66rem; opacity: 0.75; }
+.jg-score .mr-res { margin-left: 6px; vertical-align: middle; }
+.jg-pending { opacity: 0.5; }
+.jg-table tr.jg-mine td { background: rgba(61, 123, 234, 0.16); }
+.jg-table tr.is-next td {
+  background: linear-gradient(180deg, #c8f54a 0%, #8ad61f 100%);
+  color: var(--cm-green-ink, #0b1d05);
+  font-weight: 800;
+}
+.jg-table tr.is-next .jg-vs span.is-me,
+.jg-table tr.is-next td.jg-date { color: var(--cm-green-ink, #0b1d05); }
+.jg-table tr.is-link { cursor: pointer; }
+.jg-table tr.is-link:hover td { filter: brightness(1.15); }
+
+/* Próximos jogos */
+.jg-upcoming h3 {
+  margin: 4px 0 6px;
+  font: 900 0.8rem var(--font-display);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--cm-yellow, var(--gx-gold));
+}
+.jg-upcoming ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.jg-upcoming li {
+  display: grid;
+  grid-template-columns: 16px 86px 22px 1fr auto;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--cm-silver, var(--gx-line));
+  background: var(--cm-panel, var(--surface-1));
+}
+.jg-upcoming small { font-size: 0.7rem; color: var(--gx-ink-2, inherit); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.jg-upcoming b { font-size: 0.86rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.jg-upcoming em { font-style: normal; font: 800 0.68rem var(--font-body); text-transform: uppercase; color: var(--gx-ink-2, inherit); }
+.jg-actions .gx-btn.gx-btn-ghost { background: var(--cm-blue, var(--surface-2)); color: #fff; }
+.jg-score .mr-res { display: inline-grid; position: static; }
