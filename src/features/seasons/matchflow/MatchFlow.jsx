@@ -6,16 +6,17 @@ import TeamTab from '../tabs/TeamTab'
 import PreMatchVS from './PreMatchVS'
 import FunctionsPanel from './FunctionsPanel'
 import DrillsStrip from './DrillsStrip'
+import TodayMatches from './TodayMatches'
 import { COMP_SHORT } from '../utils/seasonUtils'
 import './matchflow.css'
 
-const TITLES = { lineup: 'Formação', tactics: 'Instruções táticas', roles: 'Funções', vs: 'Pré-jogo' }
+const TITLES = { today: 'Partidas de hoje', lineup: 'Formação', tactics: 'Instruções táticas', roles: 'Funções', vs: 'Pré-jogo' }
 
 // FLUXO DA PARTIDA (CM17): JOGAR → Formação → CONFIRMAR → pré-jogo (VS) → Pontapé inicial.
 // Nada aqui volta ao Início no meio do caminho: Escalação, Instruções e Funções sempre retornam ao pré-jogo.
 // Enquanto o servidor resolve a rodada até o dia do jogo (em segundo plano), o Pontapé fica em espera.
 export default function MatchFlow({ hub, next, myClub, myPos, ready, waitingText, attention, canPlay, blockedText, starting, notify, drills, onAttention, onLater, onSaved, onStart, onClose }) {
-  const [step, setStep] = useState('lineup')
+  const [step, setStep] = useState('today')
   const m = next.match
   const oppId = m.home === myClub ? m.away : m.home
   const toVs = () => setStep('vs')
@@ -59,6 +60,7 @@ export default function MatchFlow({ hub, next, myClub, myPos, ready, waitingText
       )}
 
       <div className="mf-body">
+        {step === 'today' && <TodayMatches next={next} myClub={myClub} onPlay={() => setStep('lineup')} />}
         {(step === 'lineup' || step === 'tactics') && (
           <TeamTab
             key={step}

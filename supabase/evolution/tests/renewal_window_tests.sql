@@ -29,6 +29,7 @@ begin
  perform public.career_player_offer(oid,wage*2,2,0,'rotation',0,0,gen_random_uuid());
  update public.cw_negotiations set reply_on=d,decision_roll=.9 where id=oid;
  perform public.cw_market_tick(cid);
+  if(select status from public.cw_negotiations where id=oid)='player_accepted' then perform public.career_transfer_confirm(oid,true,gen_random_uuid());end if; -- evolução 68 (CM17)
  if not exists(select 1 from public.cw_negotiations where id=oid and status='completed') then raise exception 'Own renewal could not complete outside window: %',(select row_to_json(n) from public.cw_negotiations n where id=oid);end if;
  if not exists(select 1 from public.cw_contracts where career_id=cid and player_id=pid and status='active' and monthly_salary=wage*2) then raise exception 'Renewal salary not applied';end if;
  if exists(select 1 from public.cw_transfer_registrations where career_id=cid) then raise exception 'Renewal used recruitment quota';end if;

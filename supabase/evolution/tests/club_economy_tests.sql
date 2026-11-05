@@ -64,6 +64,7 @@ begin
  update public.cw_negotiations set decision_roll=.5 where id=oid;
  update public.cw_world set today=d+2 where career_id=cid;
  perform public.cw_market_tick(cid);
+  if(select status from public.cw_negotiations where id=oid)='player_accepted' then perform public.career_transfer_confirm(oid,true,gen_random_uuid());end if; -- evolução 68 (CM17)
  if not exists(select 1 from public.cw_negotiations where id=oid and status='completed') or(select club_id from public.mgr_players where career_id=cid and player_id=pid)<>'sport' then raise exception 'Direct free-agent signing did not complete';end if;
  perform public.career_free_agent_offer(pid,wage,3,2*wage,'rotation',0,0,req);
  if(select count(*) from public.cw_contracts where career_id=cid and player_id=pid and status='active')<>1 or(select count(*) from public.cw_finance where career_id=cid and kind='player_signing' and reference=oid::text)<>1 then raise exception 'Retried signature duplicated contract/signing bonus';end if;

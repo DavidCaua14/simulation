@@ -30,3 +30,5 @@ export const shortlist = () => worldRpc('career_shortlist')
 export const toggleShortlist = (player) => worldRpc('career_shortlist_toggle', { p_player: player })
 // Salário semanal (CM17) a partir do mensal guardado no banco
 export const weekly = (monthly) => Math.round((Number(monthly) || 0) * 12 / 52)
+// Confirmação final (evolução 68): o atleta aceitou; o treinador confirma ou desiste.
+export const confirmTransfer = (id, accept) => worldRpc('career_transfer_confirm', { p_id: id, p_accept: accept, p_request: requestId() })

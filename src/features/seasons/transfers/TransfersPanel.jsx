@@ -7,7 +7,7 @@ import { isSessionError } from '../../../lib/sessionRecovery'
 import { requestLoan, listForLoan } from '../../clubdev/clubDevApi'
 import MoneyKeypad from '../components/MoneyKeypad'
 import PlayerProfile from './PlayerProfile'
-import { contractOffer, dateLabel, listPlayer, negotiations, renewOffer, respondNegotiation, searchPlayers, shortlist, toggleShortlist, transferOffer, wageDemand, weekly } from '../services/careerWorldApi'
+import { confirmTransfer, contractOffer, dateLabel, listPlayer, negotiations, renewOffer, respondNegotiation, searchPlayers, shortlist, toggleShortlist, transferOffer, wageDemand, weekly } from '../services/careerWorldApi'
 import { clubMoney, clubMoneyShort } from '../utils/clubMoney'
 import { POS_ORDER } from '../utils/managerUtils'
 import './transfers.css'
@@ -20,7 +20,7 @@ const AREAS = [
 ]
 const STATES = {
   seller_review: 'Proposta pelo seu atleta', club_pending: 'Clube analisando', club_counter: 'Clube pede mais', player_pending: 'Atleta analisando',
-  player_counter: 'Negocie o contrato', agreed: 'Aguardando janela', precontract: 'Pré-contrato', completed: 'Concluída', rejected: 'Recusada',
+  player_counter: 'Negocie o contrato', player_accepted: 'Aceitou · confirme', agreed: 'Aguardando janela', precontract: 'Pré-contrato', completed: 'Concluída', rejected: 'Recusada',
   expired: 'Expirada', cancelled: 'Cancelada', failed_funds: 'Sem verba',
 }
 const CLOSED = new Set(['completed', 'rejected', 'expired', 'cancelled', 'failed_funds'])
@@ -295,6 +295,16 @@ export default function TransfersPanel({ hub, onRefresh, notify, onTeam, initial
                     <button type="button" className="gx-btn" disabled={busy} onClick={() => openContract({ kind: n.initiator === 'renewal' ? 'renew' : 'contract', negotiation: n.id, player_id: n.player_id, name: n.player_name })}>
                       Negociar contrato
                     </button>
+                  )}
+                  {n.status === 'player_accepted' && !selling && (
+                    <>
+                      <button type="button" className="gx-btn" disabled={busy} onClick={() => run(() => confirmTransfer(n.id, true), n.initiator === 'renewal' ? 'Renovação confirmada.' : 'Negócio confirmado. O atleta será registrado.')}>
+                        Confirmar
+                      </button>
+                      <button type="button" className="gx-btn-ghost is-danger" disabled={busy} onClick={() => run(() => confirmTransfer(n.id, false), 'Você desistiu do negócio.')}>
+                        Desistir
+                      </button>
+                    </>
                   )}
                   {n.status === 'seller_review' && selling && (
                     <>

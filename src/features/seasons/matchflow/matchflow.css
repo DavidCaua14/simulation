@@ -218,3 +218,21 @@
 .mrl.t-ok { color: #8ad61f; }
 .mrl.t-mid { color: #f5c542; }
 .mrl.t-bad { color: #ff5b6e; }
+
+/* Partidas de hoje (CM17) */
+.td { display: flex; flex-direction: column; gap: 10px; }
+.td-sub { margin: 0; text-align: center; font-size: 0.78rem; color: #c9d6f2; font-weight: 700; }
+.td-table { width: 100%; border-collapse: separate; border-spacing: 0; border-radius: 10px; overflow: hidden; border: 1px solid rgba(255, 255, 255, 0.18); background: rgba(8, 16, 34, 0.9); font-size: 0.8rem; }
+.td-table th { padding: 6px; color: #ffd23f; background: #050b18; font-weight: 900; }
+.td-table td { padding: 4px 6px; border-top: 1px solid rgba(255, 255, 255, 0.06); }
+.td-table tr:nth-child(even) td { background: rgba(255, 255, 255, 0.03); }
+.td-table tr.is-mine td { background: rgba(138, 214, 31, 0.18); }
+.td-home, .td-away { width: 44%; }
+.td-home { text-align: right; }
+.td-home, .td-away { white-space: nowrap; }
+.td-home span, .td-away span { display: inline-block; max-width: calc(100% - 40px); overflow: hidden; text-overflow: ellipsis; vertical-align: middle; font-weight: 700; }
+.td-kit { display: inline-block; width: 30px; height: 28px; vertical-align: middle; margin: 0 4px; }
+.td-kit .pt-jersey { width: 100%; height: 100%; }
+.td-score { text-align: center; font: 900 0.95rem var(--font-display); color: #fff; }
+.td-play { min-height: 50px; justify-content: center; font-size: 1.05rem; text-transform: uppercase; letter-spacing: 0.05em; }
+.td-play { position: sticky; bottom: 0; z-index: 2; box-shadow: 0 -8px 16px rgba(4, 10, 24, 0.9); }

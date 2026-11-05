@@ -26,6 +26,7 @@ begin
  delete from public.cw_players where career_id=cid and player_id=pid;
  update public.cw_negotiations set reply_on=d,decision_roll=.9 where id=oid;
  perform public.cw_market_tick(cid);
+  if(select status from public.cw_negotiations where id=oid)='player_accepted' then perform public.career_transfer_confirm(oid,true,gen_random_uuid());end if; -- evolução 68 (CM17)
  if not exists(select 1 from public.cw_negotiations where id=oid and status='completed') then raise exception 'Player did not register: %',(select response from public.cw_negotiations where id=oid);end if;
  if public.career_world_status()->>'roster_revision'=rev then raise exception 'Same-day registration did not invalidate roster';end if;
  s:=public.mgr_squad();

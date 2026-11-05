@@ -108,6 +108,8 @@ begin
  if(select status from public.cw_negotiations where id=nid)<>'player_counter' then raise exception 'Foreign bid failed';end if;
  perform public.career_player_offer(nid,10000,3,500,'starter',0,0,gen_random_uuid());
  update public.cw_world set today=today+2 where career_id=cid;perform public.cw_market_tick(cid);
+ -- Evolução 68 (CM17): o atleta aceita e o treinador confirma o negócio.
+ if(select status from public.cw_negotiations where id=nid)='player_accepted' then r:=public.career_transfer_confirm(nid,true,gen_random_uuid());end if;
  if(select status from public.cw_negotiations where id=nid)<>'completed' or(select club_id from public.mgr_players where career_id=cid and player_id=pid)<>'flamengo' then raise exception 'Foreign transfer not completed';end if;
  select coins into money_before from public.careers where id=cid;
  select primary_season into sid from public.cw_world where career_id=cid;
