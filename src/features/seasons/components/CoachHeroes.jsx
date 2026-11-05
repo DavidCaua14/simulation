@@ -1,5 +1,5 @@
 import GameIcon from '../../../components/ui/GameIcon'
-import { CalendarClock, FastForward, Hourglass, Play, Radio, ShieldAlert, Shirt, TriangleAlert, Trophy } from 'lucide-react'
+import { FastForward, Hourglass, Play, Radio, ShieldAlert, Shirt, TriangleAlert, Trophy } from 'lucide-react'
 import ClubCrest from '../../club/components/ClubCrest'
 import { getClubById } from '../../club/data/clubs'
 import CompEmblem from '../ui/CompEmblem'
@@ -27,7 +27,7 @@ function Side({ clubId, mine, pos, form, align, knockout }) {
 
 // DIA DE JOGO do seu clube: confronto e situação da escalação. O botão abre o pré-jogo
 // (escalações e análise do rival), de onde a partida é iniciada.
-export function MatchdayHero({ next, myClub, myPos, lineup, canPlay, blockedText, busy, onPlay, onLineup }) {
+export function MatchdayHero({ next, myClub, myPos, lineup, canPlay, blockedText, busy, busyText = null, upcoming = false, onPlay, onLineup }) {
   const m = next.match
   const t = COMP_THEME[next.competition]
   const venue = venueLabel(m)
@@ -44,7 +44,7 @@ export function MatchdayHero({ next, myClub, myPos, lineup, canPlay, blockedText
       <header className="nm-head">
         <CompEmblem comp={next.competition} size={30} />
         <span className="nm-head-txt">
-          <small>Dia de jogo</small>
+          <small>{upcoming ? (next.days_until > 1 ? `Próxima partida · em ${next.days_until} dias` : 'Próxima partida') : 'Dia de jogo'}</small>
           <b>{COMP_NAME[next.competition]}</b>
         </span>
         <span className="nm-round">{describeMatch(m)}</span>
@@ -71,7 +71,7 @@ export function MatchdayHero({ next, myClub, myPos, lineup, canPlay, blockedText
         <button type="button" className={`gx-btn nm-play ${canPlay && !errors ? 'is-ready' : ''}`} disabled={busy || !canPlay || errors > 0} onClick={onPlay}>
           {busy ? (
             <>
-              <span className="nm-spin" /> Entrando em campo…
+              <span className="nm-spin" /> {busyText || 'Entrando em campo…'}
             </>
           ) : !canPlay ? (
             <>
@@ -83,7 +83,7 @@ export function MatchdayHero({ next, myClub, myPos, lineup, canPlay, blockedText
             </>
           ) : (
             <>
-              <Play size={20} fill="currentColor" /> Jogar partida
+              <Play size={20} fill="currentColor" /> Jogar
             </>
           )}
         </button>
@@ -114,7 +114,7 @@ export function LiveHero({ onResume, busy }) {
 }
 
 // SEM CLUBE: o tempo passa dia a dia e as propostas chegam conforme a reputação
-export function UnemployedHero({ coach, offersCount, advancing, onAdvanceDay, onWait, onOffers }) {
+export function UnemployedHero({ coach, offersCount, advancing, onWait, onOffers }) {
   const rep = reputationTier(coach.reputation)
   const last = coach.spell?.club_id || null
   return (
@@ -143,9 +143,6 @@ export function UnemployedHero({ coach, offersCount, advancing, onAdvanceDay, on
         </button>
       ) : (
         <div className="uh-actions">
-          <button type="button" className="gx-btn-ghost" disabled={advancing} onClick={onAdvanceDay}>
-            <CalendarClock size={17} /> Avançar 1 dia
-          </button>
           <button type="button" className="gx-btn" disabled={advancing} onClick={onWait}>
             {advancing ? <span className="nm-spin" /> : <FastForward size={18} fill="currentColor" />} Aguardar proposta
           </button>
@@ -162,11 +159,11 @@ export function AdvanceHero({ busy, progress, onAdvance }) {
       <button type="button" className="gx-btn nm-play is-advance" disabled={busy} onClick={onAdvance}>
         {busy ? (
           <>
-            <span className="nm-spin" /> {progress ? `Avançando… ${progress}` : 'Avançando…'}
+            <span className="nm-spin" /> {progress ? `Preparando a rodada… ${progress}` : 'Preparando a rodada…'}
           </>
         ) : (
           <>
-            <FastForward size={18} /> Avançar para a próxima partida
+            <FastForward size={18} /> Próxima rodada
           </>
         )}
       </button>

@@ -104,6 +104,8 @@ export default function SeasonsScreen({ career: account, onBack }) {
   const hasEnergy = hub ? hub.career.energy + hub.career.bonus_energy > 0 : false
   const calendarReady = !hub?.world || (!hub.world.needs_sync && !(hub.next_event?.days_until > 0))
   const canPlay = calendarReady && (hasEnergy || Boolean(hub?.live_match)) && !finished && !busy && worldStatus !== 'syncing'
+  // Rodada a rodada: o botão JOGAR fica disponível mesmo antes do dia do jogo — ele resolve a rodada e abre o pré-jogo.
+  const canGo = (hasEnergy || Boolean(hub?.live_match)) && !finished && !busy
   const blockedText = worldStatus === 'syncing' ? 'Preparando a próxima partida…' : finished ? 'Temporada encerrada' : remaining != null ? `Sem energia · recarga em ${formatRemaining(remaining)}` : 'Sem energia'
 
   const goTab = useCallback((id, sub = null) => {
@@ -139,6 +141,25 @@ export default function SeasonsScreen({ career: account, onBack }) {
       if (mounted.current) setPrepareProgress(null)
     }
   })
+
+  // JOGAR: resolve o mundo até o dia da sua partida (jogos da IA, mercado, mensagens) e abre o pré-jogo.
+  // Decisões urgentes (propostas, prazos) interrompem antes do jogo, como os e-mails do CM.
+  const goToMatch = () =>
+    run('prepare', async () => {
+      let current = hub
+      if (hub.world && (hub.world.needs_sync || hub.next_event?.days_until > 0)) {
+        try {
+          current = await simulation.prepare(hub, { isActive: () => mounted.current, onProgress: onPrepareProgress })
+        } finally {
+          if (mounted.current) setPrepareProgress(null)
+        }
+      }
+      if (!current || !mounted.current) return
+      if (current.attention) return notify('Uma decisão precisa da sua atenção antes do jogo.', 'offer')
+      if (current.season?.status === 'finished') return notify('Temporada encerrada. Veja o balanço no Início.', 'ok')
+      const next = current.next_event
+      if (next?.kind === 'mine' && !(next.days_until > 0) && !current.world?.needs_sync) setPreMatch(next.fixture_id)
+    })
 
   const play = () =>
     run('start', async () => {
@@ -229,6 +250,7 @@ export default function SeasonsScreen({ career: account, onBack }) {
     play,
     // Dia de jogo: abre o pré-jogo; a partida (e o gasto de energia) só começa em "Iniciar partida"
     openPreMatch: () => setPreMatch(hub?.next_event?.fixture_id ?? null),
+    goToMatch,
     prepareNext,
     deferAttention: () => run('attention', async () => {
       await acknowledgeAttention(hub.attention.key)
@@ -253,7 +275,7 @@ export default function SeasonsScreen({ career: account, onBack }) {
     },
   }
 
-  const ctx = hub && derived ? { hub, byComp, ...derived, canPlay, blockedText, busy: busy || (worldStatus === 'syncing' ? 'world' : null), worldStatus, prepareProgress } : null
+  const ctx = hub && derived ? { hub, byComp, ...derived, canPlay, canGo, blockedText, busy: busy || (worldStatus === 'syncing' ? 'world' : null), worldStatus, prepareProgress } : null
   const badges = hub ? { career: hub.offers.length, home: hub.unread > 0 ? hub.unread : 0, team: hub.lineup?.errors || 0 } : {}
 
   return (

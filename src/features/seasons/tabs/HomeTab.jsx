@@ -17,7 +17,7 @@ import { MSG_CATEGORIES, MSG_KIND, msgCategory, objectiveProgress } from '../uti
 // INÍCIO: o que acontece HOJE (jogo, folga, sem clube, fim de temporada), a situação do treinador
 // (diretoria, torcida, reputação), objetivos, caixa de mensagens, calendário e campeonatos.
 export default function HomeTab({ ctx, actions }) {
-  const { hub, nextEvent, calendar, history, myClub, canPlay, blockedText, busy } = ctx
+  const { hub, nextEvent, calendar, history, myClub, canPlay, canGo, blockedText, busy } = ctx
   const coach = hub.coach
   const finished = hub.season.status === 'finished'
   const nextStart = `${hub.season.year + 1}-${hub.season.region === 'ENG' ? '07' : '01'}-01`
@@ -25,8 +25,10 @@ export default function HomeTab({ ctx, actions }) {
   const unemployed = coach.status === 'unemployed'
   const mine = nextEvent?.kind === 'mine' ? nextEvent : null
   const free = nextEvent?.kind === 'free' ? nextEvent : null
-  // Dia de jogo do seu clube (no mundo paralelo, só quando o calendário já chegou na data do jogo)
-  const matchday = mine && !(hub.world && (hub.world.needs_sync || mine.days_until > 0)) ? mine : null
+  // Próxima partida do seu clube: sempre em destaque (rodada a rodada, como no CM). Com o mundo paralelo,
+  // JOGAR resolve a rodada até a data do jogo e abre o pré-jogo.
+  const matchday = mine
+  const needsRound = Boolean(hub.world && mine && (hub.world.needs_sync || mine.days_until > 0))
   const myTable = useMemo(() => hub.competitions.find((c) => c.id === matchday?.competition)?.table, [hub.competitions, matchday])
   const myPos = myTable?.played ? myTable.pos : null
   const leaguePlayed = hub.competitions.find((c) => c.kind === 'league' && c.table)?.table?.played ?? null
@@ -45,7 +47,6 @@ export default function HomeTab({ ctx, actions }) {
         coach={coach}
         offersCount={hub.offers.length}
         advancing={busy === 'advance'}
-        onAdvanceDay={() => actions.advance(false)}
         onWait={() => actions.advance(true)}
         onOffers={() => actions.goTab('career', 'offers')}
       />
@@ -57,10 +58,12 @@ export default function HomeTab({ ctx, actions }) {
         myClub={myClub}
         myPos={myPos}
         lineup={hub.lineup}
-        canPlay={canPlay}
+        canPlay={needsRound ? canGo : canPlay}
         blockedText={blockedText}
-        busy={busy === 'start'}
-        onPlay={actions.openPreMatch}
+        busy={busy === 'start' || busy === 'prepare'}
+        busyText={busy === 'prepare' ? (ctx.prepareProgress ? `Preparando a rodada… ${ctx.prepareProgress}` : 'Preparando a rodada…') : null}
+        upcoming={needsRound}
+        onPlay={hub.world ? actions.goToMatch : actions.openPreMatch}
         onLineup={() => actions.goTab('team')}
       />
     )
