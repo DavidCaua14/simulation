@@ -1,4 +1,4 @@
-import { clubMoney } from '../utils/clubMoney'
+import { clubMoney, clubMoneyShort } from '../utils/clubMoney'
 import GameIcon from '../../../components/ui/GameIcon'
 import { useEffect, useMemo, useState } from 'react'
 import { Ambulance, ArrowDown, ArrowUp, Ban, Building2, Megaphone, Star, Trophy, UserX } from 'lucide-react'
@@ -65,6 +65,7 @@ export default function PostMatch({ summary: s, seasonId, byComp, onClose, onOff
   return (
     <div className="sn-overlay" role="dialog" aria-modal="true" aria-label="Resumo da partida">
       <div className="sn-modal">
+        <h2 className="cm-screen-title pm-title">Fim de jogo</h2>
         <header className="sn-modal-head">
           <CompEmblem comp={s.competition} size={28} />
           <span>
@@ -179,21 +180,65 @@ export default function PostMatch({ summary: s, seasonId, byComp, onClose, onOff
                 </ul>
               )}
 
-              {s.table && s.table.before && s.table.after && (
-                <p className="pm-table">
-                  Tabela: {s.table.before}º → <b>{s.table.after}º</b>
-                </p>
+              {((s.table && s.table.before && s.table.after) || s.rewards.club?.prize > 0) && (
+                <div className="cm-cells pm-cells">
+                  {s.table && s.table.before && s.table.after && (
+                    <span>
+                      <small>Tabela</small>
+                      <b>
+                        {s.table.before}º → {s.table.after}º
+                      </b>
+                    </span>
+                  )}
+                  {s.rewards.club?.prize > 0 && (
+                    <span>
+                      <small>Bônus pelo resultado</small>
+                      <b className="cw-positive">+{clubMoneyShort(s.rewards.club.prize)}</b>
+                    </span>
+                  )}
+                </div>
               )}
 
-              <div className="sn-rewards">
-                {s.rewards.xp > 0 && <span className="xp">+{s.rewards.xp} XP</span>}
-                {s.rewards.coins > 0 && <span className="coins"><GameIcon name="coins" size={13} /> +{s.rewards.coins} moedas</span>}
-                {s.rewards.club?.prize > 0 && <span className="coins"><GameIcon name="coins" size={13} /> Bônus pelo resultado: +{clubMoney(s.rewards.club.prize)}</span>}
-                {s.rewards.club?.gate > 0 && <span className="coins">Bilheteria bruta: {clubMoney(s.rewards.club.gate)}</span>}
-                {s.rewards.club?.operations < 0 && <span className="coins">Operação da partida: {clubMoney(s.rewards.club.operations)}</span>}
-                {s.rewards.club && <span className="coins">Saldo da partida no caixa: {clubMoney(s.rewards.club.total)}</span>}
-                {s.rewards.energy > 0 && <span className="energy"><GameIcon name="energy" size={13} /> +{s.rewards.energy} energia</span>}
-              </div>
+              <section className="pm-rewards" aria-label="Recompensas da partida">
+                <h3>Recompensas da partida</h3>
+                {s.rewards.coins > 0 && (
+                  <div className="pm-rw is-coins">
+                    <GameIcon name="coins" size={34} />
+                    <b>+{s.rewards.coins} Moedas</b>
+                  </div>
+                )}
+                {s.rewards.club?.total != null && (
+                  <div className={`pm-rw is-cash ${s.rewards.club.total < 0 ? 'is-neg' : ''}`}>
+                    <GameIcon name="coins" size={34} />
+                    <span>
+                      <b>
+                        {s.rewards.club.total > 0 ? '+' : ''}
+                        {clubMoneyShort(s.rewards.club.total)}
+                      </b>
+                      <small>Caixa do clube</small>
+                    </span>
+                  </div>
+                )}
+                {s.rewards.xp > 0 && (
+                  <div className="pm-rw is-xp">
+                    <Star size={32} fill="currentColor" />
+                    <b>+{s.rewards.xp} Experiência</b>
+                  </div>
+                )}
+                {s.rewards.energy > 0 && (
+                  <div className="pm-rw is-energy">
+                    <GameIcon name="energy" size={30} />
+                    <b>+{s.rewards.energy} Energia</b>
+                  </div>
+                )}
+                {s.rewards.club && (s.rewards.club.gate > 0 || s.rewards.club.operations < 0) && (
+                  <small className="pm-rw-note">
+                    {s.rewards.club.gate > 0 && `Bilheteria bruta: ${clubMoney(s.rewards.club.gate)}`}
+                    {s.rewards.club.gate > 0 && s.rewards.club.operations < 0 && ' · '}
+                    {s.rewards.club.operations < 0 && `Operação da partida: ${clubMoney(s.rewards.club.operations)}`}
+                  </small>
+                )}
+              </section>
 
               {s.level_up && (
                 <div className="sn-levelup">

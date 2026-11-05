@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { ChevronLeft, ChevronRight, Trophy } from 'lucide-react'
+import { BarChart3, ChevronDown, ChevronLeft, ChevronRight, Trophy } from 'lucide-react'
 import StandingsTable from '../components/StandingsTable'
 import Bracket from '../components/Bracket'
 import RoundResults from '../components/RoundResults'
@@ -7,12 +7,13 @@ import ClubCrest from '../../club/components/ClubCrest'
 import { getClubById } from '../../club/data/clubs'
 import CompEmblem from '../ui/CompEmblem'
 import { compStatus } from '../utils/compStatus'
-import { EXPECTED_MATCHES, buildRounds, defaultRoundIndex, groupOf } from '../utils/seasonSelectors'
+import { EXPECTED_MATCHES, buildRounds, clubForm, defaultRoundIndex, groupOf, standingsFrom } from '../utils/seasonSelectors'
+import FormDots from '../components/FormDots'
 import useStandings from '../hooks/useStandings'
 import { fetchTopScorers } from '../services/managerApi'
 import { COMPETITIONS, COMP_NAME, COMP_ORDER, COMP_SHORT, COMP_THEME } from '../utils/seasonUtils'
 
-const SCORERS = { id: 'scorers', label: 'Artilharia' }
+const SCORERS = { id: 'scorers', label: 'Estatísticas' }
 // Abas de cada competição a partir do formato configurado (liga, grupos, fase de liga, mata-mata, playoff)
 function viewsFor(compId) {
   const phases = COMPETITIONS[compId]?.phases || []
@@ -23,7 +24,7 @@ function viewsFor(compId) {
   if (types.has('groups')) out.push({ id: 'table', label: 'Grupos' })
   if (types.has('knockout')) out.push({ id: 'bracket', label: types.has('league') ? 'Playoff' : 'Chave' })
   if (!out.length) out.push({ id: 'table', label: 'Tabela' })
-  return [...out, { id: 'rounds', label: 'Rodadas' }, SCORERS]
+  return [...out, SCORERS, { id: 'rounds', label: 'Partidas' }]
 }
 
 // Artilheiros e garçons da competição (todas as partidas simuladas pelo motor contam)
@@ -98,7 +99,7 @@ function RoundBrowser({ fixtures, myClub, lastKey, onOpenReport }) {
   )
 }
 
-function CompetitionView({ comp, fixtures, myClub, lastKey, seasonId, onOpenReport }) {
+function CompetitionView({ comp, fixtures, flat, myClub, lastKey, seasonId, onOpenReport, onCups }) {
   const views = viewsFor(comp.id)
   const [view, setView] = useState(views[0].id)
   const phases = COMPETITIONS[comp.id]?.phases || []
@@ -107,7 +108,10 @@ function CompetitionView({ comp, fixtures, myClub, lastKey, seasonId, onOpenRepo
   const groups = useMemo(() => [...new Set(fixtures.filter((f) => f.group_label).map((f) => f.group_label))].sort(), [fixtures])
   const version = useMemo(() => fixtures.filter((f) => f.status === 'played').length, [fixtures])
   const hasTable = views.some((v) => v.id === 'table')
-  const { rows } = useStandings(hasTable ? seasonId : null, comp.id, isGroups ? group : null, version)
+  const { rows: dbRows } = useStandings(hasTable ? seasonId : null, comp.id, isGroups ? group : null, version)
+  // Sem classificação no banco (início de temporada): monta a tabela zerada a partir dos jogos.
+  const rows = dbRows?.length ? dbRows : dbRows && fixtures.length ? standingsFrom(fixtures, isGroups ? group : null) : dbRows
+  const mine = rows?.find((r) => r.club_id === myClub)
 
   return (
     <>
@@ -131,6 +135,34 @@ function CompetitionView({ comp, fixtures, myClub, lastKey, seasonId, onOpenRepo
             </div>
           )}
           <StandingsTable rows={rows} myClub={myClub} mode={isGroups ? 'group' : 'league'} zones={isGroups ? null : COMPETITIONS[comp.id]?.rules?.zones} />
+          {mine && (
+            <section className="ct-mine">
+              <ClubCrest clubId={myClub} size={40} />
+              <span className="ct-mine-txt">
+                <b>{getClubById(myClub)?.name}</b>
+                <small>
+                  {mine.pos}º lugar · {mine.points} pts em {mine.played} jogos
+                </small>
+                <small>
+                  Campanha: {mine.wins} V / {mine.draws} E / {mine.losses} D
+                </small>
+              </span>
+              <span className="ct-mine-form">
+                <small>Forma</small>
+                <FormDots form={clubForm(flat, myClub)} />
+              </span>
+            </section>
+          )}
+          <div className="ct-actions">
+            <button type="button" className="gx-btn-ghost" onClick={() => setView('scorers')}>
+              <BarChart3 size={16} /> Estatísticas da temporada
+            </button>
+            {onCups && (
+              <button type="button" className="gx-btn-ghost" onClick={onCups}>
+                <Trophy size={16} /> Copas
+              </button>
+            )}
+          </div>
         </>
       )}
       {view === 'bracket' && <Bracket comp={comp.id} fixtures={fixtures} myClub={myClub} />}
@@ -143,7 +175,8 @@ function CompetitionView({ comp, fixtures, myClub, lastKey, seasonId, onOpenRepo
 // TORNEIOS: tabela (critérios de desempate oficiais, calculada no banco), grupos, chaveamento,
 // rodadas com súmula e artilharia de cada campeonato.
 export default function CompetitionsTab({ ctx, selected, onSelect, onOpenReport }) {
-  const { hub, byComp, history, myClub } = ctx
+  const { hub, byComp, history, myClub, flat } = ctx
+  const cup = COMP_ORDER.find((id) => id !== selected && COMPETITIONS[id]?.kind !== 'league' && hub.competitions.some((c) => c.id === id && c.status !== 'not_in'))
   const comp = hub.competitions.find((c) => c.id === selected) || hub.competitions[0]
   const last = history.find((f) => f.comp === comp.id)
   const lastKey = last ? `${last.stage}:${last.round_no}` : null
@@ -155,14 +188,18 @@ export default function CompetitionsTab({ ctx, selected, onSelect, onOpenReport 
 
   return (
     <div className="sn-page">
-      <div className="ct-picker" role="tablist" aria-label="Campeonatos">
-        {COMP_ORDER.map((id) => (
-          <button key={id} type="button" role="tab" aria-selected={comp.id === id} className={comp.id === id ? 'is-on' : ''} style={{ '--c1': COMP_THEME[id]?.c1, '--c2': COMP_THEME[id]?.c2 }} onClick={() => onSelect(id)}>
-            <CompEmblem comp={id} size={26} />
-            <span>{COMP_SHORT[id]}</span>
-          </button>
-        ))}
-      </div>
+      <label className="ct-select">
+        <CompEmblem comp={comp.id} size={28} />
+        <span>{COMP_NAME[comp.id] || COMP_SHORT[comp.id]}</span>
+        <ChevronDown size={20} />
+        <select value={comp.id} onChange={(e) => onSelect(e.target.value)} aria-label="Campeonato">
+          {COMP_ORDER.map((id) => (
+            <option key={id} value={id}>
+              {COMP_NAME[id] || COMP_SHORT[id]}
+            </option>
+          ))}
+        </select>
+      </label>
 
       <section className={`ct-banner ${inactive ? 'is-inactive' : ''}`} style={{ '--c1': t.c1, '--c2': t.c2 }}>
         <CompEmblem comp={comp.id} size={58} dim={inactive} />
@@ -187,7 +224,7 @@ export default function CompetitionsTab({ ctx, selected, onSelect, onOpenReport 
         </div>
       </section>
 
-      <CompetitionView key={comp.id} comp={comp} fixtures={byComp[comp.id] || []} myClub={myClub} lastKey={lastKey} seasonId={hub.season.id} onOpenReport={onOpenReport} />
+      <CompetitionView key={comp.id} comp={comp} fixtures={byComp[comp.id] || []} flat={flat} onCups={cup ? () => onSelect(cup) : null} myClub={myClub} lastKey={lastKey} seasonId={hub.season.id} onOpenReport={onOpenReport} />
     </div>
   )
 }

@@ -26,6 +26,7 @@ import { claimReleaseGift, markReleaseSeen } from './features/update/updateApi'
 import './styles/theme.css'
 import './styles/desktop.css' // por último: tema de jogo, sem barras de rolagem e layout de computador
 import './styles/cm-skin.css' // pele CM (Championship Manager 17) para todas as telas
+import './styles/cm-screens.css' // telas no formato CM17 (títulos, táticas, torneios, carreira, mundo)
 
 function Gate() {
   const { status, user } = useAuth()

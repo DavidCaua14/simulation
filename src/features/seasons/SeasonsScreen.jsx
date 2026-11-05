@@ -338,7 +338,7 @@ export default function SeasonsScreen({ career: account, onBack }) {
             <CompetitionsTab ctx={ctx} selected={compSel || ctx.nextEvent?.competition || hub?.competitions?.[0]?.id} onSelect={setCompSel} onOpenReport={actions.openReport} />
           )}
           {ctx && tab === 'world' && hub.world && <WorldPanel key={worldArea} initialArea={worldArea} hub={hub} onRefresh={actions.refresh} worldStatus={worldStatus} onHome={() => goTab('home')} onTeam={playerId => goTab('team', playerId)} />}
-          {ctx && tab === 'career' && <CareerTab ctx={ctx} initialView={careerView} actions={actions} />}
+          {ctx && tab === 'career' && <CareerTab key={careerView || 'profile'} ctx={ctx} initialView={careerView} actions={actions} />}
         </div>
 
         {ctx && !live && <BottomNav worldAvailable={!!hub.world} active={tab} onChange={(id) => goTab(id)} badges={badges} />}

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Ambulance, ArrowLeftRight, CircleAlert, Ban, BatteryLow, Check, ChevronLeft, ChevronRight, ClipboardList, Flag, Save, Sparkles, TriangleAlert, Users } from 'lucide-react'
+import { Ambulance, ArrowLeftRight, CircleAlert, Ban, BatteryLow, Check, ChevronLeft, ChevronRight, ClipboardList, Flag, Sparkles, TriangleAlert, Users } from 'lucide-react'
 import Pitch, { PlayerToken } from '../components/Pitch'
 import BasePlayerCard from '../../cards/components/BasePlayerCard'
 import PositionFilter from '../components/PositionFilter'
@@ -438,6 +438,7 @@ export default function TeamTab({ hub, onSaved, notify, focusPlayerId = null, in
 
       {view === 'tactics' && (
         <>
+          <h2 className="cm-screen-title">Instruções táticas</h2>
           <TacticsPanel engineVersion={hub.simulation_version ?? 1} tactics={draft.tactics} onChange={(tactics) => update({ tactics })} />
           <p className="sn-hint">As táticas valem a partir do próximo jogo. Durante a partida você ainda pode ajustá-las.</p>
         </>
@@ -509,11 +510,11 @@ export default function TeamTab({ hub, onSaved, notify, focusPlayerId = null, in
 
       {view === 'tactics' && (
         <div className={`tt-actions ${drag ? "is-hidden" : ""}`}>
-          <button type="button" className="gx-btn-ghost" onClick={handleAuto} disabled={saving}>
-            <Sparkles size={16} /> Auxiliar escala
+          <button type="button" className="gx-btn-ghost" onClick={() => setView('lineup')}>
+            <ChevronLeft size={17} /> Voltar
           </button>
           <button type="button" className={`gx-btn tt-save ${dirty ? 'is-dirty' : ''}`} onClick={handleSave} disabled={saving || !dirty}>
-            <Save size={17} /> {saving ? 'Salvando…' : dirty ? 'Salvar' : 'Salvo'}
+            <Check size={17} /> {saving ? 'Salvando…' : dirty ? 'Confirmar' : 'Confirmado'}
           </button>
         </div>
       )}

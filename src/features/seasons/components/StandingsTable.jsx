@@ -39,8 +39,10 @@ export default function StandingsTable({ rows, myClub, mode = 'league', zones = 
             <tr key={r.club_id} className={`${r.club_id === myClub ? 'is-mine' : ''} zone-${zoneOf(mode, r.pos, rows.length, zones)}`}>
               <td className="pos">{r.pos}</td>
               <td className="left club">
-                <ClubCrest clubId={r.club_id} size={20} />
-                <span>{getClubById(r.club_id)?.name}</span>
+                <span className="club-in">
+                  <ClubCrest clubId={r.club_id} size={20} />
+                  <span>{getClubById(r.club_id)?.name}</span>
+                </span>
               </td>
               <td className="pts">{r.points}</td>
               <td>{r.played}</td>

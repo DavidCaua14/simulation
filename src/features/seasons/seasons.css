@@ -657,10 +657,11 @@ button.mr:active { transform: scale(0.99); }
 .sn-table td { padding: 8px 4px; text-align: center; border-top: 1px solid var(--gx-line); color: var(--gx-ink-2); }
 .sn-table .left { text-align: left; }
 .sn-table td.pos { width: 30px; font: 800 0.9rem var(--font-display); color: var(--gx-ink); box-shadow: inset 3px 0 0 transparent; }
-.sn-table td.club { display: flex; align-items: center; gap: 7px; color: var(--gx-ink); font-weight: 700; max-width: 140px; }
+.sn-table td.club { color: var(--gx-ink); font-weight: 700; max-width: 140px; }
+.sn-table td.club .club-in { display: flex; align-items: center; gap: 7px; min-width: 0; }
 .sn-modal .sn-table th, .sn-modal .sn-table td { padding-left: 2px; padding-right: 2px; }
 .sn-modal .sn-table td.club { max-width: 118px; }
-.sn-table td.club span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sn-table td.club .club-in > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .sn-table td.pts { font: 800 0.95rem var(--font-display); color: var(--gx-ink); }
 .sn-table tr.zone-g4 td.pos { box-shadow: inset 3px 0 0 #1d9bf0; }
 .sn-table tr.zone-g6 td.pos { box-shadow: inset 3px 0 0 #6fd0ff; }

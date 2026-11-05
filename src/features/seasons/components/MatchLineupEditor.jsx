@@ -58,10 +58,11 @@ export default function MatchLineupEditor({
   serverMin,
   onApply,
   onClose,
+  initialView = 'lineup',
 }) {
   const [draft, setDraft] = useState(initialDraft)
   const [tactics, setTactics] = useState(initialTactics)
-  const [view, setView] = useState('lineup')
+  const [view, setView] = useState(initialView)
   const [positionFilter, setPositionFilter] = useState('')
   const [sel, setSel] = useState(null) // seleção por toque
   const [info, setInfo] = useState(null)

@@ -1,7 +1,7 @@
 import { OpponentTactics } from './OpponentScout'
 import { isSessionError } from '../../../lib/sessionRecovery'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Ambulance, ChevronsRight, FastForward, Pause, Play, Repeat2, Settings2, Square, Tv, Users } from 'lucide-react'
+import { Ambulance, ChevronsRight, ClipboardList, FastForward, Pause, Play, Repeat2, Settings2, Square, Tv, Users } from 'lucide-react'
 import BasePlayerCard from '../../cards/components/BasePlayerCard'
 import PlayerSheet from './PlayerSheet'
 import ClubCrest from '../../club/components/ClubCrest'
@@ -378,6 +378,17 @@ export default function MatchLive({ initial, myClub, onFinished, notify }) {
         </p>
       )}
 
+      {!(finished && clock >= serverMin) && (
+        <nav className="ml-quick" aria-label="Ajustes do time">
+          <button type="button" className="gx-btn-ghost" disabled={finished} onClick={() => setPanel('lineup')}>
+            <Users size={16} /> Formação
+          </button>
+          <button type="button" className="gx-btn-ghost" disabled={finished} onClick={() => setPanel('tactics')}>
+            <ClipboardList size={16} /> Instruções
+          </button>
+        </nav>
+      )}
+
       <footer className="ml-ctrl">
         {finished && clock >= serverMin ? (
           <button type="button" className="gx-btn" onClick={() => onFinished(data.summary)}>
@@ -395,7 +406,7 @@ export default function MatchLive({ initial, myClub, onFinished, notify }) {
                 </button>
               ))}
             </div>
-            <button type="button" className="ml-team-btn" onClick={() => setPanel(true)} disabled={finished}>
+            <button type="button" className="ml-team-btn" onClick={() => setPanel('lineup')} disabled={finished}>
               <Settings2 size={17} /> Time
             </button>
             <button type="button" className="ml-ic" onClick={simulateToEnd} disabled={busy || finished} aria-label="Simular até o fim" title="Simular até o fim (o auxiliar decide)">
@@ -471,6 +482,7 @@ export default function MatchLive({ initial, myClub, onFinished, notify }) {
 
       {panel && (
         <MatchLineupEditor
+          initialView={panel === 'tactics' ? 'tactics' : 'lineup'}
           engineVersion={data.engine_version ?? 1}
           catalog={catalog}
           players={players}

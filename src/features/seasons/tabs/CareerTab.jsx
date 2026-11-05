@@ -3,19 +3,19 @@ import ExitModeButton from '../components/ExitModeButton'
 import JobTerms from '../world/JobTerms'
 import StandingsTable from '../components/StandingsTable'
 import { useEffect, useRef, useState } from 'react'
-import { Briefcase, CalendarRange, DoorOpen, Flag, History, Target, Trophy } from 'lucide-react'
+import { Briefcase, Building2, CalendarRange, DoorOpen, Flag, History, Megaphone, Target, Trophy } from 'lucide-react'
 import ClubCrest from '../../club/components/ClubCrest'
 import { getClubById } from '../../club/data/clubs'
 import TrophyCabinet from '../components/TrophyCabinet'
-import { Stars } from '../components/CoachStatusCard'
+import { Meter, Stars } from '../components/CoachStatusCard'
 import CompEmblem from '../ui/CompEmblem'
 import { EmptyState } from '../ui/States'
 import { fetchHistory } from '../services/managerApi'
-import { END_REASON, reputationTier, winRate } from '../utils/managerUtils'
-import { COMP_SHORT, fmt, seasonLabel } from '../utils/seasonUtils'
+import { END_REASON, boardMood, fansMood, objectiveProgress, reputationTier, winRate } from '../utils/managerUtils'
+import { COMPETITIONS, COMP_SHORT, fmt, seasonLabel } from '../utils/seasonUtils'
 
 const VIEWS = [
-  { id: 'profile', label: 'Perfil' },
+  { id: 'profile', label: 'Técnico' },
   { id: 'offers', label: 'Propostas' },
   { id: 'clubs', label: 'Clubes' },
   { id: 'seasons', label: 'Temporadas' },
@@ -29,6 +29,7 @@ function OfferCard({ o, employed, busy, onRespond, onRefresh }) {
   const ctx = o.context || {}
   return (
     <article className="of" style={{ '--cc': club?.colors?.[0] || '#2a3550' }}>
+      <h3 className="of-title">Oferta de emprego</h3>
       <header>
         <ClubCrest clubId={o.club_id} size={48} />
         <div>
@@ -94,10 +95,6 @@ export default function CareerTab({ ctx, initialView, actions }) {
   const lastKey = useRef(null)
 
   useEffect(() => {
-    if (initialView) setView(initialView)
-  }, [initialView])
-
-  useEffect(() => {
     if (lastKey.current === reqKey) return undefined
     lastKey.current = reqKey
     let alive = true
@@ -112,56 +109,10 @@ export default function CareerTab({ ctx, initialView, actions }) {
   const rep = reputationTier(coach.reputation)
   const club = coach.club_id ? getClubById(coach.club_id) : null
   const rate = winRate(coach.wins, coach.draws, coach.losses)
+  const season = hub.season
 
   return (
     <div className="sn-page">
-      <section className="co" style={{ '--cc': club?.colors?.[0] || '#24314d' }}>
-        <div className="co-top">
-          <span className="co-crest">{club ? <ClubCrest clubId={club.id} size={58} /> : <Briefcase size={28} />}</span>
-          <div className="co-id">
-            <small>Treinador · {hub.career.country || 'Brasil'}</small>
-            <h2>{hub.career.nickname}</h2>
-            <span className="co-club">{club ? club.name : 'Sem clube'}</span>
-          </div>
-        </div>
-        <div className="co-rep">
-          <Stars value={rep.stars} />
-          <b>{rep.label}</b>
-          <span>
-            Reputação <em>{Math.round(coach.reputation)}</em>/100
-          </span>
-          <i className="co-repbar">
-            <em style={{ width: `${coach.reputation}%` }} />
-          </i>
-        </div>
-        <div className="co-nums">
-          <span>
-            <b>{coach.matches}</b>
-            <small>Jogos</small>
-          </span>
-          <span className="w">
-            <b>{coach.wins}</b>
-            <small>Vitórias</small>
-          </span>
-          <span className="d">
-            <b>{coach.draws}</b>
-            <small>Empates</small>
-          </span>
-          <span className="l">
-            <b>{coach.losses}</b>
-            <small>Derrotas</small>
-          </span>
-          <span>
-            <b>{rate}%</b>
-            <small>Aproveit.</small>
-          </span>
-          <span className="gold">
-            <b>{coach.titles}</b>
-            <small>Títulos</small>
-          </span>
-        </div>
-      </section>
-
       <div className="sn-seg cw-nav" role="tablist" aria-label="Áreas da carreira">
         {VIEWS.filter(v => v.id !== 'world' || hub.world).map((v) => (
           <button key={v.id} type="button" role="tab" aria-selected={view === v.id} className={view === v.id ? 'is-on' : ''} onClick={() => setView(v.id)}>
@@ -173,6 +124,136 @@ export default function CareerTab({ ctx, initialView, actions }) {
 
       {view === 'profile' && (
         <>
+          <section className="co" style={{ '--cc': club?.colors?.[0] || '#24314d' }}>
+            <div className="co-top">
+              <span className="co-crest">{club ? <ClubCrest clubId={club.id} size={58} /> : <Briefcase size={28} />}</span>
+              <div className="co-id">
+                <small>Treinador · {hub.career.country || 'Brasil'}</small>
+                <h2>{hub.career.nickname}</h2>
+                <span className="co-club">{club ? club.name : 'Sem clube'}</span>
+              </div>
+            </div>
+            <div className="co-rep">
+              <Stars value={rep.stars} />
+              <b>{rep.label}</b>
+              <span>
+                Reputação <em>{Math.round(coach.reputation)}</em>/100
+              </span>
+              <i className="co-repbar">
+                <em style={{ width: `${coach.reputation}%` }} />
+              </i>
+            </div>
+            <div className="co-nums">
+              <span>
+                <b>{coach.matches}</b>
+                <small>Jogos</small>
+              </span>
+              <span className="w">
+                <b>{coach.wins}</b>
+                <small>Vitórias</small>
+              </span>
+              <span className="d">
+                <b>{coach.draws}</b>
+                <small>Empates</small>
+              </span>
+              <span className="l">
+                <b>{coach.losses}</b>
+                <small>Derrotas</small>
+              </span>
+              <span>
+                <b>{rate}%</b>
+                <small>Aproveit.</small>
+              </span>
+              <span className="gold">
+                <b>{coach.titles}</b>
+                <small>Títulos</small>
+              </span>
+            </div>
+          </section>
+
+
+          <section className="cm-block">
+            <h3>Desempenho na temporada</h3>
+            <div className="cm-cells">
+              <span>
+                <small>Jogos</small>
+                <b>{season.wins + season.draws + season.losses}</b>
+              </span>
+              <span>
+                <small>Vitórias</small>
+                <b>{season.wins}</b>
+              </span>
+              <span>
+                <small>Empates</small>
+                <b>{season.draws}</b>
+              </span>
+              <span>
+                <small>Derrotas</small>
+                <b>{season.losses}</b>
+              </span>
+            </div>
+            {coach.status === 'employed' && (
+              <div className="cm-meters">
+                <Meter icon={Building2} label="Diretoria" value={coach.board} mood={boardMood(coach.board)} />
+                <Meter icon={Megaphone} label="Torcida" value={coach.fans} mood={fansMood(coach.fans)} />
+              </div>
+            )}
+          </section>
+
+          {hub.objectives.length > 0 && coach.status === 'employed' && (
+            <section className="cm-block">
+              <h3>Objetivos da diretoria</h3>
+              <ul className="cm-objs">
+                {hub.objectives.map((o) => {
+                  const pr = objectiveProgress(o, o.kind === 'league_pos' ? hub.competitions.find((c) => c.id === o.competition)?.table?.played ?? null : null)
+                  return (
+                    <li key={o.id} className={`is-${o.status} t-${pr.tone}`}>
+                      <Trophy size={16} />
+                      <span>
+                        <b>{o.label}</b>
+                        <small>{pr.text}</small>
+                      </span>
+                      <em>{o.status === 'done' ? 'Cumprido' : o.status === 'failed' ? 'Falhou' : 'Em andamento'}</em>
+                    </li>
+                  )
+                })}
+              </ul>
+            </section>
+          )}
+
+          {hist?.seasons?.length > 0 && (
+            <section className="cm-block">
+              <h3>Histórico da carreira</h3>
+              <table className="sn-table cm-hist">
+                <thead>
+                  <tr>
+                    <th>Temporada</th>
+                    <th className="left">Time</th>
+                    <th>Posição</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {hist.seasons.map((h) => {
+                    const league = (h.summary?.competitions || []).find((c) => c.player_result && COMPETITIONS[c.competition]?.kind === 'league') || (h.summary?.competitions || []).find((c) => c.player_result)
+                    return (
+                      <tr key={h.id}>
+                        <td>{seasonLabel(h.year, h.region)}</td>
+                        <td className="left">
+                          <span className="cm-hist-club">
+                            {(h.clubs || []).slice(0, 2).map((id) => (
+                              <ClubCrest key={id} clubId={id} size={18} />
+                            ))}
+                            {getClubById(h.clubs?.[h.clubs.length - 1])?.name || '—'}
+                          </span>
+                        </td>
+                        <td>{h.status === 'active' ? 'em andamento' : league ? `${league.player_result}` : '—'}</td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </section>
+          )}
           <section className="sn-sec">
             <h2 className="gx-title">Conquistas</h2>
             {hub.world && <JobTerms coach={hub.world.coach} employed={coach.status === 'employed'} onRefresh={actions.refresh} />}
@@ -211,6 +292,9 @@ export default function CareerTab({ ctx, initialView, actions }) {
               procuram você.
             </p>
           </section>
+          <button type="button" className="gx-btn cm-wide" onClick={() => setView('offers')}>
+            <Briefcase size={17} /> Propostas {hub.offers.length > 0 && <em className="sn-badge">{hub.offers.length}</em>}
+          </button>
           {coach.status === 'employed' && (
             <section className="sn-sec co-danger">
               {confirmResign ? (
