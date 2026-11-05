@@ -87,7 +87,7 @@ export default function ClubDevPanel({ players = [], notify, onChanged }) {
   return (
     <div className="cd">
       <ReputationCard rep={dev.reputation} />
-      <DifficultyCard current={dev.difficulty} busy={busy} act={act} />
+      <DifficultyCard current={dev.difficulty} levels={dev.difficulty_levels} busy={busy} act={act} />
       <nav className="cd-tabs" aria-label="Gestão do clube">
         {SECTIONS.map(({ id, label, Icon }) => (
           <button key={id} type="button" className={section === id ? 'is-on' : ''} aria-pressed={section === id} onClick={() => setSection(id)}>
@@ -141,23 +141,34 @@ function ReputationCard({ rep }) {
   )
 }
 
-function DifficultyCard({ current, busy, act }) {
+// Dificuldade única (nível): Fácil, Normal ou Difícil; troca uma vez por temporada.
+// Servidores antes da evolução 63 ainda devolvem só o perfil (Padrão/Difícil).
+function DifficultyCard({ current, levels, busy, act }) {
   if (!current) return null
-  if (current.id === 'accessible')
-    return <p className="cd-note">Dificuldade: {current.label} (concedida pela proposta inicial; termina sozinha após as primeiras temporadas).</p>
+  const options = levels?.length
+    ? levels
+    : [
+        { id: 'standard', label: 'Padrão' },
+        { id: 'hard', label: 'Difícil' },
+      ]
+  const locked = levels?.length && current.can_change === false
+  const active = options.find((o) => o.id === current.id)
   return (
-    <div className="cd-diff" role="radiogroup" aria-label="Dificuldade">
-      <span>Dificuldade</span>
-      {[
-        ['standard', 'Padrão'],
-        ['hard', 'Difícil'],
-      ].map(([id, label]) => (
-        <button key={id} type="button" role="radio" aria-checked={current.id === id} className={current.id === id ? 'is-on' : ''} disabled={Boolean(busy) || current.id === id}
-          onClick={() => act('diff', () => setDifficulty(id), id === 'hard' ? 'Dificuldade Difícil ativada: diretoria mais exigente e evolução 15% mais lenta.' : 'Dificuldade Padrão ativada.')}>
-          {label}
-        </button>
-      ))}
-    </div>
+    <section className="cd-diffbox" aria-label="Dificuldade">
+      <div className="cd-diff" role="radiogroup" aria-label="Dificuldade">
+        <span>Dificuldade</span>
+        {options.map((o) => (
+          <button key={o.id} type="button" role="radio" aria-checked={current.id === o.id} className={current.id === o.id ? 'is-on' : ''}
+            disabled={Boolean(busy) || current.id === o.id || locked}
+            onClick={() => act('diff', () => setDifficulty(o.id), `Dificuldade ${o.label} ativada.`)}>
+            {o.label}
+          </button>
+        ))}
+      </div>
+      {active?.description && <small className="cd-note">{active.description}</small>}
+      {locked && <small className="cd-note">Você já trocou a dificuldade nesta temporada. A próxima troca fica liberada na temporada seguinte.</small>}
+      {current.profile === 'accessible' && <small className="cd-note">Bônus de {current.profile_label || 'Início acessível'} ativo: concedido pela proposta inicial e encerrado sozinho após as primeiras temporadas.</small>}
+    </section>
   )
 }
 

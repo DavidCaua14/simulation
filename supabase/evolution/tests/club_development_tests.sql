@@ -166,7 +166,10 @@ begin
 
  -- 11) Dificuldade escolhida pelo treinador
  r:=public.career_difficulty_set('hard');
- if (public.mgr_difficulty(cid)).dev_mult<>0.85 then raise exception 'Dificuldade Difícil não aplicada';end if;
+ if (public.mgr_difficulty(cid)).dev_mult<>0.85 or (select difficulty_level from public.careers where id=cid)<>'hard' then raise exception 'Dificuldade Difícil não aplicada';end if;
+ if (public.mgr_difficulty(cid)).budget_mult<>0.85 then raise exception 'Verba do nível Difícil não aplicada';end if;
+ begin perform public.career_difficulty_set('easy');raise exception 'Trocou a dificuldade duas vezes na temporada';
+ exception when others then if sqlerrm not like '%uma vez por temporada%' then raise;end if;end;
  begin perform public.career_difficulty_set('accessible');raise exception 'Aceitou dificuldade restrita';
  exception when others then if sqlerrm not like '%inválida%' then raise;end if;end;
  raise notice 'PASS dificuldade escolhida';

@@ -564,3 +564,8 @@
   color: var(--text-primary);
   opacity: 1;
 }
+.cd-diffbox {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
