@@ -21,8 +21,8 @@ O hook atua apenas na Data API do PostgREST (REST/RPC). Não bloqueia Auth, Stor
 
 Mantenha `enabled: true` e o hook ativos durante as próximas etapas. Em falha de rede/configuração da manutenção, a nova interface bloqueia por precaução. Para reativar no futuro, publique `enabled: true` e execute `01_enable.sql` novamente.
 
-## Situação atual: manutenção ativa
+## Situação atual: jogo liberado (2026-11-06)
 
-- Banco: `01_enable.sql` aplicado. Só a conta administrativa e `service_role` passam pela Data API.
-- Interface: `<MaintenanceGate>` de volta em `src/App.jsx`, lendo `public/maintenance.json` com `enabled: true`.
-- Para reabrir: siga "Reabrir quando a atualização terminar", acima. O `<MaintenanceGate>` pode continuar no lugar.
+- Banco: `02_disable.sql` aplicado; o hook `pgrst.db_pre_request` foi removido e a Data API responde a todos.
+- Interface: `<MaintenanceGate>` continua em `src/App.jsx`, lendo `public/maintenance.json` com `enabled: false`.
+- Para uma nova manutenção: publique `enabled: true` e execute `01_enable.sql` (depois `verify.sql`).
