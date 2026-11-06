@@ -1,8 +1,8 @@
-import { Crosshair, Shield, Swords, Wind } from 'lucide-react'
+import { Crosshair, Flame, Footprints, Shield, Swords, Wind } from 'lucide-react'
 import { cmOnly, toCM } from '../utils/managerUtils'
 
-// INSTRUÇÕES TÁTICAS simplificadas: quatro decisões diretas. Cada escolha preenche as chaves
-// completas do motor (estilo, ataque, passe, ritmo, marcação, desarme, cruzamento) — o servidor não muda.
+// INSTRUÇÕES TÁTICAS simplificadas: seis decisões diretas. Cada escolha preenche as chaves
+// completas do motor (estilo, ataque, passe, ritmo, marcação, desarme, cruzamento, gestão do jogo).
 // Chutes de longe e bola parada ficam como estão.
 const GROUPS = [
   {
@@ -34,9 +34,20 @@ const GROUPS = [
     Icon: Swords,
     read: (t) => t.marking,
     options: [
-      { v: 'low', label: 'Recuada', effect: 'Bloco baixo e compacto: cansa menos, cede a bola.', set: { marking: 'low', tackling: 'light' } },
-      { v: 'medium', label: 'Média', effect: 'Pressiona no meio-campo sem se desgastar demais.', set: { marking: 'medium', tackling: 'balanced' } },
-      { v: 'high', label: 'Pressão alta', effect: 'Rouba bolas no campo rival, cansa mais e arrisca cartões.', set: { marking: 'high', tackling: 'heavy' } },
+      { v: 'low', label: 'Recuada', effect: 'Bloco baixo e compacto: cansa menos, cede a bola.', set: { marking: 'low' } },
+      { v: 'medium', label: 'Média', effect: 'Pressiona no meio-campo sem se desgastar demais.', set: { marking: 'medium' } },
+      { v: 'high', label: 'Pressão alta', effect: 'Rouba bolas no campo rival, cansa mais e faz mais faltas.', set: { marking: 'high' } },
+    ],
+  },
+  {
+    id: 'tackle',
+    label: 'Entrada',
+    Icon: Footprints,
+    read: (t) => t.tackling,
+    options: [
+      { v: 'light', label: 'Leve', effect: 'Evita o contato: bem menos cartões e expulsões, mas desarma menos.', set: { tackling: 'light' } },
+      { v: 'balanced', label: 'Normal', effect: 'Disputa a bola com firmeza, sem exageros.', set: { tackling: 'balanced' } },
+      { v: 'heavy', label: 'Dura', effect: 'Chega forte em toda dividida: intimida, mas o risco de expulsão dobra.', set: { tackling: 'heavy' } },
     ],
   },
   {
@@ -48,6 +59,16 @@ const GROUPS = [
       { v: 'central', label: 'Pelo meio', effect: 'Tabelas por dentro, finalizações mais limpas.', set: { attack: 'central', crossing: 'rarely' } },
       { v: 'mixed', label: 'Variado', effect: 'Usa o meio e as pontas.', set: { attack: 'mixed', crossing: 'mixed' } },
       { v: 'wide', label: 'Pelas pontas', effect: 'Jogadas abertas e cruzamentos para a área.', set: { attack: 'both', crossing: 'byline' } },
+    ],
+  },
+  {
+    id: 'manage',
+    label: 'Resultado',
+    Icon: Flame,
+    read: (t) => (t.manage === 'chase' ? 'chase' : 'normal'),
+    options: [
+      { v: 'normal', label: 'Padrão', effect: 'O time segue a postura escolhida do começo ao fim.', set: { manage: 'normal' } },
+      { v: 'chase', label: 'Buscar', effect: 'Sem estar vencendo, o time se lança ao ataque o jogo todo (e mais ainda se perder no fim). Fica mais exposto atrás.', set: { manage: 'chase' } },
     ],
   },
 ]

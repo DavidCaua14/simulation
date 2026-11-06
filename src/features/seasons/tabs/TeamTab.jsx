@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { ArrowLeftRight, CircleAlert, Check, ChevronLeft, ChevronRight, ClipboardList, Dumbbell, Flag, Sparkles, TriangleAlert, Users } from 'lucide-react'
+import { ArrowLeftRight, CircleAlert, Check, ChevronLeft, ChevronRight, ClipboardList, Dumbbell, FileClock, Flag, Frown, Sparkles, TriangleAlert, Users } from 'lucide-react'
 import Pitch, { PlayerToken } from '../components/Pitch'
 import PositionFilter from '../components/PositionFilter'
 import PlayerPicker from '../components/PlayerPicker'
@@ -120,6 +120,10 @@ export default function TeamTab({ hub, onSaved, notify, focusPlayerId = null, in
   const byId = useMemo(() => Object.fromEntries((squad?.players || []).map((p) => [p.id, p])), [squad])
   const infoPlayer = info ? byId[info.id] || (info.name ? info : null) : null
   const expiringSoon = (until) => hub.world?.today && Date.parse(until) - Date.parse(hub.world.today) <= 183 * 86400000
+  // Contrato no último ano: aviso no elenco para renovar a tempo (vermelho nos últimos 6 meses)
+  const contractLeft = (until) => (until && hub.world?.today ? Math.ceil((Date.parse(until) - Date.parse(hub.world.today)) / 86400000) : null)
+  const ending = (squad?.players || []).filter((p) => { const d = contractLeft(p.contract_expires); return d != null && d <= 365 })
+  const unrest = squad?.unrest
   const formation = catalog?.byId[draft?.formation]
   const strength = useMemo(() => (formation && draft ? lineupStrength(formation, draft.slots, byId) : null), [formation, draft, byId])
 
@@ -485,6 +489,31 @@ export default function TeamTab({ hub, onSaved, notify, focusPlayerId = null, in
               </button>
             ))}
           </div>
+          {(ending.length > 0 || unrest?.penalty > 0) && (
+            <div className="sqt-alerts">
+              {ending.length > 0 && (
+                <button type="button" className="sqt-alert is-warn" onClick={() => setSquadCols('finance')}>
+                  <FileClock size={15} />
+                  <span>
+                    <b>{ending.length} contrato{ending.length > 1 ? 's' : ''} no último ano</b>
+                    <small>Abra o atleta para renovar antes que ele saia de graça.</small>
+                  </span>
+                </button>
+              )}
+              {unrest?.penalty > 0 && (
+                <div className="sqt-alert is-bad">
+                  <Frown size={15} />
+                  <span>
+                    <b>Vestiário insatisfeito: rendimento do time −{Math.round(unrest.penalty * 100)}%</b>
+                    <small>
+                      {unrest.unhappy + unrest.angry} atleta{unrest.unhappy + unrest.angry > 1 ? 's' : ''} com moral baixa
+                      {unrest.rebels > 0 ? `, ${unrest.rebels} pedindo para sair` : ''}. Dê minutos a eles ou negocie.
+                    </small>
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
           <table className="sn-table sqt-table">
             <thead>
               <tr>
@@ -518,7 +547,8 @@ export default function TeamTab({ hub, onSaved, notify, focusPlayerId = null, in
               {groups.flatMap((g) => g.players).map((p) => {
                 const inXI = Object.values(draft.slots).includes(p.id)
                 const onBench = draft.bench.includes(p.id)
-                const status = p.injured_days > 0 ? 'Lesão' : p.suspended > 0 ? 'Susp.' : p.transfer_listed ? 'À venda' : 'OK'
+                const status = p.injured_days > 0 ? 'Lesão' : p.suspended > 0 ? 'Susp.' : p.transfer_listed ? 'À venda' : p.unrest ? 'Quer sair' : p.morale != null && p.morale < 20 ? 'Revoltado' : p.morale != null && p.morale < 35 ? 'Insatisfeito' : 'OK'
+                const left = contractLeft(p.contract_expires)
                 return (
                   <tr key={p.id} className={`is-link ${p.available ? '' : 'is-out'}`} onClick={() => setInfo(p)}>
                     <td>
@@ -528,6 +558,11 @@ export default function TeamTab({ hub, onSaved, notify, focusPlayerId = null, in
                     </td>
                     <td className="left">
                       <b className="sqt-name">{p.short_name}</b>
+                      {left != null && left <= 365 && (
+                        <span className={`sqt-ctr ${left <= 183 ? 'is-bad' : ''}`} title={`Contrato termina em ${dateLabel(p.contract_expires)}: renove antes que ele saia de graça`}>
+                          <FileClock size={11} /> {left <= 31 ? `${Math.max(0, left)}d` : `${Math.ceil(left / 30)}m`}
+                        </span>
+                      )}
                     </td>
                     <td>
                       <b className={`sqt-ovr o-${ovrTone(p.overall)}`}>{p.overall}</b>

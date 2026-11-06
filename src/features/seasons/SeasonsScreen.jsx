@@ -25,6 +25,8 @@ import MatchFlow from './matchflow/MatchFlow'
 import MatchReport from './components/MatchReport'
 import ParallelDigest from './components/ParallelDigest'
 import SeasonReward from './components/SeasonReward'
+import TitleCelebration from './components/TitleCelebration'
+import { pendingTitle } from './utils/titleParty'
 import InboxSheet from './components/InboxSheet'
 import '../cards/cards.css'
 import HomeTab from './tabs/HomeTab'
@@ -65,6 +67,7 @@ export default function SeasonsScreen({ career: account, onBack }) {
   const [central, setCentral] = useState(false)
   const [toast, setToast] = useState(null)
   const [assistant, setAssistant] = useState(() => !assistantDone(account?.id))
+  const [, setPartySeen] = useState(0) // re-render depois de fechar a comemoração (o "visto" fica no navegador)
 
   const actionLock = useRef(false)
   const mounted = useRef(true)
@@ -93,7 +96,8 @@ export default function SeasonsScreen({ career: account, onBack }) {
       return
     }
     if (inMatchFlow) return
-    const fresh = hub.messages.filter((m) => m.id > lastMsg.current && !m.read && ['market', 'career'].includes(msgCategory(m)))
+    // Também avisa quando um atleta pede para sair (mensagem do elenco com kind 'squad')
+    const fresh = hub.messages.filter((m) => m.id > lastMsg.current && !m.read && (['market', 'career'].includes(msgCategory(m)) || m.kind === 'squad'))
     lastMsg.current = Math.max(lastMsg.current, top)
     if (fresh.length) {
       const first = fresh[fresh.length - 1]
@@ -452,6 +456,10 @@ export default function SeasonsScreen({ career: account, onBack }) {
         {hub?.season_reward && !live && !preMatch && !digest && !report && (
           <SeasonReward reward={hub.season_reward} onClose={() => refresh({ silent: true })} />
         )}
+        {(() => {
+          const party = hub && !live && !preMatch && !summary && !digest && !report && !hub.season_reward ? pendingTitle(hub, account?.id) : null
+          return party && <TitleCelebration key={party.competition} title={party} hub={hub} account={account?.id} onClose={() => setPartySeen((n) => n + 1)} />
+        })()}
         {central && ctx && !live &&<ClubCentral hub={hub} actions={actions} onClose={() => setCentral(false)} />}
         {inbox && hub && <InboxSheet messages={[...hub.messages, ...worldMail]} focusId={inbox.focusId} initialCategory={inbox.category} onSeen={seenInbox} onAction={inboxAction} onClose={() => setInbox(null)} />}
 

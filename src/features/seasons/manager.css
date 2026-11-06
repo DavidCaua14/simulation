@@ -619,6 +619,8 @@ em.l, .co-nums .l b { color: #ff5b6e; }
 .ps-deal { display: flex; flex-direction: column; gap: 10px; padding: 12px; border-radius: 14px; border: 1px solid var(--gx-line); background: var(--gx-panel); }
 .ps-deal h4 { margin: 0; font: 800 0.82rem var(--font-body); color: var(--gx-ink); }
 .ps-deal dl { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin: 0; }
+.ps-deal .ps-unrest { margin: 0; padding: 8px 10px; border-radius: 10px; font-size: 0.78rem; background: rgba(226, 58, 80, 0.12); border: 1px solid rgba(226, 58, 80, 0.4); }
+.ps-deal .ps-ending { margin: 0; padding: 8px 10px; border-radius: 10px; font-size: 0.78rem; background: rgba(255, 200, 61, 0.12); border: 1px solid rgba(255, 200, 61, 0.45); }
 .ps-deal dt { font-size: 0.64rem; color: var(--gx-ink-2); }
 .ps-deal dd { margin: 0; font: 800 0.82rem var(--font-body); color: var(--gx-ink); }
 .ps-deal p { margin: 0; font-size: 0.74rem; line-height: 1.45; color: var(--gx-ink-2); }

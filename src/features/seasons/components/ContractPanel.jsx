@@ -73,13 +73,16 @@ export default function ContractPanel({ player: p, today, maxYears = 5, notify, 
       <p>
         Moral <MoraleTag morale={p.morale} trend={p.morale_trend} />
       </p>
+      {p.unrest && <p className="ps-unrest"><b>Pediu para sair.</b> Enquanto não tiver minutos ou não for colocado à venda, a moral dele cai e o vestiário sente.</p>}
+      {!p.unrest && p.morale != null && p.morale < 35 && <p className="ps-unrest">Insatisfeito com a falta de oportunidades. Muitos atletas assim derrubam o rendimento do time.</p>}
+      {left != null && left > 6 && left <= 12 && !p.precontract && <p className="ps-ending">Contrato no último ano: renove antes dos seis meses finais, quando outros clubes podem levá-lo de graça.</p>}
       {p.precontract && <p><b>Já assinou pré-contrato com outro clube</b> e sai de graça quando o vínculo terminar.</p>}
       <dl>
         <div><dt>Contrato até</dt><dd>{dateLabel(p.contract_expires)}{left != null && left <= 6 ? ` · ${left} mês(es)` : ''}</dd></div>
         <div><dt>Salário semanal</dt><dd>{clubMoney(weekly(p.monthly_salary))}</dd></div>
         <div><dt>Situação</dt><dd>{p.transfer_listed ? 'Na lista de transferências' : 'No elenco'}</dd></div>
       </dl>
-      {left != null && left <= 6 && !p.precontract && <p>Nos seis meses finais outros clubes podem oferecer pré-contrato. Sem renovação, ele sai de graça.</p>}
+      {left != null && left <= 6 && !p.precontract && <p className="ps-ending">Nos seis meses finais outros clubes podem oferecer pré-contrato. Sem renovação, ele sai de graça.</p>}
 
       {confirmRelease ? (
         <div className="ps-deal-actions">

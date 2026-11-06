@@ -22,7 +22,7 @@ export const ATTR_GROUPS = [
 ]
 
 // ---- Táticas do CM17 (evolução 64): o servidor deriva as chaves internas do motor a partir destas ----
-export const DEFAULT_TACTICS = { style: 'neutral', attack: 'mixed', passing: 'mixed', tackling: 'balanced', tempo: 'normal', marking: 'medium', long_shots: 'sometimes', set_pieces: 'cross', crossing: 'mixed' }
+export const DEFAULT_TACTICS = { style: 'neutral', attack: 'mixed', passing: 'mixed', tackling: 'balanced', tempo: 'normal', marking: 'medium', long_shots: 'sometimes', set_pieces: 'cross', crossing: 'mixed', manage: 'normal' }
 
 export const TACTIC_GROUPS = [
   {
@@ -101,6 +101,8 @@ export function toCM(t = {}) {
     long_shots: t.long_shots || 'sometimes',
     set_pieces: t.set_pieces || 'cross',
     crossing: t.crossing || ({ wide: 'byline', center: 'rarely' }[t.width] ?? 'mixed'),
+    // "Buscar o resultado" é a única gestão de jogo escolhida pelo treinador; o resto (keep/push da IA) vira normal
+    manage: t.manage === 'chase' ? 'chase' : 'normal',
   }
 }
 // Só as chaves do CM17 vão ao servidor: ele deriva as internas (postura, construção, pressão...).
