@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import ClubCrest from '../club/components/ClubCrest'
 import { getClubById } from '../club/data/clubs'
 import { GROUND, SCENE, SPRITES, colorDistance, imageUrl, loadKit, project, tintAtlas } from './kit'
-import { DIRS, L, W, createDirector } from './director'
+import { DIRS, L, W, createDirector } from '../match2d/director'
 import './match25d.css'
 
 const REF_W = SCENE.reference_canvas[0]

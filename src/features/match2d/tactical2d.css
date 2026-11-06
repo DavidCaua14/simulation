@@ -1,0 +1,172 @@
+/* Partida 2D tática: placar em HTML, campo em canvas com a proporção do kit (117 × 78). */
+.t2d {
+  position: relative;
+  width: 100%;
+  background: #08111f;
+  border-bottom: 1px solid rgba(148, 186, 255, 0.18);
+}
+.t2d-score {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 44px 14px;
+  color: #eef3ff;
+  font-family: var(--font-heading);
+}
+.t2d-team {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  font-size: clamp(0.66rem, 1.8vw, 0.92rem);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+.t2d-team b {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.t2d-team.a {
+  justify-content: flex-end;
+}
+.t2d-team i {
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid #f1f7fa;
+  box-shadow: 0 0 0 1px #143146;
+}
+.t2d-result {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: clamp(1.05rem, 3vw, 1.5rem);
+  font-weight: 800;
+}
+.t2d-result em {
+  font-style: normal;
+  font-size: 0.75em;
+  color: #8ea3c7;
+}
+.t2d-clock {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+  font-size: clamp(0.6rem, 1.4vw, 0.78rem);
+  font-weight: 700;
+  color: #67e8f9;
+  letter-spacing: 1px;
+}
+.t2d-clock.is-done {
+  color: #fbbf24;
+}
+.t2d-flip {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  border: 1px solid rgba(148, 186, 255, 0.28);
+  background: rgba(15, 28, 52, 0.9);
+  color: #cfe1ff;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+.t2d-flip:focus-visible {
+  outline: 2px solid #67e8f9;
+  outline-offset: 2px;
+}
+
+.t2d-field {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 117 / 78;
+  overflow: hidden;
+}
+.t2d.is-v .t2d-field {
+  aspect-ratio: 78 / 117;
+  width: min(100%, calc(64vh * 78 / 117));
+  margin: 0 auto;
+}
+.t2d-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.t2d-loading {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: #b9c7e4;
+  font-size: 0.85rem;
+  text-align: center;
+  padding: 0 16px;
+}
+
+/* avisos: um por vez, sobre o campo */
+.t2d-banner {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  pointer-events: none;
+  animation: t2d-pop 0.3s cubic-bezier(0.2, 1.4, 0.4, 1) both;
+}
+.t2d-banner img {
+  height: clamp(30px, 8vw, 64px);
+  width: auto;
+  filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.5));
+}
+.t2d-banner.k-goal img {
+  height: clamp(40px, 11vw, 84px);
+}
+.t2d-banner span,
+.t2d-banner strong {
+  padding: 3px 12px;
+  border-radius: 6px;
+  background: rgba(6, 14, 30, 0.86);
+  border: 1px solid rgba(103, 232, 249, 0.45);
+  color: #f1f5ff;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: clamp(0.72rem, 1.8vw, 1rem);
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+.t2d-banner strong {
+  font-size: clamp(1rem, 3vw, 1.5rem);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+.t2d-banner.is-mine span {
+  border-color: rgba(52, 211, 153, 0.7);
+}
+@keyframes t2d-pop {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.6);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .t2d-banner {
+    animation: none;
+  }
+}

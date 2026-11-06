@@ -14,7 +14,7 @@ import { fetchPlayer, fetchSquad, stepMatch } from '../services/managerApi'
 import { MAJOR_EVENTS, condTone, eventText, isGoal } from '../utils/managerUtils'
 import { COMP_NAME, describeMatch } from '../utils/seasonUtils'
 import useMatchAudio from '../../audio/useMatchAudio'
-import MatchBroadcast from '../../match25d/MatchBroadcast'
+import MatchTactical2D from '../../match2d/MatchTactical2D'
 
 const SPEEDS = [
   { id: 1, label: '1x', ms: 700 },
@@ -53,7 +53,17 @@ export default function MatchLive({ initial, myClub, onFinished, notify }) {
   const [flash, setFlash] = useState(null)
   const [turbo, setTurbo] = useState(false)
   const [holdAt, setHoldAt] = useState(null) // minuto de um lance que a transmissão ainda está mostrando
-  // Transmissão 2.5D (pode ser desligada em aparelhos mais simples; preferência só deste navegador)
+  // lances que o campo já mostrou (gol na rede, defesa, cartão): entram no placar e no relato na hora,
+  // mesmo com o relógio esperando outro lance do mesmo minuto
+  const [revealed, setRevealed] = useState(() => new Set())
+  const onReveal = useCallback((seqs) => {
+    setRevealed((prev) => {
+      const next = new Set(prev)
+      for (const s of seqs) next.add(s)
+      return next
+    })
+  }, [])
+  // Campo 2D tático (pode ser desligado em aparelhos mais simples; preferência só deste navegador)
   const [broadcast, setBroadcast] = useState(() => {
     try {
       return window.localStorage.getItem('sim.broadcast') !== 'off'
@@ -97,7 +107,10 @@ export default function MatchLive({ initial, myClub, onFinished, notify }) {
   const upcoming = useMemo(() => events.filter((e) => e.minute <= Math.floor(clock) + 1), [events, clock])
 
   const shownMinute = Math.floor(clock)
-  const visible = useMemo(() => events.filter((e) => e.minute <= shownMinute || (finished && clock >= serverMin)), [events, shownMinute, finished, clock, serverMin])
+  const visible = useMemo(
+    () => events.filter((e) => e.minute <= shownMinute || revealed.has(e.seq) || (finished && clock >= serverMin)),
+    [events, shownMinute, revealed, finished, clock, serverMin],
+  )
 
   // placar e números a partir dos lances JÁ mostrados (sem spoiler)
   const live = useMemo(() => {
@@ -226,13 +239,14 @@ export default function MatchLive({ initial, myClub, onFinished, notify }) {
     <div className={`ml ${broadcast ? 'has-broadcast' : ''}`} role="dialog" aria-modal="true" aria-label="Partida ao vivo">
       {broadcast && catalog && (
         <div className="ml-stage">
-          <MatchBroadcast
+          <MatchTactical2D
             data={data}
             catalog={catalog}
             clock={clock}
             minute={shownMinute}
             events={upcoming}
             onHold={setHoldAt}
+            onReveal={onReveal}
             paused={paused || Boolean(waitingDecision) || clock >= serverMin}
             speed={turbo ? 4 : speed}
             score={live.sc}
@@ -459,7 +473,7 @@ export default function MatchLive({ initial, myClub, onFinished, notify }) {
             <button type="button" className="ml-ic" onClick={simulateToEnd} disabled={busy || finished} aria-label="Simular até o fim" title="Simular até o fim (o auxiliar decide)">
               <FastForward size={18} />
             </button>
-            <button type="button" className={`ml-ic ${broadcast ? 'is-on' : ''}`} onClick={toggleBroadcast} aria-pressed={broadcast} aria-label="Transmissão 2.5D" title={broadcast ? 'Ocultar transmissão' : 'Mostrar transmissão'}>
+            <button type="button" className={`ml-ic ${broadcast ? 'is-on' : ''}`} onClick={toggleBroadcast} aria-pressed={broadcast} aria-label="Campo 2D" title={broadcast ? 'Ocultar o campo' : 'Mostrar o campo'}>
               <Tv size={18} />
             </button>
           </>

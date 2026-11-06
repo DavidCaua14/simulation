@@ -64,6 +64,7 @@ export function createDirector({ formations, homeId, awayId }) {
     possShare: 0.5,
     netShake: null,
     released: new Set(), // eventos já mostrados (o relógio pode seguir)
+    revealed: [], // lances que a transmissão acabou de mostrar (gol na rede, defesa, cartão): o placar e o relato atualizam na hora
     homeId,
     awayId,
   }
@@ -204,7 +205,20 @@ export function createDirector({ formations, homeId, awayId }) {
     st.queue.push(ev)
     if (!HOLD_KINDS.has(ev.kind)) st.released.add(ev.seq)
   }
-  const release = (ev) => ev && st.released.add(ev.seq)
+  const release = (ev) => {
+    if (!ev || st.released.has(ev.seq)) return
+    st.released.add(ev.seq)
+    if (HOLD_KINDS.has(ev.kind)) st.revealed.push(ev.seq)
+  }
+  // a bola vai até quem deve ficar com ela (passe curto, rebote, entrega do árbitro): nunca salta para o pé de alguém
+  function rollTo(p, opts = {}) {
+    const b = st.ball
+    const d = dist(p, b)
+    const to = { x: lerp(b.x, p.x, opts.k ?? 0.75), y: lerp(b.y, p.y, opts.k ?? 0.75) }
+    kick({ x: b.x, y: b.y }, to, { speed: clamp(d * 1.1, 7, 18), peak: d > 26 ? 2.5 : 0.15, receiver: p.id })
+    p.tx = to.x
+    p.ty = to.y
+  }
   function banner(kind, ev, extra = {}) {
     const meta = BANNER_KINDS[kind]
     if (!meta && kind !== 'text') return
@@ -260,11 +274,17 @@ export function createDirector({ formations, homeId, awayId }) {
     if (owner) {
       owner.speed = 3
     }
-    if (dist(hunter, b) < 1.3 || s.t > 2.6) {
+    if (dist(hunter, b) < 1.3) {
       b.owner = hunter.id
       st.poss = s.side
       if (owner) play(owner, 'stumble', 0.4)
       return true
+    }
+    // demorou: desarme/rebote empurra a bola na direção de quem caça, que domina quando ela chega
+    if (s.t - (s.pokedAt ?? 0) > 2.6) {
+      s.pokedAt = s.t
+      if (owner) play(owner, 'stumble', 0.4)
+      rollTo(hunter, { k: 0.6 })
     }
     return false
   }
@@ -462,8 +482,11 @@ export function createDirector({ formations, homeId, awayId }) {
       return
     }
     if (s.phase === 'reset') {
-      // os times voltam às posições de saída andando; quem demora entra no lugar no fim
-      if (s.t > 3 || st.players.every((p) => dist(p, { x: p.tx, y: p.ty }) < 1.5)) {
+      // os times voltam às posições de saída; quem está longe acelera para não "pular" no apito
+      kickoffPositions(s.opp)
+      for (const p of st.players) p.speed = s.t > 2 || dist(p, { x: p.tx, y: p.ty }) > 12 ? SPRINT : JOG + 1
+      // até ~70 m de volta (comemoração no escanteio oposto) cabem em 11 s de corrida
+      if (s.t > 11 || st.players.every((p) => dist(p, { x: p.tx, y: p.ty }) < 1.2)) {
         kickoff(s.opp)
         st.script = null
       }
@@ -618,17 +641,22 @@ export function createDirector({ formations, homeId, awayId }) {
     }
     const gk = keeper(s.opp)
     const taker = nearest(outfield(s.opp), b) || gk
-    if (taker) {
+    if (taker && !b.flight) {
       taker.tx = b.x
       taker.ty = b.y
-      taker.speed = JOG
-      if (dist(taker, b) < 1.2 || s.t > 3) {
+      taker.speed = s.t > 1.5 ? SPRINT : JOG
+      if (dist(taker, b) < 1.2) {
         b.owner = taker.id
         st.poss = s.opp
         st.hold = 0.6
         st.script = null
+      } else if (s.t - (s.rolledAt ?? 0) > 3) {
+        // tiro livre cobrado de onde a bola parou: ela rola até o colega mais próximo
+        s.rolledAt = s.t
+        rollTo(taker, { k: 0.8 })
       }
     }
+    if (s.t > 9) st.script = null
   }
 
   // ---------- jogo corrido ----------
@@ -669,7 +697,7 @@ export function createDirector({ formations, homeId, awayId }) {
       const r = chooseReceiver(owner)
       // desarme cosmético quando o time tem menos posse no jogo real
       const share = owner.side === 'h' ? st.possShare : 1 - st.possShare
-      if (marker && dist(marker, owner) < 2 && rnd() < 0.35 * (1 - share)) {
+      if (marker && dist(marker, owner) < 1.4 && rnd() < 0.35 * (1 - share)) {
         b.owner = marker.id
         st.poss = marker.side
         play(owner, 'stumble', 0.4)
@@ -870,8 +898,18 @@ export function createDirector({ formations, homeId, awayId }) {
         const ux = sp > 0.3 ? o.vx / sp : dirOf(o.side)
         const uy = sp > 0.3 ? o.vy / sp : 0
         const touch = 0.55 + (sp > 1 ? 0.35 * Math.abs(Math.sin(o.stride * Math.PI / 4)) : 0)
-        b.x = o.x + ux * touch
-        b.y = o.y + uy * touch * 0.8
+        // a bola vai até o pé com velocidade limitada (domínio): sem saltos quando a posse muda
+        const fx = o.x + ux * touch
+        const fy = o.y + uy * touch * 0.8
+        const gap = Math.hypot(fx - b.x, fy - b.y)
+        const step = (sp + 9) * dt
+        if (b.hidden || gap <= step) {
+          b.x = fx
+          b.y = fy
+        } else {
+          b.x += ((fx - b.x) / gap) * step
+          b.y += ((fy - b.y) / gap) * step
+        }
         b.z = o.gk && b.hidden ? 1 : 0
         if (sp > 0.3) b.spin += dt * sp * 2
       }
@@ -883,6 +921,8 @@ export function createDirector({ formations, homeId, awayId }) {
     let m = null
     const s = st.script
     if (s?.ev && !st.released.has(s.ev.seq)) m = s.ev.minute
+    // comemoração e volta ao meio-campo duram ~1 minuto de jogo: o relógio não dispara à frente do campo
+    else if (s?.ev && (s.phase === 'celebrate' || s.phase === 'reset')) m = s.ev.minute + 1
     for (const ev of st.queue) if (HOLD_KINDS.has(ev.kind) && !st.released.has(ev.seq)) m = m == null ? ev.minute : Math.min(m, ev.minute)
     return m
   }
@@ -894,6 +934,13 @@ export function createDirector({ formations, homeId, awayId }) {
     enqueue,
     update,
     holdMinute,
+    // seqs dos lances mostrados desde a última chamada (gol na rede, defesa, cartão, impedimento)
+    takeRevealed() {
+      if (!st.revealed.length) return null
+      const out = st.revealed
+      st.revealed = []
+      return out
+    },
     releaseAll() {
       for (const ev of st.queue) st.released.add(ev.seq)
       if (st.script?.ev) st.released.add(st.script.ev.seq)
