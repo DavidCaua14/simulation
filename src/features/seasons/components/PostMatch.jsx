@@ -221,7 +221,7 @@ export default function PostMatch({ summary: s, seasonId, byComp, onClose, onOff
                 )}
                 {s.rewards.xp > 0 && (
                   <div className="pm-rw is-xp">
-                    <Star size={32} fill="currentColor" />
+                    <Star size={30} fill="currentColor" />
                     <b>+{s.rewards.xp} Experiência</b>
                   </div>
                 )}
