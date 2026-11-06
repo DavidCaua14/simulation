@@ -1,6 +1,11 @@
 // Textos e arte da gestão do clube. Os números (custos, prazos, efeitos) vêm do banco.
 const art = import.meta.glob('./assets/*.webp', { eager: true, query: '?url', import: 'default' })
 export const ART = Object.fromEntries(Object.entries(art).map(([k, v]) => [k.replace('./assets/', '').replace('.webp', ''), v]))
+// Kit "Evolução do clube": 5 níveis por instalação (assets/evolucao/<categoria>_<nível>.webp)
+const evo = import.meta.glob('./assets/evolucao/*.webp', { eager: true, query: '?url', import: 'default' })
+const EVO = Object.fromEntries(Object.entries(evo).map(([k, v]) => [k.replace('./assets/evolucao/', '').replace('.webp', ''), v]))
+const evoArt = (cat) => (lvl) => EVO[`${cat}_${Math.min(5, Math.max(1, lvl || 1))}`]
+export const LEVEL_NAME = ['', 'Inicial', 'Básico', 'Profissional', 'Avançado', 'Elite']
 
 export const FOCUS = [
   { id: 'balanced', label: 'Equilibrado', text: 'Evolução distribuída por todos os atributos.' },
@@ -17,10 +22,10 @@ export const INTENSITY = [
 ]
 
 export const FACILITIES = {
-  training: { label: 'Centro de treinamento', art: (lvl) => ART[`centro_treinamento_nivel_${Math.min(3, Math.max(1, Math.ceil(lvl / 2)))}`], effect: 'Acelera a evolução de todos os atletas.' },
-  youth: { label: 'Categorias de base', art: () => ART.categorias_base, effect: 'Revela mais jovens, e de melhor potencial, no início de cada temporada.' },
-  medical: { label: 'Departamento médico', art: () => ART.departamento_medico, effect: 'Encurta o tempo de recuperação das lesões.' },
-  stadium: { label: 'Estádio', art: () => ART.vestiario, effect: 'Aumenta a bilheteria. Durante a obra, a arrecadação cai 15%.' },
+  training: { label: 'Centro de treinamento', art: evoArt('centro_treinamento'), effect: 'Acelera a evolução de todos os atletas e rende mais no treino livre.' },
+  youth: { label: 'Categorias de base', art: evoArt('categorias_base'), effect: 'Revela mais jovens, e de melhor potencial, no início de cada temporada.' },
+  medical: { label: 'Departamento médico', art: evoArt('departamento_medico'), effect: 'Encurta o tempo de recuperação das lesões.' },
+  stadium: { label: 'Estádio', art: evoArt('estadio'), effect: 'Aumenta a bilheteria. Durante a obra, a arrecadação cai 15%.' },
 }
 
 export const STAFF = {
@@ -30,6 +35,13 @@ export const STAFF = {
   psychologist: { label: 'Psicólogo', effect: 'A moral do elenco sobe aos poucos todo mês.', art: () => ART.vestiario },
   scout: { label: 'Olheiro-chefe', effect: 'Relatórios mais rápidos, mais relatórios ao mesmo tempo e faixa de potencial mais estreita.', art: () => ART.olheiros },
   youth: { label: 'Técnico da base', effect: 'Jovens revelados com mais potencial.', art: () => ART.categorias_base },
+}
+
+// Missões dos olheiros (perfis do relatório)
+export const SCOUT_PROFILES = {
+  prospect: { label: 'Promessas', text: 'Até 21 anos, com potencial bem acima do nível atual.' },
+  starter: { label: 'Prontos para jogar', text: 'Nível de titular do seu elenco, até 31 anos.' },
+  bargain: { label: 'Oportunidades', text: 'Sem clube ou com contrato terminando em até 6 meses.' },
 }
 
 export const POS_SHORT = { GOL: 'GOL', LD: 'LD', ZAG: 'ZAG', LE: 'LE', VOL: 'VOL', MC: 'MC', MEI: 'MEI', PD: 'PD', PE: 'PE', ATA: 'ATA' }

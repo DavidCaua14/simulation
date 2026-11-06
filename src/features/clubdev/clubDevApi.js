@@ -47,3 +47,7 @@ export const setDifficulty = (id) => call('career_difficulty_set', { p_difficult
 // Exercícios pré-jogo (evolução 64): cobrados em moedas, valem por alguns jogos.
 export const fetchDrills = () => call('career_drills')
 export const buyDrill = (kind) => call('career_drill_buy', { p_kind: kind, p_request: rid() })
+// Treino livre (2026-11-06): 1 energia, aumenta o entrosamento com a formação. quality = aproveitamento do minijogo (0–1).
+export const freeTraining = (formation, quality) => call('career_free_training', { p_formation: formation, p_quality: quality })
+// Olheiros por missão: posição + perfil ('prospect' | 'starter' | 'bargain').
+export const scoutMission = (position, profile) => call('career_scout_mission', { p_position: position || '', p_profile: profile })

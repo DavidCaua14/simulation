@@ -12,7 +12,7 @@ import { advanceDays, fetchHub, markMessagesRead, resign, respondOffer, startMat
 import { flattenFixtures, playerHistory, projectCalendar } from './utils/seasonSelectors'
 import { msgCategory } from './utils/managerUtils'
 import { reportLevel } from '../progress/levelEvents'
-import { formatRemaining } from './utils/seasonUtils'
+import { COMPETITIONS, formatRemaining } from './utils/seasonUtils'
 import SeasonHeader from './ui/SeasonHeader'
 import { ErrorState, LoadingState } from './ui/States'
 import BottomNav from './components/BottomNav'
@@ -39,6 +39,14 @@ const TITLES = { home: 'Início', team: 'Time', matches: 'Jogos', comps: 'Tornei
 
 // MODO CARREIRA (treinador): você comanda um clube real. Tudo é decidido no banco (supabase/manager/*.sql);
 // O avanço até a próxima partida processa as competições paralelas no mesmo calendário.
+// Competição aberta por padrão: a liga que o seu clube disputa (nunca uma em que ele não está).
+function myCompetition(hub, nextEvent) {
+  const list = hub?.competitions || []
+  const plays = list.filter((c) => c.status !== 'not_in')
+  const league = plays.find((c) => c.kind === 'league' || COMPETITIONS[c.id]?.kind === 'league')
+  return league?.id || nextEvent?.competition || plays[0]?.id || list[0]?.id
+}
+
 export default function SeasonsScreen({ career: account, onBack }) {
   const [tab, setTab] = useState('home')
   const [compSel, setCompSel] = useState(null)
@@ -364,7 +372,7 @@ export default function SeasonsScreen({ career: account, onBack }) {
           {ctx && tab === 'team' && <TeamTab key={teamView.n} hub={hub} notify={notify} onSaved={() => refresh({ silent: true })} focusPlayerId={teamFocus} initialView={teamView.view} initialSection={teamView.section} actions={actions} />}
           {ctx && tab === 'matches' && <MatchesTab ctx={ctx} actions={actions} />}
           {ctx && tab === 'comps' && (
-            <CompetitionsTab ctx={ctx} selected={compSel || ctx.nextEvent?.competition || hub?.competitions?.[0]?.id} onSelect={setCompSel} onOpenReport={actions.openReport} />
+            <CompetitionsTab ctx={ctx} selected={compSel || myCompetition(hub, ctx.nextEvent)} onSelect={setCompSel} onOpenReport={actions.openReport} />
           )}
           {ctx && tab === 'transfers' && hub.world && <TransfersPanel key={worldArea} initialArea={worldArea} hub={hub} notify={notify} onRefresh={actions.refresh} onTeam={(playerId) => goTab('team', playerId)} />}
           {ctx && tab === 'world' && hub.world && <WorldPanel key={worldArea} initialArea="finance" financeOnly hub={hub} onRefresh={actions.refresh} worldStatus={worldStatus} onHome={() => goTab('home')} onTeam={playerId => goTab('team', playerId)} />}

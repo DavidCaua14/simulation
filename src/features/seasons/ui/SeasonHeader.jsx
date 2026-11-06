@@ -5,6 +5,9 @@ import { FREE_ENERGY, XP_PER_LEVEL, fmt, formatRemaining, seasonLabel } from '..
 
 // Cabeçalho padrão dos modos de jogo (Temporadas, Palpites): voltar discreto, título esportivo e recursos (energia/moedas).
 // A borda de baixo é a barra de XP do nível atual. Sem botão de tema (fica no Perfil).
+// Recursos no cabeçalho: números grandes viram "1,2 mil" / "3,4 mi" para não esmagar o título.
+const short = (n) => (n == null ? '—' : Math.abs(n) >= 10000 ? new Intl.NumberFormat('pt-BR', { notation: 'compact', maximumFractionDigits: 1 }).format(n) : fmt(n))
+
 export default function SeasonHeader({ title, career, season, remaining, onBack, backLabel = 'Voltar ao menu', kicker, clubId = null, onMenu = null }) {
   const xpPct = career ? Math.max(0, Math.min(100, (career.xp / XP_PER_LEVEL) * 100)) : 0
   const energy = career && career.energy != null ? career.energy + (career.bonus_energy ?? 0) : null
@@ -18,30 +21,35 @@ export default function SeasonHeader({ title, career, season, remaining, onBack,
         </button>
       )}
 
-      {clubId && (
-        <span className="sh-crest" aria-hidden="true">
-          <ClubCrest clubId={clubId} size={34} />
+      {(clubId || career) && (
+        <span className={`sh-crest ${clubId ? '' : 'is-solo'}`}>
+          {clubId && <ClubCrest clubId={clubId} size={34} />}
+          {career && (
+            <b className="sh-lvl" title={`Nível ${career.level}`} aria-label={`Nível ${career.level}`}>
+              <small>NV</small>
+              {career.level}
+            </b>
+          )}
         </span>
       )}
       <div className="sh-title">
         <small>
           {kicker ?? (season ? `Temporada ${seasonLabel(season.year, season.region)}` : 'Carreira')}
           {!kicker && season?.status === 'active' && season.day_no != null ? ` · dia ${season.day_no}` : ''}
-          {career ? <b> · NV {career.level}</b> : null}
         </small>
         <h1>{title}</h1>
       </div>
 
       {career && (
         <div className="sh-res">
-          <span className="sh-pill energy" title={`Energia: 1 por partida. A livre volta a ${FREE_ENERGY} a cada 5h.`}>
+          <span className="sh-pill energy" title={`Energia: ${fmt(energy)}. 1 por partida ou treino livre. A livre volta a ${FREE_ENERGY} a cada 5h.`}>
             <GameIcon name="energy" size={13} />
-            <b>{fmt(energy)}</b>
+            <b>{short(energy)}</b>
             {recharging && <small>{formatRemaining(remaining)}</small>}
           </span>
-          <span className="sh-pill coins" title="Moedas">
+          <span className="sh-pill coins" title={`Moedas: ${fmt(career.coins)}`}>
             <GameIcon name="coins" size={13} />
-            <b>{fmt(career.coins)}</b>
+            <b>{short(career.coins)}</b>
           </span>
         </div>
       )}

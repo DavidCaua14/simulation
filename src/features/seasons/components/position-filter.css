@@ -1,0 +1,31 @@
+/* Fichas de posição (elenco, lista de jogadores, mercado e olheiros) */
+.pf-chips { display: flex; gap: 5px; overflow-x: auto; scrollbar-width: none; padding: 2px 0; }
+.pf-chips::-webkit-scrollbar { display: none; }
+.pf-chips button {
+  --line: #93a0bb;
+  flex-shrink: 0;
+  min-width: 42px;
+  height: 32px;
+  padding: 0 9px;
+  border-radius: 8px;
+  border: 1px solid var(--cm-silver, var(--gx-line));
+  border-bottom: 3px solid var(--line);
+  background: var(--cm-panel, var(--gx-panel));
+  color: var(--gx-ink-2, #c9d2e6);
+  font: 900 0.74rem var(--font-display);
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s, transform 0.1s;
+}
+.pf-chips button:active { transform: scale(0.95); }
+.pf-chips button.l-GK { --line: #f5b800; }
+.pf-chips button.l-DEF { --line: #3d7bea; }
+.pf-chips button.l-MID { --line: #8ad61f; }
+.pf-chips button.l-ATT { --line: #ff5b6e; }
+.pf-chips button.is-on {
+  border-color: var(--line);
+  background: color-mix(in srgb, var(--line) 26%, var(--cm-panel, var(--gx-panel)));
+  color: #fff;
+  box-shadow: 0 0 0 1px var(--line);
+}
+.pf-chips button:first-child.is-on { --line: var(--cm-yellow, #ffd23f); }

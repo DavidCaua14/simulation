@@ -212,6 +212,23 @@
 .tpc-row p { grid-column: 1 / -1; }
 .tpc.is-compact .tpc-col { gap: 3px; }
 
+/* Instruções táticas simplificadas: quatro decisões */
+.tps { display: flex; flex-direction: column; gap: 8px; }
+.tps-group { display: flex; flex-direction: column; gap: 6px; padding: 9px; border-radius: 10px; border: 1px solid var(--cm-silver, rgba(255,255,255,.2)); background: var(--cm-panel, #0b1222); }
+.tps h4 { margin: 0; display: flex; align-items: center; gap: 6px; font: 900 0.8rem var(--font-display); letter-spacing: 0.05em; text-transform: uppercase; color: var(--cm-yellow, #ffd23f); }
+.tps-opts { display: grid; gap: 5px; }
+.tps-opts button {
+  min-height: 42px; padding: 6px 4px; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.04); color: #e6ecf8; font: 800 0.72rem/1.15 var(--font-body); text-transform: uppercase; cursor: pointer;
+  transition: background 0.12s, transform 0.1s;
+}
+.tps-opts button:active { transform: scale(0.96); }
+.tps-opts button.is-on { border-color: var(--cm-yellow, #ffd23f); background: color-mix(in srgb, var(--cm-yellow, #ffd23f) 18%, transparent); color: #fff; box-shadow: 0 0 0 1px var(--cm-yellow, #ffd23f) inset; }
+.tps p { margin: 0; font-size: 0.72rem; color: #9fb0d2; line-height: 1.35; }
+.tps.is-compact { gap: 6px; }
+.tps.is-compact .tps-group { padding: 6px; gap: 4px; }
+.tps.is-compact .tps-opts button { min-height: 34px; font-size: 0.66rem; }
+
 /* Moral % (CM17) */
 .mrl { display: inline-flex; align-items: center; gap: 2px; font: 900 0.8rem var(--font-display); white-space: nowrap; }
 .mrl svg { color: #3d9bff; }

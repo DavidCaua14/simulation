@@ -29,7 +29,7 @@ div.pt .pt-lines .dot { fill: rgba(255, 255, 255, 0.35); }
   align-items: stretch;
   gap: 1px;
   min-width: 58px;
-  max-width: 70px;
+  max-width: 90px;
   margin-top: 1px;
   padding: 2px 3px 3px;
   border-radius: 5px;
@@ -37,7 +37,19 @@ div.pt .pt-lines .dot { fill: rgba(255, 255, 255, 0.35); }
   background: rgba(6, 12, 26, 0.88);
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
 }
-.pt-label .pt-name { max-width: none; text-align: center; font: 800 0.6rem/1.2 var(--font-body); text-shadow: none; color: #fff; }
+.pt-label .pt-name {
+  max-width: none;
+  overflow: visible;
+  white-space: normal;
+  overflow-wrap: normal;
+  word-break: keep-all;
+  hyphens: none;
+  text-overflow: clip;
+  text-align: center;
+  font: 800 0.58rem/1.15 var(--font-body);
+  text-shadow: none;
+  color: #fff;
+} /* nome completo, em até duas linhas */
 .pt-meta { display: flex; align-items: center; justify-content: space-between; gap: 3px; }
 .pt-label .pt-pos {
   margin: 0;
@@ -56,13 +68,15 @@ div.pt .pt-lines .dot { fill: rgba(255, 255, 255, 0.35); }
 .pt-label .pt-cond.bad i { background: #ff5b6e; }
 .pt-tok.is-empty .pt-label { background: rgba(6, 12, 26, 0.6); }
 
-.pt.is-compact .pt-label { min-width: 48px; max-width: 58px; }
+.pt.is-compact .pt-label { min-width: 48px; max-width: 62px; }
 .pt.is-compact .pt-tok .pt-shirt.is-kit { width: 36px; height: 33px; }
 
 @media (max-width: 380px) {
-  .pt-tok .pt-shirt.is-kit { width: 38px; height: 35px; }
-  .pt-label { min-width: 52px; max-width: 62px; }
+  .pt-tok .pt-shirt.is-kit { width: 36px; height: 33px; }
+  .pt-label { min-width: 52px; max-width: 84px; }
 }
+/* campo mais alto: linhas (goleiro, zaga, meio, ataque) com espaço para as etiquetas não se cobrirem */
+div.pt:not(.is-compact) { aspect-ratio: 100 / 156; }
 
 /* Escalação: seletor de formação, barra de treinamento, reservas e botões no estilo CM */
 .tt-formstep {
@@ -89,7 +103,7 @@ div.pt .pt-lines .dot { fill: rgba(255, 255, 255, 0.35); }
 }
 .tt-fam {
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: auto 1fr auto auto;
   align-items: center;
   gap: 8px;
   padding: 7px 10px;
@@ -103,6 +117,28 @@ div.pt .pt-lines .dot { fill: rgba(255, 255, 255, 0.35); }
 .tt-fam em.mid { background: #f5a524; }
 .tt-fam em.low { background: #ff5b6e; }
 .tt-fam b { font: 900 0.86rem var(--font-display); color: var(--cm-yellow, var(--gx-gold)); }
+.tt-train {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 32px;
+  padding: 0 10px;
+  border-radius: 8px;
+  border: 1px solid color-mix(in srgb, var(--cm-green, #8ad61f) 70%, #000);
+  background: var(--cm-green, #8ad61f);
+  color: var(--cm-green-ink, #0b1d05);
+  font: 900 0.72rem var(--font-body);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+}
+.tt-train:disabled { opacity: 0.45; cursor: default; }
+
+/* Não relacionados: mesmo visual do banco, mais apagado; a área inteira recebe quem sai da lista */
+.tt-out { min-height: 64px; background: color-mix(in srgb, var(--gx-panel) 70%, transparent); border-style: dashed; }
+.tt-out.is-drop { box-shadow: inset 0 0 0 2px var(--gx-gold); }
+.tt-out .pt-shirt.is-kit { opacity: 0.85; }
+.tt-out-empty { grid-column: 1 / -1; margin: 0; padding: 10px 0; text-align: center; font-size: 0.76rem; color: var(--gx-ink-2); }
 
 .tt-bench { grid-template-columns: repeat(auto-fill, minmax(76px, 1fr)); }
 .tt-bslot { position: relative; padding: 4px 0; }

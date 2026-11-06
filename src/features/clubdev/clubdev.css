@@ -569,3 +569,74 @@
   flex-direction: column;
   gap: 4px;
 }
+
+/* ---------- Estrutura: kit de evolução (5 níveis por instalação) ---------- */
+.cd-fac-art { aspect-ratio: 16 / 9; padding: 6px; }
+.cd-fac-art img { width: 100%; height: 100%; max-width: 100%; max-height: 100%; object-fit: contain; filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.45)); }
+.cd-fac-lvl {
+  position: absolute;
+  left: 8px;
+  top: 8px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: rgba(4, 10, 24, 0.82);
+  border: 1px solid rgba(255, 210, 63, 0.5);
+  color: #ffd23f;
+  font: 900 0.66rem var(--font-body);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.cd-build-box { display: flex; flex-direction: column; gap: 5px; }
+.cd-build-bar { display: block; height: 7px; border-radius: 4px; background: rgba(255, 255, 255, 0.1); overflow: hidden; }
+.cd-build-bar em { display: block; height: 100%; background: repeating-linear-gradient(45deg, #ffd23f 0 8px, #e0a800 8px 16px); }
+.cd-next {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr);
+  gap: 4px 10px;
+  align-items: center;
+  margin-top: 2px;
+  padding: 8px;
+  border-radius: 10px;
+  background: var(--surface-alt);
+  border: 1px dashed var(--border);
+}
+.cd-next > img { width: 64px; height: 44px; object-fit: contain; opacity: 0.85; }
+.cd-next .cd-btn { grid-column: 1 / -1; width: 100%; }
+
+/* ---------- Comissão: botão de contratar em largura total, texto em duas linhas ---------- */
+.cd-staff { flex-direction: column; }
+.cd-staff > .cd-staff-top { display: grid; grid-template-columns: 84px minmax(0, 1fr); flex-direction: initial; gap: 0; padding: 0; }
+.cd-staff-top > img { width: 84px; height: 100%; min-height: 84px; object-fit: contain; background: radial-gradient(ellipse at 50% 60%, #1c3157, #0b1426); padding: 6px; }
+.cd-staff-top > div { padding: 10px 12px 6px; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.cd-staff > .cd-staff-actions { display: flex; flex-direction: column; gap: 6px; padding: 4px 12px 12px; }
+.cd-staff-actions .cd-btn { width: 100%; white-space: normal; }
+.cd-hire { justify-content: flex-start; gap: 10px; padding: 8px 12px; min-height: 46px; text-align: left; }
+.cd-hire > span { display: flex; flex-direction: column; line-height: 1.15; }
+.cd-hire b { font-size: 0.82rem; }
+.cd-hire small { font-size: 0.7rem; opacity: 0.85; color: inherit !important; }
+
+/* ---------- Olheiros: missões e relatórios ---------- */
+.cd-profiles { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); }
+.cd-send { width: 100%; min-height: 44px; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.04em; }
+.cd-eye { color: var(--gold); }
+.cd-reports { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 5px; }
+.cd-reports li {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr) repeat(3, auto);
+  gap: 8px;
+  align-items: center;
+  padding: 8px 9px;
+  border-radius: 9px;
+  background: var(--surface-alt);
+}
+.cd-rep-main { display: flex; flex-direction: column; min-width: 0; }
+.cd-rep-main b { font-size: 0.84rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cd-rep-main small { display: inline-flex; align-items: center; gap: 4px; font-size: 0.68rem; color: var(--text-secondary); }
+.cd-rep-num { display: flex; flex-direction: column; align-items: center; min-width: 34px; }
+.cd-rep-num small { font: 800 0.56rem var(--font-body); text-transform: uppercase; color: var(--text-secondary); }
+.cd-rep-num b { font: 900 0.86rem var(--font-display); color: var(--gold); }
+.cd-rep-num.is-val b { color: var(--text-primary); font-size: 0.76rem; }
+@media (max-width: 380px) {
+  .cd-reports li { grid-template-columns: 34px minmax(0, 1fr) auto auto; }
+  .cd-rep-num.is-val { display: none; }
+}

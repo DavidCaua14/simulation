@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { ArrowUpRight, Building2, Dumbbell, Eye, GraduationCap, Hammer, HandCoins, Repeat, Search, Star, TrendingDown, TrendingUp, UserPlus } from 'lucide-react'
-import { clubMoney } from '../seasons/utils/clubMoney'
+import { ArrowUpRight, Binoculars, Building2, Dumbbell, Eye, GraduationCap, Hammer, HandCoins, Repeat, Search, Star, TrendingDown, TrendingUp, UserPlus } from 'lucide-react'
+import { clubMoney, clubMoneyShort } from '../seasons/utils/clubMoney'
+import ClubCrest from '../club/components/ClubCrest'
+import PositionFilter from '../seasons/components/PositionFilter'
 import { dateLabel, searchPlayers } from '../seasons/services/careerWorldApi'
 import { getClubById } from '../club/data/clubs'
-import { imageUrl } from '../match25d/kit'
 import { POS_NAME, POS_ORDER } from '../seasons/utils/managerUtils'
-import { ART, FACILITIES, FOCUS, INTENSITY, REPUTATION_STEPS, STAFF } from './clubDevData'
-import { fetchClubDev, hireStaff, listForLoan, requestLoan, requestScout, respondLoan, setLearning, setSetPieces, setTraining, upgradeFacility } from './clubDevApi'
+import { ART, FACILITIES, FOCUS, INTENSITY, LEVEL_NAME, REPUTATION_STEPS, SCOUT_PROFILES, STAFF } from './clubDevData'
+import { fetchClubDev, hireStaff, listForLoan, requestLoan, respondLoan, scoutMission, setLearning, setSetPieces, setTraining, upgradeFacility } from './clubDevApi'
 import './clubdev.css'
 
 const SECTIONS = [
@@ -271,41 +272,58 @@ function TrainingSection({ dev, players, busy, act }) {
 }
 
 function FacilitiesSection({ dev, busy, act }) {
+  const today = dev.today ? Date.parse(dev.today) : null
   return (
     <>
       <p className="cd-note">
-        Orçamento livre {clubMoney(dev.budget)} · fundo de infraestrutura {clubMoney(dev.infrastructure)}. A diretoria usa o fundo primeiro e só aprova obras que o caixa sustenta.
+        A estrutura pertence ao clube: todo clube começa na estrutura inicial e evolui com obras. Ao trocar de clube, você recomeça do nível 1. Orçamento livre {clubMoney(dev.budget)} · fundo de
+        infraestrutura {clubMoney(dev.infrastructure)}.
       </p>
       <div className="cd-grid">
         {(dev.facilities || []).map((f) => {
           const meta = FACILITIES[f.kind]
-          const src = f.kind === 'stadium' ? imageUrl('stadium') : meta.art(f.level)
           const building = Boolean(f.building_until)
+          const start = f.started_on ? Date.parse(f.started_on) : null
+          const end = f.building_until ? Date.parse(f.building_until) : null
+          const progress = building && start && end && today ? Math.max(4, Math.min(100, ((today - start) / Math.max(1, end - start)) * 100)) : 0
           return (
             <article key={f.kind} className={`cd-fac ${building ? 'is-building' : ''}`}>
               <div className="cd-fac-art">
-                <img src={src} alt="" loading="lazy" />
-                {building && <img className="cd-fac-works" src={ART.obras_infraestrutura} alt="" />}
+                <img src={meta.art(f.level)} alt={`${meta.label} nível ${f.level}`} loading="lazy" />
+                <span className="cd-fac-lvl">
+                  Nível {f.level} · {LEVEL_NAME[f.level]}
+                </span>
               </div>
               <div className="cd-fac-info">
                 <h4>{meta.label}</h4>
                 <Stars n={f.level} />
                 <small>{meta.effect}</small>
                 {building ? (
-                  <p className="cd-build">
-                    <Hammer size={14} /> Obra para o nível {f.target_level} até {dateLabel(f.building_until)}
-                  </p>
-                ) : f.level < 5 ? (
-                  <>
-                    <p className="cd-cost">
-                      Nível {f.level + 1}: {clubMoney(f.next_cost)} · {f.next_months} meses
+                  <div className="cd-build-box">
+                    <p className="cd-build">
+                      <Hammer size={14} /> Obra para o nível {f.target_level} ({LEVEL_NAME[f.target_level]}) até {dateLabel(f.building_until)}
                     </p>
+                    <i className="cd-build-bar">
+                      <em style={{ width: `${progress}%` }} />
+                    </i>
+                  </div>
+                ) : f.level < 5 ? (
+                  <div className="cd-next">
+                    <img src={meta.art(f.level + 1)} alt="" loading="lazy" />
+                    <div>
+                      <p className="cd-cost">
+                        Próximo: nível {f.level + 1} · {LEVEL_NAME[f.level + 1]}
+                      </p>
+                      <small>
+                        {clubMoney(f.next_cost)} · {f.next_months} {f.next_months === 1 ? 'mês' : 'meses'} de obra
+                      </small>
+                    </div>
                     <button type="button" className="cd-btn" disabled={Boolean(busy)} onClick={() => act(`fac-${f.kind}`, () => upgradeFacility(f.kind), (r) => `Obra aprovada! Conclusão em ${dateLabel(r.building_until)}.`)}>
-                      <ArrowUpRight size={15} /> Pedir obra à diretoria
+                      <ArrowUpRight size={15} /> Pedir obra
                     </button>
-                  </>
+                  </div>
                 ) : (
-                  <p className="cd-cost">Nível máximo</p>
+                  <p className="cd-cost">Nível máximo · Elite</p>
                 )}
               </div>
             </article>
@@ -323,16 +341,26 @@ function StaffSection({ dev, busy, act }) {
         const meta = STAFF[s.role]
         return (
           <article key={s.role} className="cd-staff">
-            <img src={meta.art()} alt="" loading="lazy" />
-            <div>
-              <h4>{meta.label}</h4>
-              <Stars n={s.level} />
-              <small>{meta.effect}</small>
-              <p className="cd-cost">{s.monthly_salary > 0 ? `${clubMoney(s.monthly_salary)}/mês` : 'Equipe original (sem custo extra)'}</p>
-              {s.level < 5 && (
-                <button type="button" className="cd-btn" disabled={Boolean(busy)} onClick={() => act(`staff-${s.role}`, () => hireStaff(s.role, s.level + 1), `${meta.label} nível ${s.level + 1} contratado`)}>
-                  <UserPlus size={15} /> Contratar nível {s.level + 1} · {clubMoney(s.next_salary)}/mês
+            <div className="cd-staff-top">
+              <img src={meta.art()} alt="" loading="lazy" />
+              <div>
+                <h4>{meta.label}</h4>
+                <Stars n={s.level} />
+                <small>{meta.effect}</small>
+                <p className="cd-cost">{s.monthly_salary > 0 ? `${clubMoney(s.monthly_salary)}/mês` : 'Equipe original (sem custo extra)'}</p>
+              </div>
+            </div>
+            <div className="cd-staff-actions">
+              {s.level < 5 ? (
+                <button type="button" className="cd-btn cd-hire" disabled={Boolean(busy)} onClick={() => act(`staff-${s.role}`, () => hireStaff(s.role, s.level + 1), `${meta.label} nível ${s.level + 1} contratado`)}>
+                  <UserPlus size={16} />
+                  <span>
+                    <b>Contratar nível {s.level + 1}</b>
+                    <small>{clubMoney(s.next_salary)}/mês</small>
+                  </span>
                 </button>
+              ) : (
+                <p className="cd-cost">Nível máximo</p>
               )}
               {s.level > s.initial_level && (
                 <button type="button" className="cd-btn ghost" disabled={Boolean(busy)} onClick={() => act(`staff-${s.role}`, () => hireStaff(s.role, s.initial_level), 'Profissional dispensado; volta a equipe original')}>
@@ -541,7 +569,14 @@ function LoansSection({ dev, players, busy, act }) {
 }
 
 function ScoutSection({ dev, busy, act }) {
+  const [position, setPosition] = useState('')
+  const [profile, setProfile] = useState('starter')
   const lvl = dev.staff?.find((s) => s.role === 'scout')?.level ?? 1
+  const reports = dev.scouting || []
+  const pending = reports.filter((r) => !r.ready)
+  const ready = reports.filter((r) => r.ready)
+  const free = Math.max(0, 1 + lvl - pending.length)
+  const days = Math.max(2, 14 - 2 * lvl)
   return (
     <>
       <section className="cd-hero">
@@ -549,50 +584,86 @@ function ScoutSection({ dev, busy, act }) {
         <div>
           <h3>Departamento de observação</h3>
           <p>
-            Atletas de outros clubes aparecem com atributos aproximados e potencial em faixa. Um relatório revela os valores exatos em {Math.max(2, 14 - 2 * lvl)} dias. Até{' '}
-            {1 + lvl} relatórios ao mesmo tempo.
+            Defina uma missão e o olheiro-chefe (nível {lvl}) traz atletas com esse perfil. Cada relatório fica pronto em {days} dias e revela habilidade, potencial e valor.
           </p>
         </div>
       </section>
-      {dev.scouting?.length > 0 && (
+
+      <section className="cd-card">
+        <header>
+          <h3>Nova missão</h3>
+          <small>
+            {free > 0 ? `${free} ${free === 1 ? 'olheiro livre' : 'olheiros livres'} · até ${Math.min(3, free)} atleta(s) por missão` : 'Todos os olheiros estão em campo. Aguarde um relatório ficar pronto.'}
+          </small>
+        </header>
+        <PositionFilter value={position} onChange={setPosition} allLabel="Qualquer" />
+        <div className="cd-chips cd-profiles" role="radiogroup" aria-label="Perfil">
+          {Object.entries(SCOUT_PROFILES).map(([id, p]) => (
+            <button key={id} type="button" role="radio" aria-checked={profile === id} className={profile === id ? 'is-on' : ''} onClick={() => setProfile(id)}>
+              <b>{p.label}</b>
+              <small>{p.text}</small>
+            </button>
+          ))}
+        </div>
+        <button type="button" className="cd-btn cd-send" disabled={Boolean(busy) || free === 0}
+          onClick={() => act('mission', () => scoutMission(position, profile), (r) => `Olheiros a caminho: ${r.found} relatório(s) em ${dateLabel(r.ready_on)}.`)}>
+          <Binoculars size={16} /> Enviar olheiros
+        </button>
+      </section>
+
+      {pending.length > 0 && (
         <section className="cd-card">
           <header>
-            <h3>Relatórios</h3>
+            <h3>Em observação</h3>
           </header>
           <ul className="cd-dev">
-            {dev.scouting.map((s) => (
+            {pending.map((s) => (
               <li key={s.player_id}>
                 <div className="cd-row">
-                  <span className="cd-name">{s.player}</span>
-                  <small>{s.ready ? 'Pronto' : `pronto em ${dateLabel(s.ready_on)}`}</small>
+                  <Eye size={15} className="cd-eye" />
+                  <span className="cd-name">Atleta em análise</span>
+                  <small>pronto em {dateLabel(s.ready_on)}</small>
                 </div>
               </li>
             ))}
           </ul>
         </section>
       )}
+
       <section className="cd-card">
         <header>
-          <h3>Observar atleta</h3>
+          <h3>Relatórios</h3>
+          <small>Atletas observados aparecem com valores exatos também na busca de transferências.</small>
         </header>
-        <MiniSearch
-          placeholder="Nome do atleta"
-          render={(p) => (
-            <li key={p.id}>
-              <div className="cd-row">
-                <span className="cd-pos">{p.position}</span>
-                <span className="cd-name">
-                  {p.short_name || p.name} <small>{getClubById(p.club_id)?.short || p.club_id || 'livre'}</small>
+        {ready.length === 0 ? (
+          <p className="cd-note">Nenhum relatório pronto ainda.</p>
+        ) : (
+          <ul className="cd-reports">
+            {ready.map((s) => (
+              <li key={s.player_id}>
+                <span className="cd-pos">{s.position}</span>
+                <span className="cd-rep-main">
+                  <b>{s.short_name || s.player}</b>
+                  <small>
+                    <ClubCrest clubId={s.club_id} size={14} /> {getClubById(s.club_id)?.short || getClubById(s.club_id)?.name || 'Sem clube'} · {s.age} anos
+                  </small>
                 </span>
-                <span className="cd-ovr">{p.overall}</span>
-                <span className="cd-pot">{range(p)}</span>
-                <button type="button" className="cd-btn" disabled={Boolean(busy) || p.scouted} onClick={() => act('scout', () => requestScout(p.id), (r) => `Relatório pedido; pronto em ${dateLabel(r.ready_on)}`)}>
-                  <Eye size={15} /> {p.scouted ? 'Conhecido' : 'Observar'}
-                </button>
-              </div>
-            </li>
-          )}
-        />
+                <span className="cd-rep-num" title="Habilidade">
+                  <small>Hab</small>
+                  <b>{s.overall}</b>
+                </span>
+                <span className="cd-rep-num" title="Potencial estimado">
+                  <small>Pot</small>
+                  <b>{range(s)}</b>
+                </span>
+                <span className="cd-rep-num is-val" title="Valor de mercado">
+                  <small>Valor</small>
+                  <b>{clubMoneyShort(s.value)}</b>
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
       </section>
     </>
   )

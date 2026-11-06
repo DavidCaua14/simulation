@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { ArrowLeftRight, CircleAlert, Check, ChevronLeft, ChevronRight, ClipboardList, Flag, Sparkles, TriangleAlert, Users } from 'lucide-react'
+import { ArrowLeftRight, CircleAlert, Check, ChevronLeft, ChevronRight, ClipboardList, Dumbbell, Flag, Sparkles, TriangleAlert, Users } from 'lucide-react'
 import Pitch, { PlayerToken } from '../components/Pitch'
 import PositionFilter from '../components/PositionFilter'
 import PlayerPicker from '../components/PlayerPicker'
 import PlayerSheet from '../components/PlayerSheet'
 import TacticsPanel from '../components/TacticsPanel'
+import FreeTraining from '../components/FreeTraining'
 import MoraleTag from '../components/MoraleTag'
 import ContractPanel from '../components/ContractPanel'
 import { dateLabel, weekly } from '../services/careerWorldApi'
@@ -63,6 +64,8 @@ export default function TeamTab({ hub, onSaved, notify, focusPlayerId = null, in
   const [squadCols, setSquadCols] = useState('general')
   const [clubSection, setClubSection] = useState({ id: initialSection, n: 0 })
   const [familiarity, setFamiliarity] = useState(null) // entrosamento por formação (0–100), da gestão do clube
+  const [energy, setEnergy] = useState(null) // energia livre + bônus (o treino livre gasta 1)
+  const [training, setTraining] = useState(false)
 
   const loadSequence = useRef(0)
   const dirtyDraft = useRef(false)
@@ -98,7 +101,11 @@ export default function TeamTab({ hub, onSaved, notify, focusPlayerId = null, in
   useEffect(() => {
     let alive = true
     fetchClubDev()
-      .then((d) => alive && setFamiliarity(Object.fromEntries((d?.familiarity || []).map((f) => [f.formation, f.value]))))
+      .then((d) => {
+        if (!alive) return
+        setFamiliarity(Object.fromEntries((d?.familiarity || []).map((f) => [f.formation, f.value])))
+        if (d?.energy) setEnergy((d.energy.energy || 0) + (d.energy.bonus || 0))
+      })
       .catch(() => {})
     return () => {
       alive = false
@@ -123,8 +130,10 @@ export default function TeamTab({ hub, onSaved, notify, focusPlayerId = null, in
         if (!d) return d
         const slots = { ...d.slots }
         const bench = [...d.bench]
-        const read = (k) => (k.startsWith('slot:') ? slots[k.slice(5)] : k === 'bench:new' ? null : bench[Number(k.slice(6))])
+        // "out:<id>" = atleta não relacionado; "out:zone" = área dos não relacionados (tirar da lista)
+        const read = (k) => (k.startsWith('slot:') ? slots[k.slice(5)] : k.startsWith('out:') ? (k === 'out:zone' ? null : k.slice(4)) : k === 'bench:new' ? null : bench[Number(k.slice(6))])
         const write = (k, pid) => {
+          if (k.startsWith('out:')) return
           if (k.startsWith('slot:')) {
             if (pid) slots[k.slice(5)] = pid
             else delete slots[k.slice(5)]
@@ -140,8 +149,9 @@ export default function TeamTab({ hub, onSaved, notify, focusPlayerId = null, in
         const b = read(to)
         if (!a) return d
         if (to === 'bench:new' && from.startsWith('bench:')) return d
+        if (from.startsWith('out:') && to.startsWith('out:')) return d
         // reserva indo para o banco "novo" a partir do campo: precisa caber
-        if (to === 'bench:new' && bench.length >= (squad?.rules?.bench ?? 12)) return d
+        if (to === 'bench:new' && !from.startsWith('bench:') && bench.filter(Boolean).length >= (squad?.rules?.bench ?? 12)) return d
         // ordem importa quando os dois estão no banco (índices)
         if (from.startsWith('bench:') && to.startsWith('bench:')) {
           write(to, a)
@@ -275,6 +285,9 @@ export default function TeamTab({ hub, onSaved, notify, focusPlayerId = null, in
     }
   }
 
+  // Fora dos 11 e do banco: arraste para o campo ou para as reservas
+  const listedIds = new Set([...Object.values(draft.slots), ...draft.bench])
+  const notListed = squad.players.filter((p) => !listedIds.has(p.id)).sort((a, b) => POS_ORDER.indexOf(a.position) - POS_ORDER.indexOf(b.position) || b.overall - a.overall)
   const shownIssues = dirty ? localIssues : [...issues, ...localIssues.filter((i) => i.level === 'warn' && !issues.some((x) => x.text === i.text))]
   const errors = shownIssues.filter((i) => i.level === 'error')
   const warns = shownIssues.filter((i) => i.level === 'warn')
@@ -316,7 +329,7 @@ export default function TeamTab({ hub, onSaved, notify, focusPlayerId = null, in
         ))}
       </div>}
 
-      {(view === 'lineup' || view === 'squad') && <PositionFilter value={positionFilter} onChange={setPositionFilter} />}
+      {view === 'squad' && <PositionFilter value={positionFilter} onChange={setPositionFilter} />}
 
       {view === 'club' && <ClubDevPanel key={clubSection.n} initialSection={clubSection.id} players={squad.players} notify={notify} onChanged={() => load(true)} />}
 
@@ -332,12 +345,17 @@ export default function TeamTab({ hub, onSaved, notify, focusPlayerId = null, in
             </button>
           </div>
           {fam != null && (
-            <div className="tt-fam" title="Entrosamento do elenco com esta formação. Cada jogo nela aumenta; formações esquecidas perdem um pouco por mês.">
+            <div className="tt-fam" title="Entrosamento do elenco com esta formação. Cada jogo ou treino livre nela aumenta; formações esquecidas perdem um pouco por mês.">
               <small>Treinamento</small>
               <i>
                 <em className={fam >= 85 ? 'ok' : fam >= 65 ? 'mid' : 'low'} style={{ width: `${fam}%` }} />
               </i>
               <b>{fam}%</b>
+              {!flow && (
+                <button type="button" className="tt-train" onClick={() => setTraining(true)} disabled={fam >= 100}>
+                  <Dumbbell size={14} /> Treinar
+                </button>
+              )}
             </div>
           )}
 
@@ -388,7 +406,7 @@ export default function TeamTab({ hub, onSaved, notify, focusPlayerId = null, in
               Reservas <small>{draft.bench.length}/{squad.rules.bench}</small>
             </h2>
             <div className={`tt-bench ${drag ? 'is-dragging' : ''}`}>
-              {draft.bench.map((pid, i) => (!positionFilter || byId[pid]?.position === positionFilter) && (
+              {draft.bench.map((pid, i) => (
                 <div key={pid} className={`tt-bslot ${drag?.over === `bench:${i}` ? 'is-drop' : ''} ${drag?.from === `bench:${i}` ? 'is-dragging' : ''}`} {...bind(`bench:${i}`, pid)}>
                   <PlayerToken
                     player={byId[pid]}
@@ -407,6 +425,20 @@ export default function TeamTab({ hub, onSaved, notify, focusPlayerId = null, in
                   <PlayerToken player={null} label="Reserva" onClick={() => setPicker({ kind: 'bench', index: null, pos: null, current: null })} />
                 </div>
               )}
+            </div>
+          </section>
+
+          <section className="sn-sec">
+            <h2 className="gx-title">
+              Não relacionados <small>{notListed.length}</small>
+            </h2>
+            <div className={`tt-bench tt-out ${drag ? 'is-dragging' : ''} ${drag?.over === 'out:zone' ? 'is-drop' : ''}`} {...bind('out:zone', null)}>
+              {notListed.map((p) => (
+                <div key={p.id} className={`tt-bslot ${drag?.over === `out:${p.id}` ? 'is-drop' : ''} ${drag?.from === `out:${p.id}` ? 'is-dragging' : ''}`} {...bind(`out:${p.id}`, p.id)}>
+                  <PlayerToken player={p} pos={p.position} label={p.position} colors={club?.colors} onClick={() => setInfo(p)} />
+                </div>
+              ))}
+              {notListed.length === 0 && <p className="tt-out-empty">Todo o elenco está relacionado.</p>}
             </div>
           </section>
 
@@ -429,10 +461,6 @@ export default function TeamTab({ hub, onSaved, notify, focusPlayerId = null, in
               <Check size={14} /> Escalação pronta para o próximo jogo
             </p>
           )}
-          <p className="sn-hint">
-            Arraste um jogador até outra vaga ou até o banco para trocar de lugar — ou toque nele para escolher da lista. A etiqueta abaixo do nome é a posição: no campo, a da vaga ("é MC" mostra a posição de origem de quem está improvisado); no banco, a posição de cada reserva. Fora de posição ele rende menos; cansado também. Mudar a formação toda hora reduz o entrosamento
-            tático ({squad.lineup.formation_games} jogo{squad.lineup.formation_games === 1 ? '' : 's'} seguidos nesta formação).
-          </p>
         </>
       )}
 
@@ -576,6 +604,19 @@ export default function TeamTab({ hub, onSaved, notify, focusPlayerId = null, in
         </div>
       )}
 
+      {training && formation && (
+        <FreeTraining
+          formation={formation}
+          value={fam ?? 60}
+          energy={energy}
+          onClose={() => setTraining(false)}
+          onDone={(r) => {
+            setFamiliarity((f) => ({ ...(f || {}), [r.formation]: r.after }))
+            setEnergy((r.energy || 0) + (r.bonus_energy || 0))
+            onSaved?.()
+          }}
+        />
+      )}
       {picker && (
         <PlayerPicker
           target={picker}

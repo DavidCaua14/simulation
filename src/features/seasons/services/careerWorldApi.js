@@ -12,6 +12,8 @@ export const advanceWorld = (days, id = requestId(), expectedVersion = null) => 
   : worldRpc('career_world_prepare', { p_days: days, p_request: id, p_expected_version: expectedVersion })
 export const acknowledgeAttention = (key) => worldRpc('career_attention_ack', { p_key: key })
 export const searchPlayers = (filters) => worldRpc('career_player_search', filters)
+// Mercado (2026-11-06): habilidade, idade, valor, situação contratual e ordenação.
+export const marketSearch = (filters) => worldRpc('career_market_search', filters)
 export const negotiations = () => worldRpc('career_negotiations')
 export const newsFeed = (before = null) => worldRpc('career_news', { p_before: before })
 export const readNews = (ids) => worldRpc('career_news_read', { p_ids: ids })

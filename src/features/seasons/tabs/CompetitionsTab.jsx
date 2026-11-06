@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { BarChart3, ChevronDown, ChevronLeft, ChevronRight, Trophy } from 'lucide-react'
+import { BarChart3, ChevronLeft, ChevronRight, Trophy } from 'lucide-react'
 import StandingsTable from '../components/StandingsTable'
 import Bracket from '../components/Bracket'
 import RoundResults from '../components/RoundResults'
@@ -181,6 +181,9 @@ export default function CompetitionsTab({ ctx, selected, onSelect, onOpenReport 
   const last = history.find((f) => f.comp === comp.id)
   const lastKey = last ? `${last.stage}:${last.round_no}` : null
 
+  // Primeiro as competições que o seu clube disputa; as outras ficam no fim, apagadas.
+  const ids = COMP_ORDER.filter((id) => hub.competitions.some((c) => c.id === id))
+  const pickerIds = [...ids.filter((id) => hub.competitions.find((c) => c.id === id)?.status !== 'not_in'), ...ids.filter((id) => hub.competitions.find((c) => c.id === id)?.status === 'not_in')]
   const t = COMP_THEME[comp.id] || { c1: '#333', c2: '#999', kicker: '' }
   const st = compStatus(comp)
   const inactive = comp.status === 'not_in' || comp.status === 'out'
@@ -188,18 +191,18 @@ export default function CompetitionsTab({ ctx, selected, onSelect, onOpenReport 
 
   return (
     <div className="sn-page">
-      <label className="ct-select">
-        <CompEmblem comp={comp.id} size={28} />
-        <span>{COMP_NAME[comp.id] || COMP_SHORT[comp.id]}</span>
-        <ChevronDown size={20} />
-        <select value={comp.id} onChange={(e) => onSelect(e.target.value)} aria-label="Campeonato">
-          {COMP_ORDER.map((id) => (
-            <option key={id} value={id}>
-              {COMP_NAME[id] || COMP_SHORT[id]}
-            </option>
-          ))}
-        </select>
-      </label>
+      <div className="ct-picker" role="tablist" aria-label="Campeonato">
+        {pickerIds.map((id) => {
+          const th = COMP_THEME[id] || { c1: '#333', c2: '#999' }
+          const out = hub.competitions.find((c) => c.id === id)?.status === 'not_in'
+          return (
+            <button key={id} type="button" role="tab" aria-selected={id === comp.id} className={`${id === comp.id ? 'is-on' : ''} ${out ? 'is-out' : ''}`} style={{ '--c1': th.c1, '--c2': th.c2 }} onClick={() => onSelect(id)}>
+              <CompEmblem comp={id} size={26} dim={out && id !== comp.id} />
+              <span>{COMP_SHORT[id] || COMP_NAME[id]}</span>
+            </button>
+          )
+        })}
+      </div>
 
       <section className={`ct-banner ${inactive ? 'is-inactive' : ''}`} style={{ '--c1': t.c1, '--c2': t.c2 }}>
         <CompEmblem comp={comp.id} size={58} dim={inactive} />

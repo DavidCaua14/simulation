@@ -1,15 +1,14 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { Search, SlidersHorizontal, Star } from 'lucide-react'
+import { RotateCcw, Search, SlidersHorizontal, Star } from 'lucide-react'
 import ClubCrest from '../../club/components/ClubCrest'
 import { getClubById } from '../../club/data/clubs'
-import { CLUB_CATALOG } from '../../club/data/clubCatalog'
 import { isSessionError } from '../../../lib/sessionRecovery'
 import { requestLoan, listForLoan } from '../../clubdev/clubDevApi'
 import MoneyKeypad from '../components/MoneyKeypad'
 import PlayerProfile from './PlayerProfile'
-import { confirmTransfer, contractOffer, dateLabel, listPlayer, negotiations, renewOffer, respondNegotiation, searchPlayers, shortlist, toggleShortlist, transferOffer, wageDemand, weekly } from '../services/careerWorldApi'
+import { confirmTransfer, contractOffer, dateLabel, listPlayer, marketSearch, negotiations, renewOffer, respondNegotiation, searchPlayers, shortlist, toggleShortlist, transferOffer, wageDemand, weekly } from '../services/careerWorldApi'
 import { clubMoney, clubMoneyShort } from '../utils/clubMoney'
-import { POS_ORDER } from '../utils/managerUtils'
+import PositionFilter from '../components/PositionFilter'
 import './transfers.css'
 
 const AREAS = [
@@ -24,7 +23,59 @@ const STATES = {
   expired: 'Expirada', cancelled: 'Cancelada', failed_funds: 'Sem verba',
 }
 const CLOSED = new Set(['completed', 'rejected', 'expired', 'cancelled', 'failed_funds'])
-const countries = [...new Set(Object.values(CLUB_CATALOG).map((c) => c.country))].sort()
+
+// Filtros do mercado (estilo FM/CM): faixas prontas em fichas, sem listas de países.
+const SKILL = [
+  ['', 'Qualquer', null, null],
+  ['80', '80+', 80, null],
+  ['75', '75–79', 75, 79],
+  ['70', '70–74', 70, 74],
+  ['60', '60–69', 60, 69],
+  ['0', 'Até 59', null, 59],
+]
+const AGES = [
+  ['', 'Qualquer', null, null],
+  ['u21', 'Até 21', null, 21],
+  ['22', '22–25', 22, 25],
+  ['26', '26–30', 26, 30],
+  ['31', '31+', 31, null],
+]
+const VALUES = [null, 5000, 15000, 40000, 100000]
+const STATUS = [
+  ['', 'Todos'],
+  ['affordable', 'Cabe no orçamento'],
+  ['listed', 'À venda'],
+  ['expiring', 'Fim de contrato'],
+  ['free', 'Sem clube'],
+]
+const SORTS = [
+  ['overall', 'Habilidade'],
+  ['potential', 'Potencial'],
+  ['value', 'Menor valor'],
+  ['age', 'Mais jovem'],
+]
+const EMPTY = { p_query: '', p_position: '', skill: '', age: '', p_max_value: null, p_status: '', p_sort: 'overall', p_page: 0 }
+const toArgs = (f) => {
+  const sk = SKILL.find((x) => x[0] === f.skill) || SKILL[0]
+  const ag = AGES.find((x) => x[0] === f.age) || AGES[0]
+  return { p_query: f.p_query, p_position: f.p_position, p_min_overall: sk[2], p_max_overall: sk[3], p_min_age: ag[2], p_max_age: ag[3], p_max_value: f.p_max_value, p_status: f.p_status, p_sort: f.p_sort, p_page: f.p_page }
+}
+const activeCount = (f) => [f.skill, f.age, f.p_max_value, f.p_status, f.p_sort !== 'overall' ? 1 : null].filter(Boolean).length
+
+function ChipRow({ label, options, value, onChange }) {
+  return (
+    <div className="tr-frow">
+      <small>{label}</small>
+      <div className="tr-fchips" role="radiogroup" aria-label={label}>
+        {options.map(([v, text]) => (
+          <button key={String(v)} type="button" role="radio" aria-checked={value === v} className={value === v ? 'is-on' : ''} onClick={() => onChange(v)}>
+            {text}
+          </button>
+        ))}
+      </div>
+    </div>
+  )
+}
 const clubName = (id) => getClubById(id)?.name || (id ? id : 'Sem clube')
 
 function YearsPicker({ value, onChange, max = 5 }) {
@@ -49,7 +100,7 @@ export default function TransfersPanel({ hub, onRefresh, notify, onTeam, initial
   const [deals, setDeals] = useState([])
   const [listed, setListed] = useState([])
   const [shortIds, setShortIds] = useState(new Set())
-  const [filters, setFilters] = useState({ p_query: '', p_country: '', p_position: '', p_region: '', p_club: '', p_max_value: null, p_page: 0 })
+  const [filters, setFilters] = useState(EMPTY)
   const [showFilters, setShowFilters] = useState(false)
   const [busy, setBusy] = useState(false)
   const [profile, setProfile] = useState(null)
@@ -62,7 +113,7 @@ export default function TransfersPanel({ hub, onRefresh, notify, onTeam, initial
     const key = ++seq.current
     try {
       const [list, d, s] = await Promise.all([
-        area === 'search' ? searchPlayers(filters) : area === 'selling' ? searchPlayers({ ...filters, p_query: '', p_club: 'mine', p_page: 0 }) : Promise.resolve(null),
+        area === 'search' ? marketSearch(toArgs(filters)) : area === 'selling' ? searchPlayers({ p_query: '', p_country: '', p_position: '', p_region: '', p_club: 'mine', p_max_value: null, p_page: 0 }) : Promise.resolve(null),
         negotiations(),
         shortlist().catch(() => []),
       ])
@@ -113,6 +164,7 @@ export default function TransfersPanel({ hub, onRefresh, notify, onTeam, initial
       if (!isSessionError(e)) notify?.(e.message, 'alert')
     }
   }
+  const setF = (patch) => setFilters((f) => ({ ...f, ...patch, p_page: 0 }))
   const myDeal = (p) => deals.find((n) => n.player_id === p.id && !CLOSED.has(n.status))
 
   // Ações do perfil
@@ -211,37 +263,20 @@ export default function TransfersPanel({ hub, onRefresh, notify, onTeam, initial
             </label>
             <button type="button" className="gx-btn-ghost" aria-expanded={showFilters} onClick={() => setShowFilters((v) => !v)}>
               <SlidersHorizontal size={15} /> Filtros
+              {activeCount(filters) > 0 && <em className="tr-fcount">{activeCount(filters)}</em>}
             </button>
           </div>
+          <PositionFilter value={filters.p_position} onChange={(v) => setF({ p_position: v })} />
           {showFilters && (
             <div className="tr-filters">
-              <label className="cw-field">
-                Posição
-                <select value={filters.p_position} onChange={(e) => setFilters((f) => ({ ...f, p_position: e.target.value, p_page: 0 }))}>
-                  <option value="">Todas</option>
-                  {POS_ORDER.map((p) => (
-                    <option key={p}>{p}</option>
-                  ))}
-                </select>
-              </label>
-              <label className="cw-field">
-                Região
-                <select value={filters.p_region} onChange={(e) => setFilters((f) => ({ ...f, p_region: e.target.value, p_page: 0 }))}>
-                  <option value="">Mundo</option>
-                  <option value="BRA">América do Sul</option>
-                  <option value="ENG">Europa</option>
-                  <option value="free">Sem contrato</option>
-                </select>
-              </label>
-              <label className="cw-field">
-                País do clube
-                <select value={filters.p_country} onChange={(e) => setFilters((f) => ({ ...f, p_country: e.target.value, p_page: 0 }))}>
-                  <option value="">Todos</option>
-                  {countries.map((c) => (
-                    <option key={c}>{c}</option>
-                  ))}
-                </select>
-              </label>
+              <ChipRow label="Habilidade" options={SKILL} value={filters.skill} onChange={(v) => setF({ skill: v })} />
+              <ChipRow label="Idade" options={AGES} value={filters.age} onChange={(v) => setF({ age: v })} />
+              <ChipRow label="Valor até" options={VALUES.map((v) => [v, v == null ? 'Qualquer' : clubMoneyShort(v)])} value={filters.p_max_value} onChange={(v) => setF({ p_max_value: v })} />
+              <ChipRow label="Situação" options={STATUS} value={filters.p_status} onChange={(v) => setF({ p_status: v })} />
+              <ChipRow label="Ordenar por" options={SORTS} value={filters.p_sort} onChange={(v) => setF({ p_sort: v })} />
+              <button type="button" className="gx-btn-ghost tr-freset" onClick={() => setFilters((f) => ({ ...EMPTY, p_query: f.p_query, p_position: f.p_position }))}>
+                <RotateCcw size={14} /> Limpar filtros
+              </button>
             </div>
           )}
           {rows.length ? table(rows) : <p className="sn-hint">Nenhum atleta encontrado.</p>}

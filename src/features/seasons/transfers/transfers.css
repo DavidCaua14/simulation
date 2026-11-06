@@ -3,7 +3,26 @@
 .tr-window { margin: 0; padding: 7px 10px; border-radius: 8px; background: rgba(224, 49, 63, 0.16); border: 1px solid rgba(224, 49, 63, 0.5); font-size: 0.74rem; font-weight: 700; }
 .tr-window.is-open { background: rgba(138, 214, 31, 0.14); border-color: rgba(138, 214, 31, 0.5); }
 .tr-tabs button em { margin-left: 4px; }
-.tr-filters { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; }
+.tr-filters { display: flex; flex-direction: column; gap: 8px; padding: 10px; border-radius: 12px; border: 1px solid var(--cm-silver, var(--gx-line)); background: var(--cm-panel, var(--gx-panel)); }
+.tr-frow { display: flex; flex-direction: column; gap: 4px; }
+.tr-frow > small { font: 900 0.66rem var(--font-display); letter-spacing: 0.08em; text-transform: uppercase; color: var(--cm-yellow, var(--gx-gold)); }
+.tr-fchips { display: flex; gap: 5px; overflow-x: auto; scrollbar-width: none; }
+.tr-fchips::-webkit-scrollbar { display: none; }
+.tr-fchips button {
+  flex-shrink: 0;
+  min-height: 32px;
+  padding: 0 11px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--gx-ink-2, #c9d2e6);
+  font: 800 0.72rem var(--font-body);
+  white-space: nowrap;
+  cursor: pointer;
+}
+.tr-fchips button.is-on { border-color: var(--cm-yellow, #ffd23f); background: color-mix(in srgb, var(--cm-yellow, #ffd23f) 18%, transparent); color: #fff; box-shadow: 0 0 0 1px var(--cm-yellow, #ffd23f) inset; }
+.tr-freset { align-self: flex-end; min-height: 34px; font-size: 0.72rem; }
+.tr-fcount { margin-left: 4px; min-width: 18px; height: 18px; padding: 0 5px; display: inline-grid; place-items: center; border-radius: 9px; background: var(--cm-yellow, #ffd23f); color: #111; font: 900 0.66rem var(--font-body); font-style: normal; }
 .tr-table { border: 1px solid var(--cm-silver, var(--gx-line)); border-radius: 10px; overflow: hidden; border-collapse: separate; border-spacing: 0; background: var(--cm-panel, var(--gx-panel)); font-size: 0.76rem; }
 .tr-table tr.is-link { cursor: pointer; }
 .tr-table tr.is-link:hover td { background: rgba(61, 123, 234, 0.18); }
