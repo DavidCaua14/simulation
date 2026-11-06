@@ -81,8 +81,10 @@ export default function SeasonsScreen({ career: account, onBack }) {
     return () => clearTimeout(t)
   }, [toast])
 
-  // Proposta, resposta de negociação ou proposta de trabalho nova: alerta na hora, com atalho para a mensagem.
+  // Proposta, resposta de negociação ou proposta de trabalho nova: alerta com atalho para a mensagem.
+  // Durante o fluxo da partida (pré-jogo, jogo, pós-jogo) o alerta espera: aparece ao voltar ao Início.
   const lastMsg = useRef(null)
+  const inMatchFlow = Boolean(preMatch || live || summary)
   useEffect(() => {
     if (!hub?.messages) return
     const top = hub.messages.reduce((mx, m) => Math.max(mx, m.id), 0)
@@ -90,13 +92,14 @@ export default function SeasonsScreen({ career: account, onBack }) {
       lastMsg.current = top
       return
     }
+    if (inMatchFlow) return
     const fresh = hub.messages.filter((m) => m.id > lastMsg.current && !m.read && ['market', 'career'].includes(msgCategory(m)))
     lastMsg.current = Math.max(lastMsg.current, top)
     if (fresh.length) {
       const first = fresh[fresh.length - 1]
       notify(fresh.length === 1 ? first.title : `${fresh.length} novas mensagens: ${first.title}`, 'offer', () => setInbox({ focusId: fresh.length === 1 ? first.id : null, category: msgCategory(first) }))
     }
-  }, [hub, notify])
+  }, [hub, notify, inMatchFlow])
 
   // Subiu de nível numa partida ou recompensa: animação global de novo nível.
   useEffect(() => {
@@ -302,7 +305,8 @@ export default function SeasonsScreen({ career: account, onBack }) {
       if (hub.attention?.action === 'offers') goTab('career', 'offers')
       else if (hub.attention?.action === 'contract') goTab('career', 'profile')
       else if (hub.attention?.action === 'contracts') goTab('team')
-      else { setWorldArea('deals'); setTab('world') }
+      // Negociações ficam em Transferências (a aba "world" agora é só Finanças).
+      else goTab('transfers', 'deals')
     },
     advance,
     startNext,
