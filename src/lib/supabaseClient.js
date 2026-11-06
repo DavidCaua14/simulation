@@ -4,6 +4,7 @@
 import { createClient } from '@supabase/supabase-js'
 import { createSessionFetch } from './sessionRecovery'
 import { createTimeoutReportFetch } from './timeoutReport'
+import { createRpcCache, invalidateRpcCache } from './rpcCache'
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
@@ -20,13 +21,15 @@ if (!isSupabaseConfigured) {
 }
 
 let sessionToken = null
+let lastUserId = null
 
 export const supabase = isSupabaseConfigured
   ? createClient(supabaseUrl, supabaseAnonKey, {
       auth: { autoRefreshToken: true, persistSession: true, detectSessionInUrl: true },
       global: {
         fetch: createSessionFetch(
-          createTimeoutReportFetch((...args) => fetch(...args), supabaseUrl),
+          // Cache de leituras do save: telas reabertas não voltam ao banco até a próxima escrita.
+          createRpcCache(createTimeoutReportFetch((...args) => fetch(...args), supabaseUrl), supabaseUrl),
           supabaseUrl,
           () => sessionToken,
         ),
@@ -36,5 +39,8 @@ export const supabase = isSupabaseConfigured
 
 // Apenas acompanha o token; não chama operações de auth dentro do callback.
 supabase?.auth.onAuthStateChange((_event, session) => {
+  // Outra conta (ou saída): nada do cache anterior pode aparecer.
+  if ((session?.user?.id ?? null) !== lastUserId) invalidateRpcCache()
+  lastUserId = session?.user?.id ?? null
   sessionToken = session?.access_token ?? null
 })
