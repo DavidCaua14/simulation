@@ -191,3 +191,20 @@ test('an ambiguous request created on the old backend uses the migration guard a
   await sim.prepare(hub)
   assert.deepEqual(versions, [-1], 'A legacy UUID with no receipt must not become a fresh unguarded write')
 })
+
+test('a time-budget batch continues with the returned remaining days without reading the hub', async () => {
+  const hub = career(); hub.next_event.days_until = 6
+  const trace = []; let peeks = 0; let refreshes = 0
+  const sim = createWorldSimulation({ requestId: () => String(trace.length), advance: async (days) => {
+    trace.push(days)
+    const advanced = Math.min(days, 2)
+    hub.next_event.days_until -= advanced
+    const done = hub.next_event.days_until === 0
+    return { days: advanced, matches: 3, more: false, days_remaining: days - advanced, stop_reason: done ? 'match' : 'batch', stopped_for_match: done, state_version: trace.length }
+  }, peek: async () => { peeks++; return structuredClone(hub) }, refresh: async () => { refreshes++; return structuredClone(hub) } })
+  const ready = await sim.prepare(hub)
+  assert.deepEqual(trace, [6, 4, 2])
+  assert.equal(peeks, 1, 'Only the final batch reads the hub')
+  assert.equal(refreshes, 1)
+  assert.equal(ready.next_event.days_until, 0)
+})

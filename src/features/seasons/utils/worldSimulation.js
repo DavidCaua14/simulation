@@ -63,6 +63,15 @@ export function createWorldSimulation({ advance, refresh, peek = refresh, reques
       persist()
       return { hub: { ...hub, runtime_version: result.state_version ?? hub.runtime_version }, next: 0, result }
     }
+    // Lote encerrado pelo tempo, ainda longe do jogo: o próprio resultado diz quantos dias faltam.
+    // Segue direto, sem reler o hub (cada leitura custa ~1 s no banco); o hub completo vem só no fim.
+    if (result && !result.requires_attention && !result.requires_refresh && !result.stopped_for_match && !result.next_season_ready
+      && !result.season_finished && result.stop_reason === 'batch' && (result.days > 0 || result.matches > 0)
+      && Number.isInteger(result.days_remaining) && result.days_remaining > 0) {
+      pending = null
+      persist()
+      return { hub: { ...hub, runtime_version: result.state_version ?? hub.runtime_version }, next: result.days_remaining, result }
+    }
     // An ambiguous write retries its UUID; a failed read retries only the read.
     const next = await peek({ silent: true })
     if (!next) throw new Error('Não foi possível consultar a carreira atualizada. Toque novamente para continuar.')
