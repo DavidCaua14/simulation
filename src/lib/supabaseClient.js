@@ -3,6 +3,7 @@
 // para pegar essas chaves no painel do Supabase.
 import { createClient } from '@supabase/supabase-js'
 import { createSessionFetch } from './sessionRecovery'
+import { createTimeoutReportFetch } from './timeoutReport'
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
@@ -23,7 +24,13 @@ let sessionToken = null
 export const supabase = isSupabaseConfigured
   ? createClient(supabaseUrl, supabaseAnonKey, {
       auth: { autoRefreshToken: true, persistSession: true, detectSessionInUrl: true },
-      global: { fetch: createSessionFetch((...args) => fetch(...args), supabaseUrl, () => sessionToken) },
+      global: {
+        fetch: createSessionFetch(
+          createTimeoutReportFetch((...args) => fetch(...args), supabaseUrl),
+          supabaseUrl,
+          () => sessionToken,
+        ),
+      },
     })
   : null
 

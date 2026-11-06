@@ -29,3 +29,11 @@ O erro foi reproduzido em um PostgreSQL 17 local isolado e sem rede externa, com
 Depois de incluir os 26 checkpoints, `supabase db push --dry-run --skip-vault` informou `Remote database is up to date`. O teste confirmou que os dados fictícios protegidos e o histórico aplicado permaneceram iguais. Nenhum comando de alteração foi enviado ao banco de produção para esta correção.
 
 Ao verificar uma liberação no GitHub, consultar os **commit statuses** e os **check runs**. A Vercel publica um status; o Supabase Preview publica um check separado. Um deploy aprovado pela Vercel não significa que os demais checks passaram.
+
+## Migrações aplicadas fora do CLI (2026-11-06)
+
+O check `Supabase Preview` do commit `d1608b0` falhou com `relation "mgr_player_rows" already exists`. As oito migrações `20261106000000` a `20261106070000` tinham sido executadas em produção pela API de SQL, que não grava `supabase_migrations.schema_migrations`. A integração do GitHub tentou reaplicá-las.
+
+A correção conferiu em produção os objetos de cada uma: tabelas, views e funções. Também confirmou que `sim_player_base` continuava igual ao catálogo, com 3024 linhas e 0 diferenças. Depois registrou as oito versões em `schema_migrations`, sem reexecutar nada.
+
+Regra: uma migração aplicada à mão pela API ou pelo painel precisa ter a versão registrada na mesma hora (`insert into supabase_migrations.schema_migrations(version,name) values(...)`). Outra opção é deixar o push na `main` aplicá-la pela integração.
