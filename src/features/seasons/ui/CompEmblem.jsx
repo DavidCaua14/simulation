@@ -5,10 +5,10 @@ import { COMP_EMBLEMS } from '../../club/data/competitionEmblems'
 // Emblema do campeonato. Com o logo oficial (public/competitions), ele aparece numa placa clara — assim logos
 // escuros (Champions, Série A) ficam legíveis nos dois temas. Sem logo (ou se a imagem falhar), cai no escudo
 // desenhado com as cores do torneio.
-export default function CompEmblem({ comp, size = 40, dim = false }) {
+export default function CompEmblem({ comp, size = 40, dim = false, theme = null }) {
   const [failed, setFailed] = useState(false)
   const file = COMP_EMBLEMS[comp]
-  const t = COMP_THEME[comp] || { c1: '#2b3445', c2: '#c9d2e3', code: '?' }
+  const t = COMP_THEME[comp] || theme || { c1: '#2b3445', c2: '#c9d2e3', code: '?' }
 
   if (file && !failed) {
     return (

@@ -954,3 +954,20 @@ button.mr:active { transform: scale(0.99); }
 .sr-list { list-style: none; margin: 8px 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
 .sr-list li { display: flex; justify-content: space-between; gap: 10px; padding: 6px 8px; border-radius: 6px; background: rgba(255, 255, 255, .04); }
 .sr-total { margin: 8px 0 12px; text-align: center; }
+
+/* ---------- Torneios: ligas do mundo ---------- */
+.ct-picker button.ct-world { color: var(--gx-ink-3, var(--gx-ink-2)); }
+.wl { display: grid; gap: 12px; }
+.wl-back { justify-self: start; display: inline-flex; align-items: center; gap: 4px; }
+.wl-group { display: grid; gap: 6px; }
+.wl-group h3 { margin: 6px 0 0; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.06em; opacity: 0.7; }
+.wl-item { display: flex; align-items: center; gap: 10px; width: 100%; padding: 8px 10px; border-radius: 12px; border: 1px solid var(--gx-line); background: var(--gx-panel); color: inherit; text-align: left; cursor: pointer; }
+.wl-item:hover { border-color: var(--gx-ink-3, var(--gx-line)); }
+.wl-txt { display: grid; flex: 1; min-width: 0; }
+.wl-txt b { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.wl-txt small { opacity: 0.7; }
+.wl-badge { font-size: 0.68rem; padding: 2px 8px; border-radius: 999px; background: color-mix(in srgb, var(--gx-green, #2ecc71) 18%, transparent); color: var(--gx-green, #2ecc71); white-space: nowrap; }
+.wl-clubs { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.wl-clubs li { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 10px; border: 1px solid var(--gx-line); background: var(--gx-panel); }
+.wl-clubs li span { flex: 1; }
+.wl-clubs li small { opacity: 0.7; }

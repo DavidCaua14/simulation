@@ -2,6 +2,7 @@ import shieldBotafogo from '../assets/shield-botafogo.webp'
 import shieldFluminense from '../assets/shield-fluminense.webp'
 import shieldFlamengo from '../assets/shield-flamengo.webp'
 import { CLUB_CATALOG } from './clubCatalog'
+import { CLUB_CATALOG_B } from './clubCatalogB'
 
 // Propostas iniciais (hoje fixas; no futuro podem vir do banco, filtradas
 // pelo país do jogador — ver countries.js).
@@ -31,7 +32,8 @@ export const CLUBS = [
 export function getClubById(clubId) {
   if (!clubId) return undefined
   const initial = CLUBS.find((c) => c.id === clubId)
-  const catalog = CLUB_CATALOG[clubId]
+  // Ligas de fundo (nível B): clubes que não estão no catálogo principal.
+  const catalog = CLUB_CATALOG[clubId] || CLUB_CATALOG_B[clubId]
   if (!initial && !catalog) return undefined
   return { ...catalog, ...initial }
 }

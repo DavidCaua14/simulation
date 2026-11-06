@@ -1,0 +1,246 @@
+# Ligas de fundo (nível B): um clube por linha. Gerado como rascunho e revisado à mão.
+# liga	título na Wikipedia (en)	id	nome	sigla	força	cor1	cor2	cidade
+# Clubes que já existem no banco (Libertadores, Champions) mantêm id e força; a força aqui vale só para clubes novos.
+# Força = estimativa de gameplay na escala do jogo (Série A 60–80, Real Madrid 88). Não é dado oficial.
+ARG	Boca Juniors	boca-juniors	Boca Juniors	BOC	78	#0A3D91	#F5C400	Buenos Aires
+ARG	Central Córdoba de Santiago del Estero	central-cordoba	Central Córdoba	CCO	63	#111111	#FFFFFF	
+ARG	Defensa y Justicia	defensa	Defensa y Justicia	DYJ	67	#004020	#228C22	
+ARG	Deportivo Riestra	riestra	Deportivo Riestra	RIE	62	#111111	#FFFFFF	
+ARG	Estudiantes de La Plata	estudiantes	Estudiantes	EST	75	#C8102E	#FFFFFF	La Plata
+ARG	Gimnasia y Esgrima de Mendoza	gimnasia-mza	Gimnasia de Mendoza	GME	61	#111111	#FFFFFF	
+ARG	Club Atlético Independiente	independiente	Independiente	IND	72	#C8102E	#FFFFFF	
+ARG	Instituto Atlético Central Córdoba	instituto	Instituto	INS	64	#C8102E	#FFFFFF	
+ARG	Club Atlético Lanús	lanus	Lanús	LAN	71	#7A1126	#FFFFFF	Lanús
+ARG	Newell's Old Boys	newells	Newell's Old Boys	NOB	67	#C8102E	#111111	
+ARG	Club Atlético Platense	platense	Platense	PLA	62	#6B3E26	#FFFFFF	Vicente López
+ARG	San Lorenzo de Almagro	san-lorenzo	San Lorenzo	SLO	70	#1A2B6D	#C8102E	
+ARG	Talleres de Córdoba	talleres	Talleres	TAL	71	#0A2A6B	#FFFFFF	
+ARG	Unión de Santa Fe	union-sf	Unión	USF	66	#FF0000	#FFFFFF	
+ARG	Club Atlético Vélez Sarsfield	velez	Vélez Sarsfield	VEL	72	#FFFFFF	#0033A0	
+ARG	Club Atlético Aldosivi	aldosivi	Aldosivi	ALD	61	#008000	#000000	
+ARG	Argentinos Juniors	argentinos	Argentinos Juniors	ARJ	70	#C8102E	#FFFFFF	
+ARG	Atlético Tucumán	atl-tucuman	Atlético Tucumán	ATU	64	#7FB6E8	#FFFFFF	
+ARG	Club Atlético Banfield	banfield	Banfield	BAN	65	#00843D	#FFFFFF	
+ARG	Barracas Central	barracas	Barracas Central	BCE	64	#C8102E	#FFFFFF	
+ARG	Club Atlético Belgrano	belgrano	Belgrano	BEL	68	#0099F1	#FFFFFF	
+ARG	Estudiantes de Río Cuarto	estudiantes-rc	Estudiantes de Río Cuarto	ERC	60	#41B2F8	#FFFFFF	
+ARG	Club de Gimnasia y Esgrima La Plata	gimnasia-lp	Gimnasia La Plata	GLP	65	#FFFFFF	#0A2A6B	Buenos Aires |publisher=Clarín |url=http://www.clarin.com/diario/2009/01/31/um/m-01850272.htm |access-date=31 January 2009 |archive-date=1 February 2009 |archive-url=https://web.archive.org/web/20090201222458/http://www.clarin.com/diario/2009/01/31/um/m-01850272.htm |url-status=live }}
+ARG	Club Atlético Huracán	huracan	Huracán	HUR	68	#FFFFFF	#FF0000	
+ARG	Independiente Rivadavia	ind-rivadavia	Independiente Rivadavia	IRV	66	#0057B8	#FFFFFF	Mendoza
+ARG	Racing Club de Avellaneda	racing	Racing	RAC	75	#FFFFFF	#44A3FC	
+ARG	Club Atlético River Plate	river-plate	River Plate	RIV	79	#FFFFFF	#C8102E	
+ARG	Rosario Central	rosario-central	Rosario Central	ROS	70	#1E4FA3	#F5C400	Rosário
+ARG	Club Atlético Sarmiento	sarmiento	Sarmiento	SAR	62	#00843D	#FFFFFF	
+ARG	Club Atlético Tigre	tigre	Tigre	TIG	66	#0033A0	#C8102E	
+URU	Albion F.C.	albion	Albion	ALB	57	#C8102E	#0033A0	
+URU	Boston River	boston-river	Boston River	BRI	62	#FFFFFF	#000000	
+URU	Central Español	central-espanol	Central Español	CES	57	#FFFFFF	#0000FF	
+URU	C.A. Cerro	cerro	Cerro	CER	60	#7FB6E8	#FFFFFF	
+URU	Cerro Largo F.C.	cerro-largo	Cerro Largo	CLA	60	#0033A0	#FFFFFF	
+URU	Danubio F.C.	danubio	Danubio	DAN	63	#FFFFFF	#111111	
+URU	Defensor Sporting	defensor	Defensor Sporting	DFS	66	#FFFFFF	#6000BF	
+URU	Deportivo Maldonado	maldonado	Deportivo Maldonado	MAL	59	#FFFFFF	#000000	
+URU	Juventud de Las Piedras	juventud-lp	Juventud	JUV	59	#FFFFFF	#0000FF	
+URU	Liverpool F.C. (Montevideo)	liverpool-uru	Liverpool (URU)	LVM	65	#FFFFFF	#000000	
+URU	Montevideo City Torque	city-torque	Montevideo City Torque	MCT	62	#64CFFF	#FFFFFF	
+URU	Montevideo Wanderers F.C.	wanderers-uru	Montevideo Wanderers	MWA	62	#111111	#FFFFFF	
+URU	Club Nacional de Football	nacional-uru	Nacional	NAC	73	#1F3A93	#FFFFFF	Montevidéu
+URU	C.A. Progreso	progreso	Progreso	PRO	58	#C8102E	#FFD100	Montevideo |access-date=21 August 2026 |language=es}}
+URU	Racing Club de Montevideo	racing-uru	Racing (URU)	RCM	62	#00843D	#FFFFFF	
+URU	Peñarol	penarol	Peñarol	PEN	74	#F6C900	#111111	Montevidéu
+CHI	Audax Italiano	audax	Audax Italiano	AUD	61	#1C9E1C	#FFFFFF	Santiago |publisher=Zig-Zag |issue=403 |page=27}}
+CHI	C.D. Cobresal	cobresal	Cobresal	COB	61	#F28C00	#FFFFFF	
+CHI	Colo-Colo	colo-colo	Colo-Colo	CCO	68	#FFFFFF	#000000	
+CHI	Coquimbo Unido	coquimbo	Coquimbo Unido	COQ	60	#FFD100	#111111	Coquimbo
+CHI	Deportes Concepción (Chile)	concepcion	Deportes Concepción	DCO	57	#5C4AB0	#FFFFFF	
+CHI	Deportes La Serena	la-serena	Deportes La Serena	SER	58	#B20837	#FFFFFF	
+CHI	Deportes Limache	limache	Deportes Limache	LIM	57	#D5303E	#000000	
+CHI	Everton de Viña del Mar	everton-chi	Everton (CHI)	EVV	60	#003159	#FFD100	Liverpool
+CHI	Huachipato FC	huachipato	Huachipato	HUA	62	#0000FF	#000000	Santiago|language=Spanish|date=4 March 2023|quote=In Chilean professional football
+CHI	O'Higgins F.C.	ohiggins	O'Higgins	OHI	62	#83CCF9	#FFFFFF	
+CHI	Club Deportivo Palestino	palestino	Palestino	PAL	62	#00843D	#C8102E	|publisher= |access-date=18 June 2025}} According to American historian Brenda Elsey
+CHI	Unión La Calera	la-calera	Unión La Calera	ULC	60	#EE0000	#FFFFFF	La Calera
+CHI	Club Deportivo Universidad Católica	u-catolica	Universidad Católica	UNI	66	#1D4E9E	#FFFFFF	Santiago
+CHI	Club Universidad de Chile	u-chile	Universidad de Chile	UCH	67	#0000BF	#C8102E	Santiago
+CHI	C.D. Universidad de Concepción	u-concepcion	Universidad de Concepción	UDC	57	#FFFF00	#010633	
+CHI	Ñublense	nublense	Ñublense	NUB	59	#C8102E	#FFFFFF	
+COL	Atlético Nacional	atl-nacional	Atlético Nacional	NAC	68	#FFFFFF	#289741	Medellín
+COL	Atlético Junior	junior	Junior Barranquilla	JUN	66	#D1121F	#FFFFFF	Barranquilla
+COL	Deportivo Pasto	pasto	Deportivo Pasto	PAS	61	#E50303	#172346	
+COL	América de Cali	america-cali	América de Cali	AME	66	#CC0000	#F91010	
+COL	Once Caldas	once-caldas	Once Caldas	ONC	63	#FFFFFF	#111111	
+COL	Deportes Tolima	tolima	Tolima	TOL	62	#7A1F2B	#F2C300	Ibagué
+COL	Independiente Santa Fe	santa-fe	Santa Fe	SAN	64	#C8102E	#FFFFFF	Bogotá
+COL	Internacional de Bogotá	inter-bogota	Internacional de Bogotá	IDB	60	#C8102E	#FFFFFF	
+COL	Deportivo Cali	deportivo-cali	Deportivo Cali	CAL	62	#009A6A	#FFFFFF	
+COL	Millonarios F.C.	millonarios	Millonarios	MIL	65	#0415BA	#FFFFFF	Bogotá |year=2009 |access-date=September 14
+COL	Independiente Medellín	ind-medellin	Independiente Medellín	IND	62	#C8102E	#1E3A8A	Medellín
+COL	Águilas Doradas	aguilas-doradas	Águilas Doradas	AGU	60	#E0D08F	#181818	
+COL	Atlético Bucaramanga	bucaramanga	Bucaramanga	BUC	62	#FFE100	#FFF000	
+COL	Llaneros F.C.	llaneros	Llaneros	LLA	58	#FFFFFF	#000000	
+COL	Fortaleza F.C.	fortaleza-col	Fortaleza (COL)	FOR	59	#F28C00	#111111	
+COL	Jaguares de Córdoba	jaguares	Jaguares de Córdoba	JAG	58	#38B8F5	#FFFFFF	
+COL	Alianza Valledupar F.C.	alianza-valledupar	Alianza Valledupar	ALI	58	#002884	#070F2B	
+COL	Boyacá Chicó F.C.	boyaca-chico	Boyacá Chicó	BOY	58	#192649	#FFFFFF	
+COL	Cúcuta Deportivo	cucuta	Cúcuta Deportivo	CUC	58	#C8102E	#111111	
+COL	Deportivo Pereira	pereira	Deportivo Pereira	PER	59	#FFF200	#F91010	
+ECU	Independiente del Valle	ind-del-valle	Independiente del Valle	IND	72	#111111	#1E6FD9	Sangolquí
+ECU	C.D. Universidad Católica (Ecuador)	u-catolica-ecu	Universidad Católica (EQU)	UCE	66	#96C8E2	#FFFFFF	
+ECU	Club Deportivo Macará	macara	Macará	MAC	62	#87CEFA	#0000FF	
+ECU	S.D. Aucas	aucas	Aucas	AUC	64	#FFF200	#FF0000	
+ECU	LDU Quito	ldu	LDU Quito	LDU	72	#1B2A6B	#FFFFFF	Quito
+ECU	Barcelona S.C.	barcelona-sc	Barcelona SC	BAR	70	#F6C900	#111111	Guayaquil
+ECU	Libertad F.C. (Ecuador)	libertad-ecu	Libertad (EQU)	LIB	61	#FF771C	#111111	
+ECU	Leones F.C. (Ecuador)	leones	Leones	LEO	58	#FF0000	#FFFFFF	
+ECU	Guayaquil City F.C.	guayaquil-city	Guayaquil City	GYC	60	#99D4FE	#FFFFFF	
+ECU	Club Sport Emelec	emelec	Emelec	EME	66	#0000DD	#B1B1B1	
+ECU	Mushuc Runa S.C.	mushuc-runa	Mushuc Runa	MUS	60	#420009	#FFD100	
+ECU	Deportivo Cuenca	cuenca	Deportivo Cuenca	CUE	61	#FF001A	#000000	
+ECU	Orense S.C.	orense	Orense	ORE	62	#053D1C	#FFFFFF	
+ECU	C.D. Técnico Universitario	tecnico-univ	Técnico Universitario	TEC	60	#000000	#FF0000	
+ECU	Delfín S.C.	delfin	Delfín	DEL	60	#0000C0	#000080	
+ECU	Manta F.C.	manta	Manta	MAN	58	#00CCFF	#FFFFFF	
+PAR	Club 2 de Mayo	2-de-mayo	2 de Mayo	DMA	58	#C8102E	#FFFFFF	
+PAR	Cerro Porteño	cerro-porteno	Cerro Porteño	CER	68	#0A2A6B	#C8102E	Assunção
+PAR	Club Guaraní	guarani-par	Guaraní	GUA	64	#FFDF00	#000000	
+PAR	Club Libertad	libertad	Libertad	LIB	66	#111111	#FFFFFF	Assunção
+PAR	Club Nacional	nacional-par	Nacional (PAR)	NAC	64	#0033A0	#FFFFFF	
+PAR	Club Olimpia	olimpia	Olimpia	OLI	68	#FFFFFF	#111111	
+PAR	Recoleta FC	recoleta	Recoleta	REC	59	#FFD100	#111111	
+PAR	Club Rubio Ñu	rubio-nu	Rubio Ñu	RUB	58	#FFFFFF	#00843D	
+PAR	Club Sportivo San Lorenzo	san-lorenzo-par	San Lorenzo (PAR)	SLP	57	#0033A0	#FFFFFF	
+PAR	Sportivo Ameliano	ameliano	Sportivo Ameliano	AME	59	#7FB6E8	#FFFFFF	
+PAR	Sportivo Luqueño	luqueno	Sportivo Luqueño	LUQ	60	#FFCD00	#00008A	
+PAR	Sportivo Trinidense	trinidense	Sportivo Trinidense	TRI	59	#002048	#FFFFFF	
+PER	Club Alianza Lima	alianza-lima	Alianza Lima	ALI	68	#071241	#FFFFFF	
+PER	Club Deportivo Los Chankas	chankas	Los Chankas	CHA	61	#7B0431	#FFFFFF	
+PER	Cienciano	cienciano	Cienciano	CIE	64	#ED0011	#FFFFFF	
+PER	Club Universitario de Deportes	universitario	Universitario	UNI	70	#7B1E1E	#F5E6C8	Lima
+PER	FBC Melgar	melgar	Melgar	MEL	65	#111111	#C8102E	
+PER	Cusco FC	cusco	Cusco FC	CUS	58	#B71C1C	#FFFFFF	Cusco
+PER	Deportivo Garcilaso	garcilaso	Deportivo Garcilaso	GAR	61	#2DA6FF	#FFFFFF	
+PER	Alianza Atlético	alianza-atletico	Alianza Atlético	AAS	60	#FFFFFF	#111111	
+PER	Comerciantes Unidos	comerciantes	Comerciantes Unidos	COM	58	#430277	#FFFFFF	
+PER	Asociación Deportiva Tarma	ad-tarma	ADT Tarma	ADT	60	#069BFF	#FFFFFF	
+PER	Sport Boys	sport-boys	Sport Boys	SBA	60	#FFCADD	#000000	
+PER	Sporting Cristal	sporting-cristal	Sporting Cristal	SPO	64	#4FB3E8	#FFFFFF	Lima
+PER	Club Deportivo Moquegua	moquegua	Moquegua	MOQ	56	#111111	#C8102E	
+PER	FC Cajamarca	cajamarca	FC Cajamarca	CAJ	56	#FFE600	#FFFFFF	
+PER	Atlético Grau	atl-grau	Atlético Grau	GRA	59	#FFFFFF	#C8102E	
+PER	Sport Huancayo	huancayo	Sport Huancayo	SHU	60	#F90013	#FFFFFF	
+PER	ADC Juan Pablo II College	juan-pablo-ii	Juan Pablo II College	JPA	57	#FFFFFF	#FFCC00	
+PER	Club Universidad Técnica de Cajamarca	utc	UTC Cajamarca	UTC	58	#FFFAEC	#111111	
+ENG	Arsenal F.C.	arsenal	Arsenal	ARS	88	#EF0107	#FFFFFF	Londres
+ENG	Aston Villa F.C.	aston-villa	Aston Villa	AVL	86	#670E36	#95BFE5	Birmingham
+ENG	AFC Bournemouth	bournemouth	Bournemouth	BOU	85	#DA291C	#111111	Bournemouth
+ENG	Brentford F.C.	brentford	Brentford	BRE	83	#E30613	#FFFFFF	Londres
+ENG	Brighton & Hove Albion F.C.	brighton	Brighton	BHA	84	#0057B8	#FFFFFF	Falmer
+ENG	Chelsea F.C.	chelsea	Chelsea	CHE	83	#034694	#FFFFFF	Londres
+ENG	Coventry City F.C.	coventry	Coventry City	COV	76	#6CC5F0	#FFFFFF	Coventry
+ENG	Crystal Palace F.C.	crystal-palace	Crystal Palace	CRY	80	#1B458F	#C4122E	Londres
+ENG	Everton F.C.	everton	Everton	EVE	81	#003399	#FFFFFF	Liverpool
+ENG	Fulham F.C.	fulham	Fulham	FUL	82	#FFFFFF	#111111	Londres
+ENG	Hull City A.F.C.	hull	Hull City	HUL	74	#F5A12D	#111111	Kingston upon Hull
+ENG	Ipswich Town F.C.	ipswich	Ipswich Town	IPS	76	#0044A9	#FFFFFF	Ipswich
+ENG	Leeds United F.C.	leeds	Leeds United	LEE	80	#FFFFFF	#1D428A	Leeds
+ENG	Liverpool F.C.	liverpool	Liverpool	LIV	86	#C8102E	#F6EB61	Liverpool
+ENG	Manchester City F.C.	man-city	Manchester City	MCI	87	#6CABDD	#1C2C5B	Manchester
+ENG	Manchester United F.C.	man-united	Manchester United	MUN	87	#DA291C	#FBE122	Manchester
+ENG	Newcastle United F.C.	newcastle	Newcastle United	NEW	81	#241F20	#FFFFFF	Newcastle upon Tyne
+ENG	Nottingham Forest F.C.	nottm-forest	Nottingham Forest	NFO	79	#DD0000	#FFFFFF	West Bridgford
+ENG	Sunderland A.F.C.	sunderland	Sunderland	SUN	84	#EB172B	#FFFFFF	Sunderland
+ENG	Tottenham Hotspur F.C.	tottenham	Tottenham Hotspur	TOT	78	#FFFFFF	#132257	Londres
+ESP	Racing de Santander	racing-santander	Racing de Santander	RSA	72	#FFFFFF	#000000	
+ESP	Deportivo Alavés	alaves	Alavés	ALA	73	#0033A0	#FFFFFF	
+ESP	Athletic Bilbao	athletic	Athletic Bilbao	ATH	80	#FFFFFF	#000000	Cheltenham
+ESP	Atlético Madrid	atletico-madrid	Atlético de Madrid	ATM	84	#CB3524	#FFFFFF	Madri
+ESP	FC Barcelona	barcelona	Barcelona	BAR	85	#A50044	#004D98	Barcelona
+ESP	RC Celta de Vigo	celta	Celta de Vigo	CEL	76	#8AC3EE	#FFFFFF	Murcia|isbn=84-605-5851-7}}
+ESP	Deportivo de A Coruña	deportivo-lc	Deportivo La Coruña	DEP	72	#0033A0	#FFFFFF	
+ESP	Elche CF	elche	Elche	ELC	72	#FFFFFF	#00843D	
+ESP	RCD Espanyol	espanyol	Espanyol	ESP	74	#0033A0	#FFFFFF	
+ESP	Getafe CF	getafe	Getafe	GET	74	#0033A0	#FFFFFF	
+ESP	Levante UD	levante	Levante	LEV	72	#003E8A	#B5121B	
+ESP	Málaga CF	malaga	Málaga	MAL	71	#FFFFFF	#103E9E	
+ESP	CA Osasuna	osasuna	Osasuna	OSA	74	#C8102E	#0A2A6B	
+ESP	Rayo Vallecano	rayo	Rayo Vallecano	RAY	74	#FFFFFF	#C8102E	|publisher= |access-date=6 January 2026}} The club is closely associated with the local community
+ESP	Real Betis	betis	Real Betis	BET	80	#00954C	#FFFFFF	Sevilha
+ESP	Real Madrid CF	real-madrid	Real Madrid	RMA	88	#FFFFFF	#FEBE10	Madri
+ESP	Real Sociedad	real-sociedad	Real Sociedad	RSO	77	#0042FF	#FFFFFF	
+ESP	Sevilla FC	sevilla	Sevilla	SEV	75	#FFFFFF	#E20000	Spain|access-date= 29 December 2010|archive-date= 29 November 2011|archive-url= https://web.archive.org/web/20111129041332/http://www.marca.com/2010/12/22/futbol/equipos/sevilla/1293024353.html?a=BRU637e19da926ac1e9774b08b38f20333c&t=1293603736|url-status= live}}
+ESP	Valencia CF	valencia	Valencia	VAL	75	#FFFFFF	#000000	
+ESP	Villarreal CF	villarreal	Villarreal	VIL	78	#FFE667	#005187	Vila-real
+ITA	Atalanta BC	atalanta	Atalanta	ATA	81	#1E71B8	#111111	Bergamo |language=it |ref=CITEREFCorbani2007}}
+ITA	Bologna FC 1909	bologna	Bologna	BOL	79	#00003C	#FFFFFF	Online |date=23 January 2003}}
+ITA	Cagliari Calcio	cagliari	Cagliari	CAG	72	#B5121B	#022249	
+ITA	Como 1907	como	Como	COM	71	#003DA5	#FFFFFF	Como
+ITA	ACF Fiorentina	fiorentina	Fiorentina	FIO	77	#552A79	#FFFFFF	
+ITA	Frosinone Calcio	frosinone	Frosinone	FRO	70	#F5D661	#0033A0	
+ITA	Genoa CFC	genoa	Genoa	GEN	73	#FFFFFF	#000040	Modena
+ITA	Inter Milan	inter	Inter de Milão	INT	86	#0068A8	#111111	Milão
+ITA	Juventus FC	juventus	Juventus	JUV	83	#111111	#FFFFFF	Corso Gaetano Scirea
+ITA	SS Lazio	lazio	Lazio	LAZ	78	#88BFF7	#FFFFFF	|publisher= |access-date=27 December 2025 |url-access=registration}} SS Lazio has a supporter culture that has been associated with far‑right politics
+ITA	US Lecce	lecce	Lecce	LEC	71	#FFFF00	#000055	
+ITA	AC Milan	milan	Milan	MIL	83	#000000	#FFFFFF	London |archive-date=7 April 2015 |archive-url=https://web.archive.org/web/20150407201846/http://www.nytimes.com/2006/10/03/sports/03iht-soccer.3017559.html |url-status=live }} however
+ITA	AC Monza	monza	Monza	MON	70	#C8102E	#FFFFFF	Monza |language=it |access-date=20 April 2022}} However
+ITA	SSC Napoli	napoli	Napoli	NAP	79	#12A0D7	#FFFFFF	Nápoles
+ITA	Parma Calcio 1913	parma	Parma	PAR	72	#FFFFFF	#000000	Parma|trans-title=From Giuseppe Verdi to Wembley|language=it|access-date=2 March 2012|archive-url=https://web.archive.org/web/20120609115327/http://www.gazzettadiparma.it/primapagina/dettaglio/6/25265/Da_Giuseppe_Verdi_a_Wembley.html|archive-date=9 June 2012|url-status=dead}} This brought about a change of luck in both financial and sporting terms
+ITA	AS Roma	roma	Roma	ROM	83	#8E1F2F	#F0BC42	Roma
+ITA	US Sassuolo Calcio	sassuolo	Sassuolo	SAS	72	#00A746	#000000	
+ITA	Torino FC	torino	Torino	TOR	74	#65001B	#FFFFFF	Turin|isbn=978-8889370087}} The club was granted admission to the Petrucci Law
+ITA	Udinese Calcio	udinese	Udinese	UDI	73	#111111	#FFFFFF	
+ITA	Venezia FC	venezia	Venezia	VEN	70	#111111	#F28C00	
+GER	FC Schalke 04	schalke	Schalke 04	S04	72	#0000DD	#FFFFFF	London |archive-date=17 May 2020 |archive-url=https://web.archive.org/web/20200517224625/https://www.thetimes.co.uk/ |url-status=dead }} Within this sponsorship
+GER	FC Augsburg	augsburg	Augsburg	FCA	73	#EDE6DC	#680F00	Kassel | publisher = AGON Sportverlag | isbn = 3-89784-147-9}}
+GER	1. FC Union Berlin	union-berlin	Union Berlin	FCU	74	#C8102E	#FFFFFF	Malmö |publisher=Arx Förlag AB |page=127 |isbn=978-91-87043-61-1  }} Both ASK Vorwärts Berlin and SC Dynamo Berlin were associated with the armed organs (). Warnke therefore argued for the creation of a third "civilian club" for the working people in East Berlin. He would become a passionate fan of 1. FC Union Berlin and a sponsoring member of the club.
+GER	SV Werder Bremen	werder	Werder Bremen	SVW	74	#FFFFFF	#009A59	
+GER	Borussia Dortmund	dortmund	Borussia Dortmund	BVB	83	#FDE100	#111111	Dortmund
+GER	SV Elversberg	elversberg	Elversberg	SVE	70	#FFFFFF	#111111	
+GER	Eintracht Frankfurt	frankfurt	Eintracht Frankfurt	SGE	79	#111111	#C8102E	
+GER	SC Freiburg	freiburg	Freiburg	SCF	77	#C8102E	#111111	
+GER	Hamburger SV	hamburgo	Hamburgo	HSV	73	#FFFFFF	#FF0000	Hamburg |access-date=30 May 2022 }} The Bremen fan Adrian Maleika was murdered by members of the group on 16 October 1982.
+GER	TSG 1899 Hoffenheim	hoffenheim	Hoffenheim	TSG	76	#1C63B7	#FFFFFF	Jaipur|date=24 March 2025|access-date=25 March 2025|work=The Times of India|first1=Suhas|last1=Nayse|archive-url=https://web.archive.org/web/20250325072030/https://timesofindia.indiatimes.com/city/jaipur/rajasthan-united-fc-unveils-strategic-alliance-with-tsg-hoffenheim-fc-ingolstadt-and-tcg-digital-in-data-driven-athlete-development-in-indian-football/articleshow/119436742.cms|archive-date=25 March 2025}}
+GER	1. FC Köln	koln	Colônia	KOE	72	#FFFFFF	#C8102E	
+GER	RB Leipzig	leipzig	RB Leipzig	RBL	79	#DD0741	#FFFFFF	Leipzig
+GER	Bayer 04 Leverkusen	leverkusen	Bayer Leverkusen	B04	83	#111111	#E32221	
+GER	1. FSV Mainz 05	mainz	Mainz 05	M05	74	#C8102E	#FFFFFF	Nuremberg |publisher=Olympia-Verlag GmbH |access-date=15 May 2016 |archive-date=15 May 2016 |archive-url=https://web.archive.org/web/20160515174250/http://www.kicker.de/news/fussball/bundesliga/spieltag/1-bundesliga/2015-16/zuschauer-der-saison.html |url-status=live }}
+GER	Borussia Mönchengladbach	gladbach	Borussia Mönchengladbach	BMG	75	#FFFFFF	#111111	Berlin |pages=383 and 753 |language=de}} and colloquially known as just '''Gladbach'''
+GER	FC Bayern Munich	bayern	Bayern de Munique	FCB	88	#DC052D	#FFFFFF	Munique
+GER	SC Paderborn 07	paderborn	Paderborn	SCP	70	#0A2A6B	#111111	
+GER	VfB Stuttgart	stuttgart	Stuttgart	VFB	73	#E32219	#FFFFFF	Stuttgart
+FRA	ES Troyes AC	troyes	Troyes	TRO	68	#0033A0	#FFFFFF	
+FRA	Le Mans FC	le-mans	Le Mans	LMF	67	#C8102E	#FFD100	
+FRA	Angers SCO	angers	Angers	ANG	70	#111111	#FFFFFF	
+FRA	AJ Auxerre	auxerre	Auxerre	AJA	70	#FFFFFF	#0033A0	
+FRA	Stade Brestois 29	brest	Brest	SB29	73	#EF0000	#FFFFFF	
+FRA	Le Havre AC	le-havre	Le Havre	HAC	70	#8ED6F9	#0D2142	
+FRA	RC Lens	lens	Lens	LEN	71	#FFD500	#E3001B	Lens
+FRA	Lille OSC	lille	Lille	LIL	80	#E01E13	#1D2D5C	Lille
+FRA	FC Lorient	lorient	Lorient	FCL	70	#F28C00	#111111	
+FRA	Olympique Lyonnais	lyon	Lyon	OL	79	#FFFFFF	#0000FF	
+FRA	Olympique de Marseille	marseille	Olympique de Marseille	OM	81	#FFFFFF	#2FAEE0	
+FRA	AS Monaco FC	monaco	Monaco	ASM	80	#E7001E	#FFFFFF	
+FRA	OGC Nice	nice	Nice	OGCN	76	#FF0000	#000000	
+FRA	Paris FC	paris-fc	Paris FC	PFC	71	#000060	#FFFFFF	
+FRA	Paris Saint-Germain FC	psg	Paris Saint-Germain	PSG	86	#004170	#DA291C	Paris
+FRA	Stade Rennais FC	rennes	Rennes	SRFC	76	#FF0000	#000000	Saint-Thonan |language=fr |isbn=9782954252100 }}
+FRA	RC Strasbourg Alsace	strasbourg	Strasbourg	RCSA	76	#0000DD	#FFFFFF	Strasbourg |language=fr |trans-title=100 years of soccer in Alsace (tome 2)}}
+FRA	Toulouse FC	toulouse	Toulouse	TFC	72	#3C0082	#FFFFFF	
+POR	FC Porto	porto	Porto	POR	81	#003893	#FFFFFF	Porto
+POR	S.L. Benfica	benfica	Benfica	SLB	82	#FE0000	#FFFFFF	Portugal|publisher=Impresa Publishing|page=42|issn=0872-3540}} with Ted Smith as coach. It was the first international trophy won by a Portuguese club. They reached another final of the competition in 1957 but lost to Real Madrid at the Santiago Bernabéu. With the election of president Joaquim Ferreira Bogalho in 1952 and the arrival of coach Otto Glória in 1954
+POR	Sporting CP	sporting	Sporting	SPO	81	#008057	#FFFFFF	Lisboa
+POR	C.D. Santa Clara	santa-clara	Santa Clara	SCL	70	#FF0000	#FFFFFF	
+POR	F.C. Arouca	arouca	Arouca	ARO	68	#FFFF00	#0000FF	
+POR	Académico de Viseu F.C.	academico-viseu	Académico de Viseu	ACV	64	#111111	#FFFFFF	
+POR	Gil Vicente F.C.	gil-vicente	Gil Vicente	GIL	70	#D60000	#FF0000	
+POR	S.C. Braga	braga	Braga	SCB	77	#FF0000	#FFFFFF	
+POR	Moreirense F.C.	moreirense	Moreirense	MOR	68	#00843D	#FFFFFF	
+POR	F.C. Alverca	alverca	Alverca	ALV	65	#0033A0	#FFFFFF	
+POR	F.C. Famalicão	famalicao	Famalicão	FAM	71	#0A2A6B	#FFFFFF	
+POR	C.F. Estrela da Amadora	estrela-amadora	Estrela da Amadora	EST	66	#C8102E	#00843D	
+POR	Vitória S.C.	vitoria-guimaraes	Vitória de Guimarães	VSC	72	#FFFFFF	#111111	
+POR	C.S. Marítimo	maritimo	Marítimo	MAR	65	#FF0000	#FFFFFF	Funchal |language=pt }}
+POR	C.D. Nacional	nacional-mad	Nacional (POR)	NAC	64	#FFFFFF	#000000	
+POR	Rio Ave F.C.	rio-ave	Rio Ave	RAV	67	#FFFFFF	#007711	
+POR	Casa Pia A.C.	casa-pia	Casa Pia	CPA	66	#111111	#FFFFFF	
+POR	G.D. Estoril Praia	estoril	Estoril	EST	68	#FFE000	#0033FF	

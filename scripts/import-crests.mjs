@@ -69,7 +69,11 @@ async function main() {
   }
   const crestMap = JSON.parse(await readFile(path.join(ROOT, 'data/clubs/crest_sources.json'), 'utf8'))
   const predMap = JSON.parse(await readFile(path.join(ROOT, 'data/competitions/prediction_emblem_sources.json'), 'utf8'))
-  const { CLUB_CATALOG } = await import(pathToFileURL(path.join(ROOT, 'src/features/club/data/clubCatalog.js')).href)
+  const { CLUB_CATALOG: MAIN } = await import(pathToFileURL(path.join(ROOT, 'src/features/club/data/clubCatalog.js')).href)
+  // ligas de fundo (nível B): clubes de src/features/club/data/clubCatalogB.js e emblemas de data/competitions/tier_b_emblem_sources.json
+  const { CLUB_CATALOG_B } = await import(pathToFileURL(path.join(ROOT, 'src/features/club/data/clubCatalogB.js')).href)
+  const CLUB_CATALOG = { ...CLUB_CATALOG_B, ...MAIN }
+  const leagueMap = JSON.parse(await readFile(path.join(ROOT, 'data/competitions/tier_b_emblem_sources.json'), 'utf8'))
 
   // escudos antigos (baixados da internet) saem: a coleção nova cobre todos os clubes
   await rm(CREST_DIR, { recursive: true, force: true })
@@ -80,7 +84,7 @@ async function main() {
   const crests = {}
   let bytes = 0
   for (const [id, rel] of Object.entries(crestMap)) {
-    if (!CLUB_CATALOG[id]) { problems.push(`clube "${id}" não existe no catálogo`); continue }
+    // clube fora do catálogo atual (ex.: saiu no reset) mantém o escudo: histórico e cartas ainda apontam para ele
     const file = path.join(src, rel)
     if (!existsSync(file)) { problems.push(`${id}: arquivo não encontrado (${rel})`); continue }
     const w = await writeEmblem(CREST_DIR, id, await readFile(file, 'utf8'))
@@ -105,8 +109,15 @@ async function main() {
     const w = await writeEmblem(COMP_DIR, `pred-${slug}`, await readFile(file, 'utf8'))
     pred[name] = w.file
   }
+  for (const [id, rel] of Object.entries(leagueMap)) {
+    const file = path.join(src, rel)
+    if (!existsSync(file)) { problems.push(`liga ${id}: arquivo não encontrado (${rel})`); continue }
+    for (const f of compFiles.filter((x) => x === `${id}.svg` || x === `${id}.webp`)) await rm(path.join(COMP_DIR, f))
+    await writeEmblem(COMP_DIR, id, await readFile(file, 'utf8'))
+  }
+  compFiles.splice(0, compFiles.length, ...(await readdir(COMP_DIR)))
   const game = {}
-  for (const id of GAME_COMPS) {
+  for (const id of [...GAME_COMPS, ...Object.keys(leagueMap)]) {
     const f = gameFile(id)
     if (f) game[id] = f
     else problems.push(`campeonato sem emblema: ${id}`)

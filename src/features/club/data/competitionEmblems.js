@@ -10,6 +10,18 @@ export const COMP_EMBLEMS = {
   'fa_cup': 'fa_cup.svg',
   'efl_cup': 'efl_cup.svg',
   'ucl': 'ucl.svg',
+  'arg_primera': 'arg_primera.svg',
+  'uru_primera': 'uru_primera.svg',
+  'chi_primera': 'chi_primera.svg',
+  'col_primera': 'col_primera.svg',
+  'ecu_seriea': 'ecu_seriea.webp',
+  'per_liga1': 'per_liga1.svg',
+  'eng_premier': 'eng_premier.svg',
+  'esp_laliga': 'esp_laliga.svg',
+  'ita_seriea': 'ita_seriea.svg',
+  'ger_bundesliga': 'ger_bundesliga.svg',
+  'fra_ligue1': 'fra_ligue1.svg',
+  'por_primeira': 'por_primeira.svg',
 }
 export const PREDICTION_EMBLEMS = {
   "Brasileirão Série A": 'brasileirao.svg',

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { BarChart3, ChevronLeft, ChevronRight, Trophy } from 'lucide-react'
+import { BarChart3, ChevronLeft, ChevronRight, Globe2, Trophy } from 'lucide-react'
 import StandingsTable from '../components/StandingsTable'
 import Bracket from '../components/Bracket'
 import RoundResults from '../components/RoundResults'
@@ -9,6 +9,7 @@ import CompEmblem from '../ui/CompEmblem'
 import { compStatus } from '../utils/compStatus'
 import { EXPECTED_MATCHES, buildRounds, clubForm, defaultRoundIndex, groupOf, standingsFrom } from '../utils/seasonSelectors'
 import FormDots from '../components/FormDots'
+import WorldLeagues from '../components/WorldLeagues'
 import useStandings from '../hooks/useStandings'
 import { fetchTopScorers } from '../services/managerApi'
 import { COMPETITIONS, COMP_NAME, COMP_ORDER, COMP_SHORT, COMP_THEME } from '../utils/seasonUtils'
@@ -176,6 +177,7 @@ function CompetitionView({ comp, fixtures, flat, myClub, lastKey, seasonId, onOp
 // rodadas com súmula e artilharia de cada campeonato.
 export default function CompetitionsTab({ ctx, selected, onSelect, onOpenReport }) {
   const { hub, byComp, history, myClub, flat } = ctx
+  const [world, setWorld] = useState(false)
   const cup = COMP_ORDER.find((id) => id !== selected && COMPETITIONS[id]?.kind !== 'league' && hub.competitions.some((c) => c.id === id && c.status !== 'not_in'))
   const comp = hub.competitions.find((c) => c.id === selected) || hub.competitions[0]
   const last = history.find((f) => f.comp === comp.id)
@@ -188,6 +190,14 @@ export default function CompetitionsTab({ ctx, selected, onSelect, onOpenReport 
   const st = compStatus(comp)
   const inactive = comp.status === 'not_in' || comp.status === 'out'
   const pct = Math.min(100, (comp.played / (EXPECTED_MATCHES[comp.id] || comp.total || 1)) * 100)
+
+  if (world) {
+    return (
+      <div className="sn-page">
+        <WorldLeagues myClub={myClub} onClose={() => setWorld(false)} />
+      </div>
+    )
+  }
 
   return (
     <div className="sn-page">
@@ -202,6 +212,10 @@ export default function CompetitionsTab({ ctx, selected, onSelect, onOpenReport 
             </button>
           )
         })}
+        <button type="button" role="tab" aria-selected={false} className="ct-world" onClick={() => setWorld(true)}>
+          <Globe2 size={22} />
+          <span>Ligas do mundo</span>
+        </button>
       </div>
 
       <section className={`ct-banner ${inactive ? 'is-inactive' : ''}`} style={{ '--c1': t.c1, '--c2': t.c2 }}>

@@ -41,7 +41,7 @@ function OfferSquad({ info, clubName, onClose }) {
       <div className="sn-modal" onClick={(e) => e.stopPropagation()}>
         <header className="sn-modal-head">
           <span>
-            <small>{info?.division ? `${info.division} · ` : ''}Força {info?.strength ?? '—'}</small>
+            <small>{info?.division || info?.league ? `${info.division || info.league} · ` : ''}Força {info?.strength ?? '—'}</small>
             <b>{clubName}</b>
           </span>
         </header>
@@ -123,7 +123,7 @@ function Vacancies({ employed, version }) {
               <span className="of-vac-txt">
                 <b>{getClubById(v.club_id)?.name || v.club_id}</b>
                 <small>
-                  {v.division ? `${v.division} · ` : ''}Força {v.strength} · {v.reason} · pede reputação {Math.round(v.required_reputation)}
+                  {v.division || v.league ? `${v.division || v.league} · ` : ''}Força {v.strength} · {v.reason} · pede reputação {Math.round(v.required_reputation)}
                 </small>
                 <small>
                   {v.rejected
@@ -192,7 +192,7 @@ function OfferCard({ o, employed, busy, onRespond, onRefresh }) {
         {info && (
           <li>
             <Building2 size={13} /> Força do time: <b>{info.strength}</b>
-            {info.division ? ` · ${info.division}` : ''}
+            {info.division || info.league ? ` · ${info.division || info.league}` : ''}
             {employed && info.current_strength != null ? ` · seu clube atual: ${info.current_strength}` : ''}
           </li>
         )}

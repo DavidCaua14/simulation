@@ -43,3 +43,30 @@ Migrações: `20261106000000_hybrid_players.sql` (estrutura), `20261106010000_hy
 - `cw_archive_old_seasons`: de cada região fica o detalhe só da última temporada encerrada. Das anteriores ficam `career_seasons`, `season_competitions`, `season_final_tables` e os artilheiros em `mgr_player_stats`.
 - `cw_hybrid_trim`: receita por jogo já paga dos clubes da IA, histórico de negociações encerradas entre clubes da IA e decisões diárias antigas da IA.
 - `cw_appearances` por partida só para o clube do técnico.
+
+## Ligas de fundo (nível B)
+
+Migrações: `20261106210000_background_leagues.sql` (motor), `20261106220000_tier_b_catalog.sql` (catálogo, gerado por
+`scripts/build-tier-b.py` a partir de `data/tier-b/`), `20261106230000_foreign_offers.sql` (vagas e propostas).
+
+Regra: dado compartilhado (catálogo) pode crescer; dado por carreira só nasce onde o técnico está.
+
+- 13 ligas de 1ª divisão com `sim_competitions.background = true`: ARG, URU, CHI, COL, ECU, PAR, PER no calendário `BRA`;
+  ENG, ESP, ITA, GER, FRA, POR no calendário `ENG`. Não há novas regiões: `cw_region()` continua igual.
+- `cw_comp_wanted(temporada, liga)`: liga de fundo só entra numa temporada (participantes, partidas) se o técnico
+  da carreira treina um clube dela. Vale em `cw_create_region`, `sim_create_season` e `sim_participants_build`.
+- `cw_attach_league` / `cw_attach_club_leagues`: ao aceitar proposta (`mgr_offer_respond`), a liga do novo clube entra
+  na temporada em andamento. As rodadas já vencidas são resolvidas pelo modelo de fundo; as demais seguem o calendário.
+  Os clubes da liga viram clubes do mundo (`cw_materialize_club`).
+- `cw_bg_table(carreira, liga, data)`: classificação calculada (turno e returno pelo método do círculo, Poisson com
+  semente por par de clubes, `cw_bg_goals`). Não grava nada; mesma semente = mesma tabela.
+- Clubes novos têm `sim_clubs.lazy = true`: o catálogo guarda só `attr_pos` + `attr_level` por atleta. Notas por
+  posição e `sim_player_base` são gravadas uma vez, quando o clube entra no primeiro mundo (`sim_ensure_club_catalog`,
+  chamado por `cw_initialize_finances`). `sim_refresh_ratings` ignora clubes lazy ainda não usados.
+- Clubes que já existiam (Libertadores, Champions) só entraram na liga: elenco, força e cores não mudaram.
+- Propostas: `mgr_region_league_clubs` inclui os clubes das ligas de fundo, então `mgr_make_offer` já pode trazê-los
+  (as propostas do exterior seguem `cw_runtime_rules.foreign_reputation`/`foreign_credibility`). Vagas: uma checagem
+  sorteada por dia (`cw_job_rules.foreign_daily_chance`) olha a tabela calculada de uma liga de fundo e abre vaga
+  quando um clube está `fire_gap` posições abaixo do esperado pela força.
+- Para mudar elencos, forças ou ligas: edite `data/tier-b/` e rode `python scripts/build-tier-b.py`. A migração só
+  insere (`on conflict do nothing`); para alterar algo já aplicado, escreva uma migração própria.
