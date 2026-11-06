@@ -39,19 +39,35 @@ const SCRIPT = [
 ].map((e, i) => ({ ...e, seq: i + 1, player_name: players.find((p) => p.id === e.player)?.name }))
 const isGoal = (e) => e.kind === 'goal' || e.kind === 'pen_goal'
 
+// mesmas velocidades do MatchLive
+const SPEEDS = [
+  { id: 1, ms: 700 },
+  { id: 2, ms: 330 },
+  { id: 4, ms: 140 },
+]
+
 function App() {
   const params = new URLSearchParams(location.search)
-  const ms = Number(params.get('ms') || 700)
-  const [clock, setClock] = useState(Number(params.get('start') || 0))
+  const [speed, setSpeed] = useState(Number(params.get('speed') || 1))
+  const ms = Number(params.get('ms')) || SPEEDS.find((s) => s.id === speed)?.ms || 700
+  const start = Number(params.get('start') || 0)
+  const [clock, setClock] = useState(start)
+  // "servidor": etapas de 5 minutos; enquanto a próxima etapa carrega, o campo fica pausado (como no MatchLive)
+  const [server, setServer] = useState(() => ({ minute: Math.min(90, start - (start % 5) + 5), players }))
   const [holdAt, setHoldAt] = useState(null)
   const [revealed, setRevealed] = useState(() => new Set())
   const onReveal = useCallback((seqs) => setRevealed((prev) => new Set([...prev, ...seqs])), [])
   useEffect(() => {
     const cap = holdAt != null ? Math.max(clock, holdAt - 0.01) : Infinity
-    if (clock >= 90 || clock >= cap) return undefined
-    const id = setInterval(() => setClock((c) => Math.min(90, cap, c + 100 / ms)), 100)
+    if (clock >= server.minute || clock >= cap) return undefined
+    const id = setInterval(() => setClock((c) => Math.min(server.minute, cap, c + 100 / ms)), 100)
     return () => clearInterval(id)
-  }, [clock, holdAt, ms])
+  }, [clock, holdAt, ms, server.minute])
+  useEffect(() => {
+    if (clock < server.minute || server.minute >= 90) return undefined
+    const id = setTimeout(() => setServer((s) => ({ minute: Math.min(90, s.minute + 5), players: s.players.map((p) => ({ ...p })) })), 600)
+    return () => clearTimeout(id)
+  }, [clock, server.minute])
   const shown = Math.floor(clock)
   const upcoming = useMemo(() => SCRIPT.filter((e) => e.minute <= shown + 1), [shown])
   const visible = useMemo(() => SCRIPT.filter((e) => e.minute <= shown || revealed.has(e.seq)), [shown, revealed])
@@ -63,11 +79,18 @@ function App() {
   useEffect(() => {
     window.__preview = { clock, holdAt, score, revealed: [...revealed] }
   }, [clock, holdAt, score, revealed])
-  const data = { home: 'flamengo', away: 'palmeiras', players, formation: ['4-3-3', '4-2-3-1'], stats: { poss: [55, 45] } }
+  const data = { home: 'flamengo', away: 'palmeiras', players: server.players, formation: ['4-3-3', '4-2-3-1'], stats: { poss: [55, 45] }, minute: server.minute }
   return (
     <div style={{ maxWidth: params.get('w') ? Number(params.get('w')) : 1100, margin: '0 auto' }}>
-      <MatchTactical2D data={data} catalog={catalog} clock={clock} minute={shown} events={upcoming} paused={false} speed={Number(params.get('speed') || 1)}
+      <MatchTactical2D data={data} catalog={catalog} clock={clock} minute={shown} events={upcoming} paused={clock >= server.minute} speed={speed}
         score={score} finished={clock >= 90} clockLabel={`${shown}'`} userSide="h" onHold={setHoldAt} onReveal={onReveal} />
+      <div style={{ display: 'flex', gap: 8, padding: 8 }}>
+        {SPEEDS.map((s) => (
+          <button key={s.id} type="button" aria-pressed={speed === s.id} onClick={() => setSpeed(s.id)}>
+            {s.id}x
+          </button>
+        ))}
+      </div>
       <ol style={{ color: '#cbd5e1', font: '13px Inter, sans-serif' }}>
         {[...visible].reverse().map((e) => (
           <li key={e.seq}>{e.minute}' {e.kind} {e.player_name || ''}</li>

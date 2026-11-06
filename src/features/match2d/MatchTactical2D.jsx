@@ -50,9 +50,14 @@ export default function MatchTactical2D({ data, catalog, clock, events, paused, 
     live.current = { paused, speed, orient }
   }, [paused, speed, orient])
 
+  // getClubById devolve um objeto novo a cada chamada: a escolha dos marcadores depende só dos ids
   const home = getClubById(data.home)
   const away = getClubById(data.away)
-  const markers = useMemo(() => pickMarkers(home?.colors, away?.colors), [home, away])
+  const markers = useMemo(() => pickMarkers(getClubById(data.home)?.colors, getClubById(data.away)?.colors), [data.home, data.away])
+  const view = useRef({ markers, userSide })
+  useEffect(() => {
+    view.current = { markers, userSide }
+  }, [markers, userSide])
 
   useEffect(() => {
     let alive = true
@@ -76,6 +81,9 @@ export default function MatchTactical2D({ data, catalog, clock, events, paused, 
     return d
   })
   const director = useRef(dir)
+  useEffect(() => {
+    if (import.meta.env.DEV) window.__campo2d = dir // inspeção na prévia local
+  }, [dir])
   useEffect(() => {
     director.current?.sync(data.players || [], data.formation)
   }, [data.players, data.formation])
@@ -115,22 +123,27 @@ export default function MatchTactical2D({ data, catalog, clock, events, paused, 
     return () => holdRef.current?.(null)
   }, [failed])
 
-  // laço: simulação visual com deltaTime e desenho
+  // laço: simulação visual com deltaTime e desenho. Criado UMA vez (depende só de a arte estar pronta);
+  // o resto chega por refs, para o canvas nunca ser recriado nem apagado no meio da partida.
+  const lastBannerRef = useRef(null)
   useEffect(() => {
     if (!ready) return undefined
     const cv = canvas.current
     const g = cv.getContext('2d')
     let raf = 0
     let last = performance.now()
-    let lastBanner = null
     let lastHold
     let dpr = 1
+    let reported = false
 
+    // mudar width/height apaga o canvas: só quando o tamanho muda de fato
     const resize = () => {
       const r = wrap.current.getBoundingClientRect()
       dpr = Math.min(2, window.devicePixelRatio || 1)
-      cv.width = Math.max(1, Math.round(r.width * dpr))
-      cv.height = Math.max(1, Math.round(r.height * dpr))
+      const w = Math.max(1, Math.round(r.width * dpr))
+      const h = Math.max(1, Math.round(r.height * dpr))
+      if (cv.width !== w) cv.width = w
+      if (cv.height !== h) cv.height = h
     }
     resize()
     const ro = new ResizeObserver(resize)
@@ -142,7 +155,9 @@ export default function MatchTactical2D({ data, catalog, clock, events, paused, 
       const h = size * 1.45
       g.fillStyle = bg
       g.beginPath()
-      g.roundRect(x - w / 2, y, w, h, h / 2)
+      // roundRect não existe em navegadores mais antigos (Safari < 16, WebView antigo)
+      if (g.roundRect) g.roundRect(x - w / 2, y, w, h, h / 2)
+      else g.rect(x - w / 2, y, w, h)
       g.fill()
       g.fillStyle = '#fff'
       g.textAlign = 'center'
@@ -152,13 +167,34 @@ export default function MatchTactical2D({ data, catalog, clock, events, paused, 
 
     const frame = (now) => {
       raf = requestAnimationFrame(frame)
+      try {
+        draw(now)
+      } catch (err) {
+        // um quadro com erro não pode apagar a partida: registra uma vez e segue no próximo quadro
+        if (!reported) {
+          reported = true
+          console.error('[campo 2D]', err)
+        }
+      }
+    }
+
+    const draw = (now) => {
       const dtReal = Math.min(0.05, (now - last) / 1000)
       last = now
       const d = director.current
       const I = imgs.current
       if (!d || !I) return
       const { paused: isPaused, speed: sp, orient: o } = live.current
-      if (!isPaused) d.update(dtReal * Math.min(2.2, 0.85 + 0.35 * sp))
+      const { markers: mks, userSide: us } = view.current
+      // 2x e 4x aceleram o campo na mesma proporção, em passos curtos (estável em qualquer velocidade)
+      if (!isPaused) {
+        let rest = dtReal * Math.max(1, Number(sp) || 1)
+        while (rest > 1e-4) {
+          const step = Math.min(rest, 1 / 60)
+          d.update(step)
+          rest -= step
+        }
+      }
       const st = d.state
 
       const cw = cv.width
@@ -196,8 +232,9 @@ export default function MatchTactical2D({ data, catalog, clock, events, paused, 
       g.textBaseline = 'middle'
       for (const p of st.players) {
         const [x, y] = R.at(p.x, p.y)
-        const mk = p.gk ? KEEPERS[p.side] : markers[p.side]
-        const img = p.gk ? I[`gk_${p.side}`] : I[mk.id]
+        const sd = p.side === 'a' ? 'a' : 'h'
+        const mk = p.gk ? KEEPERS[sd] : mks[sd]
+        const img = p.gk ? I[`gk_${sd}`] : I[mk.id]
         g.drawImage(img, x - D / 2, y - D / 2, D, D)
         if (p.number != null) {
           g.font = `800 ${num}px Inter, system-ui, sans-serif`
@@ -223,7 +260,7 @@ export default function MatchTactical2D({ data, catalog, clock, events, paused, 
         const [x, y] = R.at(p.x, p.y)
         const label = p.name || ''
         if (!label) continue
-        pill(label, x, y + D * 0.62, fs, p.side === userSide ? 'rgba(14,116,144,0.92)' : 'rgba(10,18,36,0.88)')
+        pill(label, x, y + D * 0.62, fs, p.side === us ? 'rgba(14,116,144,0.92)' : 'rgba(10,18,36,0.88)')
       }
 
       // o relógio espera o lance em andamento; o placar conta quando a bola entra
@@ -236,8 +273,8 @@ export default function MatchTactical2D({ data, catalog, clock, events, paused, 
       if (shown) revealRef.current?.(shown)
       const top = st.banners[0] || null
       const key = top ? top.id : null
-      if (key !== lastBanner) {
-        lastBanner = key
+      if (key !== lastBannerRef.current) {
+        lastBannerRef.current = key
         setBanner(top ? { ...top } : null)
       }
     }
@@ -246,7 +283,7 @@ export default function MatchTactical2D({ data, catalog, clock, events, paused, 
       cancelAnimationFrame(raf)
       ro.disconnect()
     }
-  }, [ready, userSide, markers])
+  }, [ready])
 
   const flip = () =>
     setOrient((o) => {
