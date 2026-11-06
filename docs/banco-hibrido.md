@@ -21,6 +21,16 @@ Migrações: `20261106000000_hybrid_players.sql` (estrutura), `20261106010000_hy
 - Contrato calculado: id `md5(carreira||':'||atleta)`, começa no início do mundo e renova sozinho em ciclos do mesmo tamanho, sempre até 31/12. Quando o técnico assume um clube (`cw_materialize_own_contracts`), os contratos desse elenco viram linhas reais e passam a vencer.
 - Views não aceitam `FOR UPDATE` nem `ON CONFLICT`: as funções que usavam isso foram ajustadas (a trava da carreira em `mgr_lock` já serializa as escritas). Buscas de contrato por `id` levam também `career_id`.
 
+## Atributos calculados (migração `20261106090000_generated_attrs.sql`)
+
+- `sim_player_attrs` virou view: `sim_players` + `sim_player_attr_rows` (linhas próprias). Sem linha própria, os 16 atributos
+  são calculados de `sim_players.attr_pos` + `attr_level` pela mesma conta do `build-squads.mjs`
+  (perfil em `sim_attr_template` + `sim_hash01`). Resultado idêntico aos valores antigos (conferido nos 3.024 atletas).
+- Linha própria sempre vence: curados (`estimated = false`), jovens da base (`method = 'regen'`) e qualquer
+  `insert`/`update` feito na view (gatilho `sim_player_attrs_write`). `delete` na view apaga a linha e zera `attr_level`.
+- Novo atleta de catálogo precisa só de `attr_pos` e `attr_level`: é a base do nível B (ligas de fundo).
+- Evite `to_jsonb(view)` repetido por linha de peso: materialize os atributos uma vez (ver `sim_refresh_ratings`).
+
 ## Simulação
 
 - Jogo entre dois clubes da IA (`cw_sim_ai_fixture`): força pelo melhor XI (`cw_club_strength`), placar pela mesma Poisson com semente, pênaltis e prorrogação. Grava o placar e a súmula curta (gols) em `season_fixtures.stats`, gols e assistências em `mgr_player_stats` e cartões em `season_card_totals`. Não cria `mgr_matches`, `mgr_match_players`, eventos nem atuações.

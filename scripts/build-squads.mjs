@@ -315,7 +315,8 @@ function makeAttributes(p, clubStrength, squadSize) {
   // ajusta para que a nota na posição principal fique no nível do jogador
   const shift = Math.round(level - rating(attrs, p.primary))
   for (const a of ATTRS) attrs[a] = clamp(attrs[a] + shift, 12, 96)
-  return { level, attrs, overall: Math.round(rating(attrs, p.primary)) }
+  // attrLevel = nível já ajustado: o banco recalcula os 16 atributos com ele (sim_attr_calc / view sim_player_attrs)
+  return { level, attrLevel: level + shift, attrs, overall: Math.round(rating(attrs, p.primary)) }
 }
 
 async function main() {
@@ -449,6 +450,7 @@ async function main() {
       if (!p.primary) throw new Error(`${c.club}: ${p.name} ficou sem posição`)
       const est = makeAttributes(p, strength[c.club].strength, c.players.length)
       p.level = est.level
+      p.attrLevel = est.attrLevel
       p.attrs = est.attrs
       p.overall = est.overall
     }
@@ -498,27 +500,29 @@ begin;
   for (const [id, [full, city]] of Object.entries(CLUB_META)) {
     sql += `update public.sim_clubs set full_name = ${q(full)}, city = ${q(city)} where id = ${q(id)};\n`
   }
-  sql += `\ninsert into public.sim_players (id, full_name, short_name, club_id, shirt_number, position, secondary_positions, position_estimated, nationality, is_captain, is_youth, notes, active, source_url, source_as_of, imported_at) values\n`
+  // atributos estimados não são gravados: o banco recalcula a partir de attr_pos + attr_level
+  // (migração 20261106090000_generated_attrs.sql). Linhas em sim_player_attr_rows (curadas, base) sempre vencem.
+  sql += `\ninsert into public.sim_players (id, full_name, short_name, club_id, shirt_number, position, secondary_positions, position_estimated, nationality, is_captain, is_youth, notes, active, source_url, source_as_of, imported_at, attr_pos, attr_level) values\n`
   sql += players.map((p) => {
     const c = sourceOf[p.club]
     const asOf = c.as_of && c.as_of !== 'unknown' ? q(c.as_of) : 'null'
-    return `(${q(p.id)}, ${q(p.name)}, ${q(shortName(p.name))}, ${q(p.club)}, ${p.num ?? 'null'}, ${q(p.primary)}, ${arr(p.secondary)}, ${p.estimated}, ${q(p.nat)}, ${p.captain}, ${p.youth}, ${q(p.notes || null)}, true, ${q(c.source)}, ${asOf}, now())`
+    return `(${q(p.id)}, ${q(p.name)}, ${q(shortName(p.name))}, ${q(p.club)}, ${p.num ?? 'null'}, ${q(p.primary)}, ${arr(p.secondary)}, ${p.estimated}, ${q(p.nat)}, ${p.captain}, ${p.youth}, ${q(p.notes || null)}, true, ${q(c.source)}, ${asOf}, now(), ${q(p.primary)}, ${p.attrLevel})`
   }).join(',\n')
   sql += `\non conflict (id) do update set
   full_name = excluded.full_name, short_name = excluded.short_name, club_id = excluded.club_id, shirt_number = excluded.shirt_number,
   position = excluded.position, secondary_positions = excluded.secondary_positions, position_estimated = excluded.position_estimated,
   nationality = excluded.nationality, is_captain = excluded.is_captain, is_youth = excluded.is_youth, notes = excluded.notes,
-  active = true, source_url = excluded.source_url, source_as_of = excluded.source_as_of, imported_at = excluded.imported_at;
+  active = true, source_url = excluded.source_url, source_as_of = excluded.source_as_of, imported_at = excluded.imported_at,
+  attr_pos = excluded.attr_pos, attr_level = excluded.attr_level;
 
 -- quem não está mais em nenhuma lista fica inativo e sem clube (o histórico continua apontando para ele)
 update public.sim_players set active = false, club_id = null
  where id not in (${players.map((p) => q(p.id)).join(',')});
 
-insert into public.sim_player_attrs (player_id, ${ATTRS.join(', ')}, estimated, method, updated_at) values\n`
-  sql += players.map((p) => `(${q(p.id)}, ${ATTRS.map((a) => p.attrs[a]).join(', ')}, true, ${q(METHOD)}, now())`).join(',\n')
-  sql += `\non conflict (player_id) do update set
-  ${ATTRS.map((a) => `${a} = excluded.${a}`).join(', ')}, method = excluded.method, updated_at = now()
-  where public.sim_player_attrs.estimated;   -- atributos curados à mão (estimated = false) são preservados
+-- linhas próprias estimadas que sobraram de importações antigas deixam o cálculo valer
+-- (curadas, estimated = false, e jovens da base, method = 'regen', são preservadas)
+delete from public.sim_player_attr_rows r using public.sim_players p
+ where p.id = r.player_id and p.attr_level is not null and r.estimated and r.method <> 'regen';
 
 select public.sim_refresh_ratings();
 commit;
