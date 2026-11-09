@@ -1,4 +1,4 @@
-.tc {
+.ttc {
   position: fixed;
   inset: 0;
   z-index: 90;
@@ -7,40 +7,40 @@
   padding: 16px;
   background: radial-gradient(circle at 50% 40%, rgba(255, 210, 87, 0.28), rgba(5, 8, 14, 0.92) 70%);
   overflow: hidden;
-  animation: tc-fade 0.35s ease-out;
+  animation: ttc-fade 0.35s ease-out;
 }
-.tc-confetti { position: absolute; inset: 0; pointer-events: none; }
-.tc-confetti i {
+.ttc-confetti { position: absolute; inset: 0; pointer-events: none; }
+.ttc-confetti i {
   position: absolute;
   top: -20px;
   width: 8px;
   height: 14px;
   border-radius: 2px;
   opacity: 0.95;
-  animation: tc-fall linear infinite;
+  animation: ttc-fall linear infinite;
 }
-.tc-card {
+.ttc-card {
   position: relative;
   width: min(380px, 100%);
   padding: 26px 20px 20px;
   border-radius: 22px;
   text-align: center;
   color: #fff;
-  background: linear-gradient(160deg, var(--tc-c1), #0d1422 78%);
+  background: linear-gradient(160deg, var(--ttc-c1), #0d1422 78%);
   border: 2px solid var(--gx-gold-hi, #ffd257);
   box-shadow: 0 0 0 4px rgba(255, 210, 87, 0.18), 0 24px 60px rgba(0, 0, 0, 0.55);
   overflow: hidden;
-  animation: tc-pop 0.6s cubic-bezier(0.2, 1.4, 0.4, 1) both;
+  animation: ttc-pop 0.6s cubic-bezier(0.2, 1.4, 0.4, 1) both;
 }
-.tc-rays {
+.ttc-rays {
   position: absolute;
   inset: -60%;
   background: repeating-conic-gradient(from 0deg, rgba(255, 210, 87, 0.12) 0deg 10deg, transparent 10deg 24deg);
-  animation: tc-spin 18s linear infinite;
+  animation: ttc-spin 18s linear infinite;
   pointer-events: none;
 }
-.tc-card > * { position: relative; }
-.tc-kicker {
+.ttc-card > * { position: relative; }
+.ttc-kicker {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -52,25 +52,25 @@
   color: #2a1a00;
   background: var(--gx-gold-hi, #ffd257);
 }
-.tc-badges { display: flex; align-items: center; justify-content: center; gap: 14px; margin: 18px 0 6px; }
-.tc-trophy { color: var(--gx-gold-hi, #ffd257); filter: drop-shadow(0 0 12px rgba(255, 210, 87, 0.7)); animation: tc-bounce 1.6s ease-in-out infinite; }
-.tc h2 {
+.ttc-badges { display: flex; align-items: center; justify-content: center; gap: 14px; margin: 18px 0 6px; }
+.ttc-trophy { color: var(--gx-gold-hi, #ffd257); filter: drop-shadow(0 0 12px rgba(255, 210, 87, 0.7)); animation: ttc-bounce 1.6s ease-in-out infinite; }
+.ttc h2 {
   margin: 4px 0 0;
   font: 900 2.6rem/1 var(--font-display);
   letter-spacing: 0.04em;
   color: var(--gx-gold-hi, #ffd257);
   text-shadow: 0 3px 0 rgba(0, 0, 0, 0.35), 0 0 22px rgba(255, 210, 87, 0.55);
 }
-.tc-comp { margin: 6px 0 0; font: 800 1rem var(--font-body); }
-.tc-msg { margin: 10px 0 16px; font-size: 0.86rem; line-height: 1.4; opacity: 0.9; }
-.tc-btn { width: 100%; }
+.ttc-comp { margin: 6px 0 0; font: 800 1rem var(--font-body); }
+.ttc-msg { margin: 10px 0 16px; font-size: 0.86rem; line-height: 1.4; opacity: 0.9; }
+.ttc-btn { width: 100%; }
 
-@keyframes tc-fade { from { opacity: 0; } }
-@keyframes tc-pop { from { opacity: 0; transform: scale(0.6) translateY(30px); } }
-@keyframes tc-spin { to { transform: rotate(360deg); } }
-@keyframes tc-bounce { 50% { transform: translateY(-6px) scale(1.06); } }
-@keyframes tc-fall { to { top: 110%; transform: translateX(30px) rotate(540deg); } }
+@keyframes ttc-fade { from { opacity: 0; } }
+@keyframes ttc-pop { from { opacity: 0; transform: scale(0.6) translateY(30px); } }
+@keyframes ttc-spin { to { transform: rotate(360deg); } }
+@keyframes ttc-bounce { 50% { transform: translateY(-6px) scale(1.06); } }
+@keyframes ttc-fall { to { top: 110%; transform: translateX(30px) rotate(540deg); } }
 @media (prefers-reduced-motion: reduce) {
-  .tc-confetti, .tc-rays { display: none; }
-  .tc-card, .tc-trophy { animation: none; }
+  .ttc-confetti, .ttc-rays { display: none; }
+  .ttc-card, .ttc-trophy { animation: none; }
 }

@@ -92,6 +92,9 @@ function YearsPicker({ value, onChange, max = 5 }) {
 
 // TRANSFERÊNCIAS (CM17): busca de atletas, pré-seleção, negociações e lista de venda.
 // Oferta só de valor (teclado); contrato com salário semanal e anos; renovação igual.
+// Folga mensal no teto salarial (teto - folha atual).
+const wageRoom = (club) => Math.max(0, (club?.wage_budget ?? Math.ceil((club?.payroll || 0) * 1.15)) - (club?.payroll || 0))
+
 export default function TransfersPanel({ hub, onRefresh, notify, onTeam, initialArea = 'search' }) {
   const w = hub.world
   const own = hub.coach.club_id
@@ -235,9 +238,9 @@ export default function TransfersPanel({ hub, onRefresh, notify, onTeam, initial
             <small>Orçam. de transferência</small>
             <b>{clubMoneyShort(w.club.available)}</b>
           </span>
-          <span>
-            <small>Orçam. salarial (semana)</small>
-            <b>{clubMoneyShort(weekly(w.club.wage_budget ?? w.club.payroll))}</b>
+          <span title={`Teto ${clubMoneyShort(weekly(w.club.wage_budget ?? w.club.payroll))}/sem. Acima da folga, 12 meses do excedente saem da verba de transferências.`}>
+            <small>Folga salarial (semana)</small>
+            <b>{clubMoneyShort(weekly(wageRoom(w.club)))}</b>
           </span>
         </div>
       )}
@@ -431,7 +434,8 @@ export default function TransfersPanel({ hub, onRefresh, notify, onTeam, initial
           subtitle={pad.name}
           info={[
             ['Pedida do atleta', pad.demand ? `${clubMoney(pad.demand)}/sem` : '—'],
-            ['Orçam. salarial', clubMoneyShort(weekly(w?.club?.wage_budget ?? w?.club?.payroll))],
+            ['Folga salarial', `${clubMoneyShort(weekly(wageRoom(w?.club)))}/sem`],
+            ['Acima da folga', 'verba cobre 12 meses'],
           ]}
           label="Salário por semana"
           initial={pad.demand || 0}

@@ -38,28 +38,28 @@ export default function TitleCelebration({ title, hub, account, onClose }) {
   }
 
   return (
-    <div className="tc" role="dialog" aria-modal="true" aria-label="Título conquistado">
-      <div className="tc-confetti" aria-hidden="true">
+    <div className="ttc" role="dialog" aria-modal="true" aria-label="Título conquistado">
+      <div className="ttc-confetti" aria-hidden="true">
         {confetti.map((c, i) => (
           <i key={i} style={{ left: `${c.left}%`, background: c.color, animationDelay: `${c.delay}s`, animationDuration: `${c.dur}s`, transform: `rotate(${c.rot}deg)` }} />
         ))}
       </div>
-      <div className="tc-card" style={{ '--tc-c1': club?.colors?.[0] || '#1d6b2f', '--tc-c2': club?.colors?.[1] || '#ffd257' }}>
-        <div className="tc-rays" aria-hidden="true" />
-        <span className="tc-kicker">
+      <div className="ttc-card" style={{ '--ttc-c1': club?.colors?.[0] || '#1d6b2f', '--ttc-c2': club?.colors?.[1] || '#ffd257' }}>
+        <div className="ttc-rays" aria-hidden="true" />
+        <span className="ttc-kicker">
           <PartyPopper size={16} /> {clinched ? 'Campeão matematicamente!' : 'Título conquistado!'}
         </span>
-        <div className="tc-badges">
+        <div className="ttc-badges">
           <ClubCrest clubId={hub.coach.club_id} size={84} />
-          <Trophy className="tc-trophy" size={58} strokeWidth={1.6} />
+          <Trophy className="ttc-trophy" size={58} strokeWidth={1.6} />
           <CompEmblem comp={title.competition} size={64} />
         </div>
         <h2>CAMPEÃO!</h2>
-        <p className="tc-comp">{COMP_NAME[title.competition] || COMPETITIONS[title.competition]?.name || title.competition}</p>
-        <p className="tc-msg">
+        <p className="ttc-comp">{COMP_NAME[title.competition] || COMPETITIONS[title.competition]?.name || title.competition}</p>
+        <p className="ttc-msg">
           Parabéns, {club?.name || 'equipe'}! {clinched ? 'Nenhum rival alcança mais o seu time: a taça já é sua, mesmo com rodadas por jogar.' : 'Elenco, comissão técnica e torcida fazem a festa. Temporada para entrar na história.'}
         </p>
-        <button type="button" className="gx-btn tc-btn" onClick={close}>
+        <button type="button" className="gx-btn ttc-btn" onClick={close}>
           Comemorar
         </button>
       </div>
