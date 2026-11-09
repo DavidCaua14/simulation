@@ -42,7 +42,14 @@ select cron.schedule('sync-matches-live', '* * * * *', $$
     ),
     body := '{"mode":"live"}'::jsonb,
     timeout_milliseconds := 25000
-  );
+  )
+  -- só chama a função quando há trabalho (migração 20261109232000): jogo em andamento, jogo com horário
+  -- já passado, ou palpite pendente de jogo encerrado/anulado
+  where exists (select 1 from public.matches m
+                where m.kickoff_at >= now() - interval '7 days'
+                  and (m.status = 'live' or (m.status = 'scheduled' and m.kickoff_at <= now())))
+     or exists (select 1 from public.ticket_picks p join public.matches m on m.id = p.match_id
+                where p.status = 'pending' and m.status in ('finished', 'void'));
 $$);
 
 -- 1x por dia (05:00 em Brasília = 08:00 UTC): traz a agenda dos próximos 7 dias
