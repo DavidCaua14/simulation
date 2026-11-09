@@ -5,6 +5,7 @@ import { createClient } from '@supabase/supabase-js'
 import { createSessionFetch } from './sessionRecovery'
 import { createTimeoutReportFetch } from './timeoutReport'
 import { createRpcCache, invalidateRpcCache } from './rpcCache'
+import { startKeepWarm } from './keepWarm'
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
@@ -44,3 +45,6 @@ supabase?.auth.onAuthStateChange((_event, session) => {
   lastUserId = session?.user?.id ?? null
   sessionToken = session?.access_token ?? null
 })
+
+// Enquanto alguém joga, uma chamada vazia a cada 12 s mantém as conexões do banco aquecidas.
+startKeepWarm(supabase, () => Boolean(sessionToken))

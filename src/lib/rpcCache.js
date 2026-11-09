@@ -16,7 +16,7 @@ const CAREER_READS = new Set([
   'mgr_player_detail', 'mgr_match_report', 'career_wage_demand', 'career_news',
 ])
 // Chamadas que não mudam o save: passam direto, sem cache e sem invalidar.
-const NEUTRAL = new Set(['report_rpc_timeout', 'mgr_status', 'career_world_status', 'events_overview', 'ranking_overall'])
+const NEUTRAL = new Set(['keep_warm', 'report_rpc_timeout','mgr_status', 'career_world_status', 'events_overview', 'ranking_overall'])
 
 const MAX_AGE_MS = 10 * 60 * 1000 // rede de segurança: nenhuma leitura fica mais de 10 min sem conferir
 const HIDDEN_RESET_MS = 2 * 60 * 1000 // voltou à aba depois de 2 min: confere tudo de novo
