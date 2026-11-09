@@ -49,6 +49,12 @@ classificação/desempates e mata-mata, demissão → propostas com o passar dos
   lesão e expulsão do seu time, e antes da prorrogação. Velocidade 1x/2x/4x ou "simular até o fim" (o auxiliar decide).
 - **Diretoria e torcida** reagem ao resultado comparado com o esperado (força dos times, mando de campo). Sequência ruim + pressão da
   torcida = demissão no meio da temporada. Fim de temporada avalia os objetivos.
+- **Fracassos custam caro** (`20261109180000_harsh_failure_consequences.sql`, ajustes em `mgr_failure_rules`):
+  - Derrota: moral do elenco −3 (−6 por 3+ gols) e −15 pontos no ranking (−20 por 3+ gols). Vale só daqui para frente.
+  - Eliminação em mata-mata: moral do elenco −12 a mais, diretoria −14, torcida −16, reputação −1,5 e −40 no ranking.
+  - Rebaixamento: demissão automática, diretoria e torcida revoltadas, reputação ×0,45 −5 (piso 20), credibilidade −15 (piso 50)
+    e −200 no ranking (além dos −150 da demissão). O clube rebaixado não faz proposta nem aceita candidatura
+    até a reputação chegar a 95 (`mgr_club_bans`).
 - **Sem clube**: o campeonato continua; avance os dias e as propostas chegam conforme a reputação (depois de 6 dias sempre chega uma).
   Aceitar uma proposta no meio da temporada mantém o calendário e os resultados — você só passa a comandar outro clube.
 - **Histórico**: cada passagem por clube fica registrada (jogos, V/E/D, gols, títulos e motivo da saída).

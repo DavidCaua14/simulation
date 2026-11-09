@@ -180,8 +180,20 @@ export default function PostMatch({ summary: s, seasonId, byComp, onClose, onOff
                 </ul>
               )}
 
-              {((s.table && s.table.before && s.table.after) || s.rewards.club?.prize > 0) && (
+              {((s.table && s.table.before && s.table.after) || s.rewards.club?.prize > 0 || s.ranking?.delta < 0 || s.squad_morale?.delta < 0) && (
                 <div className="cm-cells pm-cells">
+                  {s.squad_morale?.delta < 0 && (
+                    <span>
+                      <small>Moral do elenco</small>
+                      <b className="cw-negative">−{Math.round(-s.squad_morale.delta)}%</b>
+                    </span>
+                  )}
+                  {s.ranking?.delta < 0 && (
+                    <span>
+                      <small>Ranking</small>
+                      <b className="cw-negative">−{-s.ranking.delta} pts</b>
+                    </span>
+                  )}
                   {s.table && s.table.before && s.table.after && (
                     <span>
                       <small>Tabela</small>

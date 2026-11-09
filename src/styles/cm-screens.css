@@ -337,3 +337,4 @@
   color: #fff;
 }
 [data-theme='dark'] .hm-quick-icon { background: rgba(0, 0, 0, 0.22); color: #fff; }
+.pm-cells b.cw-negative { color: #ff5b6e; }

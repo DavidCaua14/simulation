@@ -14,6 +14,7 @@ export const CRITERIA = [
   ['Reputação', '15 por ponto de reputação de técnico (0 a 100)'],
   ['Eventos', '25 por evento concluído'],
   ['Demissões', '−150 por demissão'],
+  ['Derrotas e quedas', '−15 por derrota (−20 por 3+ gols), −40 por eliminação, −200 por rebaixamento'],
 ]
 
 // Fotos enviadas pelos jogadores do topo ({ posição: dataURL }), carregadas depois da lista.
@@ -32,5 +33,6 @@ export function breakdown(me) {
     ['Reputação', `${String(me.reputation).replace('.', ',')} × 15`, Math.round(me.reputation * 15)],
     ['Eventos', `${me.events} × 25`, me.events * 25],
     ['Demissões', `${me.fired ?? 0} × −150`, -(me.fired ?? 0) * 150],
+    ['Derrotas e quedas', 'Derrotas, eliminações e rebaixamentos', -(me.penalty ?? 0)],
   ]
 }
