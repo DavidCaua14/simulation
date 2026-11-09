@@ -14,3 +14,20 @@ export async function markReleaseSeen() {
   const { error } = await supabase.rpc('release_gift_seen')
   if (error) throw error
 }
+
+// versão das novidades dos eventos (tela EventsNews); trocar o id mostra a tela de novo para todos
+export const EVENTS_NEWS_RELEASE = '2026-11-eventos'
+
+// Novidades dos eventos (sem presente): o banco guarda se esta carreira já viu a versão.
+export async function fetchNewsStatus(release) {
+  const { data, error } = await supabase.rpc('release_news_status', { p_release: release })
+  if (error) {
+    if (error.code === 'PGRST202' || /release_news_status/.test(error.message || '')) return null
+    throw error
+  }
+  return data
+}
+export async function markNewsSeen(release) {
+  const { error } = await supabase.rpc('release_news_seen', { p_release: release })
+  if (error) throw error
+}

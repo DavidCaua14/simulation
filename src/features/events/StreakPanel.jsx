@@ -2,6 +2,9 @@ import GameIcon from '../../components/ui/GameIcon'
 import { Check, Flame } from 'lucide-react'
 import { timeLeft } from './eventsUi'
 
+// moedas do dia em formato curto (1k, 2,5k); diamantes ficam em linha própria, com o ícone certo
+const compact = (n) => (n >= 1000 ? `${(n / 1000).toLocaleString('pt-BR', { maximumFractionDigits: 1 })}k` : String(n))
+
 // Sequência diária: 7 dias de recompensas crescentes. Libera com uma partida concluída ou um palpite no dia
 // (horário de Brasília). Pular um dia recomeça do dia 1.
 export default function StreakPanel({ streak, now, busy, onClaim }) {
@@ -24,9 +27,9 @@ export default function StreakPanel({ streak, now, busy, onClaim }) {
           return (
             <li key={r.day} className={`${past ? 'is-past' : ''} ${isToday ? 'is-today' : ''}`}>
               <small>Dia {r.day}</small>
-              {past ? <Check size={16} /> : r.diamonds > 0 ? <GameIcon name="diamond" size={16} className="ev-ic-gems" /> : <GameIcon name="coins" size={16} className="ev-ic-coins" />}
-              <b>{r.coins}</b>
-              {r.diamonds > 0 && <i>+{r.diamonds}<GameIcon name="diamond" size={9} /></i>}
+              {past ? <Check size={16} /> : <GameIcon name="coins" size={16} className="ev-ic-coins" />}
+              <b title={`${r.coins} moedas`}>{compact(r.coins)}</b>
+              {r.diamonds > 0 && <em className="ev-day-gems" title={`${r.diamonds} diamantes`}><GameIcon name="diamond" size={11} />{r.diamonds}</em>}
               {r.energy > 0 && <i>+{r.energy}<GameIcon name="energy" size={9} /></i>}
             </li>
           )

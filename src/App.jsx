@@ -23,7 +23,8 @@ const InboxScreen = lazy(() => import('./features/inbox/InboxScreen')) // carreg
 const RankingScreen = lazy(() => import('./features/ranking/RankingScreen')) // carregada sob demanda
 import MaintenanceGate from './features/maintenance/MaintenanceGate'
 import { isMaintenanceAdmin as isOwner } from './features/maintenance/policy'
-import { claimReleaseGift, markReleaseSeen } from './features/update/updateApi'
+import { EVENTS_NEWS_RELEASE, claimReleaseGift, fetchNewsStatus, markNewsSeen, markReleaseSeen } from './features/update/updateApi'
+import EventsNews from './features/update/EventsNews'
 import './styles/theme.css'
 import './styles/desktop.css' // por último: tema de jogo, sem barras de rolagem e layout de computador
 import './styles/cm-skin.css' // pele CM (Championship Manager 17) para todas as telas
@@ -41,6 +42,7 @@ function Gate() {
   // 'home' | 'tips' (palpites esportivos) | 'profile'
   const [screen, setScreen] = useState('home')
   const [screenParams, setScreenParams] = useState(null) // ex.: { tab: 'inbox' } ao abrir as cartas
+  const [news, setNews] = useState(null) // novidades dos eventos: { show, open }
   const [gift, setGift] = useState(null) // presente da atualização (só quem já jogava): { ...release_gift_claim, open }
 
   // Carrega a carreira do banco sempre que a sessão muda — é isso que faz
@@ -102,6 +104,20 @@ function Gate() {
     }
   }, [ready, user?.id])
 
+  // Novidades dos eventos: uma vez por carreira (o banco guarda quem já viu).
+  useEffect(() => {
+    if (!ready) return undefined
+    let cancelled = false
+    fetchNewsStatus(EVENTS_NEWS_RELEASE)
+      .then((n) => {
+        if (!cancelled && n) setNews({ show: n.show, open: n.show })
+      })
+      .catch(() => {})
+    return () => {
+      cancelled = true
+    }
+  }, [ready, user?.id])
+
   // Painel administrativo: só o dono do jogo (o servidor confere de novo). Abre por /#admin ou pelo Perfil.
   const owner = isOwner(user)
   useEffect(() => {
@@ -119,6 +135,18 @@ function Gate() {
     setGift((g) => (g ? { ...g, show: false, open: false } : g))
   }
   const giftLayer = gift?.open ? <UpdateWelcome gift={gift} replay={!gift.show} onClose={closeGift} /> : null
+  const closeNews = () => {
+    if (news?.show) markNewsSeen(EVENTS_NEWS_RELEASE).catch(() => {})
+    setNews((n) => (n ? { ...n, show: false, open: false } : n))
+  }
+  const openEventsFromNews = () => {
+    closeNews()
+    setScreen('events')
+  }
+  // o presente antigo (se ainda não visto) vem primeiro; as novidades dos eventos logo depois
+  const newsLayer = !gift?.open && news?.open
+    ? <EventsNews replay={!news.show} onClose={closeNews} onOpenEvents={openEventsFromNews} />
+    : null
 
   // 'loading': checando se já existe sessão (ex.: acabou de voltar do Google)
   if (status === 'loading') {
@@ -180,12 +208,13 @@ function Gate() {
     setScreen('home')
   }
 
-  const openNews = gift?.eligible ? () => setGift((g) => ({ ...g, open: true })) : null
+  const openNews = news ? () => setNews((n) => ({ ...n, open: true })) : gift?.eligible ? () => setGift((g) => ({ ...g, open: true })) : null
   const view = renderScreen()
   return (
     <>
       <Suspense fallback={<AppLoadingScreen label="Carregando..." />}>{view}</Suspense>
       {giftLayer}
+      {newsLayer}
     </>
   )
 

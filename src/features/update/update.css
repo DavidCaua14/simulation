@@ -37,3 +37,12 @@
 .uw-foot { display: flex; gap: 8px; padding: 12px 16px calc(14px + env(safe-area-inset-bottom)); border-top: 1px solid rgba(255, 255, 255, 0.08); }
 .uw-foot button { flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 46px; white-space: nowrap; }
 @media (max-width: 360px) { .uw-avatar { flex-direction: column; text-align: center; } .uw-avatar > div { align-items: center; } }
+
+/* ---------- NOVIDADES DOS EVENTOS ---------- */
+.uw-streak { display: flex; flex-direction: column; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.uw-streak li { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 12px; padding: 8px 12px; border-radius: 12px; background: rgba(255, 255, 255, 0.05); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.07); }
+.uw-streak li small { width: 44px; font: 800 0.66rem var(--font-body); letter-spacing: 0.08em; text-transform: uppercase; color: #93a0bb; }
+.uw-streak li b { display: inline-flex; align-items: center; gap: 5px; font: 900 0.9rem var(--font-body); font-variant-numeric: tabular-nums; }
+.uw-streak li span { margin-left: auto; font-size: 0.72rem; color: #b9c3d8; }
+.uw-streak li.is-big { background: linear-gradient(135deg, rgba(14, 165, 233, 0.22), rgba(255, 255, 255, 0.04)); box-shadow: inset 0 0 0 1px rgba(56, 189, 248, 0.45); }
+.uw-streak .uw-gems { color: #7dd3fc; }
