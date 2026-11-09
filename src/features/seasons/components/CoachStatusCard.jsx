@@ -1,7 +1,7 @@
-import { Building2, ChevronRight, Megaphone, Star } from 'lucide-react'
+import { Building2, ChevronRight, Megaphone, Star, Users } from 'lucide-react'
 import ClubCrest from '../../club/components/ClubCrest'
 import { getClubById } from '../../club/data/clubs'
-import { boardMood, fansMood, reputationTier } from '../utils/managerUtils'
+import { boardMood, fansMood, reputationTier, squadMood } from '../utils/managerUtils'
 
 export function Stars({ value }) {
   return (
@@ -27,7 +27,7 @@ export function Meter({ icon: Icon, label, value, mood }) {
   )
 }
 
-// Situação do treinador no clube: diretoria, torcida e reputação. Os dois primeiros decidem se ele fica.
+// Situação do treinador no clube: diretoria, torcida, elenco e reputação. Os três primeiros decidem se ele fica.
 export default function CoachStatusCard({ coach, onOpen }) {
   const rep = reputationTier(coach.reputation)
   const club = coach.club_id ? getClubById(coach.club_id) : null
@@ -55,6 +55,9 @@ export default function CoachStatusCard({ coach, onOpen }) {
         <span className="cst-meters">
           <Meter icon={Building2} label="Diretoria" value={coach.board} mood={boardMood(coach.board)} />
           <Meter icon={Megaphone} label="Torcida" value={coach.fans} mood={fansMood(coach.fans)} />
+          {coach.squad?.harmony != null && (
+            <Meter icon={Users} label="Elenco" value={Math.round(coach.squad.harmony)} mood={squadMood(coach.squad.harmony)} />
+          )}
         </span>
       )}
     </button>

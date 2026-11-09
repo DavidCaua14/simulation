@@ -7,6 +7,7 @@ import PlayerSheet from '../components/PlayerSheet'
 import TacticsPanel from '../components/TacticsPanel'
 import FreeTraining from '../components/FreeTraining'
 import MoraleTag from '../components/MoraleTag'
+import MoodFace, { MoodLegend } from '../components/MoodFace'
 import ContractPanel from '../components/ContractPanel'
 import { dateLabel, weekly } from '../services/careerWorldApi'
 import { clubMoneyShort } from '../utils/clubMoney'
@@ -16,7 +17,7 @@ import { EmptyState, ErrorState, LoadingState } from '../ui/States'
 import useCatalog from '../hooks/useCatalog'
 import useDragSwap from '../hooks/useDragSwap'
 import { autoLineup, fetchSquad, saveLineup } from '../services/managerApi'
-import { DEFAULT_TACTICS, LINES, POS_LINE, condTone, lineupStrength, ovrTone, POS_ORDER, posFit } from '../utils/managerUtils'
+import { DEFAULT_TACTICS, LINES, POS_LINE, condTone, lineupStrength, moraleState, ovrTone, POS_ORDER, posFit } from '../utils/managerUtils'
 import { COMP_SHORT } from '../utils/seasonUtils'
 import ClubDevPanel from '../../clubdev/ClubDevPanel'
 import { fetchClubDev } from '../../clubdev/clubDevApi'
@@ -405,6 +406,8 @@ export default function TeamTab({ hub, onSaved, notify, focusPlayerId = null, in
             </div>
           )}
 
+          <MoodLegend />
+
           <section className="sn-sec">
             <h2 className="gx-title">
               Reservas <small>{draft.bench.length}/{squad.rules.bench}</small>
@@ -504,10 +507,10 @@ export default function TeamTab({ hub, onSaved, notify, focusPlayerId = null, in
                 <div className="sqt-alert is-bad">
                   <Frown size={15} />
                   <span>
-                    <b>Vestiário insatisfeito: rendimento do time −{Math.round(unrest.penalty * 100)}%</b>
+                    <b>Elenco {unrest.harmony != null ? `${Math.round(unrest.harmony)}/100` : 'insatisfeito'}: rendimento do time −{(unrest.penalty * 100).toFixed(1)}%</b>
                     <small>
-                      {unrest.unhappy + unrest.angry} atleta{unrest.unhappy + unrest.angry > 1 ? 's' : ''} com moral baixa
-                      {unrest.rebels > 0 ? `, ${unrest.rebels} pedindo para sair` : ''}. Dê minutos a eles ou negocie.
+                      {unrest.unhappy + unrest.angry} atleta{unrest.unhappy + unrest.angry > 1 ? 's' : ''} insatisfeito{unrest.unhappy + unrest.angry > 1 ? 's' : ''} ou revoltado{unrest.unhappy + unrest.angry > 1 ? 's' : ''}
+                      {unrest.rebels > 0 ? `, ${unrest.rebels} pedindo para sair` : ''}. Faça rodízio: dê minutos a eles ou negocie.
                     </small>
                   </span>
                 </div>
@@ -547,7 +550,7 @@ export default function TeamTab({ hub, onSaved, notify, focusPlayerId = null, in
               {groups.flatMap((g) => g.players).map((p) => {
                 const inXI = Object.values(draft.slots).includes(p.id)
                 const onBench = draft.bench.includes(p.id)
-                const status = p.injured_days > 0 ? 'Lesão' : p.suspended > 0 ? 'Susp.' : p.transfer_listed ? 'À venda' : p.unrest ? 'Quer sair' : p.morale != null && p.morale < 20 ? 'Revoltado' : p.morale != null && p.morale < 35 ? 'Insatisfeito' : 'OK'
+                const status = p.injured_days > 0 ? 'Lesão' : p.suspended > 0 ? 'Susp.' : p.transfer_listed ? 'À venda' : p.unrest ? 'Quer sair' : p.morale != null && p.morale < 60 ? moraleState(p.morale).label : 'OK'
                 const left = contractLeft(p.contract_expires)
                 return (
                   <tr key={p.id} className={`is-link ${p.available ? '' : 'is-out'}`} onClick={() => setInfo(p)}>
@@ -571,7 +574,10 @@ export default function TeamTab({ hub, onSaved, notify, focusPlayerId = null, in
                       <>
                         <td className={status === 'OK' ? '' : 'sqt-bad'}>{status}</td>
                         <td>
-                          <MoraleTag morale={p.morale} trend={p.morale_trend} />
+                          <span className="sqt-mood">
+                            <MoodFace morale={p.morale} />
+                            <MoraleTag morale={p.morale} trend={p.morale_trend} />
+                          </span>
                         </td>
                         <td>
                           <span className={`sqt-cond ${condTone(p.condition)}`}>

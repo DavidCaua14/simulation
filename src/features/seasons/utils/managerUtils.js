@@ -129,6 +129,21 @@ export function fansMood(v) {
   if (v >= 20) return { label: 'Irritada', tone: 'bad' }
   return { label: 'Protestando', tone: 'bad' }
 }
+// Clima do elenco (0–100, servidor: cw_squad_unrest.harmony). Abaixo de 55 a diretoria se preocupa.
+export function squadMood(v) {
+  if (v >= 80) return { label: 'Satisfeito', tone: 'ok' }
+  if (v >= 60) return { label: 'Neutro', tone: 'warn' }
+  if (v >= 40) return { label: 'Insatisfeito', tone: 'bad' }
+  return { label: 'Revoltado', tone: 'bad' }
+}
+// Satisfação do atleta pela moral. Abaixo de 80 ele quer mais espaço e rende menos (quanto menor, pior).
+export function moraleState(m) {
+  if (m == null) return null
+  if (m >= 80) return { id: 'happy', label: 'Satisfeito' }
+  if (m >= 60) return { id: 'neutral', label: 'Neutro' }
+  if (m >= 35) return { id: 'unhappy', label: 'Insatisfeito' }
+  return { id: 'angry', label: 'Revoltado' }
+}
 const REP_TIERS = [
   { at: 0, label: 'Desconhecido' },
   { at: 20, label: 'Promissor' },

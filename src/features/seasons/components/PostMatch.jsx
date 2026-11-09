@@ -1,7 +1,7 @@
 import { clubMoney, clubMoneyShort } from '../utils/clubMoney'
 import GameIcon from '../../../components/ui/GameIcon'
 import { useEffect, useMemo, useState } from 'react'
-import { Ambulance, ArrowDown, ArrowUp, Ban, Building2, Megaphone, Star, Trophy, UserX } from 'lucide-react'
+import { Ambulance, ArrowDown, ArrowUp, Ban, Building2, Megaphone, Star, Trophy, Users, UserX } from 'lucide-react'
 import ClubCrest from '../../club/components/ClubCrest'
 import { getClubById } from '../../club/data/clubs'
 import RoundResults from './RoundResults'
@@ -10,7 +10,7 @@ import StandingsTable from './StandingsTable'
 import Bracket from './Bracket'
 import MatchStats from './MatchStats'
 import useStandings from '../hooks/useStandings'
-import { boardMood, fansMood } from '../utils/managerUtils'
+import { boardMood, fansMood, squadMood } from '../utils/managerUtils'
 import { COMP_NAME, RESULT_LABEL, describeMatch } from '../utils/seasonUtils'
 import { useAudio } from '../../audio/AudioContext'
 
@@ -29,6 +29,7 @@ function Delta({ v, suffix = '' }) {
 function headline(s) {
   const mine = s.my_goals
   const opp = s.opp_goals
+  if (s.squad_fire) return 'Eliminado com o elenco insatisfeito: a diretoria decidiu trocar o treinador.'
   if (s.fired) return 'A diretoria decidiu pela sua saída.'
   if (s.competition_result === 'Campeão') return 'É CAMPEÃO! Noite histórica para o clube.'
   if (s.group_exit) return 'Vexame: eliminado ainda na fase de grupos. Diretoria e torcida estão revoltadas.'
@@ -123,6 +124,9 @@ export default function PostMatch({ summary: s, seasonId, byComp, onClose, onOff
                   <div>
                     <b>Você foi demitido</b>
                     <span>Motivo: {s.fire_reason}. Seu histórico continua: avance os dias para receber propostas de outros clubes.</span>
+                    {s.squad_fire && (
+                      <span>A diretoria se preocupava com o relacionamento entre você e os jogadores: muitos atletas reclamavam de falta de oportunidades. Este clube não deve chamá-lo de volta (a não ser que seja rebaixado). Faça rodízio e use todo o elenco no próximo trabalho.</span>
+                    )}
                   </div>
                 </div>
               )}
@@ -144,6 +148,16 @@ export default function PostMatch({ summary: s, seasonId, byComp, onClose, onOff
                   </span>
                   <Delta v={s.fans.delta} />
                 </div>
+                {s.squad?.harmony != null && (
+                  <div className={`pm-imp t-${squadMood(s.squad.harmony).tone}`}>
+                    <Users size={16} />
+                    <span>
+                      <small>Elenco</small>
+                      <b>{squadMood(s.squad.harmony).label}</b>
+                    </span>
+                    <em className="pm-d">{Math.round(s.squad.harmony)}</em>
+                  </div>
+                )}
                 <div className="pm-imp t-rep">
                   <Star size={16} />
                   <span>

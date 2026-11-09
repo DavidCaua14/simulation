@@ -3,7 +3,7 @@ import ExitModeButton from '../components/ExitModeButton'
 import JobTerms from '../world/JobTerms'
 import StandingsTable from '../components/StandingsTable'
 import { useEffect, useRef, useState } from 'react'
-import { Briefcase, Building2, CalendarRange, DoorOpen, Flag, History, Megaphone, Target, Trophy } from 'lucide-react'
+import { Briefcase, Building2, CalendarRange, DoorOpen, Flag, History, Megaphone, Target, Trophy, Users } from 'lucide-react'
 import ClubCrest from '../../club/components/ClubCrest'
 import { getClubById } from '../../club/data/clubs'
 import TrophyCabinet from '../components/TrophyCabinet'
@@ -11,7 +11,7 @@ import { Meter, Stars } from '../components/CoachStatusCard'
 import CompEmblem from '../ui/CompEmblem'
 import { EmptyState } from '../ui/States'
 import { applyVacancy, fetchHistory, fetchOfferClub, fetchVacancies, fetchVacancyClub } from '../services/managerApi'
-import { END_REASON, boardMood, fansMood, objectiveProgress, reputationTier, winRate } from '../utils/managerUtils'
+import { END_REASON, boardMood, fansMood, objectiveProgress, reputationTier, squadMood, winRate } from '../utils/managerUtils'
 import { COMPETITIONS, COMP_SHORT, fmt, seasonLabel } from '../utils/seasonUtils'
 
 const VIEWS = [
@@ -343,6 +343,9 @@ export default function CareerTab({ ctx, initialView, actions }) {
               <div className="cm-meters">
                 <Meter icon={Building2} label="Diretoria" value={coach.board} mood={boardMood(coach.board)} />
                 <Meter icon={Megaphone} label="Torcida" value={coach.fans} mood={fansMood(coach.fans)} />
+                {coach.squad?.harmony != null && (
+                  <Meter icon={Users} label="Elenco" value={Math.round(coach.squad.harmony)} mood={squadMood(coach.squad.harmony)} />
+                )}
               </div>
             )}
           </section>

@@ -1,0 +1,13 @@
+/* Satisfação do atleta (rostinho): verde satisfeito, amarelo neutro, laranja insatisfeito, vermelho revoltado */
+.mood-face { display: inline-grid; place-items: center; width: 16px; height: 16px; border-radius: 50%; color: #fff; font-style: normal; flex-shrink: 0; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.45); }
+.mood-face.m-happy { background: #2fa84f; }
+.mood-face.m-neutral { background: #d8a800; color: #1d1600; }
+.mood-face.m-unhappy { background: #ee6a1c; }
+.mood-face.m-angry { background: #d91f37; animation: mood-pulse 1.6s ease-in-out infinite; }
+@keyframes mood-pulse { 50% { box-shadow: 0 0 0 3px rgba(217, 31, 55, 0.35), 0 1px 3px rgba(0, 0, 0, 0.45); } }
+@media (prefers-reduced-motion: reduce) { .mood-face.m-angry { animation: none; } }
+.pt-tok .pt-mood { position: absolute; z-index: 2; top: -4px; left: 4px; }
+.vs-list li:has(.mood-face) { grid-template-columns: 30px 1fr 16px; }
+.sqt-mood { display: inline-flex; align-items: center; gap: 5px; }
+.mood-legend { display: flex; flex-wrap: wrap; gap: 6px 12px; margin: 6px 0 2px; font-size: 0.72rem; color: var(--text-secondary, #9fb0d2); }
+.mood-legend span { display: inline-flex; align-items: center; gap: 4px; }

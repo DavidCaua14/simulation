@@ -7,6 +7,7 @@ import { isSessionError } from '../../../lib/sessionRecovery'
 import useCatalog from '../hooks/useCatalog'
 import { fetchOpponentReport, fetchSquad } from '../services/managerApi'
 import { lineupStrength } from '../utils/managerUtils'
+import MoodFace from '../components/MoodFace'
 import { COMP_NAME, ordinal } from '../utils/seasonUtils'
 import { dateLabel } from '../services/careerWorldApi'
 
@@ -33,7 +34,7 @@ function probableXI(formation, players) {
   return slots
 }
 
-function LineupList({ formation, slots, byId, side, label }) {
+function LineupList({ formation, slots, byId, side, label, mood = false }) {
   if (!formation) return <div className="vs-list st-sk" />
   const order = [...formation.slots].sort((a, b) => (SCARCITY[a.pos] - SCARCITY[b.pos]) || b.y - a.y)
   return (
@@ -49,6 +50,7 @@ function LineupList({ formation, slots, byId, side, label }) {
             <li key={s.slot} className={p?.available === false ? 'is-out' : ''}>
               <i>{s.pos}</i>
               <span>{p ? p.short_name || p.name : '—'}</span>
+              {mood && p && <MoodFace morale={p.morale} size={11} />}
             </li>
           )
         })}
@@ -117,7 +119,7 @@ export default function PreMatchVS({ next, myClub, myPos, today, ready, waitingT
       {error && <p className="sn-muted sn-center">{error}</p>}
 
       <div className="vs-body">
-        <LineupList formation={home ? myFormation : oppFormation} slots={home ? mine?.lineup?.slots : oppSlots} byId={home ? myById : oppById} side="home" label="Início" />
+        <LineupList formation={home ? myFormation : oppFormation} slots={home ? mine?.lineup?.slots : oppSlots} byId={home ? myById : oppById} side="home" label="Início" mood={home} />
         <section className="vs-compare" aria-label="Força por setor">
           {ROWS.map(([k, label]) => {
             const a = home ? my?.[k] : op?.[k]
@@ -133,7 +135,7 @@ export default function PreMatchVS({ next, myClub, myPos, today, ready, waitingT
             )
           })}
         </section>
-        <LineupList formation={home ? oppFormation : myFormation} slots={home ? oppSlots : mine?.lineup?.slots} byId={home ? oppById : myById} side="away" label="Vis." />
+        <LineupList formation={home ? oppFormation : myFormation} slots={home ? oppSlots : mine?.lineup?.slots} byId={home ? oppById : myById} side="away" label="Vis." mood={!home} />
       </div>
 
       {drills}

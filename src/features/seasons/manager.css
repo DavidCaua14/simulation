@@ -668,3 +668,6 @@ button.ib { flex-direction: row; align-items: flex-start; }
 .pm-alerts li::before { content: '⚠ '; }
 .pm-alerts li.pm-alerts-fix::before { content: none; }
 .pm-alerts button { margin-top: 2px; padding: 6px 10px; border-radius: 8px; border: 1px solid rgba(251, 191, 36, 0.5); background: transparent; color: #fde68a; font-weight: 700; font-size: 0.74rem; }
+
+.cst-meters:has(> :nth-child(3)) { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+@media (max-width: 380px) { .cst-meters:has(> :nth-child(3)) { grid-template-columns: 1fr 1fr; } }

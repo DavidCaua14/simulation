@@ -57,6 +57,18 @@ classificação/desempates e mata-mata, demissão → propostas com o passar dos
   - Rebaixamento: demissão automática, diretoria e torcida revoltadas, reputação ×0,45 −5 (piso 20), credibilidade −15 (piso 50)
     e −200 no ranking (além dos −150 da demissão). O clube rebaixado não faz proposta nem aceita candidatura
     até a reputação chegar a 95 (`mgr_club_bans`).
+- **Moral e elenco** (`20261109200000_squad_morale_harmony.sql`, ajustes em `mgr_failure_rules`):
+  - Satisfação do atleta: satisfeito 80+, neutro 60–79, insatisfeito 35–59, revoltado abaixo de 35. Rostinho colorido
+    nos titulares, banco e não relacionados (Time, Formação do jogo e pré-jogo).
+  - Time do treinador: abaixo de 80 o atleta rende menos (−3% com 65, −7% com 50, −16% com 20, −22% com 0); 80+ dá até +4%
+    (`cw_coach_morale_factor`). Clubes da IA mantêm a regra antiga (`cw_morale_factor`, só abaixo de 45).
+  - Índice **Elenco** (0–100, `cw_squad_unrest.harmony`): média da moral −1,5 por insatisfeito −3 por revoltado −2 por quem
+    pede para sair (lista de transferências fora da conta). Rendimento do time: até +3% (80+) ou até −10%.
+  - Moral semanal do time do treinador (`cw_cm_morale_next`): espera jogar 55% (11 principais), 30% (12º–16º) ou 15% (resto)
+    dos jogos de 28 dias; quem joga sobe, quem não joga cai até −8 por semana. Vitória só anima quem está jogando.
+  - Diretoria: Elenco abaixo de 55 avisa "preocupada com o elenco" e perde confiança a cada jogo; abaixo de 40 avisa que pensa
+    em trocar o treinador. Eliminação com Elenco abaixo de 45 (depois do aviso) = demissão, −120 no ranking, reputação −3
+    e o clube não faz nova proposta (veto `elenco` em `mgr_club_bans`), salvo se ele cair de divisão (`mgr_ban_min_rep`).
 - **Sem clube**: o campeonato continua; avance os dias e as propostas chegam conforme a reputação (depois de 6 dias sempre chega uma).
   Aceitar uma proposta no meio da temporada mantém o calendário e os resultados — você só passa a comandar outro clube.
 - **Histórico**: cada passagem por clube fica registrada (jogos, V/E/D, gols, títulos e motivo da saída).

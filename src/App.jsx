@@ -23,12 +23,14 @@ const InboxScreen = lazy(() => import('./features/inbox/InboxScreen')) // carreg
 const RankingScreen = lazy(() => import('./features/ranking/RankingScreen')) // carregada sob demanda
 import MaintenanceGate from './features/maintenance/MaintenanceGate'
 import { isMaintenanceAdmin as isOwner } from './features/maintenance/policy'
-import { COMPETITIONS_NEWS_RELEASE, EVENTS_NEWS_RELEASE, claimReleaseGift, fetchNewsStatus, markNewsSeen, markReleaseSeen } from './features/update/updateApi'
+import { COMPETITIONS_NEWS_RELEASE, EVENTS_NEWS_RELEASE, MORALE_NEWS_RELEASE, claimReleaseGift, fetchNewsStatus, markNewsSeen, markReleaseSeen } from './features/update/updateApi'
 import EventsNews from './features/update/EventsNews'
 import CompetitionsNews from './features/update/CompetitionsNews'
+import MoraleNews from './features/update/MoraleNews'
 
 // Telas de novidades, da mais nova para a mais antiga. Cada uma aparece uma vez por carreira (release_news).
 const NEWS = [
+  { id: MORALE_NEWS_RELEASE, Screen: MoraleNews, target: 'seasons' },
   { id: COMPETITIONS_NEWS_RELEASE, Screen: CompetitionsNews, target: 'seasons' },
   { id: EVENTS_NEWS_RELEASE, Screen: EventsNews, target: 'events' },
 ]
