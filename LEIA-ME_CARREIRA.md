@@ -52,6 +52,8 @@ classificação/desempates e mata-mata, demissão → propostas com o passar dos
 - **Fracassos custam caro** (`20261109180000_harsh_failure_consequences.sql`, ajustes em `mgr_failure_rules`):
   - Derrota: moral do elenco −3 (−6 por 3+ gols) e −15 pontos no ranking (−20 por 3+ gols). Vale só daqui para frente.
   - Eliminação em mata-mata: moral do elenco −12 a mais, diretoria −14, torcida −16, reputação −1,5 e −40 no ranking.
+  - Queda na fase de grupos (mais grave, `20261109190000_group_stage_exit.sql`): moral do elenco −20, diretoria −22,
+    torcida −26, reputação −3 e −80 no ranking, somados ao que o último jogo já cobrou.
   - Rebaixamento: demissão automática, diretoria e torcida revoltadas, reputação ×0,45 −5 (piso 20), credibilidade −15 (piso 50)
     e −200 no ranking (além dos −150 da demissão). O clube rebaixado não faz proposta nem aceita candidatura
     até a reputação chegar a 95 (`mgr_club_bans`).

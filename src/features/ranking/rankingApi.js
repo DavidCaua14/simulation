@@ -14,7 +14,7 @@ export const CRITERIA = [
   ['Reputação', '15 por ponto de reputação de técnico (0 a 100)'],
   ['Eventos', '25 por evento concluído'],
   ['Demissões', '−150 por demissão'],
-  ['Derrotas e quedas', '−15 por derrota (−20 por 3+ gols), −40 por eliminação, −200 por rebaixamento'],
+  ['Derrotas e quedas', '−15 por derrota (−20 por 3+ gols), −40 por eliminação no mata-mata, −80 por queda na fase de grupos, −200 por rebaixamento'],
 ]
 
 // Fotos enviadas pelos jogadores do topo ({ posição: dataURL }), carregadas depois da lista.

@@ -31,6 +31,7 @@ function headline(s) {
   const opp = s.opp_goals
   if (s.fired) return 'A diretoria decidiu pela sua saída.'
   if (s.competition_result === 'Campeão') return 'É CAMPEÃO! Noite histórica para o clube.'
+  if (s.group_exit) return 'Vexame: eliminado ainda na fase de grupos. Diretoria e torcida estão revoltadas.'
   if (s.eliminated) return 'Eliminado. A torcida cobra explicações.'
   if (s.advanced) return 'Classificado! O time segue vivo na competição.'
   if (s.result === 'win' && s.expected < 0.4) return 'Vitória de peso contra um adversário mais forte!'
