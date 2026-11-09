@@ -22,6 +22,10 @@ export const COMP_EMBLEMS = {
   'ger_bundesliga': 'ger_bundesliga.svg',
   'fra_ligue1': 'fra_ligue1.svg',
   'por_primeira': 'por_primeira.svg',
+  'esp_copa_rey': 'esp_copa_rey.svg',
+  'ita_coppa': 'ita_coppa.svg',
+  'ger_pokal': 'ger_pokal.svg',
+  'fra_coupe': 'fra_coupe.svg',
 }
 export const PREDICTION_EMBLEMS = {
   "Brasileirão Série A": 'brasileirao.svg',

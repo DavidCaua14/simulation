@@ -46,3 +46,15 @@
 .uw-streak li span { margin-left: auto; font-size: 0.72rem; color: #b9c3d8; }
 .uw-streak li.is-big { background: linear-gradient(135deg, rgba(14, 165, 233, 0.22), rgba(255, 255, 255, 0.04)); box-shadow: inset 0 0 0 1px rgba(56, 189, 248, 0.45); }
 .uw-streak .uw-gems { color: #7dd3fc; }
+
+/* ---------- NOVIDADES DOS CAMPEONATOS ---------- */
+.uw-hero-comp { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.uw-comps { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.uw-comps li { display: flex; align-items: center; gap: 8px; min-width: 0; padding: 6px 8px; border-radius: 12px; background: rgba(0, 0, 0, 0.22); }
+.uw-comps li span { display: flex; flex-direction: column; min-width: 0; }
+.uw-comps li b { font: 800 0.78rem var(--font-body); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.uw-comps li small { font-size: 0.66rem; color: #93a0bb; }
+.uw-slots { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 12px; margin: 0; padding: 0; list-style: none; font-size: 0.8rem; color: #d6deee; }
+.uw-slots li { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.06); }
+.uw-slots b { color: #ffe08a; font-variant-numeric: tabular-nums; }
+@media (max-width: 360px) { .uw-comps { grid-template-columns: 1fr; } }

@@ -70,3 +70,18 @@ Regra: dado compartilhado (catálogo) pode crescer; dado por carreira só nasce 
   quando um clube está `fire_gap` posições abaixo do esperado pela força.
 - Para mudar elencos, forças ou ligas: edite `data/tier-b/` e rode `python scripts/build-tier-b.py`. A migração só
   insere (`on conflict do nothing`); para alterar algo já aplicado, escreva uma migração própria.
+
+## Copas estrangeiras e Liga dos Campeões
+
+Migração: `20261109160000_foreign_cups_champions.sql`.
+
+- 11 copas (`kind = 'cup'`) e a `ucl` (`kind = 'continental'`, calendário `ENG`), todas `background = true`.
+- `rules.wanted_with`: a competição entra na temporada quando uma das ligas listadas entra (`cw_comp_wanted`).
+  Copa = liga do próprio país; Champions = as 6 ligas europeias.
+- `rules.qualification.sources` (`sim_qualification_list`): vagas por liga. Usa a tabela final da temporada anterior
+  da carreira (mesma região, ano anterior, sem jogos pendentes); senão, `cw_bg_table` do ano anterior. `total` e
+  `fill` completam a Champions com clubes europeus sem liga no jogo (força + hash da semente, do ano e do clube).
+- `sim_participants_build`: copas e continentais passam por `cw_comp_wanted`. Os clubes da Champions entram em
+  `cw_world_clubs` (finanças e contratos numa chamada) antes do sorteio dos grupos (`sim_continental_draw`, 32 clubes).
+- Criação de uma temporada europeia com Champions: ~3 s. O catálogo lazy dos 41 clubes europeus foi gravado na migração.
+- Valem a partir da próxima temporada criada; temporadas em andamento não ganham competições novas.

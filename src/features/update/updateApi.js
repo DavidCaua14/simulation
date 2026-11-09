@@ -17,6 +17,8 @@ export async function markReleaseSeen() {
 
 // versão das novidades dos eventos (tela EventsNews); trocar o id mostra a tela de novo para todos
 export const EVENTS_NEWS_RELEASE = '2026-11-eventos'
+// versão das novidades dos campeonatos (tela CompetitionsNews)
+export const COMPETITIONS_NEWS_RELEASE = '2026-11-campeonatos'
 
 // Novidades dos eventos (sem presente): o banco guarda se esta carreira já viu a versão.
 export async function fetchNewsStatus(release) {

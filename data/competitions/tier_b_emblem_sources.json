@@ -10,5 +10,9 @@
  "ita_seriea": "italy/Serie_A.svg",
  "ger_bundesliga": "germany/Bundesliga.svg",
  "fra_ligue1": "france/Ligue_1.svg",
- "por_primeira": "portugal/Primeira_Liga.svg"
+ "por_primeira": "portugal/Primeira_Liga.svg",
+ "esp_copa_rey": "spain/Copa_del_Rey.svg",
+ "ita_coppa": "italy/Coppa_Italia.svg",
+ "ger_pokal": "germany/DFB_Pokal.svg",
+ "fra_coupe": "france/French_Cup.svg"
 }

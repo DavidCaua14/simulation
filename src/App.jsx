@@ -23,8 +23,15 @@ const InboxScreen = lazy(() => import('./features/inbox/InboxScreen')) // carreg
 const RankingScreen = lazy(() => import('./features/ranking/RankingScreen')) // carregada sob demanda
 import MaintenanceGate from './features/maintenance/MaintenanceGate'
 import { isMaintenanceAdmin as isOwner } from './features/maintenance/policy'
-import { EVENTS_NEWS_RELEASE, claimReleaseGift, fetchNewsStatus, markNewsSeen, markReleaseSeen } from './features/update/updateApi'
+import { COMPETITIONS_NEWS_RELEASE, EVENTS_NEWS_RELEASE, claimReleaseGift, fetchNewsStatus, markNewsSeen, markReleaseSeen } from './features/update/updateApi'
 import EventsNews from './features/update/EventsNews'
+import CompetitionsNews from './features/update/CompetitionsNews'
+
+// Telas de novidades, da mais nova para a mais antiga. Cada uma aparece uma vez por carreira (release_news).
+const NEWS = [
+  { id: COMPETITIONS_NEWS_RELEASE, Screen: CompetitionsNews, target: 'seasons' },
+  { id: EVENTS_NEWS_RELEASE, Screen: EventsNews, target: 'events' },
+]
 import './styles/theme.css'
 import './styles/desktop.css' // por último: tema de jogo, sem barras de rolagem e layout de computador
 import './styles/cm-skin.css' // pele CM (Championship Manager 17) para todas as telas
@@ -42,7 +49,7 @@ function Gate() {
   // 'home' | 'tips' (palpites esportivos) | 'profile'
   const [screen, setScreen] = useState('home')
   const [screenParams, setScreenParams] = useState(null) // ex.: { tab: 'inbox' } ao abrir as cartas
-  const [news, setNews] = useState(null) // novidades dos eventos: { show, open }
+  const [news, setNews] = useState(null) // novidades: { unseen: [ids], open: id | null, replay }
   const [gift, setGift] = useState(null) // presente da atualização (só quem já jogava): { ...release_gift_claim, open }
 
   // Carrega a carreira do banco sempre que a sessão muda — é isso que faz
@@ -104,13 +111,15 @@ function Gate() {
     }
   }, [ready, user?.id])
 
-  // Novidades dos eventos: uma vez por carreira (o banco guarda quem já viu).
+  // Novidades: cada tela uma vez por carreira (o banco guarda quem já viu); as não vistas abrem em fila.
   useEffect(() => {
     if (!ready) return undefined
     let cancelled = false
-    fetchNewsStatus(EVENTS_NEWS_RELEASE)
-      .then((n) => {
-        if (!cancelled && n) setNews({ show: n.show, open: n.show })
+    Promise.all(NEWS.map((n) => fetchNewsStatus(n.id).catch(() => null)))
+      .then((list) => {
+        if (cancelled) return
+        const unseen = NEWS.filter((n, i) => list[i]?.show).map((n) => n.id)
+        setNews({ unseen, open: unseen[0] || null, replay: false })
       })
       .catch(() => {})
     return () => {
@@ -135,17 +144,23 @@ function Gate() {
     setGift((g) => (g ? { ...g, show: false, open: false } : g))
   }
   const giftLayer = gift?.open ? <UpdateWelcome gift={gift} replay={!gift.show} onClose={closeGift} /> : null
+  // fecha a novidade aberta (marcando como vista) e abre a próxima não vista, se houver
   const closeNews = () => {
-    if (news?.show) markNewsSeen(EVENTS_NEWS_RELEASE).catch(() => {})
-    setNews((n) => (n ? { ...n, show: false, open: false } : n))
+    if (news?.open && !news.replay) markNewsSeen(news.open).catch(() => {})
+    setNews((n) => {
+      if (!n) return n
+      const unseen = n.replay ? n.unseen : n.unseen.filter((id) => id !== n.open)
+      return { unseen, open: n.replay ? null : unseen[0] || null, replay: false }
+    })
   }
-  const openEventsFromNews = () => {
+  const goFromNews = (target) => {
     closeNews()
-    setScreen('events')
+    setScreen(target)
   }
-  // o presente antigo (se ainda não visto) vem primeiro; as novidades dos eventos logo depois
-  const newsLayer = !gift?.open && news?.open
-    ? <EventsNews replay={!news.show} onClose={closeNews} onOpenEvents={openEventsFromNews} />
+  // o presente antigo (se ainda não visto) vem primeiro; as novidades logo depois
+  const newsItem = !gift?.open && news?.open ? NEWS.find((n) => n.id === news.open) : null
+  const newsLayer = newsItem
+    ? <newsItem.Screen replay={news.replay} onClose={closeNews} onOpenEvents={() => goFromNews(newsItem.target)} onOpenSeasons={() => goFromNews(newsItem.target)} />
     : null
 
   // 'loading': checando se já existe sessão (ex.: acabou de voltar do Google)
@@ -208,7 +223,7 @@ function Gate() {
     setScreen('home')
   }
 
-  const openNews = news ? () => setNews((n) => ({ ...n, open: true })) : gift?.eligible ? () => setGift((g) => ({ ...g, open: true })) : null
+  const openNews = news ? () => setNews((n) => ({ ...n, open: NEWS[0].id, replay: !n.unseen.includes(NEWS[0].id) })) : gift?.eligible ? () => setGift((g) => ({ ...g, open: true })) : null
   const view = renderScreen()
   return (
     <>
