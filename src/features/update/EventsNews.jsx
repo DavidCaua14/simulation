@@ -11,9 +11,9 @@ const STREAK = [
   { day: 2, coins: '2.000' },
   { day: 3, coins: '3.000', extra: '+1 energia' },
   { day: 4, coins: '4.000' },
-  { day: 5, coins: '5.000', gems: 120 },
+  { day: 5, gems: 300 },
   { day: 6, coins: '6.000', extra: '+1 energia' },
-  { day: 7, coins: '7.000', gems: 410, extra: '+2 energia' },
+  { day: 7, gems: 450, extra: '+2 energia' },
 ]
 
 export default function EventsNews({ onClose, onOpenEvents, replay = false }) {
@@ -40,12 +40,12 @@ export default function EventsNews({ onClose, onOpenEvents, replay = false }) {
         <div className="uw-body">
           {page === 0 && (
             <>
-              <p className="uw-lead">Jogue uma partida ou faça um palpite por dia e resgate a recompensa na tela de Eventos. As moedas sobem todo dia.</p>
+              <p className="uw-lead">Jogue uma partida ou faça um palpite por dia e resgate a recompensa na tela de Eventos. As moedas sobem todo dia, e os dias 5 e 7 pagam diamantes.</p>
               <ul className="uw-streak">
                 {STREAK.map((d) => (
                   <li key={d.day} className={d.gems ? 'is-big' : ''}>
                     <small>Dia {d.day}</small>
-                    <b><GameIcon name="coins" size={16} /> {d.coins}</b>
+                    {d.coins && <b><GameIcon name="coins" size={16} /> {d.coins}</b>}
                     {d.gems && <b className="uw-gems"><GameIcon name="diamond" size={16} /> {d.gems} diamantes</b>}
                     {d.extra && <span>{d.extra}</span>}
                   </li>

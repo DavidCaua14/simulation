@@ -74,7 +74,7 @@ export default function EventsScreen({ career, onBack }) {
     try {
       const r = await claimStreak()
       playSfx('reward')
-      const rewards = [{ kind: 'coins', amount: r.coins }, r.diamonds > 0 && { kind: 'diamonds', amount: r.diamonds }, r.energy > 0 && { kind: 'energy', amount: r.energy }].filter(Boolean)
+      const rewards = [r.coins > 0 && { kind: 'coins', amount: r.coins }, r.diamonds > 0 && { kind: 'diamonds', amount: r.diamonds }, r.energy > 0 && { kind: 'energy', amount: r.energy }].filter(Boolean)
       if (r.replayed) setMsg({ kind: 'info', text: 'A recompensa de hoje já foi resgatada.' })
       else setWon({ title: `Dia ${r.day} conquistado!`, subtitle: `Sequência diária · ${r.current} ${r.current === 1 ? 'dia seguido' : 'dias seguidos'}`, rewards })
       await load()

@@ -52,6 +52,7 @@
 .ev-days li img { width: 18px; height: 18px; object-fit: contain; }
 .ev-days li .ev-day-gems { display: inline-flex; align-items: center; gap: 2px; padding: 1px 5px; border-radius: 999px; background: rgba(14, 165, 233, 0.16); color: #38bdf8; font: 900 0.62rem var(--font-body); font-style: normal; font-variant-numeric: tabular-nums; }
 .ev-days li .ev-day-gems img { width: 11px; height: 11px; }
+.ev-days li .ev-day-gems-main { color: #38bdf8; }
 .ev-days li.is-past { opacity: 0.6; color: var(--gx-green); }
 .ev-days li.is-today { border-color: var(--gold); box-shadow: 0 0 0 1px var(--gold); opacity: 1; }
 

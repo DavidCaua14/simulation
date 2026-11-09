@@ -27,9 +27,11 @@ export default function StreakPanel({ streak, now, busy, onClaim }) {
           return (
             <li key={r.day} className={`${past ? 'is-past' : ''} ${isToday ? 'is-today' : ''}`}>
               <small>Dia {r.day}</small>
-              {past ? <Check size={16} /> : <GameIcon name="coins" size={16} className="ev-ic-coins" />}
-              <b title={`${r.coins} moedas`}>{compact(r.coins)}</b>
-              {r.diamonds > 0 && <em className="ev-day-gems" title={`${r.diamonds} diamantes`}><GameIcon name="diamond" size={11} />{r.diamonds}</em>}
+              {past ? <Check size={16} /> : r.coins > 0 ? <GameIcon name="coins" size={16} className="ev-ic-coins" /> : <GameIcon name="diamond" size={16} className="ev-ic-gems" />}
+              {r.coins > 0
+                ? <b title={`${r.coins} moedas`}>{compact(r.coins)}</b>
+                : <b className="ev-day-gems-main" title={`${r.diamonds} diamantes`}>{r.diamonds}</b>}
+              {r.coins > 0 && r.diamonds > 0 && <em className="ev-day-gems" title={`${r.diamonds} diamantes`}><GameIcon name="diamond" size={11} />{r.diamonds}</em>}
               {r.energy > 0 && <i>+{r.energy}<GameIcon name="energy" size={9} /></i>}
             </li>
           )
