@@ -4,6 +4,7 @@ import { EmptyState, Notice, Skeleton } from '../../components/ui/feedback'
 import OnlineCrest from './components/OnlineCrest'
 import OnlineDraft from './OnlineDraft'
 import OnlineClub from './OnlineClub'
+import OnlineCup from './OnlineCup'
 import OnlineMarket from './OnlineMarket'
 import OnlineMatchLive from './OnlineMatchLive'
 import OnlineSquad from './OnlineSquad'
@@ -65,6 +66,9 @@ function HomeTab({ status, now, onRenamed, onOpenMatch }) {
       {error && <Notice kind="error" onClose={() => setError('')}>{error}</Notice>}
       {season?.kind === 'sandbox' && <Notice kind="info">Temporada de teste: os jogos acontecem em sequência rápida.</Notice>}
 
+      {status.rest_today && (
+        <div className="on-rest gx-panel"><CalendarDays size={18} /> <span><b>Sem jogo hoje.</b> Dia de copa e seu clube não joga. Bom dia para treinar e ir ao mercado.</span></div>
+      )}
       {next ? (
         <div className={`on-match-card ${live ? 'is-live' : ''}`}>
           <div className="on-match-head">
@@ -189,11 +193,14 @@ function LeagueTab({ now, onOpenMatch }) {
   const [view, setView] = useState('table')
   return (
     <section className="on-league">
-      <div className="on-seg" role="tablist" aria-label="Liga">
+      <div className="on-seg on-seg-3" role="tablist" aria-label="Liga">
         <button type="button" role="tab" aria-selected={view === 'table'} className={view === 'table' ? 'is-on' : ''} onClick={() => setView('table')}><ListOrdered size={15} /> Tabela</button>
         <button type="button" role="tab" aria-selected={view === 'fixtures'} className={view === 'fixtures' ? 'is-on' : ''} onClick={() => setView('fixtures')}><CalendarDays size={15} /> Jogos</button>
+        <button type="button" role="tab" aria-selected={view === 'cup'} className={view === 'cup' ? 'is-on' : ''} onClick={() => setView('cup')}><Trophy size={15} /> Copa</button>
       </div>
-      {view === 'table' ? <TableView /> : <FixturesView now={now} onOpenMatch={onOpenMatch} />}
+      {view === 'table' && <TableView />}
+      {view === 'fixtures' && <FixturesView now={now} onOpenMatch={onOpenMatch} />}
+      {view === 'cup' && <OnlineCup now={now} onOpenMatch={onOpenMatch} />}
     </section>
   )
 }

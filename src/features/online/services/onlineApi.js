@@ -58,3 +58,6 @@ export const finishOnlineTraining = (session, score) => rpc('on_train_finish', {
 export const renewOnlinePlayer = (playerId, years) => rpc('on_renew', { p_player: playerId, p_years: years })
 // Sem prefixo on_: o cache do app trata como escrita e atualiza a carteira de moedas nas outras telas.
 export const convertOnlineCoins = (coins) => rpc('online_coins_convert', { p_coins: coins })
+
+// Copa e histórico (Fase 5)
+export const fetchOnlineCup = () => rpc('on_cup')

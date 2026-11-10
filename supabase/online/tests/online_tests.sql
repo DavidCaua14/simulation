@@ -545,3 +545,72 @@ do $$ begin
  perform public.on_club_tick(now(),false);
  if exists(select 1 from public.on_clubs where build_kind is not null) or not exists(select 1 from public.on_clubs where (lv->>'stadium')::int=1) then raise exception 'obra não concluiu';end if;
 end $$;
+
+-- ═════════════════════════════════════════════════════════════════════════════
+-- Fase 5: copa, fim de temporada e novos técnicos (temporada sandbox inteira)
+-- ═════════════════════════════════════════════════════════════════════════════
+update public.on_seasons set status='closed' where status='live';
+select public.on_season_bootstrap(array['00000000-0000-0000-0000-000000000004','00000000-0000-0000-0000-000000000001']::uuid[],current_date,'sandbox',interval '20 minutes',now()-interval '200 days');
+do $$
+declare s public.on_seasons;f public.on_fixtures;n int:=0;v_new smallint;top int[];r1 int[];coins0 int;h record;
+begin
+ select * into s from public.on_seasons where status='live';
+ update public.on_lineups l set slots=l.slots where false;
+ select coins into coins0 from public.careers where user_id='00000000-0000-0000-0000-000000000004';
+ loop
+  select x.* into f from public.on_fixtures x where x.season_id=s.id and x.status<>'done' order by x.kickoff,x.id limit 1;
+  exit when f.id is null;
+  n:=n+1;
+  if n>200 then raise exception 'temporada não termina';end if;
+  perform public.on_match_open(f);
+  perform public.on_advance(f.id,f.kickoff+interval '1 day',null);
+  -- primeira fase da copa logo depois da rodada 5: só do 5º ao 12º
+  if f.comp='L' and f.round=5 and r1 is null and exists(select 1 from public.on_fixtures where season_id=s.id and comp='C') then
+   top:=array(select club_id from public.on_rank(s.id) where pos<=4);
+   r1:=array(select unnest(array[home,away]) from public.on_fixtures where season_id=s.id and comp='C' and round=1);
+   if cardinality(r1)<>8 or r1&&top then raise exception 'primeira fase da copa: % (top %)',r1,top;end if;
+  end if;
+ end loop;
+ if r1 is null then raise exception 'copa não foi sorteada';end if;
+ if (select count(*) from public.on_fixtures where season_id=s.id and comp='C')<>4+4+2+1 then raise exception 'jogos de copa: %',(select array_agg(round||':'||status) from public.on_fixtures where season_id=s.id and comp='C');end if;
+ if exists(select 1 from public.on_fixtures where season_id=s.id and comp='C' and round=2 and (home=any(top) or away=any(top))) is not true then raise exception 'folgados fora das quartas';end if;
+ if exists(select 1 from public.on_fixtures x join public.on_fixtures y on y.season_id=x.season_id and y.id<>x.id and y.kickoff=x.kickoff where x.season_id=s.id) then
+  raise exception 'dois jogos no mesmo horário no sandbox';
+ end if;
+ -- copa: todo jogo terminou com vencedor
+ if exists(select 1 from public.on_fixtures where season_id=s.id and comp='C' and hg=ag and pens is null) then raise exception 'empate sem pênaltis na copa';end if;
+
+ -- fim da temporada
+ select * into s from public.on_seasons where id=s.id;
+ if s.status<>'closed' or s.champion is null or s.cup_champion is null then raise exception 'temporada não fechou: %',s;end if;
+ select id into v_new from public.on_seasons where status='live';
+ if v_new is null or v_new=s.id then raise exception 'nova temporada';end if;
+ if (select count(*) from public.on_history where season_id=s.id)<>12 then raise exception 'histórico';end if;
+ if (select count(*) from public.on_ledger where kind='prize')<12 then raise exception 'prêmios';end if;
+ if (select coins from public.careers where user_id='00000000-0000-0000-0000-000000000004')<=coins0 then raise exception 'recompensa na conta';end if;
+ if (select count(*) from public.on_clubs where season_id=v_new)<>12 or exists(select 1 from public.on_table where season_id=v_new and (p<>0 or pts<>0)) then
+  raise exception 'tabela da nova temporada';end if;
+ if (select count(*) from public.on_fixtures where season_id=v_new)<>132 then raise exception 'calendário novo';end if;
+ -- fila: o usuário 9 assume o bot pior colocado, com elenco novo e escolha dos craques
+ select hh.* into h from public.on_history hh join public.on_clubs k on k.id=hh.club_id where hh.season_id=s.id and k.user_id='00000000-0000-0000-0000-000000000009';
+ if h.club_id is null then raise exception 'fila não entrou';end if;
+ if h.user_id is not null or h.pos<>(select max(x.pos) from public.on_history x where x.season_id=s.id and x.user_id is null) then raise exception 'não ficou com o pior bot';end if;
+ if (select draft_step from public.on_clubs where id=h.club_id)<>0 or (select count(*) from public.on_players where club_id=h.club_id)<>19 then raise exception 'elenco novo';end if;
+ if (select state from public.on_access where user_id='00000000-0000-0000-0000-000000000009')<>'allowed' then raise exception 'acesso';end if;
+ if exists(select 1 from public.on_match_events e join public.on_fixtures x on x.id=e.fixture_id where x.season_id=s.id) then raise exception 'eventos antigos';end if;
+ if exists(select 1 from public.on_players p join public.on_clubs k on k.id=p.club_id and k.season_id=v_new where p.contract_end<=s.id) then raise exception 'contrato vencido ficou';end if;
+ raise notice 'PASS copa e virada de temporada';
+exception when others then
+ declare ctx text;begin get stacked diagnostics ctx=pg_exception_context;raise exception '% | %',sqlerrm,ctx;end;
+end $$;
+-- quem ficou eliminado: sem erro, só "sem jogo hoje"
+set request.jwt.claim.sub='00000000-0000-0000-0000-000000000009';
+set role authenticated;
+do $$ declare j jsonb;
+begin
+ j:=public.on_status();
+ if j->>'access'<>'playing' or (j->'club'->>'draft_step')::int<>0 then raise exception 'novo técnico: %',j;end if;
+ j:=public.on_cup();
+ if jsonb_array_length(j->'history')<1 then raise exception 'histórico na copa';end if;
+end $$;
+reset role;

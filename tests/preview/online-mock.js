@@ -249,6 +249,10 @@ const RPC = {
   },
   on_lot_cancel: ({ p_lot }) => { lots.splice(lots.findIndex((x) => x.id === p_lot), 1); return market() },
   on_club: () => clubState(),
+  on_cup: () => {
+    const pair = (r, i, a, b, done) => ({ round: r, stage: ['r1', 'qf', 'sf', 'final'][r - 1], id: 900 + r * 10 + i, kickoff: new Date(Date.now() - 86400e3 * (5 - r)).toISOString(), status: done ? 'done' : 'sched', hg: done ? (a + b) % 3 : null, ag: done ? (a * b) % 3 : null, pens: done && (a + b) % 3 === (a * b) % 3 ? [4, 3] : null, home: clubs[a], away: clubs[b], winner: done ? clubs[(a + b) % 3 === (a * b) % 3 || (a + b) % 3 > (a * b) % 3 ? a : b].id : null })
+    return { my_club: 1, byes: [clubs[0], clubs[3], clubs[7], clubs[9]], rounds: [pair(1, 0, 4, 11, true), pair(1, 1, 5, 10, true), pair(1, 2, 6, 2, true), pair(1, 3, 8, 1, true), pair(2, 0, 0, 4, false), pair(2, 1, 3, 10, false), pair(2, 2, 7, 6, false), pair(2, 3, 9, 1, false)], history: [{ season: 0, champion: 'Aurora FC', cup: 'Real Maré', me: { pos: 3, pts: 41, cup: 'sf' } }] }
+  },
   on_build: ({ p_kind }) => { club.build = { kind: p_kind, until: new Date(Date.now() + 3600e3 * 12).toISOString() }; return clubState() },
   on_train_start: ({ p_game }) => { club.used += 1; return { session: 1, game: p_game, seed: 'x', started_at: new Date().toISOString() } },
   on_train_finish: ({ p_score }) => ({ score: p_score, group: 1, players: players.slice(0, 3).map((p) => ({ id: p.id, name: p.name, gain: Math.round(p_score * 40), ovr: p.ovr + 0.5, xp: 20 })) }),

@@ -257,7 +257,11 @@ begin
   order by p.id=any(l.bench) desc,
    p.ovr*greatest(coalesce(ft.fit,.5),case when s->>'pos'=any(p.sec) then .97 else 0 end)*(.7+.3*p.cond/100.0) desc,p.id
   limit 1;
-  if pid is null then raise exception 'Clube % sem jogadores suficientes',p_club;end if;
+  -- sem ninguém apto: entra quem estiver no elenco (melhor jogar com um lesionado do que não ter a partida)
+  if pid is null then
+   select p.id into pid from public.on_players p where p.club_id=p_club and p.id<>all(used) order by p.inj_until nulls first,p.ovr desc,p.id limit 1;
+  end if;
+  continue when pid is null; -- elenco com menos de 11: a vaga fica vazia
   used:=used||pid;v_slots:=v_slots||jsonb_build_object(s->>'slot',pid);
   fixes:=fixes||jsonb_build_object('slot',s->>'slot','out',old,'in',pid);
  end loop;
@@ -712,6 +716,10 @@ begin
     'status',f.status,'live',f.kickoff<=now(),'at_home',f.home=c.id,'opp',jsonb_build_object('id',o.id,'name',o.name,'short',o.short,'colors',o.colors,'bot',o.user_id is null))
    from public.on_fixtures f join public.on_clubs o on o.id=case when f.home=c.id then f.away else f.home end
    where f.season_id=s.id and f.status<>'done' and (f.home=c.id or f.away=c.id) order by f.kickoff limit 1) end,
+  -- sem jogo hoje (eliminado ou de folga na copa), mas há jogos no dia: a tela mostra "sem jogo hoje"
+  'rest_today',c.id is not null
+   and not exists(select 1 from public.on_fixtures f where f.season_id=s.id and c.id in(f.home,f.away) and (f.kickoff at time zone s.tz)::date=(now() at time zone s.tz)::date)
+   and exists(select 1 from public.on_fixtures f where f.season_id=s.id and (f.kickoff at time zone s.tz)::date=(now() at time zone s.tz)::date),
   'last',case when c.id is null then null else(select jsonb_build_object('id',f.id,'hg',f.hg,'ag',f.ag,'at_home',f.home=c.id,
     'opp',jsonb_build_object('name',o.name,'short',o.short,'colors',o.colors))
    from public.on_fixtures f join public.on_clubs o on o.id=case when f.home=c.id then f.away else f.home end
