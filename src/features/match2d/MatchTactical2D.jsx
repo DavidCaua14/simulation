@@ -36,7 +36,8 @@ function fieldRect(cw, ch, o) {
 
 // onHold(minuto|null): o relógio da partida não passa do minuto de um lance que o campo ainda está mostrando.
 // onReveal(seqs): lances que o campo acabou de mostrar (gol na rede, defesa, cartão) — o placar conta na hora.
-export default function MatchTactical2D({ data, catalog, clock, events, paused, speed = 1, minute, score, finished, clockLabel, userSide, onHold, onReveal }) {
+// clubs (opcional): clubes fora do catálogo (modo online) → { home: {name, short, colors:[a,b]}, away, crest: (side) => elemento }
+export default function MatchTactical2D({ data, catalog, clock, events, paused, speed = 1, minute, score, finished, clockLabel, userSide, onHold, onReveal, clubs }) {
   const wrap = useRef(null)
   const canvas = useRef(null)
   const imgs = useRef(null)
@@ -51,9 +52,11 @@ export default function MatchTactical2D({ data, catalog, clock, events, paused, 
   }, [paused, speed, orient])
 
   // getClubById devolve um objeto novo a cada chamada: a escolha dos marcadores depende só dos ids
-  const home = getClubById(data.home)
-  const away = getClubById(data.away)
-  const markers = useMemo(() => pickMarkers(getClubById(data.home)?.colors, getClubById(data.away)?.colors), [data.home, data.away])
+  const home = clubs?.home || getClubById(data.home)
+  const away = clubs?.away || getClubById(data.away)
+  const hc = (clubs?.home?.colors || getClubById(data.home)?.colors || []).join()
+  const ac = (clubs?.away?.colors || getClubById(data.away)?.colors || []).join()
+  const markers = useMemo(() => pickMarkers(hc ? hc.split(',') : undefined, ac ? ac.split(',') : undefined), [hc, ac])
   const view = useRef({ markers, userSide })
   useEffect(() => {
     view.current = { markers, userSide }
@@ -310,7 +313,7 @@ export default function MatchTactical2D({ data, catalog, clock, events, paused, 
       <div className="t2d-score">
         <span className="t2d-team h">
           <i style={{ background: markers.h.color }} />
-          <ClubCrest clubId={data.home} size={18} />
+          {clubs?.crest ? clubs.crest('h') : <ClubCrest clubId={data.home} size={18} />}
           <b>{home?.short || home?.name}</b>
         </span>
         <span className="t2d-result">
@@ -320,7 +323,7 @@ export default function MatchTactical2D({ data, catalog, clock, events, paused, 
         </span>
         <span className="t2d-team a">
           <b>{away?.short || away?.name}</b>
-          <ClubCrest clubId={data.away} size={18} />
+          {clubs?.crest ? clubs.crest('a') : <ClubCrest clubId={data.away} size={18} />}
           <i style={{ background: markers.a.color }} />
         </span>
         <span className={`t2d-clock ${finished ? 'is-done' : ''}`}>{clockLabel}</span>

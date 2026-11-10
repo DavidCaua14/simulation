@@ -35,3 +35,10 @@ export const fetchOnlineStandings = () => rpc('on_standings')
 
 // Catálogo de formações (o mesmo do modo Temporadas)
 export const fetchFormations = () => unwrap(supabase.from('sim_formations').select('id,name,slots').order('sort'))
+
+// Partida ao vivo (Fase 2). A tela consulta a cada 40 s; cada mudança leva um identificador único (p_req)
+// para que um duplo clique não seja aplicado duas vezes.
+export const pollOnlineMatch = (fixtureId = null, afterSeq = 0) => rpc('on_match_poll', { p_fixture: fixtureId, p_after_seq: afterSeq })
+export const actOnlineMatch = (fixtureId, changes) =>
+  rpc('on_match_act', { p_fixture: fixtureId, p_req: crypto.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2)}`, p_changes: changes })
+export const saveOnlineRoles = (roles) => rpc('on_roles_save', { p_roles: roles })

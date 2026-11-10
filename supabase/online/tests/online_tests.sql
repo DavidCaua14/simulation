@@ -223,3 +223,131 @@ do $$ begin
  end if;
  raise notice 'PASS sandbox';
 end $$;
+
+-- ═════════════════════════════════════════════════════════════════════════════
+-- Fase 2: partida ao vivo
+-- ═════════════════════════════════════════════════════════════════════════════
+do $$ begin
+ if public.on_clock('2026-01-01 20:00','2026-01-01 19:59')<>-1 or public.on_clock('2026-01-01 20:00','2026-01-01 20:00:20')<>2
+  or public.on_clock('2026-01-01 20:00','2026-01-01 20:05:20')<>45 or public.on_clock('2026-01-01 20:00','2026-01-01 20:06:40')<>45
+  or public.on_clock('2026-01-01 20:00','2026-01-01 20:06:52')<>46 or public.on_clock('2026-01-01 20:00','2026-01-01 20:12:00')<>90
+  or public.on_clock('2026-01-01 20:00','2026-01-01 20:30:00')<>90 or public.on_clock('2026-01-01 20:00','2026-01-01 20:12:50',true)<>90
+  or public.on_clock('2026-01-01 20:00','2026-01-01 20:13:07',true)<>91 or public.on_clock('2026-01-01 20:00','2026-01-01 20:30:00',true)<>120 then
+  raise exception 'relógio';
+ end if;
+ if exists(select 1 from pg_proc where proname='on_engine_run' and prosrc ~ 'mgr_matches|mgr_match_players|sim_player_attrs|mgr_event\(') then
+  raise exception 'motor online ainda cita tabelas do modo Temporadas';
+ end if;
+ raise notice 'PASS relógio e cópia do motor';
+end $$;
+
+-- craques do usuário 4 (sandbox) para ter escalação de humano
+set request.jwt.claim.sub='00000000-0000-0000-0000-000000000004';
+set role authenticated;
+select public.on_draft_pick(0,1),public.on_draft_pick(1,1),public.on_draft_pick(2,1);
+reset role;
+
+-- abertura, avanço pelo relógio, intervalo, fim único e volta para o elenco
+do $$
+declare f public.on_fixtures;m public.on_matches;n int;k timestamptz;t0 timestamptz;pid text;v_round int;
+begin
+ select x.* into f from public.on_fixtures x join public.on_seasons s on s.id=x.season_id and s.status='live'
+  join public.on_clubs c on c.user_id is not null and c.id in(x.home,x.away) order by x.kickoff limit 1;
+ k:=f.kickoff;
+ -- titular lesionado e suspenso são trocados no pontapé; o resto da escolha fica
+ select l.slots->>'ATA' into pid from public.on_lineups l join public.on_clubs c on c.id=l.club_id and c.user_id is not null where l.club_id in(f.home,f.away);
+ update public.on_players set inj_until=current_date+3 where id=pid;
+ perform public.on_match_open(f);
+ select * into m from public.on_matches where fixture_id=f.id;
+ if m.status<>'live' or (select status from public.on_fixtures where id=f.id)<>'live' then raise exception 'abertura';end if;
+ if (select count(*) from public.on_match_players where fixture_id=f.id and status='on')<>22 then raise exception 'titulares';end if;
+ if exists(select 1 from public.on_match_players where fixture_id=f.id and player_id=pid) then raise exception 'lesionado entrou';end if;
+ if jsonb_array_length(m.state->'fixes'->(case when (select user_id from public.on_clubs where id=f.home) is not null then 'h' else 'a' end))<>1 then
+  raise exception 'troca de titular não registrada: %',m.state->'fixes';
+ end if;
+ if exists(select 1 from public.on_match_players where fixture_id=f.id and (c_att is null or c_gk is null or fit<=0)) then raise exception 'atributos';end if;
+ perform public.on_match_open(f); -- repetir não duplica
+ if (select count(*) from public.on_match_players where fixture_id=f.id)>46 then raise exception 'abriu duas vezes';end if;
+
+ t0:=clock_timestamp();
+ perform public.on_advance(f.id,k+interval '200 seconds','h');
+ if (select minute from public.on_matches where fixture_id=f.id)<>28 then raise exception 'minuto 28';end if;
+ perform public.on_advance(f.id,k+interval '350 seconds','h');
+ perform public.on_advance(f.id,k+interval '380 seconds','h');
+ if (select minute from public.on_matches where fixture_id=f.id)<>45 then raise exception 'intervalo';end if;
+ if (select count(*) from public.on_match_events where fixture_id=f.id and kind='ht')<>1 then raise exception 'evento de intervalo';end if;
+ raise notice 'primeiro tempo em % ms',round(extract(epoch from clock_timestamp()-t0)*1000);
+
+ -- vermelho forçado vira suspensão na próxima rodada de liga
+ select player_id into pid from public.on_match_players where fixture_id=f.id and status='on' and pos<>'GOL' order by player_id limit 1;
+ update public.on_match_players set red=1,yellow=0,status='sent_off',slot=null,left_min=45 where fixture_id=f.id and player_id=pid;
+ perform public.on_advance(f.id,k+interval '900 seconds',null);
+ select * into m from public.on_matches where fixture_id=f.id;
+ if m.status<>'finished' or m.summary is null then raise exception 'não terminou: % %',m.status,m.minute;end if;
+ select count(*) into n from public.on_table t where t.club_id in(f.home,f.away) and t.p=1;
+ if n<>2 then raise exception 'classificação';end if;
+ if (select sum(pts) from public.on_table t where t.club_id in(f.home,f.away)) not in(2,3) then raise exception 'pontos';end if;
+ perform public.on_match_finish(f.id);
+ update public.on_matches set summary=null where fixture_id=f.id; -- força o caminho de fim repetido
+ perform public.on_match_finish(f.id);
+ if (select sum(p) from public.on_table t where t.club_id in(f.home,f.away))<>2 then raise exception 'fim repetido somou de novo';end if;
+ select min(o.round) into v_round from public.on_fixtures o where o.season_id=f.season_id and o.comp='L' and o.kickoff>f.kickoff
+  and (select club_id from public.on_match_players where fixture_id=f.id and player_id=pid) in(o.home,o.away);
+ if (select susp_round from public.on_players where id=pid) is distinct from v_round then raise exception 'suspensão';end if;
+ if exists(select 1 from public.on_players p join public.on_match_players mp on mp.player_id=p.id and mp.fixture_id=f.id
+  where mp.status<>'bench' and p.cond<>round(mp.cond)) then raise exception 'condição não voltou ao elenco';end if;
+ if (select hg from public.on_fixtures where id=f.id)<>(m.state->'score'->>0)::int then raise exception 'placar';end if;
+ raise notice 'PASS partida: abertura, relógio, fim e elenco';
+end $$;
+
+-- poll e mudanças do técnico (duplo clique ignorado), espectador sem lado
+do $$
+declare f public.on_fixtures;c public.on_clubs;
+begin
+ select x.* into c from public.on_clubs x join public.on_seasons s on s.id=x.season_id and s.status='live' where x.user_id='00000000-0000-0000-0000-000000000004';
+ select x.* into f from public.on_fixtures x where x.status='sched' and c.id in(x.home,x.away) order by x.kickoff limit 1;
+ update public.on_fixtures set kickoff=kickoff+interval '30 days' where status='sched' and season_id=c.season_id;
+ update public.on_fixtures set kickoff=now()-interval '100 seconds' where id=f.id;
+end $$;
+set role authenticated;
+do $$
+declare j jsonb;k jsonb;s text;pout text;pin text;
+begin
+ j:=public.on_match_poll();
+ s:=j->>'my_side';
+ if j->>'status'<>'live' or s not in('h','a') or (j->>'minute')::int<>14 then raise exception 'poll: % %',j->>'status',j->>'minute';end if;
+ if not (j->'present'->>s)::boolean then raise exception 'presença';end if;
+ select p->>'id' into pout from jsonb_array_elements(j->'players') p where p->>'side'=s and p->>'status'='on' and p->>'pos'<>'GOL' limit 1;
+ select p->>'id' into pin from jsonb_array_elements(j->'players') p where p->>'side'=s and p->>'status'='bench' limit 1;
+ k:=public.on_match_act((j->>'fixture_id')::bigint,'req-0001',jsonb_build_object('subs',jsonb_build_array(jsonb_build_object('out',pout,'in',pin)),'tactics','{"style":"attacking"}'::jsonb));
+ if (k->>'applied_at')::int<>14 or (k->'subs'->s->>'used')::int<>1 then raise exception 'act: %',k->'subs';end if;
+ k:=public.on_match_act((j->>'fixture_id')::bigint,'req-0001',jsonb_build_object('subs',jsonb_build_array(jsonb_build_object('out',pout,'in',pin))));
+ if not (k->>'repeated')::boolean or (k->'subs'->s->>'used')::int<>1 then raise exception 'duplo clique gastou duas substituições';end if;
+ if (select count(*) from jsonb_array_elements(public.on_match_poll((j->>'fixture_id')::bigint,1000)->'events'))<>0 then raise exception 'eventos antigos voltaram';end if;
+ begin perform public.on_match_act((j->>'fixture_id')::bigint,'xx',null);raise exception 'aceitou envio sem id';
+ exception when others then if sqlerrm not like 'Envio sem%' then raise;end if;end;
+ raise notice 'PASS poll e mudanças do técnico';
+end $$;
+reset role;
+
+-- cron: partida que ninguém assiste termina depois do relógio, em dois blocos de 45 minutos
+do $$
+declare f public.on_fixtures;n int;
+begin
+ perform public.on_advance(x.id,now()+interval '1 day',null) from public.on_fixtures x where x.status='live';
+ select x.* into f from public.on_fixtures x join public.on_seasons s on s.id=x.season_id and s.status='live' where x.status='sched' order by x.kickoff limit 1;
+ if public.on_tick(f.kickoff+interval '1 minute')<>0 then raise exception 'tick terminou jogo em andamento';end if;
+ if (select status from public.on_matches where fixture_id=f.id)<>'live' then raise exception 'tick não abriu o jogo';end if;
+ perform public.on_tick(f.kickoff+interval '13 minutes');
+ if (select minute from public.on_matches where fixture_id=f.id)<>45 then raise exception 'primeiro bloco';end if;
+ perform public.on_tick(f.kickoff+interval '14 minutes');
+ if (select status from public.on_fixtures where id=f.id)<>'done' then raise exception 'tick não terminou';end if;
+ -- recuperação diária uma vez só
+ update public.on_players set cond=50 where id in(select player_id from public.on_match_players where fixture_id=f.id);
+ update public.on_seasons set last_recovery=null where status='live';
+ perform public.on_tick(f.kickoff+interval '15 minutes');
+ perform public.on_tick(f.kickoff+interval '16 minutes');
+ select max(cond) into n from public.on_players where id in(select player_id from public.on_match_players where fixture_id=f.id);
+ if n<>85 then raise exception 'recuperação diária: %',n;end if;
+ raise notice 'PASS cron';
+end $$;

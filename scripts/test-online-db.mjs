@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 // Testa o SQL do modo online em um PostgreSQL embutido e descartável (PGlite), sem acessar o Supabase.
-// Uso: node scripts/test-online-db.mjs
+// Uso: node scripts/test-online-db.mjs [--calibrate]
+// --calibrate roda também 500 partidas do motor online e mostra médias e tempos (alguns minutos).
 // O PGlite não é dependência do jogo. Instale em qualquer pasta e aponte PGLITE_DIR para ela:
 //   npm install --prefix <pasta> @electric-sql/pglite
 //   PGLITE_DIR=<pasta> node scripts/test-online-db.mjs
@@ -24,7 +25,7 @@ async function loadPGlite() {
 }
 
 const PGlite = await loadPGlite()
-const db = new PGlite({ onNotice: (n) => n.message?.startsWith('PASS') && console.log(n.message) })
+const db = new PGlite()
 const files = [
   join(ONLINE, 'tests', 'support', 'stub.sql'),
   ...readdirSync(ONLINE).filter((f) => /^\d+_.*\.sql$/.test(f)).sort().map((f) => join(ONLINE, f)),
@@ -32,6 +33,7 @@ const files = [
 // Reaplica o esquema: precisa funcionar duas vezes seguidas.
 files.push(...files.slice(1))
 files.push(join(ONLINE, 'tests', 'online_tests.sql'))
+const calibrate = process.argv.includes('--calibrate')
 
 for (const file of files) {
   const started = Date.now()
@@ -44,3 +46,9 @@ for (const file of files) {
   console.log(`ok ${file.slice(ROOT.length + 1)} (${Date.now() - started} ms)`)
 }
 console.log('Todos os testes do modo online passaram.')
+if (calibrate) {
+  const started = Date.now()
+  const res = await db.exec(readFileSync(join(ONLINE, 'tests', 'calibration.sql'), 'utf8'))
+  console.table(res.at(-2).rows)
+  console.log(`calibração em ${Math.round((Date.now() - started) / 1000)} s`)
+}

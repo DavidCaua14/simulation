@@ -27,3 +27,62 @@ export function untilKickoff(iso, now) {
   const days = Math.floor(h / 24)
   return `em ${days} ${days === 1 ? 'dia' : 'dias'}`
 }
+
+// Cores do clube online no formato do modo Temporadas ([principal, secundária]).
+export const clubColors = (club) => [club?.colors?.a || '#1b3566', club?.colors?.b || '#ffffff']
+
+// Relógio da partida (mesma regra do banco, on_clock): 7 s por minuto, intervalo de 90 s, fim em 12:00.
+// Com prorrogação: pausa de 60 s e mais 30 minutos. Devolve minutos com fração (para a animação).
+export function matchClock(kickoffMs, nowMs, et = false) {
+  const s = (nowMs - kickoffMs) / 1000
+  if (s < 0) return -1
+  if (s < 315) return s / 7
+  if (s < 405) return 45
+  if (s < 720) return 45 + (s - 405) / 7
+  if (!et || s < 780) return 90
+  if (s < 990) return 90 + (s - 780) / 7
+  return 120
+}
+// Fase do relógio para o placar.
+export function clockPhase(kickoffMs, nowMs, et = false) {
+  const s = (nowMs - kickoffMs) / 1000
+  if (s < 0) return 'pre'
+  if (s >= 315 && s < 405) return 'ht'
+  if (s >= 720 && (!et || s >= 990)) return 'ft'
+  if (et && s >= 720 && s < 780) return 'et_wait'
+  return 'live'
+}
+
+// A tela mostra o jogo ~6 minutos atrás do servidor (42 s reais), para nunca ficar sem lances.
+export const SCREEN_LAG_MS = 42000
+
+// Encaixe por posição (mesma tabela do modo Temporadas) → notas em cada posição para o campo.
+const POSITIONS = ['GOL', 'LD', 'ZAG', 'LE', 'VOL', 'MC', 'MEI', 'PD', 'PE', 'ATA']
+export function asSeasonPlayer(p, posFit) {
+  const ratings = {}
+  for (const pos of POSITIONS) {
+    const fit = Math.max(posFit({ position: p.pos }, pos), p.sec?.includes(pos) ? 0.97 : 0)
+    ratings[pos] = Math.round(p.ovr * fit)
+  }
+  return {
+    ...p,
+    short_name: p.name,
+    position: p.pos,
+    secondary: p.sec || [],
+    overall: Math.round(p.ovr),
+    ratings,
+    condition: p.cond,
+    injured_days: p.injured ? 1 : 0,
+    suspended: p.suspended ? 1 : 0,
+  }
+}
+
+// Tom da carta pela nota (bronze, prata, ouro, craque).
+export const cardTier = (ovr, star) => (star ? 'star' : ovr >= 75 ? 'gold' : ovr >= 65 ? 'silver' : 'bronze')
+// "$ 150 mil", "$ 1,2 mi" (para espaços curtos)
+export function moneyShort(n) {
+  const v = Math.round(Number(n || 0))
+  if (Math.abs(v) >= 1e6) return `$ ${(v / 1e6).toLocaleString('pt-BR', { maximumFractionDigits: 1 })} mi`
+  if (Math.abs(v) >= 1e4) return `$ ${Math.round(v / 1000).toLocaleString('pt-BR')} mil`
+  return money(v)
+}

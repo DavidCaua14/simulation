@@ -1,31 +1,27 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { ArrowLeft, CalendarDays, Clock, Home, ListOrdered, Pencil, Shirt, Swords, Users } from 'lucide-react'
+import { ArrowLeft, CalendarDays, Clock, Home, Landmark, ListOrdered, Pencil, Radio, Shirt, Swords, Trophy, Users, Gavel } from 'lucide-react'
 import { EmptyState, Notice, Skeleton } from '../../components/ui/feedback'
+import OnlineCrest from './components/OnlineCrest'
 import OnlineDraft from './OnlineDraft'
+import OnlineMatchLive from './OnlineMatchLive'
 import OnlineSquad from './OnlineSquad'
 import { fetchOnlineCalendar, fetchOnlineStandings, fetchOnlineStatus, joinOnlineQueue, renameOnlineClub } from './services/onlineApi'
-import { dayKey, kickoffDay, kickoffTime, money, untilKickoff } from './onlineUtils'
+import { dayKey, kickoffDay, kickoffTime, moneyShort, untilKickoff } from './onlineUtils'
 import './online.css'
 
 // MODO ONLINE: liga compartilhada com um jogo por dia em horário real.
-// Fase 1: entrada no modo (fila), escolha dos craques, elenco, calendário e classificação.
 const TABS = [
   { id: 'home', label: 'Início', Icon: Home },
   { id: 'squad', label: 'Elenco', Icon: Shirt },
-  { id: 'fixtures', label: 'Jogos', Icon: CalendarDays },
-  { id: 'table', label: 'Tabela', Icon: ListOrdered },
+  { id: 'market', label: 'Mercado', Icon: Gavel, later: true },
+  { id: 'club', label: 'Clube', Icon: Landmark, later: true },
+  { id: 'league', label: 'Liga', Icon: Trophy },
 ]
 
-function Crest({ club, size = 34 }) {
-  return (
-    <span className="on-crest" style={{ '--a': club?.colors?.a || '#334155', '--b': club?.colors?.b || '#fff', '--size': `${size}px` }} aria-hidden="true">
-      {club?.short || '?'}
-    </span>
-  )
-}
+const ordinal = (n) => (n ? `${n}º` : '–')
 
-function HomeTab({ status, now, onRenamed }) {
-  const { club, next, season } = status
+function HomeTab({ status, now, onRenamed, onOpenMatch }) {
+  const { club, next, season, position, last } = status
   const [editing, setEditing] = useState(false)
   const [name, setName] = useState(club.name)
   const [error, setError] = useState('')
@@ -37,53 +33,75 @@ function HomeTab({ status, now, onRenamed }) {
       onRenamed(s)
     }).catch((err) => setError(err.message))
   }
+  const live = next && new Date(next.kickoff).getTime() <= now
+  const homeClub = next ? (next.at_home ? club : next.opp) : null
+  const awayClub = next ? (next.at_home ? next.opp : club) : null
   return (
     <section className="on-home">
-      <div className="on-club gx-panel">
-        <Crest club={club} size={56} />
-        {editing ? (
-          <form className="on-rename" onSubmit={save}>
-            <input value={name} onChange={(e) => setName(e.target.value)} maxLength={24} aria-label="Nome do clube" autoFocus />
-            <button type="submit" className="gx-btn">Salvar</button>
-            <button type="button" className="gx-btn-ghost" onClick={() => { setEditing(false); setName(club.name) }}>Cancelar</button>
-          </form>
-        ) : (
-          <div className="on-club-name">
-            <strong>{club.name}</strong>
-            <button type="button" className="on-icon-btn" onClick={() => setEditing(true)} aria-label="Mudar o nome do clube"><Pencil size={14} /></button>
+      <div className="on-hero" style={{ '--a': club.colors?.a, '--b': club.colors?.b }}>
+        <div className="on-hero-crest"><OnlineCrest club={club} size={84} /></div>
+        <div className="on-hero-info">
+          {editing ? (
+            <form className="on-rename" onSubmit={save}>
+              <input value={name} onChange={(e) => setName(e.target.value)} maxLength={24} aria-label="Nome do clube" autoFocus />
+              <button type="submit" className="gx-btn">Salvar</button>
+              <button type="button" className="gx-btn-ghost" onClick={() => { setEditing(false); setName(club.name) }}>Cancelar</button>
+            </form>
+          ) : (
+            <div className="on-club-name">
+              <strong>{club.name}</strong>
+              <button type="button" className="on-icon-btn" onClick={() => setEditing(true)} aria-label="Mudar o nome do clube"><Pencil size={14} /></button>
+            </div>
+          )}
+          <div className="on-hero-stats">
+            <span><small>Posição</small><b>{ordinal(position)}</b></span>
+            <span><small>Caixa</small><b>{moneyShort(club.cash)}</b></span>
+            <span><small>Em lances</small><b>{moneyShort(club.reserved)}</b></span>
           </div>
-        )}
-        <dl className="on-club-money">
-          <div><dt>Caixa</dt><dd>{money(club.cash)}</dd></div>
-          <div><dt>Em lances</dt><dd>{money(club.reserved)}</dd></div>
-        </dl>
+        </div>
       </div>
       {error && <Notice kind="error" onClose={() => setError('')}>{error}</Notice>}
       {season?.kind === 'sandbox' && <Notice kind="info">Temporada de teste: os jogos acontecem em sequência rápida.</Notice>}
 
-      <h3 className="gx-subtitle">Próximo jogo</h3>
       {next ? (
-        <div className="on-next gx-panel">
-          <span className="gx-tag">{next.comp === 'C' ? 'Copa' : `Liga · rodada ${next.round}`}</span>
-          <div className="on-next-teams">
-            <span><Crest club={next.at_home ? club : next.opp} /><b>{next.at_home ? club.name : next.opp.name}</b></span>
-            <Swords size={18} aria-hidden="true" />
-            <span><Crest club={next.at_home ? next.opp : club} /><b>{next.at_home ? next.opp.name : club.name}</b></span>
+        <div className={`on-match-card ${live ? 'is-live' : ''}`}>
+          <div className="on-match-head">
+            <span className="gx-tag">{next.comp === 'C' ? 'Copa Online' : `Liga Online · rodada ${next.round}`}</span>
+            {live ? <span className="on-live-dot"><Radio size={12} /> AO VIVO</span> : <span className="on-when"><Clock size={13} /> {kickoffDay(next.kickoff)} · {kickoffTime(next.kickoff)}</span>}
           </div>
-          <p className="on-next-when">
-            <Clock size={15} aria-hidden="true" />
-            {kickoffDay(next.kickoff)} às {kickoffTime(next.kickoff)} · <b>{untilKickoff(next.kickoff, now)}</b>
-          </p>
-          <small>{next.at_home ? 'Você joga em casa.' : 'Você joga fora.'} {next.opp.bot ? 'Adversário comandado pelo jogo.' : 'Adversário comandado por outro técnico.'}</small>
+          <div className="on-match-teams">
+            <span className={next.at_home ? 'is-mine' : ''}><OnlineCrest club={homeClub} size={64} /><b>{homeClub.name}</b></span>
+            <span className="on-match-vs">{live ? <Radio size={22} /> : 'VS'}</span>
+            <span className={!next.at_home ? 'is-mine' : ''}><OnlineCrest club={awayClub} size={64} /><b>{awayClub.name}</b></span>
+          </div>
+          {live ? (
+            <button type="button" className="gx-btn on-match-cta is-live" onClick={() => onOpenMatch(next.id)}>
+              <Radio size={18} /> Entrar na partida
+            </button>
+          ) : (
+            <>
+              <div className="on-countdown"><small>Começa</small><b>{untilKickoff(next.kickoff, now)}</b></div>
+              <button type="button" className="gx-btn-ghost on-match-cta" onClick={() => onOpenMatch(next.id)}>Ir para o vestiário</button>
+            </>
+          )}
+          <small className="on-match-note">{next.opp.bot ? 'Adversário comandado pelo jogo.' : 'Adversário comandado por outro técnico.'} A partida dura 12 minutos reais.</small>
         </div>
       ) : (
         <EmptyState compact icon={CalendarDays} title="Sem jogos pela frente" text="A temporada chegou ao fim." />
+      )}
+
+      {last && (
+        <div className="on-last gx-panel">
+          <small>Último jogo</small>
+          <span><OnlineCrest club={last.at_home ? club : last.opp} size={26} /> <b>{last.hg} × {last.ag}</b> <OnlineCrest club={last.at_home ? last.opp : club} size={26} /></span>
+          <button type="button" className="gx-btn-ghost" onClick={() => onOpenMatch(last.id)}>Rever</button>
+        </div>
       )}
     </section>
   )
 }
 
-function FixturesTab({ now }) {
+function FixturesView({ now, onOpenMatch }) {
   const [data, setData] = useState(null)
   const [error, setError] = useState('')
   const [mine, setMine] = useState(true)
@@ -116,13 +134,17 @@ function FixturesTab({ now }) {
           <ul className="on-list">
             {d.list.map((f) => {
               const live = f.status !== 'done' && new Date(f.kickoff).getTime() <= now
+              const watch = live || f.status === 'done'
               return (
-                <li key={f.id} className={`on-fix ${f.home === data.my_club || f.away === data.my_club ? 'is-mine' : ''}`}>
-                  <span className="on-fix-team is-home"><b>{f.h?.name}</b><Crest club={f.h} size={26} /></span>
-                  <span className="on-fix-mid">
-                    {f.status === 'done' ? <b>{f.hg} x {f.ag}</b> : live ? <em>ao vivo</em> : <time dateTime={f.kickoff}>{kickoffTime(f.kickoff)}</time>}
-                  </span>
-                  <span className="on-fix-team"><Crest club={f.a} size={26} /><b>{f.a?.name}</b></span>
+                <li key={f.id}>
+                  <button type="button" disabled={!watch} onClick={() => onOpenMatch(f.id)}
+                    className={`on-fix ${f.home === data.my_club || f.away === data.my_club ? 'is-mine' : ''} ${live ? 'is-live' : ''}`}>
+                    <span className="on-fix-team is-home"><b>{f.h?.name}</b><OnlineCrest club={f.h} size={26} /></span>
+                    <span className="on-fix-mid">
+                      {f.status === 'done' ? <b>{f.hg} x {f.ag}</b> : live ? <em><Radio size={11} /> ao vivo</em> : <time dateTime={f.kickoff}>{kickoffTime(f.kickoff)}</time>}
+                    </span>
+                    <span className="on-fix-team"><OnlineCrest club={f.a} size={26} /><b>{f.a?.name}</b></span>
+                  </button>
                 </li>
               )
             })}
@@ -133,7 +155,7 @@ function FixturesTab({ now }) {
   )
 }
 
-function TableTab() {
+function TableView() {
   const [data, setData] = useState(null)
   const [error, setError] = useState('')
   useEffect(() => {
@@ -148,23 +170,44 @@ function TableTab() {
         </thead>
         <tbody>
           {data.rows.map((r, i) => (
-            <tr key={r.club_id} className={r.club_id === data.my_club ? 'is-mine' : ''}>
-              <td>{i + 1}</td>
-              <th scope="row"><Crest club={r} size={22} /><span>{r.name}</span>{!r.bot && <Users size={12} aria-label="Técnico humano" />}</th>
+            <tr key={r.club_id} className={`${r.club_id === data.my_club ? 'is-mine' : ''} ${i < 4 ? 'z-top' : i >= data.rows.length - 3 ? 'z-low' : ''}`}>
+              <td><span className="on-rank">{i + 1}</span></td>
+              <th scope="row"><OnlineCrest club={r} size={22} /><span>{r.name}</span>{!r.bot && <Users size={12} aria-label="Técnico humano" />}</th>
               <td><b>{r.pts}</b></td><td>{r.p}</td><td>{r.w}</td><td>{r.d}</td><td>{r.l}</td><td>{r.gf - r.ga}</td>
             </tr>
           ))}
         </tbody>
       </table>
-      <p className="on-hint"><Users size={12} aria-hidden="true" /> clube comandado por um técnico humano.</p>
+      <p className="on-hint"><Users size={12} aria-hidden="true" /> clube comandado por um técnico humano. Desempate: pontos, saldo, gols marcados.</p>
     </section>
   )
 }
 
-export default function OnlineScreen({ onBack }) {
+function LeagueTab({ now, onOpenMatch }) {
+  const [view, setView] = useState('table')
+  return (
+    <section className="on-league">
+      <div className="on-seg" role="tablist" aria-label="Liga">
+        <button type="button" role="tab" aria-selected={view === 'table'} className={view === 'table' ? 'is-on' : ''} onClick={() => setView('table')}><ListOrdered size={15} /> Tabela</button>
+        <button type="button" role="tab" aria-selected={view === 'fixtures'} className={view === 'fixtures' ? 'is-on' : ''} onClick={() => setView('fixtures')}><CalendarDays size={15} /> Jogos</button>
+      </div>
+      {view === 'table' ? <TableView /> : <FixturesView now={now} onOpenMatch={onOpenMatch} />}
+    </section>
+  )
+}
+
+export default function OnlineScreen({ onBack, extraTabs = {} }) {
+  const [toast, setToast] = useState(null)
+  const notify = useCallback((text, kind = 'info') => setToast({ text, kind, id: Date.now() }), [])
+  useEffect(() => {
+    if (!toast) return undefined
+    const t = setTimeout(() => setToast(null), 3800)
+    return () => clearTimeout(t)
+  }, [toast])
   const [status, setStatus] = useState(null)
   const [error, setError] = useState('')
   const [tab, setTab] = useState('home')
+  const [match, setMatch] = useState(null) // id da partida aberta (ou 'current')
   const [offset, setOffset] = useState(0) // diferença entre o relógio do servidor e o do aparelho
   const [tick, setTick] = useState(() => Date.now())
 
@@ -180,7 +223,7 @@ export default function OnlineScreen({ onBack }) {
   }, [load])
   // Só o relógio da tela anda sozinho (contagem até o pontapé); nada vai ao banco.
   useEffect(() => {
-    const id = setInterval(() => setTick(Date.now()), 30000)
+    const id = setInterval(() => setTick(Date.now()), 15000)
     return () => clearInterval(id)
   }, [])
   const now = tick + offset
@@ -188,17 +231,20 @@ export default function OnlineScreen({ onBack }) {
   const join = () => joinOnlineQueue().then(apply).catch((e) => setError(e.message))
   const playing = status?.access === 'playing'
   const drafting = playing && status.club.draft_step < 3
+  const openMatch = (id) => setMatch(id)
+  const tabs = TABS.filter((t) => !t.later || extraTabs[t.id])
 
   let body
   if (!status) body = error ? null : <Skeleton rows={5} />
   else if (drafting) body = <OnlineDraft onDone={load} />
   else if (playing) {
+    const Extra = extraTabs[tab]
     body = (
       <>
-        {tab === 'home' && <HomeTab status={status} now={now} onRenamed={apply} />}
-        {tab === 'squad' && <OnlineSquad />}
-        {tab === 'fixtures' && <FixturesTab now={now} />}
-        {tab === 'table' && <TableTab />}
+        {tab === 'home' && <HomeTab status={status} now={now} onRenamed={apply} onOpenMatch={openMatch} />}
+        {tab === 'squad' && <OnlineSquad onOpenMatch={openMatch} />}
+        {tab === 'league' && <LeagueTab now={now} onOpenMatch={openMatch} />}
+        {Extra && <Extra status={status} now={now} notify={notify} onChanged={load} />}
       </>
     )
   } else if (status.access === 'queued') {
@@ -222,18 +268,32 @@ export default function OnlineScreen({ onBack }) {
       <header className="on-top">
         <button type="button" className="on-back" onClick={onBack} aria-label="Voltar"><ArrowLeft size={20} /></button>
         <h1>Modo Online</h1>
+        {playing && !drafting && status.next && new Date(status.next.kickoff).getTime() <= now && (
+          <button type="button" className="on-top-live" onClick={() => openMatch(status.next.id)}><Radio size={13} /> AO VIVO</button>
+        )}
       </header>
       {error && <Notice kind="error" onClose={() => setError('')}>{error}</Notice>}
+      <div className="on-body">{body}</div>
       {playing && !drafting && (
-        <nav className="on-tabs" aria-label="Seções do modo online">
-          {TABS.map(({ id, label, Icon }) => (
+        <nav className="on-tabs" aria-label="Seções do modo online" style={{ '--n': tabs.length }}>
+          {tabs.map(({ id, label, Icon }) => (
             <button key={id} type="button" className={tab === id ? 'is-on' : ''} aria-current={tab === id ? 'page' : undefined} onClick={() => setTab(id)}>
-              <Icon size={16} /> {label}
+              <Icon size={19} /> <span>{label}</span>
             </button>
           ))}
         </nav>
       )}
-      {body}
+      {toast && <div key={toast.id} className={`on-toast is-${toast.kind}`} role="status">{toast.text}</div>}
+      {match != null && (
+        <OnlineMatchLive
+          fixtureId={match}
+          notify={notify}
+          onClose={() => {
+            setMatch(null)
+            load()
+          }}
+        />
+      )}
     </div>
   )
 }
