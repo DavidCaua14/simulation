@@ -8,5 +8,10 @@ import '../../src/styles/desktop.css'
 import '../../src/styles/cm-skin.css'
 import '../../src/styles/cm-screens.css'
 import OnlineScreen from '../../src/features/online/OnlineScreen'
+import { AudioProvider } from '../../src/features/audio/AudioContext'
 
-createRoot(document.getElementById('root')).render(<OnlineScreen onBack={() => window.history.back()} />)
+createRoot(document.getElementById('root')).render(
+  <AudioProvider>
+    <OnlineScreen onBack={() => window.history.back()} />
+  </AudioProvider>,
+)

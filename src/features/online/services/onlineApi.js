@@ -35,3 +35,29 @@ export const fetchOnlineStandings = () => rpc('on_standings')
 
 // Catálogo de formações (o mesmo do modo Temporadas)
 export const fetchFormations = () => unwrap(supabase.from('sim_formations').select('id,name,slots').order('sort'))
+
+// Partida ao vivo (Fase 2). A tela consulta a cada 40 s; cada mudança leva um identificador único (p_req)
+// para que um duplo clique não seja aplicado duas vezes.
+export const pollOnlineMatch = (fixtureId = null, afterSeq = 0) => rpc('on_match_poll', { p_fixture: fixtureId, p_after_seq: afterSeq })
+export const actOnlineMatch = (fixtureId, changes) =>
+  rpc('on_match_act', { p_fixture: fixtureId, p_req: crypto.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2)}`, p_changes: changes })
+export const saveOnlineRoles = (roles) => rpc('on_roles_save', { p_roles: roles })
+
+// Mercado de leilões (Fase 3)
+export const fetchOnlineMarket = () => rpc('on_market')
+export const bidOnline = (lotId, amount) => rpc('on_bid', { p_lot: lotId, p_amount: amount })
+export const createOnlineLot = (playerId, price) => rpc('on_lot_create', { p_player: playerId, p_price: price })
+export const cancelOnlineLot = (lotId) => rpc('on_lot_cancel', { p_lot: lotId })
+export const fetchOnlineFinance = () => rpc('on_finance')
+
+// Clube: treino, estrutura, contratos e moedas (Fase 4)
+export const fetchOnlineClub = () => rpc('on_club')
+export const buildOnline = (kind) => rpc('on_build', { p_kind: kind })
+export const startOnlineTraining = (game, players) => rpc('on_train_start', { p_game: game, p_players: players })
+export const finishOnlineTraining = (session, score) => rpc('on_train_finish', { p_session: session, p_score: score })
+export const renewOnlinePlayer = (playerId, years) => rpc('on_renew', { p_player: playerId, p_years: years })
+// Sem prefixo on_: o cache do app trata como escrita e atualiza a carteira de moedas nas outras telas.
+export const convertOnlineCoins = (coins) => rpc('online_coins_convert', { p_coins: coins })
+
+// Copa e histórico (Fase 5)
+export const fetchOnlineCup = () => rpc('on_cup')
