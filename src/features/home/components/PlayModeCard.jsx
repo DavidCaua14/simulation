@@ -1,10 +1,14 @@
 import GameIcon from '../../../components/ui/GameIcon'
+import { useAuth } from '../../../context/AuthContext'
+import { isLockedFor } from '../data/access'
 
 
 // Modo de jogo com imagem. `size`: 'tall' (destaque) ou 'wide'.
 // Estado vem do próprio modo (data/gameModes.js): locked = "Em breve".
 export default function PlayModeCard({ mode, size = 'tall', badge, onSelect }) {
-  const { title, desc, Icon, image, locked } = mode
+  const { user } = useAuth()
+  const { title, desc, Icon, image } = mode
+  const locked = isLockedFor(mode, user)
   return (
     <button
       type="button"

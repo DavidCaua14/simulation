@@ -74,7 +74,8 @@ export function createRpcCache(fetcher, baseUrl, { now = () => Date.now() } = {}
     }
 
     const fn = url.pathname.slice(RPC_PATH.length)
-    if (NEUTRAL.has(fn)) return fetcher(input, init)
+    // Modo online (on_*): mundo compartilhado, fora do save da carreira. Passa direto, sem cache e sem invalidar.
+    if (NEUTRAL.has(fn) || fn.startsWith('on_')) return fetcher(input, init)
     if (!CAREER_READS.has(fn) || (typeof init?.body !== 'string' && init?.body != null)) {
       // Escrita: invalida antes (leituras em andamento não gravam resultado velho) e depois.
       invalidateRpcCache()

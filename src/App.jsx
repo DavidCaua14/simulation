@@ -21,6 +21,7 @@ import UpdateWelcome from './features/update/UpdateWelcome'
 const AdminDashboard = lazy(() => import('./features/admin/AdminDashboard')) // carregada sob demanda
 const InboxScreen = lazy(() => import('./features/inbox/InboxScreen')) // carregada sob demanda
 const RankingScreen = lazy(() => import('./features/ranking/RankingScreen')) // carregada sob demanda
+const OnlineScreen = lazy(() => import('./features/online/OnlineScreen')) // carregada sob demanda
 import MaintenanceGate from './features/maintenance/MaintenanceGate'
 import { isMaintenanceAdmin as isOwner } from './features/maintenance/policy'
 import { COMPETITIONS_NEWS_RELEASE, EVENTS_NEWS_RELEASE, MORALE_NEWS_RELEASE, claimReleaseGift, fetchNewsStatus, markNewsSeen, markReleaseSeen } from './features/update/updateApi'
@@ -206,7 +207,9 @@ function Gate() {
   // Só estas telas estão construídas; os demais ids da barra/menu ainda não fazem nada.
   const navigate = (id, params = null) => {
     if (id === 'messages') id = 'inbox'
-    if (id === 'home' || id === 'tips' || id === 'profile' || id === 'seasons' || id === 'store' || id === 'friends' || id === 'events' || id === 'inbox' || id === 'ranking') {
+    if (id === 'online-match') id = 'online'
+    if (id === 'online' && !owner) return // modo online em teste: só o dono do jogo
+    if (id === 'home' || id === 'tips' || id === 'profile' || id === 'seasons' || id === 'store' || id === 'friends' || id === 'events' || id === 'inbox' || id === 'ranking' || id === 'online') {
       setScreenParams(params)
       setScreen(id)
       if (id !== 'home') playSfx('open') // abrir telas relevantes (som curto e discreto)
@@ -242,6 +245,10 @@ function Gate() {
 
   if (screen === 'ranking') {
     return <RankingScreen onBack={backHome} />
+  }
+
+  if (screen === 'online' && owner) {
+    return <OnlineScreen onBack={backHome} />
   }
 
   if (screen === 'inbox') {

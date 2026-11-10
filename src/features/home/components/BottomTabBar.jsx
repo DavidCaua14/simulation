@@ -1,11 +1,14 @@
+import { useAuth } from '../../../context/AuthContext'
+import { isLockedFor } from '../data/access'
 import { TAB_ITEMS } from '../data/tabs'
 import './tab-bar.css'
 
 // Menu fixo embaixo (Home e Perfil). Itens bloqueados aparecem apagados com "em breve".
 export default function BottomTabBar({ active = 'home', onSelect }) {
+  const { user } = useAuth()
   return (
     <nav className="tab-bar">
-      {TAB_ITEMS.map(({ id, label, Icon, locked }) => (
+      {TAB_ITEMS.map((item) => ({ ...item, locked: isLockedFor(item, user) })).map(({ id, label, Icon, locked }) => (
         <button
           type="button"
           key={id}

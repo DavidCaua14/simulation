@@ -31,11 +31,12 @@ export const GAME_MODES = [
   },
   {
     id: 'online-match',
-    title: 'Partida Online',
-    desc: 'Desafie outros técnicos e mostre sua estratégia!',
+    title: 'Modo Online',
+    desc: 'Liga compartilhada: um jogo por dia contra outros técnicos!',
     Icon: OnlineMatchIcon,
     image: confronto,
     locked: true,
+    testerOnly: true, // em teste: liberado só para o dono do jogo (ver data/access.js)
   },
   {
     id: 'seasons',
