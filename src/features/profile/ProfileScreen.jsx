@@ -2,8 +2,6 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { ImagePlus, LogOut, Megaphone, Palette, ShieldCheck, Trophy, Users } from 'lucide-react'
 import AppShell from '../../components/layout/AppShell'
 import { useAuth } from '../../context/AuthContext'
-import { getClubById } from '../club/data/clubs'
-import ClubCrest from '../club/components/ClubCrest'
 import { fetchCompetitions } from '../seasons/services/managerApi'
 import BottomTabBar from '../home/components/BottomTabBar'
 import { useProfilePrefs } from './profileStore'
@@ -14,6 +12,7 @@ import AvatarPicker from './components/AvatarPicker'
 import { BADGE_ART } from './data/badgeArt'
 import BadgeGrid from './components/BadgeGrid'
 import CoachCard from './components/CoachCard'
+import TitleShelf from './components/TitleShelf'
 import CustomizeSheet from './components/CustomizeSheet'
 import PrivacyPanel from './components/PrivacyPanel'
 import MusicPlayer from './components/MusicPlayer'
@@ -133,15 +132,7 @@ export default function ProfileScreen({ career, onNavigate, onOpenNews, onOpenAd
                         <p><b>A prateleira está vazia</b>Conquiste um campeonato e a taça aparece aqui.</p>
                       </div>
                     ) : (
-                      <ul className="pf-titles">
-                        {titles.map((t, i) => (
-                          <li key={`${t.competition}-${t.year}-${i}`}>
-                            <span className="pf-trophy" aria-hidden="true"><Trophy size={18} /></span>
-                            <span><strong>{comps[t.competition]?.name || t.competition}</strong><small>{t.year} · {getClubById(t.club_id)?.name || t.club_id}</small></span>
-                            <ClubCrest clubId={t.club_id} size={26} />
-                          </li>
-                        ))}
-                      </ul>
+                      <TitleShelf titles={titles} comps={comps} />
                     )}
                   </section>
 
