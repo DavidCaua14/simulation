@@ -177,3 +177,79 @@
 .pf-match-audio + .pf-visibility { margin-top: 10px; }
 .pf-newbadge-art { width: 28px; height: 28px; vertical-align: middle; margin-right: 4px; }
 .pf-photo.is-avatar { background: radial-gradient(circle, #1b3566, #060b17); } .pf-photo.is-avatar img { object-fit: contain; padding: 3px; box-sizing: border-box; }
+
+/* =====================================================================
+   PERFIL NO PADRÃO DO JOGO (pele CM): painéis azul-marinho com borda prata, títulos amarelos,
+   menu em blocos azuis e ficha do treinador com medidores.
+   ===================================================================== */
+.pf-panel { border: 1px solid var(--cm-silver); background: var(--cm-panel); box-shadow: var(--cm-shadow); }
+.pf-panel-head { margin: -14px -14px 12px; padding: 9px 14px; border-bottom: 1px solid var(--cm-silver); border-radius: var(--radius-md) var(--radius-md) 0 0; background: linear-gradient(180deg, rgba(61, 123, 234, 0.28), rgba(22, 58, 148, 0.12)); }
+.pf-panel-head h2 { font: 900 0.8rem var(--font-display, var(--font-heading)); letter-spacing: 0.1em; color: var(--cm-yellow); }
+.pf-count { border: 1px solid var(--cm-silver); background: rgba(0, 0, 0, 0.3); color: #fff; }
+
+.pf-menu { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 6px; margin: 12px 12px 0; }
+.pf-menu button {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; min-height: 66px; padding: 8px 4px;
+  border-radius: 10px; border: 1px solid var(--cm-silver-hi); color: #fff; background: var(--cm-blue);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  font: 800 0.7rem var(--font-body); line-height: 1.1; text-align: center; cursor: pointer; transition: transform 0.12s ease, filter 0.12s ease;
+}
+.pf-menu button:hover { background: var(--cm-blue-hover); }
+.pf-menu button:active { transform: scale(0.97); }
+.pf-menu button svg { color: var(--cm-yellow); }
+
+.pf-kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.pf-kpis > div { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 10px 6px; border-radius: 10px; border: 1px solid var(--cm-silver); background: rgba(0, 0, 0, 0.24); text-align: center; }
+.pf-kpis small { font-size: 0.58rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--cm-yellow); }
+.pf-kpis b { font: 800 1.5rem/1 var(--font-heading); color: #fff; font-variant-numeric: tabular-nums; }
+.pf-meter { width: 100%; height: 5px; border-radius: 3px; overflow: hidden; background: rgba(255, 255, 255, 0.14); }
+.pf-meter i { display: block; height: 100%; border-radius: inherit; background: var(--cm-green); }
+.pf-kpi-note { font-size: 0.64rem; font-weight: 700; color: var(--text-secondary); }
+
+.pf-record { display: flex; gap: 2px; height: 10px; margin-top: 14px; border-radius: 5px; overflow: hidden; background: rgba(255, 255, 255, 0.1); }
+.pf-record i { display: block; min-width: 2px; height: 100%; }
+.pf-record .w, .pf-record-legend .w::before { background: #8ad61f; }
+.pf-record .d, .pf-record-legend .d::before { background: #9fb0d2; }
+.pf-record .l, .pf-record-legend .l::before { background: #e5484d; }
+.pf-record-legend { display: flex; justify-content: space-between; gap: 8px; margin: 8px 0 0; padding: 0; list-style: none; font-size: 0.72rem; font-weight: 700; color: var(--text-secondary); }
+.pf-record-legend li { display: inline-flex; align-items: center; gap: 5px; }
+.pf-record-legend li::before { content: ''; width: 8px; height: 8px; border-radius: 2px; }
+.pf-record-legend b { color: #fff; font-variant-numeric: tabular-nums; }
+
+.pf-facts { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; margin: 14px 0 0; border-radius: 10px; overflow: hidden; border: 1px solid var(--cm-silver); background: var(--cm-silver); }
+.pf-facts div { padding: 8px 4px; text-align: center; background: #0d1d3e; }
+.pf-facts dt { font-size: 0.56rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-secondary); }
+.pf-facts dd { margin: 3px 0 0; font: 800 1rem var(--font-heading); color: #fff; font-variant-numeric: tabular-nums; }
+.pf-facts dd.pos { color: #a6e84a; } .pf-facts dd.neg { color: #ff7b7f; }
+
+.pf-titles li { border: 1px solid var(--cm-silver); background: rgba(0, 0, 0, 0.24); }
+.pf-trophy { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 8px; color: #1a1405; background: linear-gradient(180deg, #ffe27a, var(--cm-yellow-2)); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5); }
+.pf-visibility { border-color: var(--cm-silver); background: rgba(0, 0, 0, 0.24); }
+.pf-visibility + .pf-visibility { margin-top: 6px; }
+
+/* abas do perfil */
+.pf-tabs { position: sticky; top: 0; z-index: 5; display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; margin: 12px 12px 0; padding: 4px; border-radius: 12px; border: 1px solid var(--cm-silver); background: #0a1a38; box-shadow: var(--cm-shadow); }
+.pf-tabs button { min-height: 38px; padding: 0 6px; border: 0; border-radius: 8px; background: transparent; color: var(--text-secondary); font: 800 0.76rem var(--font-body); white-space: nowrap; cursor: pointer; }
+.pf-tabs button.is-on { background: var(--cm-green); color: var(--cm-green-ink); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4); }
+.pf-more { border: 0; background: none; padding: 2px 0; color: #fff; font: 800 0.72rem var(--font-body); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+
+.pf-shelf-empty { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 10px; border: 1px dashed var(--cm-silver); color: var(--text-secondary); }
+.pf-shelf-empty svg { flex: none; opacity: 0.6; }
+.pf-shelf-empty p { margin: 0; font-size: 0.78rem; line-height: 1.4; }
+.pf-shelf-empty b { display: block; color: #fff; font-size: 0.86rem; }
+
+.pf-recent { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 0; padding: 0; list-style: none; }
+.pf-recent li { display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 0; text-align: center; font-size: 0.66rem; font-weight: 800; line-height: 1.15; color: #fff; }
+.pf-recent img { width: 56px; height: 56px; object-fit: contain; filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.45)); }
+
+/* insígnias dentro dos painéis CM */
+.pf-panel .bg-item { border-color: var(--cm-silver); background: rgba(0, 0, 0, 0.24); }
+.pf-panel .bg-item.is-open { border-color: var(--cm-yellow); }
+.pf-panel .bg-detail { border: 1px solid var(--cm-silver); background: rgba(0, 0, 0, 0.3); }
+
+/* som: lista de faixas em linhas, sem cortar no meio */
+.pf-now { border: 1px solid var(--cm-silver); background: rgba(0, 0, 0, 0.3); }
+.pf-chips.pf-tracks { flex-direction: column; flex-wrap: nowrap; gap: 4px; overflow: visible; }
+.pf-chips.pf-tracks button { display: block; width: 100%; height: 34px; padding: 0 12px; border-radius: 8px; border-color: var(--cm-silver); background: rgba(0, 0, 0, 0.24); text-align: left; line-height: 32px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pf-chips.pf-tracks button.is-on { border-color: var(--cm-yellow); background: rgba(255, 210, 63, 0.12); color: #fff; }
+.pf-seg3 { border-color: var(--cm-silver); background: rgba(0, 0, 0, 0.3); }

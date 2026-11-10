@@ -122,10 +122,10 @@ export default function PostMatch({ summary: s, seasonId, byComp, onClose, onOff
                 <div className="pm-fired">
                   <UserX size={22} />
                   <div>
-                    <b>Você foi demitido</b>
-                    <span>Motivo: {s.fire_reason}. Seu histórico continua: avance os dias para receber propostas de outros clubes.</span>
+                    <b>Contrato encerrado</b>
+                    <span>A diretoria comunicou o encerramento do seu contrato. Motivo: {s.fire_reason}. O seu histórico está preservado, e novas propostas chegarão ao longo dos próximos dias.</span>
                     {s.squad_fire && (
-                      <span>A diretoria se preocupava com o relacionamento entre você e os jogadores: muitos atletas reclamavam de falta de oportunidades. Este clube não deve chamá-lo de volta (a não ser que seja rebaixado). Faça rodízio e use todo o elenco no próximo trabalho.</span>
+                      <span>O desgaste na relação com o elenco pesou na decisão: vários atletas vinham manifestando insatisfação com a falta de oportunidades.</span>
                     )}
                   </div>
                 </div>

@@ -1,15 +1,13 @@
 import { useState } from 'react'
-import { ArrowLeftRight, Building2, Dumbbell, Home, Inbox, Info, LogOut, Moon, RotateCcw, Settings, Shirt, Sun, Trophy, UserRound, Wallet, X } from 'lucide-react'
+import { ArrowLeftRight, Building2, Dumbbell, Home, Inbox, Info, LogOut, RotateCcw, Settings, Shirt, Trophy, UserRound, Wallet, X } from 'lucide-react'
 import ClubCrest from '../../club/components/ClubCrest'
 import { getClubById } from '../../club/data/clubs'
-import { useTheme } from '../../../context/ThemeContext'
 import './clubCentral.css'
 
 // CENTRAL DO CLUBE: o menu em grade do Championship Manager. Cada botão leva à tela onde aquilo é feito.
 // embedded: versão dentro do Início (sem o botão Início nem o cabeçalho de janela).
 export default function ClubCentral({ hub, actions, embedded = false, onClose }) {
   const [settings, setSettings] = useState(false)
-  const { theme, toggleTheme } = useTheme()
   const employed = hub.coach?.status === 'employed'
   const clubId = employed ? hub.coach.club_id : null
   const world = !!hub.world
@@ -49,9 +47,6 @@ export default function ClubCentral({ hub, actions, embedded = false, onClose })
 
   const settingsPanel = settings && (
     <div className="ctl-settings">
-      <button type="button" className="gx-btn-ghost" onClick={toggleTheme}>
-        {theme === 'dark' ? <Sun size={15} /> : <Moon size={15} />} Tema {theme === 'dark' ? 'claro' : 'escuro'}
-      </button>
       {actions.restartAssistant && (
         <button type="button" className="gx-btn-ghost" onClick={go(actions.restartAssistant)}>
           <RotateCcw size={15} /> Rever o assistente

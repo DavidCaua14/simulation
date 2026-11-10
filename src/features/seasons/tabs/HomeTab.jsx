@@ -17,11 +17,11 @@ import { MSG_CATEGORIES, MSG_KIND, msgCategory, objectiveProgress } from '../uti
 
 const RISK_TEXT = {
   ok: () => 'Dentro da meta.',
-  attention: () => 'Fora da meta, ainda sem risco de demissão.',
-  danger: (tol) => `Perigo: mais de ${tol} posições abaixo da meta. A diretoria pode demitir.`,
+  attention: () => 'Abaixo da meta, mas ainda dentro da margem aceita pela diretoria.',
+  danger: () => 'Muito abaixo da meta. A continuidade do trabalho está em risco.',
 }
 
-// Meta da liga e risco: só ela decide a demissão; copas mexem com a confiança e o prêmio.
+// Meta da liga e risco: principal critério da diretoria; copas mexem com a confiança e o prêmio.
 function LeagueRisk({ status }) {
   if (!status || status.pos == null) return null
   return (
@@ -30,7 +30,7 @@ function LeagueRisk({ status }) {
         Meta da liga: até o {status.target}º · hoje {status.pos}º
       </b>
       <small>
-        {RISK_TEXT[status.risk]?.(status.tolerance ?? 2) || ''} Só a liga decide a demissão; copas mexem com confiança e prêmio.
+        {RISK_TEXT[status.risk]?.() || ''} A campanha na liga é o principal critério de avaliação da diretoria.
       </small>
     </div>
   )

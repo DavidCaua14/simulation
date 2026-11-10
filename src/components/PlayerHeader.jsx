@@ -1,10 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { useAuth } from '../context/AuthContext'
-import { useTheme } from '../context/ThemeContext'
 import { LogOutIcon } from './ui/icons'
 import { PLACEHOLDER_XP_TO_NEXT_LEVEL } from '../features/player/data/gameConstants'
 import CurrencyRow from './CurrencyRow'
-import ThemeToggle from './ThemeToggle'
 import './player-hud.css'
 
 // Topo da tela inicial (HUD): perfil à esquerda, moedas e energia à direita.
@@ -12,7 +10,6 @@ import './player-hud.css'
 // wallet: { coins, energy }
 export default function PlayerHeader({ player, wallet, avatarSrc }) {
   const { signOut } = useAuth()
-  const { theme, toggleTheme } = useTheme()
   const [menuOpen, setMenuOpen] = useState(false)
   const rootRef = useRef(null)
 
@@ -71,10 +68,6 @@ export default function PlayerHeader({ player, wallet, avatarSrc }) {
 
       {menuOpen && (
         <div className="hud-menu" role="menu">
-          <div className="hud-menu-row">
-            <span>Tema {theme === 'dark' ? 'escuro' : 'claro'}</span>
-            <ThemeToggle isDark={theme === 'dark'} onToggle={toggleTheme} />
-          </div>
           <button type="button" role="menuitem" className="hud-menu-item" onClick={signOut}>
             <LogOutIcon />
             Sair da conta

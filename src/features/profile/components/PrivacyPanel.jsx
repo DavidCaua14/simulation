@@ -6,7 +6,6 @@ const OPTIONS = [
   { key: 'show_career', label: 'Clube atual', hint: 'O clube que você treina agora.' },
   { key: 'show_stats', label: 'Estatísticas', hint: 'Partidas, vitórias, gols e reputação.' },
   { key: 'show_titles', label: 'Títulos', hint: 'Suas taças, com ano e clube.' },
-  { key: 'show_collection', label: 'Cartas base', hint: 'Quantidade de cartas base que você possui.' },
 ]
 
 // O que OUTROS jogadores veem. Nome, foto, nível, insígnias conquistadas, visual são sempre públicos.

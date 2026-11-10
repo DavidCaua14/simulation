@@ -9,12 +9,11 @@ const TIER = { bronze: 'Bronze', prata: 'Prata', ouro: 'Ouro' }
 export default function BadgeGrid({ badges = [], showLocked = true }) {
   const [open, setOpen] = useState(null)
   const list = showLocked ? badges : badges.filter((b) => b.earned)
-  const earned = badges.filter((b) => b.earned).length
   if (!list.length) return <p className="pf-hint">Nenhuma insígnia conquistada ainda.</p>
   const sel = list.find((b) => b.id === open)
   return (
     <>
-      {showLocked && <p className="pf-hint">{earned} de {badges.length} conquistadas. Toque numa insígnia para ver como conseguir.</p>}
+      {showLocked && <p className="pf-hint">Toque numa insígnia para ver como conquistá-la.</p>}
       <div className="bg-grid">
         {list.map((b) => (
           <button key={b.id} type="button" className={`bg-item t-${b.tier} ${b.earned ? 'is-on' : ''} ${open === b.id ? 'is-open' : ''}`}

@@ -1,26 +1,14 @@
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useContext, useEffect } from 'react'
 
 const ThemeContext = createContext(null)
-const STORAGE_KEY = 'simulation:theme'
 
+// O jogo tem um único visual: o escuro (pele CM). Não há troca de tema.
 export function ThemeProvider({ children }) {
-  const [theme, setTheme] = useState(() => {
-    if (typeof window === 'undefined') return 'dark'
-    return localStorage.getItem(STORAGE_KEY) || 'dark'
-  })
-
   useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme)
-    localStorage.setItem(STORAGE_KEY, theme)
-  }, [theme])
-
-  const toggleTheme = () => setTheme((t) => (t === 'light' ? 'dark' : 'light'))
-
-  return (
-    <ThemeContext.Provider value={{ theme, toggleTheme }}>
-      {children}
-    </ThemeContext.Provider>
-  )
+    document.documentElement.setAttribute('data-theme', 'dark')
+    try { localStorage.removeItem('simulation:theme') } catch { /* sem armazenamento */ }
+  }, [])
+  return <ThemeContext.Provider value={{ theme: 'dark' }}>{children}</ThemeContext.Provider>
 }
 
 export function useTheme() {

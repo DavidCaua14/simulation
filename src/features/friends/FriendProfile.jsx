@@ -1,12 +1,11 @@
 import { useEffect, useState } from 'react'
-import { X } from 'lucide-react'
+import { Trophy, X } from 'lucide-react'
 import ProfileHero from '../profile/components/ProfileHero'
 import BadgeGrid from '../profile/components/BadgeGrid'
-import { tierOf, TIER_ORDER } from '../cards/data/tiers'
+import CoachCard from '../profile/components/CoachCard'
 import { getClubById } from '../club/data/clubs'
 import { fetchCompetitions } from '../seasons/services/managerApi'
 import { fetchFriendProfile } from './friendsApi'
-import '../cards/cards.css'
 import '../profile/profile.css'
 import { Skeleton } from '../../components/ui/feedback'
 
@@ -30,48 +29,30 @@ export default function FriendProfile({ username, onClose, onRemove }) {
           <>
             <ProfileHero profile={p} />
             {p.friend_since && <p className="fr-since">Amigos desde {new Date(p.friend_since).toLocaleDateString('pt-BR')}</p>}
-            <section className="pf-panel">
-              <header className="pf-panel-head"><h2>Insígnias</h2><span className="pf-count">{p.badges?.length || 0}</span></header>
-              <BadgeGrid badges={p.badges} showLocked={false} />
-            </section>
             {p.stats && (
               <section className="pf-panel">
-                <header className="pf-panel-head"><h2>Carreira de treinador</h2></header>
-                <dl className="pf-stats six">
-                  <div><dt>Jogos</dt><dd>{p.stats.matches}</dd></div>
-                  <div><dt>Vitórias</dt><dd>{p.stats.wins}</dd></div>
-                  <div><dt>Empates</dt><dd>{p.stats.draws}</dd></div>
-                  <div><dt>Derrotas</dt><dd>{p.stats.losses}</dd></div>
-                  <div><dt>Gols</dt><dd>{p.stats.gf}–{p.stats.ga}</dd></div>
-                  <div><dt>Temporadas</dt><dd>{p.stats.seasons}</dd></div>
-                </dl>
+                <header className="pf-panel-head"><h2>Ficha do treinador</h2></header>
+                <CoachCard stats={p.stats} titles={p.titles?.length ?? p.stats.titles ?? 0} />
               </section>
             )}
             {p.titles && (
               <section className="pf-panel">
-                <header className="pf-panel-head"><h2>Títulos</h2><span className="pf-count">{p.titles.length}</span></header>
-                {p.titles.length === 0 ? <p className="pf-hint">Nenhum título ainda.</p> : (
+                <header className="pf-panel-head"><h2>Sala de troféus</h2><span className="pf-count">{p.titles.length}</span></header>
+                {p.titles.length === 0 ? <p className="pf-hint">Nenhum título conquistado ainda.</p> : (
                   <ul className="pf-titles">
                     {p.titles.map((t, i) => (
-                      <li key={i}><span className="pf-trophy" aria-hidden="true">🏆</span>
+                      <li key={i}><span className="pf-trophy" aria-hidden="true"><Trophy size={18} /></span>
                         <span><strong>{comps[t.competition]?.name || t.competition}</strong><small>{t.year} · {getClubById(t.club_id)?.name || t.club_id}</small></span></li>
                     ))}
                   </ul>
                 )}
               </section>
             )}
-            {p.collection && (
-              <section className="pf-panel">
-                <header className="pf-panel-head"><h2>Cartas base</h2></header>
-                <p className="pf-hint">{p.collection.owned} de {p.collection.total} cartas</p>
-                <div className="pf-col-bars">
-                  {TIER_ORDER.slice().reverse().map((t) => (
-                    <div key={t} style={{ '--tier': tierOf(t).color }}><span>{tierOf(t).label}</span><b>{p.collection.by_tier?.[t] || 0}</b></div>
-                  ))}
-                </div>
-              </section>
-            )}
-            {!p.stats && !p.titles && !p.collection && <p className="pf-hint" style={{ padding: '12px 16px' }}>{p.nickname} preferiu deixar carreira, títulos e cartas base privados.</p>}
+            <section className="pf-panel">
+              <header className="pf-panel-head"><h2>Insígnias</h2><span className="pf-count">{p.badges?.length || 0}</span></header>
+              <BadgeGrid badges={p.badges} showLocked={false} />
+            </section>
+            {!p.stats && !p.titles && <p className="pf-hint" style={{ padding: '12px 16px' }}>{p.nickname} preferiu manter a carreira e os títulos privados.</p>}
             {onRemove && p.friendship_id && (
               <button type="button" className="pf-btn danger block fr-remove" onClick={() => onRemove(p.friendship_id)}>Desfazer amizade</button>
             )}
