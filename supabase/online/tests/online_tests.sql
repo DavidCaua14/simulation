@@ -446,3 +446,102 @@ begin
  if (select debt from public.on_clubs where id=a.id)<>0 then raise exception 'entrada não pagou dívida';end if;
  raise notice 'PASS mercado';
 end $$;
+
+-- ═════════════════════════════════════════════════════════════════════════════
+-- Fase 4: treino, estrutura, contratos, finanças e moedas
+-- ═════════════════════════════════════════════════════════════════════════════
+set request.jwt.claim.sub='00000000-0000-0000-0000-000000000004';
+set role authenticated;
+do $$
+declare j jsonb;k jsonb;ids text[];sid bigint;
+begin
+ j:=public.on_club();
+ if (j->'train'->>'max')::int<>3 or j->'levels'->>'stadium'<>'0' then raise exception 'on_club: %',j;end if;
+ -- treino: condição cai, limite diário, resultado limitado a 0..1, ganho só uma vez
+ ids:=array(select p->>'id' from jsonb_array_elements(public.on_squad()->'players') p where not (p->>'injured')::boolean order by (p->>'ovr')::numeric limit 3);
+ k:=public.on_train_start('aim',ids);
+ sid:=(k->>'session')::bigint;
+ begin perform public.on_train_finish(sid,1);raise exception 'treino curto aceito';
+ exception when others then if sqlerrm not like 'Treino curto%' then raise;end if;end;
+ raise notice 'PASS treino recusa sessão curta';
+end $$;
+reset role;
+do $$
+declare c int;t public.on_train;j jsonb;
+begin
+ select * into t from public.on_train order by id desc limit 1;
+ perform set_config('test.sid',t.id::text,false);
+ perform set_config('test.ids',array_to_string(t.players,','),false);
+ update public.on_train set started_at=now()-interval '30 seconds' where id=t.id;
+ if exists(select 1 from public.on_players where id=any(t.players) and cond>94) then raise exception 'treino não gastou condição';end if;
+ update public.on_players set xp='{0,0,90,0}',g='{0,0,0,0}',pot=ovr+10,age=20 where id=any(t.players);
+end $$;
+set role authenticated;
+do $$
+declare j jsonb;sid bigint:=current_setting('test.sid')::bigint;ids text[]:=string_to_array(current_setting('test.ids'),',');
+begin
+ j:=public.on_train_finish(sid,7.5); -- resultado fora da faixa vira 1
+ if (j->>'score')::numeric<>1 or jsonb_array_length(j->'players')<>3 then raise exception 'fim do treino: %',j;end if;
+ begin perform public.on_train_finish(sid,1);raise exception 'treino terminou duas vezes';
+ exception when others then if sqlerrm not like 'Esse treino já%' then raise;end if;end;
+ perform public.on_train_start('timing',ids);
+ perform public.on_train_start('reaction',ids);
+ begin perform public.on_train_start('passing',ids);raise exception 'passou do limite diário';
+ exception when others then if sqlerrm not like 'Limite de%' then raise;end if;end;
+ raise notice 'PASS treino';
+end $$;
+reset role;
+do $$ begin
+ if exists(select 1 from public.on_players where id=any(string_to_array(current_setting('test.ids'),',')) and (g[3]<>1 or ovr<>level+.5)) then
+  raise exception 'grupo/nota não subiram';
+ end if;
+end $$;
+do $$
+declare c public.on_clubs;f public.on_fixtures;v bigint;w bigint;
+begin
+ select * into c from public.on_clubs where user_id='00000000-0000-0000-0000-000000000004' and season_id=(select id from public.on_seasons where status='live');
+ -- potencial e idade freiam o ganho
+ if public.on_train_gain(1,20,70,70,0)<>0 or public.on_train_gain(1,33,60,80,0)>=public.on_train_gain(1,20,60,80,0) then raise exception 'limite de evolução';end if;
+ -- salários na virada do dia; sem dinheiro vira dívida
+ update public.on_clubs set cash=1000,reserved=0,debt=0 where id=c.id;
+ select coalesce(sum(wage),0) into w from public.on_players where club_id=c.id;
+ perform public.on_club_tick(now(),true);
+ select * into c from public.on_clubs where id=c.id;
+ if c.cash<>0 or c.debt<>w-1000 then raise exception 'salários: caixa % dívida % (salários %)',c.cash,c.debt,w;end if;
+ -- bilheteria do jogo em casa paga a dívida primeiro
+ select * into f from public.on_fixtures where home=c.id and status='done' limit 1;
+ if f.id is null then select * into f from public.on_fixtures where home=c.id limit 1;end if;
+ perform public.on_gate_income(f.id);
+ select * into c from public.on_clubs where id=c.id;
+ if c.debt<>greatest(0,w-1000-8000) or c.cash<>greatest(0,8000-(w-1000)) then raise exception 'bilheteria: caixa % dívida %',c.cash,c.debt;end if;
+ update public.on_clubs set cash=200000,debt=0 where id=c.id;
+ raise notice 'PASS salários e bilheteria';
+end $$;
+set role authenticated;
+do $$
+declare j jsonb;pid text;
+begin
+ -- obra: custo na hora, uma por vez
+ j:=public.on_build('stadium');
+ if j->'build'->>'kind'<>'stadium' or (j->>'cash')::bigint<>200000-25000 then raise exception 'obra: %',j;end if;
+ begin perform public.on_build('medical');raise exception 'duas obras';
+ exception when others then if sqlerrm not like 'Já existe uma obra%' then raise;end if;end;
+ -- renovação
+ select p->>'id' into pid from jsonb_array_elements(public.on_squad()->'players') p limit 1;
+ j:=public.on_renew(pid,2);
+ if (select (p->>'contract_end')::int from jsonb_array_elements(j->'players') p where p->>'id'=pid)<(j->'club'->>'id')::int*0+2 then raise exception 'renovação';end if;
+ if not exists(select 1 from jsonb_array_elements(public.on_finance()->'ledger') x where x->>'kind'='renew') then raise exception 'luva no extrato';end if;
+ -- moedas: saem da carteira, entram no caixa, com teto
+ j:=public.online_coins_convert(100);
+ if (j->'coins'->>'converted')::int<>100 then raise exception 'conversão: %',j->'coins';end if;
+ begin perform public.online_coins_convert(201);raise exception 'passou do teto';
+ exception when others then if sqlerrm not like 'Teto da temporada%' then raise;end if;end;
+ raise notice 'PASS obra, renovação e moedas';
+end $$;
+reset role;
+do $$ begin
+ if (select coins from public.careers where user_id='00000000-0000-0000-0000-000000000004')<>900 then raise exception 'carteira';end if;
+ update public.on_clubs set build_until=now()-interval '1 second' where build_kind='stadium';
+ perform public.on_club_tick(now(),false);
+ if exists(select 1 from public.on_clubs where build_kind is not null) or not exists(select 1 from public.on_clubs where (lv->>'stadium')::int=1) then raise exception 'obra não concluiu';end if;
+end $$;

@@ -3,6 +3,7 @@ import { ArrowLeft, CalendarDays, Clock, Home, Landmark, ListOrdered, Pencil, Ra
 import { EmptyState, Notice, Skeleton } from '../../components/ui/feedback'
 import OnlineCrest from './components/OnlineCrest'
 import OnlineDraft from './OnlineDraft'
+import OnlineClub from './OnlineClub'
 import OnlineMarket from './OnlineMarket'
 import OnlineMatchLive from './OnlineMatchLive'
 import OnlineSquad from './OnlineSquad'
@@ -15,7 +16,7 @@ const TABS = [
   { id: 'home', label: 'Início', Icon: Home },
   { id: 'squad', label: 'Elenco', Icon: Shirt },
   { id: 'market', label: 'Mercado', Icon: Gavel },
-  { id: 'club', label: 'Clube', Icon: Landmark, later: true },
+  { id: 'club', label: 'Clube', Icon: Landmark },
   { id: 'league', label: 'Liga', Icon: Trophy },
 ]
 
@@ -197,7 +198,7 @@ function LeagueTab({ now, onOpenMatch }) {
   )
 }
 
-export default function OnlineScreen({ onBack, extraTabs = {} }) {
+export default function OnlineScreen({ onBack }) {
   const [toast, setToast] = useState(null)
   const notify = useCallback((text, kind = 'info') => setToast({ text, kind, id: Date.now() }), [])
   useEffect(() => {
@@ -233,20 +234,19 @@ export default function OnlineScreen({ onBack, extraTabs = {} }) {
   const playing = status?.access === 'playing'
   const drafting = playing && status.club.draft_step < 3
   const openMatch = (id) => setMatch(id)
-  const tabs = TABS.filter((t) => !t.later || extraTabs[t.id])
+  const tabs = TABS
 
   let body
   if (!status) body = error ? null : <Skeleton rows={5} />
   else if (drafting) body = <OnlineDraft onDone={load} />
   else if (playing) {
-    const Extra = extraTabs[tab]
     body = (
       <>
         {tab === 'home' && <HomeTab status={status} now={now} onRenamed={apply} onOpenMatch={openMatch} />}
-        {tab === 'squad' && <OnlineSquad onOpenMatch={openMatch} />}
+        {tab === 'squad' && <OnlineSquad onOpenMatch={openMatch} notify={notify} seasonId={status.season?.id} />}
         {tab === 'league' && <LeagueTab now={now} onOpenMatch={openMatch} />}
         {tab === 'market' && <OnlineMarket notify={notify} onChanged={load} />}
-        {Extra && <Extra status={status} now={now} notify={notify} onChanged={load} />}
+        {tab === 'club' && <OnlineClub notify={notify} onChanged={load} />}
       </>
     )
   } else if (status.access === 'queued') {

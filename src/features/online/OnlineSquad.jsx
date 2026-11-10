@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
-import { AlertTriangle, Ambulance, Ban, ClipboardList, Crown, Radio, RotateCcw, Save, Shirt, Star, Target, Wand2 } from 'lucide-react'
+import { AlertTriangle, Ambulance, Ban, ClipboardList, Crown, FileSignature, Gavel, Radio, RotateCcw, Save, Shirt, Star, Target, Users, Wand2 } from 'lucide-react'
 import { Notice, Skeleton } from '../../components/ui/feedback'
 import Pitch from '../seasons/components/Pitch'
 import TacticsPanel from '../seasons/components/TacticsPanel'
 import useCatalog from '../seasons/hooks/useCatalog'
 import { POS_NAME, condTone, posFit } from '../seasons/utils/managerUtils'
-import { autoOnlineLineup, fetchOnlineSquad, saveOnlineLineup, saveOnlineRoles } from './services/onlineApi'
+import { autoOnlineLineup, createOnlineLot, fetchOnlineSquad, renewOnlinePlayer, saveOnlineLineup, saveOnlineRoles } from './services/onlineApi'
 import { asSeasonPlayer, cardTier, clubColors, money } from './onlineUtils'
 import '../seasons/seasons.css'
 import '../seasons/manager.css'
@@ -71,7 +71,48 @@ export function PlayerCard({ p, tag, colors, selected, onClick, compact }) {
 
 // Elenco e escalação. Toque em uma vaga do campo e depois em outro jogador (no campo, banco ou fora) para trocar.
 // Nada é salvo até tocar em Salvar; os avisos aparecem antes.
-export default function OnlineSquad({ onOpenMatch }) {
+// salário pela nota (mesma fórmula de on_wage no banco)
+const wageFor = (ovr, age) => Math.ceil((Math.max(1, ovr - 45) ** 2 * 0.65 + Math.max(0, ovr - 75) ** 2 * 12) * (age < 24 ? 1.1 : age >= 31 ? 0.9 : 1))
+
+function PlayerDeal({ p, seasonId, colors, busy, onSell, onRenew }) {
+  const [mode, setMode] = useState(null)
+  const [price, setPrice] = useState(String(p.value))
+  const ends = p.contract_end ?? 0
+  const left = ends - (seasonId || 0)
+  return (
+    <div className={`on-deal-card ${mode ? 'is-open' : ''}`}>
+      <PlayerCard p={p} colors={colors} tag={left <= 0 ? 'contrato acaba nesta temporada' : `contrato +${left}`} onClick={() => setMode(mode ? null : 'menu')} />
+      {mode === 'menu' && (
+        <div className="on-deal-actions">
+          <button type="button" className="gx-btn-ghost" onClick={() => setMode('sell')}><Gavel size={14} /> Vender</button>
+          <button type="button" className="gx-btn-ghost" disabled={left >= 3} onClick={() => setMode('renew')}><FileSignature size={14} /> Renovar</button>
+        </div>
+      )}
+      {mode === 'sell' && (
+        <form className="on-deal-actions" onSubmit={(e) => { e.preventDefault(); onSell(p, Math.round(Number(price))) }}>
+          <label>Lance inicial<input inputMode="numeric" value={price} onChange={(e) => setPrice(e.target.value.replace(/\D/g, ''))} /></label>
+          <button type="submit" className="gx-btn" disabled={busy || !price}><Gavel size={14} /> Pôr em leilão</button>
+          <small>Valor de mercado {money(p.value)}. O leilão dura 10 minutos; sem lances, um clube do jogo pode comprar por 60% a 75% do valor.</small>
+        </form>
+      )}
+      {mode === 'renew' && (
+        <div className="on-deal-actions">
+          {[1, 2, 3].filter((y) => left + y <= 3).map((y) => {
+            const w = wageFor(p.ovr, p.age)
+            return (
+              <button key={y} type="button" className="gx-btn-ghost" disabled={busy} onClick={() => onRenew(p, y)}>
+                +{y} temp. · luva {money(w * 8 * y)}
+              </button>
+            )
+          })}
+          <small>Salário novo: {money(wageFor(p.ovr, p.age))} por dia (hoje {money(p.wage)}).</small>
+        </div>
+      )}
+    </div>
+  )
+}
+
+export default function OnlineSquad({ onOpenMatch, notify, seasonId }) {
   const { catalog } = useCatalog()
   const [squad, setSquad] = useState(null)
   const [draft, setDraft] = useState(null) // {formation, slots, bench, tactics}
@@ -182,10 +223,11 @@ export default function OnlineSquad({ onOpenMatch }) {
           <Radio size={16} /> Seu time está jogando agora. Mexer aqui não muda a partida: vale para o próximo jogo. <b>Ir para a partida</b>
         </button>
       )}
-      <div className="on-seg on-seg-3" role="tablist" aria-label="Elenco">
+      <div className="on-seg on-seg-4" role="tablist" aria-label="Elenco">
         <button type="button" role="tab" aria-selected={view === 'team'} className={view === 'team' ? 'is-on' : ''} onClick={() => setView('team')}><Shirt size={15} /> Time</button>
         <button type="button" role="tab" aria-selected={view === 'tactics'} className={view === 'tactics' ? 'is-on' : ''} onClick={() => setView('tactics')}><ClipboardList size={15} /> Táticas</button>
         <button type="button" role="tab" aria-selected={view === 'roles'} className={view === 'roles' ? 'is-on' : ''} onClick={() => setView('roles')}><Crown size={15} /> Funções</button>
+        <button type="button" role="tab" aria-selected={view === 'players'} className={view === 'players' ? 'is-on' : ''} onClick={() => setView('players')}><Users size={15} /> Contratos</button>
       </div>
       {error && <Notice kind="error" onClose={() => setError('')}>{error}</Notice>}
       {saved && !dirty && <Notice kind="success" onClose={() => setSaved('')}>{saved}</Notice>}
@@ -251,6 +293,24 @@ export default function OnlineSquad({ onOpenMatch }) {
                 {fieldIds.map((pid) => byId[pid] && <option key={pid} value={pid}>{byId[pid].name} · {byId[pid].pos} {Math.round(byId[pid].ovr)}</option>)}
               </select>
             </label>
+          ))}
+        </div>
+      )}
+
+      {view === 'players' && (
+        <div className="on-deals">
+          <p className="on-hint">Toque em um jogador para vender ou renovar. Elenco: {squad.players.length} (mínimo 16, máximo 28).</p>
+          {squad.players.map((p) => (
+            <PlayerDeal key={p.id} p={byId[p.id]} seasonId={seasonId} colors={colors} busy={busy}
+              onSell={(pl, price) => {
+                setBusy(true)
+                createOnlineLot(pl.id, price).then(() => notify?.(`${pl.name} está em leilão.`, 'success')).catch((e) => notify?.(e.message, 'alert')).finally(() => setBusy(false))
+              }}
+              onRenew={(pl, y) => {
+                setBusy(true)
+                renewOnlinePlayer(pl.id, y).then((sq) => { load(sq); notify?.(`${pl.name} renovou por mais ${y} temporada(s).`, 'success') }).catch((e) => notify?.(e.message, 'alert')).finally(() => setBusy(false))
+              }}
+            />
           ))}
         </div>
       )}

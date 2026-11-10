@@ -173,6 +173,12 @@ function act({ p_fixture, p_changes }) {
   return { ...payload(m, 0), applied_at: m.minute }
 }
 
+// ---- clube fictício ----
+const club = { used: 1, conv: 40, build: null }
+const clubState = () => ({ server_now: new Date().toISOString(), cash: 150000, reserved: 12000, debt: 0, levels: { stadium: 1, training: 2, medical: 0, youth: 0 }, build: club.build,
+  costs: Object.fromEntries(['stadium', 'training', 'medical', 'youth'].map((k, i) => [k, { cost: 25000 * Math.round((([1, 2, 0, 0][i]) + 1) ** 1.5), time: (([1, 2, 0, 0][i]) + 1) * 43200 }])),
+  train: { used: club.used, max: 3, cond_cost: 6 }, coins: { wallet: 820, converted: club.conv, cap: 300, rate: 1000 }, match_today: true, wages: 6900 })
+
 // ---- mercado fictício ----
 const lots = Array.from({ length: 7 }, (_, i) => {
   const ovr = 62 + ((i * 7) % 20)
@@ -242,6 +248,12 @@ const RPC = {
     return market()
   },
   on_lot_cancel: ({ p_lot }) => { lots.splice(lots.findIndex((x) => x.id === p_lot), 1); return market() },
+  on_club: () => clubState(),
+  on_build: ({ p_kind }) => { club.build = { kind: p_kind, until: new Date(Date.now() + 3600e3 * 12).toISOString() }; return clubState() },
+  on_train_start: ({ p_game }) => { club.used += 1; return { session: 1, game: p_game, seed: 'x', started_at: new Date().toISOString() } },
+  on_train_finish: ({ p_score }) => ({ score: p_score, group: 1, players: players.slice(0, 3).map((p) => ({ id: p.id, name: p.name, gain: Math.round(p_score * 40), ovr: p.ovr + 0.5, xp: 20 })) }),
+  on_renew: () => squad(),
+  online_coins_convert: ({ p_coins }) => { club.conv += p_coins; return clubState() },
   on_finance: () => ({ cash: 150000, reserved: 12000, debt: 0, wages: players.reduce((a, p) => a + p.wage, 0), ledger: [{ kind: 'gate', amount: 8200, note: 'Bilheteria', at: new Date().toISOString() }, { kind: 'wage', amount: -5400, note: 'Salários do dia', at: new Date().toISOString() }], news: [{ kind: 'market', text: 'Rafael Santos foi vendido por $ 6.500.', at: new Date().toISOString() }] }),
   on_match_act: act,
   on_roles_save: ({ p_roles }) => { lineup = { ...lineup, roles: p_roles }; return squad() },

@@ -49,3 +49,12 @@ export const bidOnline = (lotId, amount) => rpc('on_bid', { p_lot: lotId, p_amou
 export const createOnlineLot = (playerId, price) => rpc('on_lot_create', { p_player: playerId, p_price: price })
 export const cancelOnlineLot = (lotId) => rpc('on_lot_cancel', { p_lot: lotId })
 export const fetchOnlineFinance = () => rpc('on_finance')
+
+// Clube: treino, estrutura, contratos e moedas (Fase 4)
+export const fetchOnlineClub = () => rpc('on_club')
+export const buildOnline = (kind) => rpc('on_build', { p_kind: kind })
+export const startOnlineTraining = (game, players) => rpc('on_train_start', { p_game: game, p_players: players })
+export const finishOnlineTraining = (session, score) => rpc('on_train_finish', { p_session: session, p_score: score })
+export const renewOnlinePlayer = (playerId, years) => rpc('on_renew', { p_player: playerId, p_years: years })
+// Sem prefixo on_: o cache do app trata como escrita e atualiza a carteira de moedas nas outras telas.
+export const convertOnlineCoins = (coins) => rpc('online_coins_convert', { p_coins: coins })
