@@ -173,6 +173,17 @@ function act({ p_fixture, p_changes }) {
   return { ...payload(m, 0), applied_at: m.minute }
 }
 
+// ---- mercado fictício ----
+const lots = Array.from({ length: 7 }, (_, i) => {
+  const ovr = 62 + ((i * 7) % 20)
+  const opens = Date.now() - 60000 + (i > 4 ? (i - 4) * 2400000 : 0)
+  return { id: 100 + i, status: 'open', opens_at: new Date(opens).toISOString(), ends_at: new Date(Date.now() + [45, 200, 420, 90, 600, 2400, 4800][i] * 1000).toISOString(),
+    start_price: 4000 + i * 1500, best_bid: i % 2 ? 6000 + i * 2000 : null, bids: i % 2 ? 3 : 0, min_bid: i % 2 ? 6300 + i * 2100 : 4000 + i * 1500, mine: false, leading: i === 3,
+    player: { id: `m${i}`, name: person(70 + i), pos: STAR_POS[i % 9], sec: [], age: 19 + i * 2, ovr, pot: ovr + 6, star: i === 2, cond: 100, wage: 300, value: 9000 + i * 7000, number: null },
+    seller: i === 4 ? clubs[2] : null, best_club: i % 2 ? (i === 3 ? clubs[0] : clubs[6]) : null }
+})
+const market = () => ({ server_now: new Date().toISOString(), my_club: 1, club: { cash: 150000, reserved: 12000, debt: 0, roster: players.length }, lots, recent: lots.slice(0, 3).map((l) => ({ ...l, status: 'sold', best_bid: 8000, best_club: clubs[5], seller: null })) })
+
 const status = () => {
   const playing = state.access === 'playing'
   const next = fixtures.find((f) => f.status !== 'done' && (f.home === 1 || f.away === 1))
@@ -218,6 +229,20 @@ const RPC = {
   on_calendar: () => ({ server_now: new Date().toISOString(), my_club: 1, clubs, fixtures }),
   on_standings: table,
   on_match_poll: poll,
+  on_market: market,
+  on_bid: ({ p_lot, p_amount }) => {
+    const l = lots.find((x) => x.id === p_lot)
+    if (p_amount < l.min_bid) return { error: `O lance mínimo agora é $ ${l.min_bid}` }
+    Object.assign(l, { best_bid: p_amount, best_club: clubs[0], leading: true, bids: l.bids + 1, min_bid: Math.round(p_amount * 1.05) })
+    return market()
+  },
+  on_lot_create: ({ p_player, p_price }) => {
+    const p = players.find((x) => x.id === p_player)
+    lots.unshift({ id: Date.now(), status: 'open', opens_at: new Date().toISOString(), ends_at: new Date(Date.now() + 600000).toISOString(), start_price: p_price, best_bid: null, bids: 0, min_bid: p_price, mine: true, leading: false, player: { ...p, value: p.value }, seller: clubs[0], best_club: null })
+    return market()
+  },
+  on_lot_cancel: ({ p_lot }) => { lots.splice(lots.findIndex((x) => x.id === p_lot), 1); return market() },
+  on_finance: () => ({ cash: 150000, reserved: 12000, debt: 0, wages: players.reduce((a, p) => a + p.wage, 0), ledger: [{ kind: 'gate', amount: 8200, note: 'Bilheteria', at: new Date().toISOString() }, { kind: 'wage', amount: -5400, note: 'Salários do dia', at: new Date().toISOString() }], news: [{ kind: 'market', text: 'Rafael Santos foi vendido por $ 6.500.', at: new Date().toISOString() }] }),
   on_match_act: act,
   on_roles_save: ({ p_roles }) => { lineup = { ...lineup, roles: p_roles }; return squad() },
 }

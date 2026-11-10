@@ -42,3 +42,10 @@ export const pollOnlineMatch = (fixtureId = null, afterSeq = 0) => rpc('on_match
 export const actOnlineMatch = (fixtureId, changes) =>
   rpc('on_match_act', { p_fixture: fixtureId, p_req: crypto.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2)}`, p_changes: changes })
 export const saveOnlineRoles = (roles) => rpc('on_roles_save', { p_roles: roles })
+
+// Mercado de leilões (Fase 3)
+export const fetchOnlineMarket = () => rpc('on_market')
+export const bidOnline = (lotId, amount) => rpc('on_bid', { p_lot: lotId, p_amount: amount })
+export const createOnlineLot = (playerId, price) => rpc('on_lot_create', { p_player: playerId, p_price: price })
+export const cancelOnlineLot = (lotId) => rpc('on_lot_cancel', { p_lot: lotId })
+export const fetchOnlineFinance = () => rpc('on_finance')

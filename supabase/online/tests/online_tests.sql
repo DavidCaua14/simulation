@@ -351,3 +351,98 @@ begin
  if n<>85 then raise exception 'recuperação diária: %',n;end if;
  raise notice 'PASS cron';
 end $$;
+
+-- ═════════════════════════════════════════════════════════════════════════════
+-- Fase 3: mercado de leilões
+-- ═════════════════════════════════════════════════════════════════════════════
+do $$
+declare s public.on_seasons;n int;l public.on_lots;a public.on_clubs;b public.on_clubs;bot public.on_clubs;pid text;v bigint;
+begin
+ select * into s from public.on_seasons where status='live';
+ update public.on_lots set status='cancelled' where status='open';
+ -- novo dia: 24 lotes do sistema, das 08:00 às 23:30
+ perform public.on_market_tick(timestamptz '2026-11-12 03:00+00',true);
+ select count(*) into n from public.on_lots where season_id=s.id and seller is null and status='open';
+ if n<>24 then raise exception 'lotes do dia: %',n;end if;
+ if exists(select 1 from public.on_lots where status='open' and seller is null and (ends_at-opens_at not between interval '5 minutes' and interval '10 minutes')) then
+  raise exception 'duração dos lotes';end if;
+ if (select count(distinct opens_at) from public.on_lots where status='open' and seller is null)<>24 then raise exception 'fins não escalonados';end if;
+
+ select * into l from public.on_lots where status='open' and seller is null order by opens_at limit 1;
+ select * into a from public.on_clubs where season_id=s.id and user_id is not null order by id limit 1;
+ select * into b from public.on_clubs where season_id=s.id and user_id is null order by id limit 1;
+ update public.on_clubs set cash=100000,reserved=0,debt=0 where id in(a.id,b.id);
+ -- antes de abrir: recusa
+ begin perform public.on_bid_as(a.id,l.id,l.start_price,l.opens_at-interval '1 minute');raise exception 'lance antes de abrir';
+ exception when others then if sqlerrm not like 'Leilão encerrado%' then raise;end if;end;
+ -- lance abaixo do mínimo: recusa
+ begin perform public.on_bid_as(a.id,l.id,l.start_price-1,l.opens_at);raise exception 'lance baixo';
+ exception when others then if sqlerrm not like 'O lance mínimo%' then raise;end if;end;
+ perform public.on_bid_as(a.id,l.id,l.start_price,l.opens_at+interval '10 seconds');
+ if (select reserved from public.on_clubs where id=a.id)<>l.start_price then raise exception 'reserva do lance';end if;
+ -- cobertura libera a reserva do anterior
+ v:=public.on_min_bid((select x from public.on_lots x where x.id=l.id));
+ perform public.on_bid_as(b.id,l.id,v,l.ends_at-interval '5 seconds');
+ if (select reserved from public.on_clubs where id=a.id)<>0 or (select reserved from public.on_clubs where id=b.id)<>v then raise exception 'reserva liberada';end if;
+ -- lance no fim estende para pelo menos 30 s
+ if (select ends_at from public.on_lots where id=l.id)<>l.ends_at-interval '5 seconds'+interval '30 seconds' then raise exception 'prorrogação de 30 s';end if;
+ -- mesmo clube cobrindo o próprio lance só reserva a diferença
+ perform public.on_bid_as(b.id,l.id,v+1000,l.ends_at);
+ if (select reserved from public.on_clubs where id=b.id)<>v+1000 then raise exception 'reserva própria';end if;
+ -- prorrogação tem teto
+ for n in 1..40 loop
+  select * into l from public.on_lots where id=l.id;
+  exit when l.ends_at>=l.hard_end;
+  perform public.on_bid_as(case when l.best_club=a.id then b.id else a.id end,l.id,public.on_min_bid(l),l.ends_at-interval '1 second');
+ end loop;
+ select * into l from public.on_lots where id=l.id;
+ if l.ends_at>l.hard_end then raise exception 'passou do teto';end if;
+ -- fechamento: dinheiro e jogador mudam de mãos uma vez só
+ select cash into v from public.on_clubs where id=l.best_club;
+ perform public.on_lot_settle(l.id,l.hard_end+interval '1 second');
+ perform public.on_lot_settle(l.id,l.hard_end+interval '2 second');
+ if (select club_id from public.on_players where id=l.player_id)<>l.best_club then raise exception 'jogador não entregue';end if;
+ if (select cash from public.on_clubs where id=l.best_club)<>v-l.best_bid or (select reserved from public.on_clubs where id=l.best_club)<>0 then raise exception 'pagamento';end if;
+ if (select count(*) from public.on_ledger where club_id=l.best_club and kind='buy')<>1 then raise exception 'extrato';end if;
+ if exists(select 1 from public.on_lineups x where x.club_id=l.best_club and (x.slots::text like '%"'||l.player_id||'"%' or l.player_id=any(x.bench))) then
+  raise exception 'comprado entrou na escalação';end if;
+
+ -- venda de jogador do humano: sai da escalação salva, vaga preenchida, vendedor recebe
+ select l2.slots->>'ATA' into pid from public.on_lineups l2 where l2.club_id=a.id;
+ update public.on_clubs set cash=10000 where id=a.id;
+ set local request.jwt.claim.sub='00000000-0000-0000-0000-000000000004';
+ select * into a from public.on_clubs where id=a.id;
+ if a.user_id<>'00000000-0000-0000-0000-000000000004' then raise exception 'teste espera o usuário 4';end if;
+ perform public.on_lot_create(pid,greatest(500,round(public.on_value((select ovr from public.on_players where id=pid),(select age from public.on_players where id=pid),(select pot from public.on_players where id=pid))*.5))::bigint);
+ select * into l from public.on_lots where player_id=pid and status='open';
+ perform public.on_bid_as(b.id,l.id,l.start_price,now());
+ perform public.on_lot_settle(l.id,l.hard_end+interval '1 second');
+ if (select club_id from public.on_players where id=pid)<>b.id then raise exception 'venda não entregue';end if;
+ if (select cash from public.on_clubs where id=a.id)<>10000+l.start_price then raise exception 'vendedor não recebeu';end if;
+ if exists(select 1 from public.on_lineups x where x.club_id=a.id and x.slots::text like '%"'||pid||'"%') then raise exception 'vendido continua escalado';end if;
+ if (select count(*) from jsonb_object_keys((select slots from public.on_lineups where club_id=a.id)))<>11 then raise exception 'vaga não preenchida';end if;
+ if not exists(select 1 from public.on_news where club_id=a.id and text like '%vendido%') then raise exception 'técnico não avisado';end if;
+
+ -- sem interessados: bot compra por 60% a 75% do valor
+ select l2.bench[1] into pid from public.on_lineups l2 where l2.club_id=a.id;
+ perform public.on_lot_create(pid,greatest(500,round(public.on_value((select ovr from public.on_players where id=pid),(select age from public.on_players where id=pid),(select pot from public.on_players where id=pid))*.5))::bigint);
+ select * into l from public.on_lots where player_id=pid and status='open';
+ perform public.on_lot_settle(l.id,l.hard_end+interval '1 second');
+ select * into bot from public.on_clubs where id=(select club_id from public.on_players where id=pid);
+ if bot.user_id is not null then raise exception 'bot não comprou';end if;
+ v:=(select best_bid from public.on_lots where id=l.id);
+ if v<round(public.on_value((select ovr from public.on_players where id=pid),(select age from public.on_players where id=pid),(select pot from public.on_players where id=pid))*.59) then raise exception 'bot pagou pouco: %',v;end if;
+
+ -- limite de elenco: 16 não vende; dívida bloqueia lance
+ delete from public.on_players where club_id=a.id and id not in(select id from public.on_players where club_id=a.id order by ovr desc limit 16);
+ perform public.on_lineup_repair(a.id);
+ begin perform public.on_lot_create((select id from public.on_players where club_id=a.id limit 1),100000);raise exception 'vendeu com 16';
+ exception when others then if sqlerrm not like 'Elenco com 16%' then raise;end if;end;
+ update public.on_clubs set debt=5 where id=a.id;
+ select * into l from public.on_lots where status='open' and seller is null order by opens_at limit 1;
+ begin perform public.on_bid_as(a.id,l.id,l.start_price,l.opens_at);raise exception 'lance com dívida';
+ exception when others then if sqlerrm not like 'Clube com dívida%' then raise;end if;end;
+ perform public.on_money(a.id,100,'test');
+ if (select debt from public.on_clubs where id=a.id)<>0 then raise exception 'entrada não pagou dívida';end if;
+ raise notice 'PASS mercado';
+end $$;

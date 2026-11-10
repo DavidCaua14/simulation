@@ -3,6 +3,7 @@ import { ArrowLeft, CalendarDays, Clock, Home, Landmark, ListOrdered, Pencil, Ra
 import { EmptyState, Notice, Skeleton } from '../../components/ui/feedback'
 import OnlineCrest from './components/OnlineCrest'
 import OnlineDraft from './OnlineDraft'
+import OnlineMarket from './OnlineMarket'
 import OnlineMatchLive from './OnlineMatchLive'
 import OnlineSquad from './OnlineSquad'
 import { fetchOnlineCalendar, fetchOnlineStandings, fetchOnlineStatus, joinOnlineQueue, renameOnlineClub } from './services/onlineApi'
@@ -13,7 +14,7 @@ import './online.css'
 const TABS = [
   { id: 'home', label: 'Início', Icon: Home },
   { id: 'squad', label: 'Elenco', Icon: Shirt },
-  { id: 'market', label: 'Mercado', Icon: Gavel, later: true },
+  { id: 'market', label: 'Mercado', Icon: Gavel },
   { id: 'club', label: 'Clube', Icon: Landmark, later: true },
   { id: 'league', label: 'Liga', Icon: Trophy },
 ]
@@ -244,6 +245,7 @@ export default function OnlineScreen({ onBack, extraTabs = {} }) {
         {tab === 'home' && <HomeTab status={status} now={now} onRenamed={apply} onOpenMatch={openMatch} />}
         {tab === 'squad' && <OnlineSquad onOpenMatch={openMatch} />}
         {tab === 'league' && <LeagueTab now={now} onOpenMatch={openMatch} />}
+        {tab === 'market' && <OnlineMarket notify={notify} onChanged={load} />}
         {Extra && <Extra status={status} now={now} notify={notify} onChanged={load} />}
       </>
     )

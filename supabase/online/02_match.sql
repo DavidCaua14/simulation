@@ -17,6 +17,9 @@
 alter table public.on_players add column if not exists yellows smallint not null default 0;
 alter table public.on_lineups add column if not exists roles jsonb not null default '{}'::jsonb;
 alter table public.on_seasons add column if not exists last_recovery date;
+-- Ganchos das fases seguintes: funções chamadas pelo cron (p_now, p_new_day) e no fim de cada partida (p_fixture).
+alter table public.on_config add column if not exists tick_hooks text[] not null default '{}';
+alter table public.on_config add column if not exists finish_hooks text[] not null default '{}';
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- Tabelas da partida: mesmas colunas de mgr_matches / mgr_match_players / mgr_match_events, sem ligação com o
@@ -349,7 +352,7 @@ end $$;
 -- ─────────────────────────────────────────────────────────────────────────────
 create or replace function public.on_match_finish(p_fixture bigint) returns jsonb
 language plpgsql security definer set search_path=public as $$
-declare m public.on_matches;f public.on_fixtures;v_hg int;v_ag int;v_pens int[];motm jsonb;v_sum jsonb;v_w int;
+declare m public.on_matches;f public.on_fixtures;v_hg int;v_ag int;v_pens int[];motm jsonb;v_sum jsonb;v_w int;v_hook text;
 begin
  select * into m from public.on_matches where fixture_id=p_fixture for update;
  if m.summary is not null then return m.summary;end if;
@@ -389,6 +392,10 @@ begin
   inj_until=case when mp.injured then (now() at time zone 'America/Sao_Paulo')::date+1+floor(random()*5)::int else p.inj_until end
  from public.on_match_players mp
  where mp.fixture_id=p_fixture and p.id=mp.player_id and p.club_id=mp.club_id and mp.status<>'bench';
+ -- fases seguintes (bilheteria, copa...)
+ for v_hook in select unnest(finish_hooks) from public.on_config loop
+  execute format('select public.%I($1)',v_hook) using p_fixture;
+ end loop;
  return v_sum;
 end $$;
 
@@ -614,7 +621,7 @@ end $$;
 -- ─────────────────────────────────────────────────────────────────────────────
 create or replace function public.on_tick(p_now timestamptz default now()) returns int
 language plpgsql security definer set search_path=public as $$
-declare s public.on_seasons;r record;f public.on_fixtures;m public.on_matches;v_today date;n int:=0;
+declare s public.on_seasons;r record;f public.on_fixtures;m public.on_matches;v_today date;n int:=0;v_new_day boolean:=false;v_hook text;
 begin
  select x.* into s from public.on_seasons x where x.status='live';
  if s.id is null then return 0;end if;
@@ -622,6 +629,7 @@ begin
  if s.last_recovery is distinct from v_today then
   update public.on_seasons set last_recovery=v_today where id=s.id and last_recovery is distinct from v_today;
   if found then
+   v_new_day:=true;
    -- recuperação diária: sem ela o elenco desgasta e nunca recupera
    update public.on_players p set cond=least(100,p.cond+35),rhythm=greatest(30,p.rhythm-2)
     from public.on_clubs k where k.season_id=s.id and p.club_id=k.id and (p.cond<100 or p.rhythm>30);
@@ -645,6 +653,13 @@ begin
    else perform public.on_advance(r.id,f.kickoff+interval '1 day',null);end if;
    n:=n+1;
   exception when others then raise warning 'on_tick jogo %: %',r.id,sqlerrm;
+  end;
+ end loop;
+ -- fases seguintes (mercado, finanças, copa...): cada gancho em sua própria subtransação
+ for v_hook in select unnest(tick_hooks) from public.on_config loop
+  begin
+   execute format('select public.%I($1,$2)',v_hook) using p_now,v_new_day;
+  exception when others then raise warning 'on_tick %: %',v_hook,sqlerrm;
   end;
  end loop;
  return n;
