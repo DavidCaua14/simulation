@@ -1,3 +1,9 @@
+-- Pacote de publicação do modo online, fase 6 (gerado de supabase/online/06_experience.sql).
+-- Rodar inteiro no SQL Editor ou pela API, como administrador. Tudo ou nada.
+-- Depois, para voltar à escolha dos craques: supabase/releases/online_reiniciar.sql.
+begin;
+
+-- ===== supabase/online/06_experience.sql =====
 -- MODO ONLINE — Fase 6: experiência de clube.
 --
 --  • Calendário: jogos só de manhã e à tarde (09:00, 10:00, 11:00, 14:00, 15:30 e 17:00).
@@ -559,3 +565,7 @@ revoke all on function public.on_club_identity(jsonb),public.on_bid(bigint,bigin
 grant execute on function public.on_club_identity(jsonb),public.on_bid(bigint,bigint,boolean),public.on_news_seen(bigint[]),public.on_market(),
  public.on_draft_read(),public.on_draft_pick(int,int),public.on_train_start(text,text[]),public.on_train_finish(bigint,numeric),
  public.on_squad(),public.on_status() to authenticated;
+
+insert into supabase_migrations.schema_migrations(version,name) values('20261111120000','online_phase6_experience')
+on conflict do nothing;
+commit;

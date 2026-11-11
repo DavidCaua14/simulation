@@ -115,3 +115,10 @@ Medição com 400 lances simulados sem tela (antes → depois): distância do ch
 
 `supabase/releases/online_reiniciar.sql` apaga a temporada (só tabelas `on_*`) e cria outra com os técnicos de
 teste, que voltam para a escolha dos craques.
+
+### Publicação da Fase 6
+
+1. Rodar `supabase/releases/online_fase_6.sql` no SQL Editor (aplica a fase e registra a versão `20261111120000`).
+   O app antigo continua funcionando com o banco novo.
+2. Publicar o app (merge do branch).
+3. Rodar `supabase/releases/online_reiniciar.sql` para recomeçar com a escolha dos craques.
