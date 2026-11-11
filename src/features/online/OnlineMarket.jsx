@@ -1,93 +1,77 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Clock, Gavel, Hourglass, Star, Tag, TrendingUp, X } from 'lucide-react'
+import { Banknote, Coins, Flame, Gavel, Hourglass, Tag, TrendingUp, Users, X } from 'lucide-react'
 import { EmptyState, Notice, Skeleton } from '../../components/ui/feedback'
 import OnlineCrest from './components/OnlineCrest'
+import { FutCard, OvrBadge } from './components/PlayerFut'
 import { bidOnline, cancelOnlineLot, fetchOnlineMarket } from './services/onlineApi'
-import { cardTier, money, moneyShort } from './onlineUtils'
-import { POS_NAME } from '../seasons/utils/managerUtils'
+import { money, moneyShort, timeLeft } from './onlineUtils'
 
-const fmtLeft = (ms) => {
-  if (ms <= 0) return 'encerrando'
-  const s = Math.ceil(ms / 1000)
-  if (s >= 3600) return `${Math.floor(s / 3600)} h ${String(Math.floor((s % 3600) / 60)).padStart(2, '0')}`
-  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`
-}
+const STEPS = [
+  [0, 'Mínimo'],
+  [0.1, '+10%'],
+  [0.25, '+25%'],
+  [0.5, '+50%'],
+]
+const round100 = (n) => Math.ceil(n / 100) * 100
 
-function LotCard({ lot, now, busy, onBid, onCancel }) {
-  const open = new Date(lot.opens_at).getTime() <= now
+function Auction({ lot, now, busy, wallet, coins, onBid, onCancel }) {
+  const [step, setStep] = useState(0)
   const left = new Date(lot.ends_at).getTime() - now
-  const hot = open && left < 60000
+  const hot = left < 120000
+  const amount = step === 0 ? lot.min_bid : round100(lot.min_bid * (1 + step))
+  const need = amount - (lot.leading ? lot.best_bid : 0) - wallet.free
+  const coinCost = need > 0 ? Math.ceil(need / coins.bid_rate) : 0
+  const canCoins = coinCost > 0 && coinCost <= coins.wallet
+  const blocked = coinCost > 0 && !canCoins
   const p = lot.player
-  const [custom, setCustom] = useState('')
-  const tier = cardTier(p.ovr, p.star)
   return (
-    <article className={`on-lot t-${tier} ${lot.leading ? 'is-leading' : ''} ${hot ? 'is-hot' : ''} ${!open ? 'is-soon' : ''}`}>
-      <header className="on-lot-head">
-        <span className="on-lot-ovr"><b>{Math.round(p.ovr)}</b><small>{p.pos}</small></span>
-        <div className="on-lot-who">
-          <strong>{p.star && <Star size={12} />} {p.name}</strong>
-          <small>{POS_NAME[p.pos]} · {p.age} anos · potencial {p.pot}</small>
-          <small className="on-lot-from">
-            {lot.seller ? <><OnlineCrest club={lot.seller} size={14} /> {lot.mine ? 'Seu jogador' : lot.seller.name}</> : 'Mercado livre'}
-          </small>
-        </div>
-        <span className={`on-lot-clock ${hot ? 'is-hot' : ''}`}>
-          {open ? <><Hourglass size={13} /> {fmtLeft(left)}</> : <><Clock size={13} /> abre {new Date(lot.opens_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</>}
-        </span>
-      </header>
-      <div className="on-lot-bid">
-        <span>
+    <article className={`on-auc ${lot.featured ? 'is-featured' : ''} ${lot.leading ? 'is-leading' : lot.bidding ? 'is-outbid' : ''} ${hot ? 'is-hot' : ''}`}>
+      <FutCard p={p} club={lot.seller} size="sm" />
+      <div className="on-auc-body">
+        <header>
+          <span className={`on-auc-clock ${hot ? 'is-hot' : ''}`}>{hot ? <Flame size={13} /> : <Hourglass size={13} />} {timeLeft(left)}</span>
+          {lot.bidders > 0 && <span className="on-auc-count"><Users size={12} /> {lot.bidders}</span>}
+          {lot.seller && <span className="on-auc-seller"><OnlineCrest club={lot.seller} size={16} /> {lot.seller.short}</span>}
+        </header>
+        <div className="on-auc-price">
           <small>{lot.best_bid ? 'Maior lance' : 'Lance inicial'}</small>
           <b>{money(lot.best_bid || lot.start_price)}</b>
-        </span>
-        <span>
-          <small>Valor</small>
-          <b className="is-dim">{moneyShort(p.value)}</b>
-        </span>
-        <span className="on-lot-leader">
-          {lot.best_club ? (
-            <>
-              <OnlineCrest club={lot.best_club} size={20} />
-              <em>{lot.leading ? 'Você lidera' : lot.best_club.short}</em>
-            </>
-          ) : (
-            <em>sem lances</em>
+          {lot.best_club && (
+            <span className="on-auc-leader"><OnlineCrest club={lot.best_club} size={18} /> {lot.leading ? 'Você lidera' : lot.best_club.name}</span>
           )}
-        </span>
-      </div>
-      {open && !lot.mine && (
-        <div className="on-lot-actions">
-          <button type="button" className="gx-btn" disabled={busy || lot.leading} onClick={() => onBid(lot, lot.min_bid)}>
-            <Gavel size={15} /> {lot.leading ? 'Na frente' : `Dar ${moneyShort(lot.min_bid)}`}
-          </button>
-          <form
-            className="on-lot-custom"
-            onSubmit={(e) => {
-              e.preventDefault()
-              const v = Math.round(Number(custom))
-              if (v) onBid(lot, v)
-            }}
-          >
-            <input inputMode="numeric" placeholder={String(lot.min_bid)} value={custom} onChange={(e) => setCustom(e.target.value.replace(/\D/g, ''))} aria-label="Valor do lance" />
-            <button type="submit" className="gx-btn-ghost" disabled={busy || !custom}><TrendingUp size={15} /></button>
-          </form>
         </div>
-      )}
-      {lot.mine && !lot.best_club && (
-        <button type="button" className="gx-btn-ghost on-lot-cancel" disabled={busy} onClick={() => onCancel(lot)}><X size={14} /> Retirar da venda</button>
-      )}
+        {lot.history?.length > 1 && (
+          <ol className="on-auc-hist">
+            {lot.history.slice(0, 3).map((h, i) => <li key={i} className={h.me ? 'is-me' : ''}><span>{h.club.short}</span><b>{moneyShort(h.amount)}</b></li>)}
+          </ol>
+        )}
+        {!lot.mine && (
+          <>
+            <div className="on-auc-steps" role="group" aria-label="Valor do lance">
+              {STEPS.map(([v, label]) => <button key={v} type="button" className={step === v ? 'is-on' : ''} onClick={() => setStep(v)}>{label}</button>)}
+            </div>
+            <button type="button" className={`gx-btn on-auc-bid ${coinCost > 0 ? 'is-coins' : ''}`} disabled={busy || blocked || left <= 0} onClick={() => onBid(lot, amount, coinCost > 0)}>
+              <Gavel size={16} /> {money(amount)}
+              {coinCost > 0 && <em><Coins size={12} /> {coinCost}</em>}
+            </button>
+          </>
+        )}
+        {lot.mine && !lot.best_club && (
+          <button type="button" className="gx-btn-ghost on-auc-cancel" disabled={busy} onClick={() => onCancel(lot)}><X size={14} /> Retirar</button>
+        )}
+      </div>
     </article>
   )
 }
 
-// MERCADO: leilões ao vivo. A tela consulta a cada 5 s só quando um lote está no fim; senão a cada 20 s.
+// MERCADO: três jogadores em destaque (os mesmos para todos, trocados a cada hora) e as vendas dos técnicos.
 export default function OnlineMarket({ notify, onChanged }) {
   const [data, setData] = useState(null)
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
   const [offset, setOffset] = useState(0)
   const [now, setNow] = useState(() => Date.now())
-  const [view, setView] = useState('open')
+  const [view, setView] = useState('featured')
 
   const apply = useCallback((d) => {
     setOffset(new Date(d.server_now).getTime() - Date.now())
@@ -102,14 +86,12 @@ export default function OnlineMarket({ notify, onChanged }) {
     return () => clearInterval(id)
   }, [])
   const serverNow = now + offset
-  const hot = (data?.lots || []).some((l) => {
-    const t = new Date(l.ends_at).getTime() - serverNow
-    return new Date(l.opens_at).getTime() <= serverNow && t < 60000
-  })
+  const open = useMemo(() => (data?.lots || []).filter((l) => new Date(l.opens_at).getTime() <= serverNow), [data, serverNow])
+  const active = open.some((l) => l.bidding || l.mine || new Date(l.ends_at).getTime() - serverNow < 120000)
   useEffect(() => {
-    const id = setInterval(load, hot ? 5000 : 20000)
+    const id = setInterval(load, active ? 5000 : 15000)
     return () => clearInterval(id)
-  }, [load, hot])
+  }, [load, active])
 
   const run = (job, ok) => {
     setBusy(true)
@@ -119,68 +101,59 @@ export default function OnlineMarket({ notify, onChanged }) {
         if (ok) notify?.(ok, 'success')
         onChanged?.()
       })
-      .catch((e) => notify?.(e.message, 'alert'))
+      .catch((e) => {
+        notify?.(e.message, 'alert')
+        load()
+      })
       .finally(() => setBusy(false))
   }
-  const lists = useMemo(() => {
-    const lots = data?.lots || []
-    return {
-      open: lots.filter((l) => !l.mine && new Date(l.opens_at).getTime() <= serverNow),
-      soon: lots.filter((l) => !l.mine && new Date(l.opens_at).getTime() > serverNow).slice(0, 4),
-      mine: lots.filter((l) => l.mine),
-      leading: lots.filter((l) => l.leading),
-    }
-  }, [data, serverNow])
 
   if (!data) return error ? <Notice kind="error">{error}</Notice> : <Skeleton rows={6} />
   const c = data.club
+  const coins = data.coins || { wallet: 0, bid_rate: 600 }
+  const wallet = { free: c.cash - c.reserved }
+  const lists = {
+    featured: open.filter((l) => l.featured > 0),
+    coaches: open.filter((l) => !l.featured && !l.mine),
+    mine: open.filter((l) => l.mine || l.bidding),
+  }
+  const bid = (lot, v, useCoins) => run(bidOnline(lot.id, v, useCoins), `Lance de ${money(v)} em ${lot.player.name}`)
+  const cancel = (lot) => run(cancelOnlineLot(lot.id), 'Jogador retirado da venda')
+  const list = lists[view] || []
   return (
     <section className="on-market">
       <div className="on-wallet">
-        <span><small>Caixa livre</small><b>{money(c.cash - c.reserved)}</b></span>
-        <span><small>Em lances</small><b>{money(c.reserved)}</b></span>
-        <span><small>Elenco</small><b>{c.roster}/28</b></span>
+        <span><small><Banknote size={11} /> Caixa livre</small><b>{moneyShort(wallet.free)}</b></span>
+        <span><small><Gavel size={11} /> Em lances</small><b>{moneyShort(c.reserved)}</b></span>
+        <span><small><Coins size={11} /> Moedas</small><b>{coins.wallet}</b></span>
       </div>
-      {c.debt > 0 && <Notice kind="error">Seu clube deve {money(c.debt)}. Com dívida não dá para dar lances; as próximas receitas pagam a dívida primeiro.</Notice>}
-      <div className="on-seg on-seg-3" role="tablist">
-        <button type="button" role="tab" aria-selected={view === 'open'} className={view === 'open' ? 'is-on' : ''} onClick={() => setView('open')}><Gavel size={15} /> Leilões</button>
-        <button type="button" role="tab" aria-selected={view === 'mine'} className={view === 'mine' ? 'is-on' : ''} onClick={() => setView('mine')}><Tag size={15} /> Meus ({lists.mine.length + lists.leading.length})</button>
-        <button type="button" role="tab" aria-selected={view === 'recent'} className={view === 'recent' ? 'is-on' : ''} onClick={() => setView('recent')}><TrendingUp size={15} /> Negócios</button>
+      {c.debt > 0 && <Notice kind="error">Dívida de {money(c.debt)}: lances bloqueados.</Notice>}
+      <div className="on-seg on-seg-4" role="tablist">
+        <button type="button" role="tab" aria-selected={view === 'featured'} className={view === 'featured' ? 'is-on' : ''} onClick={() => setView('featured')}><Flame size={14} /> Destaques</button>
+        <button type="button" role="tab" aria-selected={view === 'coaches'} className={view === 'coaches' ? 'is-on' : ''} onClick={() => setView('coaches')}><Tag size={14} /> Vendas{lists.coaches.length ? ` ${lists.coaches.length}` : ''}</button>
+        <button type="button" role="tab" aria-selected={view === 'mine'} className={view === 'mine' ? 'is-on' : ''} onClick={() => setView('mine')}><Gavel size={14} /> Meus{lists.mine.length ? ` ${lists.mine.length}` : ''}</button>
+        <button type="button" role="tab" aria-selected={view === 'recent'} className={view === 'recent' ? 'is-on' : ''} onClick={() => setView('recent')}><TrendingUp size={14} /> Fechados</button>
       </div>
 
-      {view === 'open' && (
+      {view !== 'recent' && (
         <>
-          {lists.open.length === 0 && <EmptyState compact icon={Gavel} title="Nenhum leilão aberto agora" text="Novos jogadores entram no mercado ao longo do dia." />}
-          <div className="on-lots">
-            {lists.open.map((l) => <LotCard key={l.id} lot={l} now={serverNow} busy={busy} onBid={(lot, v) => run(bidOnline(lot.id, v), `Lance de ${money(v)} em ${lot.player.name}.`)} />)}
-          </div>
-          {lists.soon.length > 0 && (
-            <>
-              <h3 className="gx-subtitle">Em breve</h3>
-              <div className="on-lots">{lists.soon.map((l) => <LotCard key={l.id} lot={l} now={serverNow} busy={busy} />)}</div>
-            </>
+          {list.length === 0 && (
+            <EmptyState compact icon={Gavel} title={view === 'featured' ? 'Próximos destaques às 08:00' : view === 'coaches' ? 'Nenhum jogador à venda' : 'Nenhum leilão em andamento'} />
           )}
-        </>
-      )}
-      {view === 'mine' && (
-        <>
-          <p className="on-hint">Para vender, toque em um jogador no Elenco e escolha “Vender”. Elenco entre 16 e 28 jogadores.</p>
-          {lists.mine.length + lists.leading.length === 0 && <EmptyState compact icon={Tag} title="Nada em andamento" text="Seus jogadores à venda e os leilões em que você lidera aparecem aqui." />}
-          <div className="on-lots">
-            {[...lists.mine, ...lists.leading].map((l) => (
-              <LotCard key={l.id} lot={l} now={serverNow} busy={busy} onBid={(lot, v) => run(bidOnline(lot.id, v))} onCancel={(lot) => run(cancelOnlineLot(lot.id), 'Jogador retirado da venda.')} />
-            ))}
+          <div className="on-aucs">
+            {list.map((l) => <Auction key={l.id} lot={l} now={serverNow} busy={busy} wallet={wallet} coins={coins} onBid={bid} onCancel={cancel} />)}
           </div>
         </>
       )}
       {view === 'recent' && (
-        <ul className="on-list">
-          {data.recent.length === 0 && <li className="on-hint">Nenhum negócio fechado ainda.</li>}
+        <ul className="on-deals-list">
+          {data.recent.length === 0 && <EmptyState compact icon={TrendingUp} title="Nenhum negócio fechado" />}
           {data.recent.map((l) => (
             <li key={l.id} className="on-deal">
-              <span className="on-lot-ovr is-small"><b>{Math.round(l.player.ovr)}</b><small>{l.player.pos}</small></span>
-              <span className="on-deal-who"><strong>{l.player.name}</strong><small>{l.seller ? `${l.seller.short} → ` : 'Livre → '}{l.best_club?.short}</small></span>
-              <b>{money(l.best_bid)}</b>
+              <OvrBadge p={l.player} small />
+              <span className="on-deal-who"><strong>{l.player.name}</strong><small>{l.seller ? l.seller.short : 'Mercado'} → {l.best_club?.short}</small></span>
+              <OnlineCrest club={l.best_club} size={22} />
+              <b>{moneyShort(l.best_bid)}</b>
             </li>
           ))}
         </ul>

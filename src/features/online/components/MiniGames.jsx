@@ -44,7 +44,7 @@ function Timing({ onDone }) {
         <i className="mg-zone" style={{ left: `${zone.x}%`, width: `${zone.w}%` }} />
         <i className="mg-marker" ref={bar} />
       </span>
-      <span className="mg-score">{hits} / {round} · toque!</span>
+      <span className="mg-score">{hits} / 8</span>
     </button>
   )
 }
@@ -133,7 +133,7 @@ function Passing({ onDone }) {
           {k + 1}
         </button>
       ))}
-      <span className="mg-score">{showing ? 'Observe…' : `Sua vez: ${pos}/${seq.length}`} · nível {seq.length - 1}</span>
+      <span className="mg-score">{showing ? '•••' : `${pos} / ${seq.length}`}</span>
     </div>
   )
 }
@@ -179,30 +179,144 @@ function Aim({ onDone }) {
         <i className="mg-cross" ref={aimEl} />
         {result && <b className="mg-result">{result}</b>}
       </span>
-      <span className="mg-score">{goals} gols em {shots} chutes · toque para chutar</span>
+      <span className="mg-score">{goals} / 6</span>
     </button>
   )
 }
 
+// 5) Desarme: o atacante desce por uma das três faixas; toque na faixa quando ele chegar à linha do zagueiro. 8 ataques.
+function Tackle({ onDone }) {
+  const [n, setN] = useState(0)
+  const [hits, setHits] = useState(0)
+  const [flash, setFlash] = useState(null)
+  const run = useRef({ lane: 1, y: 0, speed: 60, live: false })
+  const el = useRef(null)
+  const done = useRef(false)
+  useEffect(() => {
+    if (n >= 8) {
+      if (!done.current) {
+        done.current = true
+        onDone(hits / 8)
+      }
+      return undefined
+    }
+    run.current = { lane: Math.floor(Math.random() * 3), y: 0, speed: 55 + n * 9 + Math.random() * 25, live: true }
+    let raf
+    let last = performance.now()
+    const step = (t) => {
+      const r = run.current
+      const dt = (t - last) / 1000
+      last = t
+      if (r.live) {
+        r.y += r.speed * dt
+        if (el.current) Object.assign(el.current.style, { left: `${16.6 + r.lane * 33.3}%`, top: `${r.y}%` })
+        if (r.y > 96) {
+          r.live = false
+          setFlash('miss')
+          setTimeout(() => setFlash(null), 220)
+          setN((x) => x + 1)
+          return
+        }
+      }
+      raf = requestAnimationFrame(step)
+    }
+    raf = requestAnimationFrame(step)
+    return () => cancelAnimationFrame(raf)
+  }, [n]) // eslint-disable-line react-hooks/exhaustive-deps
+  const tap = (lane) => {
+    const r = run.current
+    if (!r.live) return
+    r.live = false
+    const ok = lane === r.lane && r.y >= 64 && r.y <= 88
+    setFlash(ok ? 'ok' : 'miss')
+    setTimeout(() => setFlash(null), 220)
+    if (ok) setHits((h) => h + 1)
+    setN((x) => x + 1)
+  }
+  return (
+    <div className={`mg-tackle ${flash ? `is-${flash}` : ''}`}>
+      <i className="mg-tackle-line" />
+      <i className="mg-runner" ref={el} />
+      {[0, 1, 2].map((lane) => <button key={lane} type="button" className="mg-lane" onClick={() => tap(lane)} aria-label={`Faixa ${lane + 1}`}><i className="mg-def" /></button>)}
+      <span className="mg-score">{hits} / 8</span>
+    </div>
+  )
+}
+
+// 6) Drible: conduza a bola por três faixas desviando dos marcadores. 14 marcadores.
+function Dribble({ onDone }) {
+  const [lane, setLane] = useState(1)
+  const [count, setCount] = useState({ passed: 0, hit: 0 })
+  const laneRef = useRef(1)
+  const cones = useRef([])
+  const box = useRef(null)
+  const done = useRef(false)
+  useEffect(() => {
+    laneRef.current = lane
+  }, [lane])
+  useEffect(() => {
+    let raf
+    let last = performance.now()
+    let spawned = 0
+    let next = 0.4
+    let passed = 0
+    let hit = 0
+    const step = (t) => {
+      const dt = Math.min(0.05, (t - last) / 1000)
+      last = t
+      next -= dt
+      if (next <= 0 && spawned < 14) {
+        cones.current.push({ lane: Math.floor(Math.random() * 3), y: -8, id: spawned })
+        spawned += 1
+        next = Math.max(0.42, 0.95 - spawned * 0.035)
+      }
+      const speed = 70 + spawned * 4
+      for (const c of cones.current) {
+        c.y += speed * dt
+        if (!c.done && c.y > 78 && c.y < 92 && c.lane === laneRef.current) {
+          c.done = true
+          c.bad = true
+          hit += 1
+        } else if (!c.done && c.y >= 92) {
+          c.done = true
+          passed += 1
+        }
+      }
+      cones.current = cones.current.filter((c) => c.y < 108)
+      if (box.current) {
+        box.current.innerHTML = cones.current.map((c) => `<i class="mg-cone ${c.bad ? 'is-bad' : ''}" style="left:${16.6 + c.lane * 33.3}%;top:${c.y}%"></i>`).join('')
+      }
+      setCount((k) => (k.passed === passed && k.hit === hit ? k : { passed, hit }))
+      if (spawned >= 14 && cones.current.length === 0) {
+        if (!done.current) {
+          done.current = true
+          onDone(passed / 14)
+        }
+        return
+      }
+      raf = requestAnimationFrame(step)
+    }
+    raf = requestAnimationFrame(step)
+    return () => cancelAnimationFrame(raf)
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  return (
+    <div className="mg-dribble">
+      <div className="mg-cones" ref={box} />
+      <i className="mg-me" style={{ left: `${16.6 + lane * 33.3}%` }} />
+      {[0, 1, 2].map((l) => <button key={l} type="button" className="mg-lane" onClick={() => setLane(l)} aria-label={`Faixa ${l + 1}`} />)}
+      <span className="mg-score">{count.passed} / 14</span>
+    </div>
+  )
+}
+
 export default function MiniGame({ game, onDone }) {
-  const [started, setStarted] = useState(false)
   const [count, setCount] = useState(3)
   useEffect(() => {
-    if (!started || count <= 0) return undefined
+    if (count <= 0) return undefined
     const t = setTimeout(() => setCount(count - 1), 700)
     return () => clearTimeout(t)
-  }, [started, count])
-  const G = { timing: Timing, reaction: Reaction, passing: Passing, aim: Aim }[game]
-  const info = GAMES[game]
-  if (!started)
-    return (
-      <div className="mg-intro">
-        <small>{info.group}</small>
-        <h3>{info.title}</h3>
-        <p>{info.tip}</p>
-        <button type="button" className="gx-btn" onClick={() => setStarted(true)}>Começar</button>
-      </div>
-    )
-  if (count > 0) return <div className="mg-count" aria-live="assertive">{count}</div>
+  }, [count])
+  const G = { timing: Timing, reaction: Reaction, passing: Passing, aim: Aim, tackle: Tackle, dribble: Dribble }[game]
+  if (count > 0) return <div className="mg-count" aria-live="assertive"><small>{GAMES[game].title}</small>{count}</div>
   return <G onDone={onDone} />
 }

@@ -1,15 +1,16 @@
 import { useEffect, useState } from 'react'
-import { Star } from 'lucide-react'
+import { Check, ChevronRight } from 'lucide-react'
 import { Notice, Skeleton } from '../../components/ui/feedback'
+import { FutCard, PlayerFace } from './components/PlayerFut'
 import { fetchDraft, pickDraft } from './services/onlineApi'
-import { LINE_LABEL, POS_LABEL, money } from './onlineUtils'
+import { LINE_LABEL, POS_LABEL, moneyShort } from './onlineUtils'
 
-// Escolha dos três craques: uma linha por vez (defesa, meio-campo, ataque), três opções em cada.
-// O resto do elenco é genérico e igual em força para todos.
+// Contratação dos três craques: uma linha por vez (defesa, meio-campo, ataque), três cartas em cada.
 export default function OnlineDraft({ onDone }) {
   const [draft, setDraft] = useState(null)
   const [error, setError] = useState('')
-  const [busy, setBusy] = useState(null)
+  const [focus, setFocus] = useState(null)
+  const [busy, setBusy] = useState(false)
 
   useEffect(() => {
     fetchDraft().then(setDraft).catch((e) => setError(e.message))
@@ -18,47 +19,67 @@ export default function OnlineDraft({ onDone }) {
     if (draft?.done) onDone?.()
   }, [draft?.done]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const pick = (idx) => {
-    if (busy != null) return
-    setBusy(idx)
+  const sign = () => {
+    if (busy || focus == null) return
+    setBusy(true)
     setError('')
-    pickDraft(draft.step, idx).then(setDraft).catch((e) => setError(e.message)).finally(() => setBusy(null))
+    pickDraft(draft.step, focus)
+      .then((d) => {
+        setFocus(null)
+        setDraft(d)
+      })
+      .catch((e) => setError(e.message))
+      .finally(() => setBusy(false))
   }
 
   if (!draft) return error ? <Notice kind="error">{error}</Notice> : <Skeleton rows={3} variant="grid" />
+  const chosen = draft.options.find((o) => o.idx === focus)
   return (
     <section className="on-draft">
-      <ol className="on-draft-steps" aria-label="Etapas da escolha">
-        {['DEF', 'MID', 'ATT'].map((line, i) => (
-          <li key={line} className={i < draft.step ? 'is-done' : i === draft.step ? 'is-now' : ''}>
-            <b>{i + 1}</b>
-            <span>{LINE_LABEL[line]}</span>
-            <small>{draft.picked[i]?.name || (i === draft.step ? 'escolha agora' : 'a seguir')}</small>
-          </li>
-        ))}
+      <ol className="on-draft-steps" aria-label="Etapas">
+        {['DEF', 'MID', 'ATT'].map((line, i) => {
+          const done = draft.picked[i]
+          return (
+            <li key={line} className={i < draft.step ? 'is-done' : i === draft.step ? 'is-now' : ''}>
+              {done ? <PlayerFace seed={done.name} colors={draft.club?.colors} size={34} /> : <b>{i + 1}</b>}
+              <span>{LINE_LABEL[line]}<small>{done ? done.name : '—'}</small></span>
+              {done && <Check size={14} />}
+            </li>
+          )
+        })}
       </ol>
 
       <header className="on-draft-head">
-        <h2 className="gx-title">Escolha seu craque: {LINE_LABEL[draft.line]}</h2>
-        <p>Um dos três entra no seu elenco. Os outros dois somem. O restante do time é genérico: reforce pelo mercado.</p>
+        <small>Reforço {Math.min(draft.step + 1, 3)} de 3</small>
+        <h2>{LINE_LABEL[draft.line]}</h2>
       </header>
       {error && <Notice kind="error" onClose={() => setError('')}>{error}</Notice>}
 
-      <div className="on-draft-options">
-        {draft.options.map((o) => (
-          <button key={o.idx} type="button" className="on-star" disabled={busy != null} onClick={() => pick(o.idx)}>
-            <span className="on-star-ovr"><b>{o.ovr}</b><small>{o.pos}</small></span>
-            <Star className="on-star-icon" size={18} aria-hidden="true" />
-            <strong>{o.name}</strong>
-            <span className="on-star-pos">{POS_LABEL[o.pos]}</span>
-            <dl>
-              <div><dt>Idade</dt><dd>{o.age}</dd></div>
-              <div><dt>Potencial</dt><dd>{o.pot}</dd></div>
-              <div><dt>Valor</dt><dd>{money(o.value)}</dd></div>
-            </dl>
-            <span className="gx-btn on-star-cta">{busy === o.idx ? 'Contratando...' : 'Escolher'}</span>
-          </button>
+      <div className="on-draft-options" key={draft.step}>
+        {draft.options.map((o, i) => (
+          <FutCard key={o.idx} p={{ ...o, star: true }} club={draft.club} delay={i * 110} selected={focus === o.idx} disabled={busy} onClick={() => setFocus(o.idx)} />
         ))}
+      </div>
+
+      <div className={`on-draft-sign ${chosen ? 'is-open' : ''}`}>
+        {chosen ? (
+          <>
+            <div className="on-draft-sign-info">
+              <strong>{chosen.name}</strong>
+              <span>{POS_LABEL[chosen.pos]} · {chosen.age} anos</span>
+              <dl>
+                <div><dt>Valor</dt><dd>{moneyShort(chosen.value)}</dd></div>
+                <div><dt>Salário</dt><dd>{moneyShort(chosen.wage)}</dd></div>
+                <div><dt>Potencial</dt><dd>{chosen.pot}</dd></div>
+              </dl>
+            </div>
+            <button type="button" className="gx-btn on-draft-go" disabled={busy} onClick={sign}>
+              {busy ? 'Assinando…' : 'Contratar'} <ChevronRight size={18} />
+            </button>
+          </>
+        ) : (
+          <span className="on-draft-wait">Selecione um jogador</span>
+        )}
       </div>
     </section>
   )

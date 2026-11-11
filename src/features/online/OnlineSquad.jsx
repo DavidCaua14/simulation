@@ -81,7 +81,7 @@ function PlayerDeal({ p, seasonId, colors, busy, onSell, onRenew }) {
   const left = ends - (seasonId || 0)
   return (
     <div className={`on-deal-card ${mode ? 'is-open' : ''}`}>
-      <PlayerCard p={p} colors={colors} tag={left <= 0 ? 'contrato acaba nesta temporada' : `contrato +${left}`} onClick={() => setMode(mode ? null : 'menu')} />
+      <PlayerCard p={p} colors={colors} tag={left <= 0 ? 'último ano' : `contrato +${left}`} onClick={() => setMode(mode ? null : 'menu')} />
       {mode === 'menu' && (
         <div className="on-deal-actions">
           <button type="button" className="gx-btn-ghost" onClick={() => setMode('sell')}><Gavel size={14} /> Vender</button>
@@ -92,7 +92,7 @@ function PlayerDeal({ p, seasonId, colors, busy, onSell, onRenew }) {
         <form className="on-deal-actions" onSubmit={(e) => { e.preventDefault(); onSell(p, Math.round(Number(price))) }}>
           <label>Lance inicial<input inputMode="numeric" value={price} onChange={(e) => setPrice(e.target.value.replace(/\D/g, ''))} /></label>
           <button type="submit" className="gx-btn" disabled={busy || !price}><Gavel size={14} /> Pôr em leilão</button>
-          <small>Valor de mercado {money(p.value)}. O leilão dura 10 minutos; sem lances, um clube do jogo pode comprar por 60% a 75% do valor.</small>
+          <small>Valor de mercado {money(p.value)}</small>
         </form>
       )}
       {mode === 'renew' && (
@@ -105,7 +105,7 @@ function PlayerDeal({ p, seasonId, colors, busy, onSell, onRenew }) {
               </button>
             )
           })}
-          <small>Salário novo: {money(wageFor(p.ovr, p.age))} por dia (hoje {money(p.wage)}).</small>
+          <small>Salário {money(p.wage)} → {money(wageFor(p.ovr, p.age))}/dia</small>
         </div>
       )}
     </div>
@@ -138,7 +138,7 @@ export default function OnlineSquad({ onOpenMatch, notify, seasonId }) {
     JSON.stringify({ f: squad.lineup.formation, s: squad.lineup.slots, b: squad.lineup.bench, t: squad.lineup.tactics || {} })
 
   if (!squad || !catalog) return error ? <Notice kind="error">{error}</Notice> : <Skeleton rows={8} />
-  if (!squad.lineup || !draft) return <Notice kind="info">Sua escalação aparece aqui depois da escolha dos craques.</Notice>
+  if (!squad.lineup || !draft) return <Skeleton rows={8} />
 
   const onField = new Set(Object.values(draft.slots))
   const benchSet = new Set(draft.bench)
@@ -179,7 +179,6 @@ export default function OnlineSquad({ onOpenMatch, notify, seasonId }) {
     if (!next || id === draft.formation) return
     setConfirm({
       title: `Mudar para ${next.name}?`,
-      text: 'Os mesmos 11 continuam em campo; cada um vai para a vaga onde rende mais. Confira antes de salvar.',
       ok: () => setDraft({ ...draft, formation: id, slots: remap(draft.slots, next, byId) }),
     })
   }
@@ -192,7 +191,7 @@ export default function OnlineSquad({ onOpenMatch, notify, seasonId }) {
       saveOnlineLineup({ formation: draft.formation, slots: draft.slots, bench: draft.bench, tactics: draft.tactics })
         .then((sq) => {
           load(sq)
-          setSaved('Escalação salva. Vale para o próximo jogo.')
+          setSaved('Escalação salva')
         })
         .catch((e) => setError(e.message))
         .finally(() => setBusy(false))
@@ -203,7 +202,6 @@ export default function OnlineSquad({ onOpenMatch, notify, seasonId }) {
   const auto = () => {
     setConfirm({
       title: 'Montar o melhor time?',
-      text: 'O jogo escolhe os melhores disponíveis para cada vaga desta formação. Suas trocas manuais serão substituídas.',
       ok: () => {
         setBusy(true)
         autoOnlineLineup(draft.formation).then(load).catch((e) => setError(e.message)).finally(() => setBusy(false))
@@ -220,7 +218,7 @@ export default function OnlineSquad({ onOpenMatch, notify, seasonId }) {
     <section className="on-squad">
       {squad.live_fixture && (
         <button type="button" className="on-live-banner" onClick={() => onOpenMatch?.(squad.live_fixture)}>
-          <Radio size={16} /> Seu time está jogando agora. Mexer aqui não muda a partida: vale para o próximo jogo. <b>Ir para a partida</b>
+          <Radio size={16} /> Seu time está em campo <b>Assumir o comando</b>
         </button>
       )}
       <div className="on-seg on-seg-4" role="tablist" aria-label="Elenco">
@@ -243,7 +241,6 @@ export default function OnlineSquad({ onOpenMatch, notify, seasonId }) {
             </label>
             <button type="button" className="gx-btn-ghost" disabled={busy} onClick={auto}><Wand2 size={15} /> Melhor time</button>
           </div>
-          <p className="on-hint">{sel ? 'Agora toque em quem vai trocar de lugar.' : 'Toque em um jogador e depois em outro para trocar de lugar.'}</p>
           <div className="on-pitch-wrap">
             <Pitch
               formation={formation}
@@ -255,7 +252,7 @@ export default function OnlineSquad({ onOpenMatch, notify, seasonId }) {
             />
           </div>
 
-          <h3 className="gx-subtitle">Banco ({draft.bench.length}/12)</h3>
+          <h3 className="on-h">Banco <small>{draft.bench.length}/12</small></h3>
           <div className="on-cards">
             {draft.bench.map((id, i) => byId[id] && (
               <PlayerCard key={id} p={byId[id]} tag="Reserva" colors={colors} selected={sel?.kind === 'bench' && sel.key === i} onClick={() => tap({ kind: 'bench', key: i })} />
@@ -263,8 +260,7 @@ export default function OnlineSquad({ onOpenMatch, notify, seasonId }) {
           </div>
           {out.length > 0 && (
             <>
-              <h3 className="gx-subtitle">Fora da partida</h3>
-              <p className="on-hint">Quem não está entre os 23 não entra no jogo. Toque duas vezes para mandar ao banco.</p>
+              <h3 className="on-h">Não relacionados</h3>
               <div className="on-cards">
                 {out.map((p) => (
                   <PlayerCard key={p.id} p={byId[p.id]} colors={colors} selected={sel?.kind === 'out' && sel.key === p.id}
@@ -284,7 +280,6 @@ export default function OnlineSquad({ onOpenMatch, notify, seasonId }) {
 
       {view === 'roles' && (
         <div className="on-roles">
-          <p className="on-hint">Valem a partir do próximo jogo. Sem escolha, o jogo usa quem chuta melhor.</p>
           {ROLES.map(({ id, label, Icon }) => (
             <label key={id} className="on-role">
               <span><Icon size={16} /> {label}</span>
@@ -299,7 +294,7 @@ export default function OnlineSquad({ onOpenMatch, notify, seasonId }) {
 
       {view === 'players' && (
         <div className="on-deals">
-          <p className="on-hint">Toque em um jogador para vender ou renovar. Elenco: {squad.players.length} (mínimo 16, máximo 28).</p>
+          <h3 className="on-h">Elenco <small>{squad.players.length}/28</small></h3>
           {squad.players.map((p) => (
             <PlayerDeal key={p.id} p={byId[p.id]} seasonId={seasonId} colors={colors} busy={busy}
               onSell={(pl, price) => {

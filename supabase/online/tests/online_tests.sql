@@ -356,17 +356,25 @@ end $$;
 -- Fase 3: mercado de leilões
 -- ═════════════════════════════════════════════════════════════════════════════
 do $$
-declare s public.on_seasons;n int;l public.on_lots;a public.on_clubs;b public.on_clubs;bot public.on_clubs;pid text;v bigint;
+declare s public.on_seasons;n int;l public.on_lots;a public.on_clubs;b public.on_clubs;bot public.on_clubs;pid text;v bigint;ids text[];
 begin
  select * into s from public.on_seasons where status='live';
  update public.on_lots set status='cancelled' where status='open';
- -- novo dia: 24 lotes do sistema, das 08:00 às 23:30
- perform public.on_market_tick(timestamptz '2026-11-12 03:00+00',true);
- select count(*) into n from public.on_lots where season_id=s.id and seller is null and status='open';
- if n<>24 then raise exception 'lotes do dia: %',n;end if;
- if exists(select 1 from public.on_lots where status='open' and seller is null and (ends_at-opens_at not between interval '5 minutes' and interval '10 minutes')) then
-  raise exception 'duração dos lotes';end if;
- if (select count(distinct opens_at) from public.on_lots where status='open' and seller is null)<>24 then raise exception 'fins não escalonados';end if;
+ -- destaques: um por faixa, os mesmos para todos, até a virada da hora; fora do horário não abre
+ perform public.on_market_tick(timestamptz '2026-11-12 05:00+00',false);
+ if exists(select 1 from public.on_lots where season_id=s.id and status='open' and featured>0) then raise exception 'destaque de madrugada';end if;
+ perform public.on_market_tick(timestamptz '2026-11-12 13:20+00',false);
+ perform public.on_market_tick(timestamptz '2026-11-12 13:21+00',false);
+ select count(*) into n from public.on_lots where season_id=s.id and seller is null and status='open' and featured>0;
+ if n<>3 then raise exception 'destaques: %',n;end if;
+ if (select count(distinct featured) from public.on_lots where status='open' and featured>0)<>3 then raise exception 'faixas repetidas';end if;
+ if exists(select 1 from public.on_lots where status='open' and featured>0 and ends_at<>timestamptz '2026-11-12 14:00+00') then raise exception 'destaque não fecha na virada da hora';end if;
+ if (select min(p.ovr) from public.on_lots x join public.on_players p on p.id=x.player_id where x.status='open' and x.featured=1)<77 then raise exception 'faixa 1 fraca';end if;
+ -- sem lances: sai (jogador apagado) e entra outro
+ select array_agg(player_id) into ids from public.on_lots where status='open' and featured>0;
+ perform public.on_market_tick(timestamptz '2026-11-12 14:00+00',false);
+ if exists(select 1 from public.on_players where id=any(ids)) then raise exception 'destaque sem lance ficou no banco';end if;
+ if (select count(*) from public.on_lots where status='open' and featured>0 and ends_at=timestamptz '2026-11-12 15:00+00')<>3 then raise exception 'destaque não foi trocado';end if;
 
  select * into l from public.on_lots where status='open' and seller is null order by opens_at limit 1;
  select * into a from public.on_clubs where season_id=s.id and user_id is not null order by id limit 1;
@@ -384,13 +392,15 @@ begin
  v:=public.on_min_bid((select x from public.on_lots x where x.id=l.id));
  perform public.on_bid_as(b.id,l.id,v,l.ends_at-interval '5 seconds');
  if (select reserved from public.on_clubs where id=a.id)<>0 or (select reserved from public.on_clubs where id=b.id)<>v then raise exception 'reserva liberada';end if;
- -- lance no fim estende para pelo menos 30 s
- if (select ends_at from public.on_lots where id=l.id)<>l.ends_at-interval '5 seconds'+interval '30 seconds' then raise exception 'prorrogação de 30 s';end if;
+ -- lance no fim garante mais 5 minutos
+ if (select ends_at from public.on_lots where id=l.id)<>l.ends_at-interval '5 seconds'+interval '5 minutes' then raise exception 'prorrogação de 5 min';end if;
  -- mesmo clube cobrindo o próprio lance só reserva a diferença
- perform public.on_bid_as(b.id,l.id,v+1000,l.ends_at);
- if (select reserved from public.on_clubs where id=b.id)<>v+1000 then raise exception 'reserva própria';end if;
+ v:=public.on_min_bid((select x from public.on_lots x where x.id=l.id));
+ perform public.on_bid_as(b.id,l.id,v,l.ends_at+interval '1 minute');
+ if (select reserved from public.on_clubs where id=b.id)<>v then raise exception 'reserva própria';end if;
  -- prorrogação tem teto
- for n in 1..40 loop
+ update public.on_clubs set cash=100000000 where id in(a.id,b.id);
+ for n in 1..200 loop
   select * into l from public.on_lots where id=l.id;
   exit when l.ends_at>=l.hard_end;
   perform public.on_bid_as(case when l.best_club=a.id then b.id else a.id end,l.id,public.on_min_bid(l),l.ends_at-interval '1 second');
@@ -534,7 +544,7 @@ begin
  -- moedas: saem da carteira, entram no caixa, com teto
  j:=public.online_coins_convert(100);
  if (j->'coins'->>'converted')::int<>100 then raise exception 'conversão: %',j->'coins';end if;
- begin perform public.online_coins_convert(201);raise exception 'passou do teto';
+ begin perform public.online_coins_convert(901);raise exception 'passou do teto';
  exception when others then if sqlerrm not like 'Teto da temporada%' then raise;end if;end;
  raise notice 'PASS obra, renovação e moedas';
 end $$;
@@ -545,6 +555,81 @@ do $$ begin
  perform public.on_club_tick(now(),false);
  if exists(select 1 from public.on_clubs where build_kind is not null) or not exists(select 1 from public.on_clubs where (lv->>'stadium')::int=1) then raise exception 'obra não concluiu';end if;
 end $$;
+
+-- ═════════════════════════════════════════════════════════════════════════════
+-- Fase 6: identidade, carta, lance com moedas e resultado do leilão
+-- ═════════════════════════════════════════════════════════════════════════════
+do $$
+declare s public.on_seasons;c public.on_clubs;o public.on_clubs;pid text;l bigint;
+begin
+ select * into s from public.on_seasons where status='live';
+ select * into c from public.on_clubs where season_id=s.id and user_id='00000000-0000-0000-0000-000000000004';
+ -- rival humano: se a temporada só tem um técnico, um bot vira técnico durante o teste
+ select * into o from public.on_clubs where season_id=s.id and id<>c.id order by (user_id is null),id limit 1;
+ perform set_config('test.rival_bot',(o.user_id is null)::text,false);
+ update public.on_clubs set user_id='00000000-0000-0000-0000-0000000000f6' where id=o.id and user_id is null;
+ update public.on_clubs set cash=1000,reserved=0,debt=0 where id=c.id;
+ update public.on_clubs set cash=500000,reserved=0,debt=0 where id=o.id;
+ update public.careers set coins=1000 where user_id='00000000-0000-0000-0000-000000000004';
+ pid:=public.on_gen_featured('teste-fase6',1);
+ insert into public.on_lots(season_id,player_id,start_price,opens_at,ends_at,hard_end,featured)
+ values(s.id,pid,13000,now()-interval '1 minute',now()+interval '10 minutes',now()+interval '6 hours',0) returning id into l;
+ perform public.on_bid_as(o.id,l,13000);
+ perform set_config('test.lot',l::text,false);
+ perform set_config('test.rival',o.id::text,false);
+ if public.on_train_group('tackle')<>1 or public.on_train_group('dribble')<>4 or public.on_train_scale(1)<=public.on_train_scale(4)
+  or public.on_train_scale(11)>=public.on_train_scale(4) then raise exception 'treinos novos';end if;
+end $$;
+set request.jwt.claim.sub='00000000-0000-0000-0000-000000000004';
+set role authenticated;
+do $$
+declare j jsonb;l bigint:=current_setting('test.lot')::bigint;v bigint;
+begin
+ -- identidade do clube
+ j:=public.on_club_identity('{"name":"Trovão Azul","short":"tz-a","a":"#112233","pattern":"hoops","shape":"round","stadium":"Arena do Trovão"}');
+ if j->'club'->>'name'<>'Trovão Azul' or j->'club'->>'short'<>'TZA' or j->'club'->'colors'->>'stadium'<>'Arena do Trovão'
+  or j->'club'->'colors'->>'pattern'<>'hoops' or j->'club'->'colors'->>'a'<>'#112233' or j->'club'->'colors'->>'b' is null then raise exception 'identidade: %',j->'club';end if;
+ begin perform public.on_club_identity('{"a":"red"}');raise exception 'cor inválida aceita';
+ exception when others then if sqlerrm not like 'Cor inválida%' then raise;end if;end;
+ begin perform public.on_club_identity('{"pattern":"xadrez"}');raise exception 'desenho inválido aceito';
+ exception when others then if sqlerrm not like 'Desenho inválido%' then raise;end if;end;
+ if not(j ? 'standing' and j ? 'bids' and j ? 'results' and j ? 'featured' and j ? 'form' and j ? 'coins') then raise exception 'status incompleto';end if;
+ -- carta: seis atributos em todos os jogadores
+ if exists(select 1 from jsonb_array_elements(public.on_squad()->'players') p cross join lateral(values('pac'),('sho'),('pas'),('dri'),('def'),('phy')) k(k)
+  where coalesce((p->'card'->>k.k)::int,0) not between 20 and 99) then raise exception 'carta incompleta';end if;
+ -- lance sem caixa: recusa; com moedas: cobre a diferença a 600 por moeda
+ v:=(public.on_market()->'lots'->0->>'min_bid')::bigint;
+ select (x->>'min_bid')::bigint into v from jsonb_array_elements(public.on_market()->'lots') x where (x->>'id')::bigint=l;
+ begin perform public.on_bid(l,v);raise exception 'lance sem caixa aceito';
+ exception when others then if sqlerrm not like 'Caixa livre insuficiente%' then raise;end if;end;
+ j:=public.on_bid(l,v,true);
+ if (j->'coins'->>'wallet')::int<>1000-ceil((v-1000)/600.0)::int then raise exception 'moedas do lance: % (lance %)',j->'coins',v;end if;
+ if not exists(select 1 from jsonb_array_elements(j->'lots') x where (x->>'id')::bigint=l and (x->>'leading')::boolean and (x->>'bidding')::boolean and jsonb_array_length(x->'history')=2) then
+  raise exception 'lote depois do lance';end if;
+ if jsonb_array_length(public.on_status()->'bids')<1 then raise exception 'leilão em andamento fora da tela inicial';end if;
+end $$;
+reset role;
+do $$
+declare l bigint:=current_setting('test.lot')::bigint;o int:=current_setting('test.rival')::int;
+begin
+ if public.on_lot_settle(l,now()+interval '7 hours')<>'sold' then raise exception 'lote não fechou';end if;
+ -- quem perdeu também é avisado, com o vencedor
+ if not exists(select 1 from public.on_news n where n.club_id=o and n.kind='auction' and not (n.data->>'won')::boolean and n.data->'winner'->>'name'='Trovão Azul') then
+  raise exception 'perdedor não avisado';end if;
+end $$;
+set role authenticated;
+do $$
+declare j jsonb;
+begin
+ j:=public.on_status();
+ if jsonb_array_length(j->'results')<1 or not (j->'results'->0->'data'->>'won')::boolean then raise exception 'resultado do leilão: %',j->'results';end if;
+ perform public.on_news_seen(array(select (x->>'id')::bigint from jsonb_array_elements(j->'results') x));
+ if jsonb_array_length(public.on_status()->'results')<>0 then raise exception 'resultado não some depois de visto';end if;
+ raise notice 'PASS fase 6';
+end $$;
+reset role;
+update public.on_clubs set cash=200000 where user_id='00000000-0000-0000-0000-000000000004';
+update public.on_clubs set user_id=null where user_id='00000000-0000-0000-0000-0000000000f6' and current_setting('test.rival_bot')::boolean;
 
 -- ═════════════════════════════════════════════════════════════════════════════
 -- Fase 5: copa, fim de temporada e novos técnicos (temporada sandbox inteira)

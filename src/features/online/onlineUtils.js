@@ -53,8 +53,8 @@ export function clockPhase(kickoffMs, nowMs, et = false) {
   return 'live'
 }
 
-// A tela mostra o jogo ~6 minutos atrás do servidor (42 s reais), para nunca ficar sem lances.
-export const SCREEN_LAG_MS = 42000
+// A tela mostra o jogo ~3 minutos atrás do servidor (24 s reais), para nunca ficar sem lances entre duas consultas (20 s).
+export const SCREEN_LAG_MS = 24000
 
 // Encaixe por posição (mesma tabela do modo Temporadas) → notas em cada posição para o campo.
 const POSITIONS = ['GOL', 'LD', 'ZAG', 'LE', 'VOL', 'MC', 'MEI', 'PD', 'PE', 'ATA']
@@ -86,3 +86,20 @@ export function moneyShort(n) {
   if (Math.abs(v) >= 1e4) return `$ ${Math.round(v / 1000).toLocaleString('pt-BR')} mil`
   return money(v)
 }
+
+// Tempo restante curto: "12:05", "2 h 05", "encerrando".
+export function timeLeft(ms) {
+  if (!(ms > 0)) return 'encerrando'
+  const s = Math.ceil(ms / 1000)
+  if (s >= 3600) return `${Math.floor(s / 3600)} h ${String(Math.floor((s % 3600) / 60)).padStart(2, '0')}`
+  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`
+}
+
+// Rótulos dos seis atributos da carta (on_card no banco). O goleiro usa as mesmas chaves com outro significado.
+const OUT_LABELS = [['pac', 'VEL'], ['sho', 'FIN'], ['pas', 'PAS'], ['dri', 'DRI'], ['def', 'DEF'], ['phy', 'FIS']]
+const GK_LABELS = [['pac', 'ELA'], ['sho', 'MAO'], ['pas', 'REP'], ['dri', 'REF'], ['def', 'VEL'], ['phy', 'POS']]
+export const cardLabels = (pos) => (pos === 'GOL' ? GK_LABELS : OUT_LABELS)
+
+// Desenhos e formatos de escudo aceitos por on_club_identity.
+export const CREST_PATTERNS = ['stripes', 'hoops', 'plain', 'sash', 'halves', 'chevron']
+export const CREST_SHAPES = ['shield', 'round', 'diamond']

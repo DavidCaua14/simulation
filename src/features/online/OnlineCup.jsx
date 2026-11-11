@@ -1,15 +1,15 @@
 import { useEffect, useState } from 'react'
-import { Crown, History, Radio, Trophy } from 'lucide-react'
-import { EmptyState, Notice, Skeleton } from '../../components/ui/feedback'
+import { Crown, Radio, Trophy } from 'lucide-react'
+import { Notice, Skeleton } from '../../components/ui/feedback'
 import OnlineCrest from './components/OnlineCrest'
 import { fetchOnlineCup } from './services/onlineApi'
 import { kickoffDay, kickoffTime } from './onlineUtils'
 
 const STAGES = [
-  [1, 'Primeira fase', 'Dia 6'],
-  [2, 'Quartas', 'Dia 12'],
-  [3, 'Semifinal', 'Dia 18'],
-  [4, 'Final', 'Dia 24 · campo neutro'],
+  [1, '1ª fase'],
+  [2, 'Quartas de final'],
+  [3, 'Semifinal'],
+  [4, 'Final'],
 ]
 
 function Tie({ f, me, now, onOpenMatch }) {
@@ -25,12 +25,12 @@ function Tie({ f, me, now, onOpenMatch }) {
     <button type="button" className={`on-tie ${live ? 'is-live' : ''}`} disabled={f.status !== 'done' && !live} onClick={() => onOpenMatch(f.id)}>
       {side(f.home, f.hg, f.pens?.[0])}
       {side(f.away, f.ag, f.pens?.[1])}
-      <small className="on-tie-when">{live ? <><Radio size={11} /> ao vivo</> : f.status === 'done' ? (f.pens ? 'nos pênaltis' : 'encerrado') : `${kickoffDay(f.kickoff)} · ${kickoffTime(f.kickoff)}`}</small>
+      <small className="on-tie-when">{live ? <><Radio size={11} /> ao vivo</> : f.status === 'done' ? (f.pens ? 'Pênaltis' : 'Encerrado') : `${kickoffDay(f.kickoff)} · ${kickoffTime(f.kickoff)}`}</small>
     </button>
   )
 }
 
-// COPA: chave da temporada (12 clubes; os 4 primeiros da liga folgam na primeira fase) e histórico.
+// COPA: chave da temporada e galeria de campeões.
 export default function OnlineCup({ now, onOpenMatch }) {
   const [data, setData] = useState(null)
   const [error, setError] = useState('')
@@ -41,42 +41,41 @@ export default function OnlineCup({ now, onOpenMatch }) {
   const final = data.rounds.find((f) => f.round === 4 && f.status === 'done')
   const champ = final && (final.winner === final.home.id ? final.home : final.away)
   return (
-    <section className="on-cup">
-      {champ && (
-        <div className="on-champ">
-          <Trophy size={34} />
-          <OnlineCrest club={champ} size={54} />
-          <div><small>Campeão da Copa</small><b>{champ.name}</b></div>
+    <div className="on-cup">
+      <div className="on-cup-hero">
+        <Trophy size={40} />
+        <div>
+          <small>Copa Online</small>
+          {champ ? <b><OnlineCrest club={champ} size={22} /> {champ.name}</b> : <b>{data.rounds.length ? STAGES.filter(([r]) => data.rounds.some((f) => f.round === r)).at(-1)[1] : 'Sorteio após a 5ª rodada'}</b>}
         </div>
-      )}
-      {data.rounds.length === 0 && (
-        <EmptyState compact icon={Trophy} title="A copa começa no dia 6" text="Depois da 5ª rodada, os 4 primeiros da liga folgam e os outros 8 se enfrentam em jogo único. Empate vai para a prorrogação e os pênaltis." />
-      )}
-      {STAGES.filter(([r]) => data.rounds.some((f) => f.round === r)).map(([r, label, when]) => (
-        <div key={r} className="on-cup-stage">
-          <h3 className="gx-subtitle">{label} <small>{when}</small></h3>
+        {champ && <Crown size={22} className="on-cup-crown" />}
+      </div>
+      {STAGES.filter(([r]) => data.rounds.some((f) => f.round === r)).reverse().map(([r, label]) => (
+        <div key={r} className={`on-cup-stage s-${r}`}>
+          <h3 className="on-h">{label}</h3>
           <div className="on-ties">
             {data.rounds.filter((f) => f.round === r).map((f) => <Tie key={f.id} f={f} me={data.my_club} now={now} onOpenMatch={onOpenMatch} />)}
           </div>
           {r === 1 && data.byes?.length > 0 && (
-            <p className="on-hint"><Crown size={13} /> Folgam e entram nas quartas: {data.byes.map((c) => c.short).join(', ')}</p>
+            <div className="on-byes">{data.byes.map((c) => <OnlineCrest key={c.id} club={c} size={24} />)}<small>aguardam nas quartas</small></div>
           )}
         </div>
       ))}
       {data.history.length > 0 && (
-        <>
-          <h3 className="gx-subtitle"><History size={13} /> Temporadas anteriores</h3>
-          <ul className="on-list">
+        <div className="on-block">
+          <h3 className="on-h">Galeria de campeões</h3>
+          <ul className="on-hall">
             {data.history.map((h) => (
-              <li key={h.season} className="on-hist">
+              <li key={h.season}>
                 <b>T{h.season}</b>
-                <span>Liga: <strong>{h.champion}</strong> · Copa: <strong>{h.cup || '—'}</strong></span>
-                {h.me && <em>Você: {h.me.pos}º · {h.me.pts} pts</em>}
+                <span><small>Liga</small>{h.champion}</span>
+                <span><small>Copa</small>{h.cup || '—'}</span>
+                {h.me && <em>{h.me.pos}º</em>}
               </li>
             ))}
           </ul>
-        </>
+        </div>
       )}
-    </section>
+    </div>
   )
 }
