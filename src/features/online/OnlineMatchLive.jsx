@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Ambulance, ArrowLeft, ClipboardList, Clock, Radio, Repeat2, Square, Trophy, Tv, Users, Wifi, WifiOff } from 'lucide-react'
+import { Ambulance, ArrowLeft, ClipboardList, MapPin, Radio, Repeat2, Shield, Swords, Scale, Trophy, Tv, Users, Wifi, WifiOff, Zap } from 'lucide-react'
 import { isSessionError } from '../../lib/sessionRecovery'
 import MatchTactical2D from '../match2d/MatchTactical2D'
 import MatchLineupEditor, { draftFromMatch } from '../seasons/components/MatchLineupEditor'
@@ -13,8 +13,15 @@ import '../seasons/seasons.css'
 import '../seasons/manager.css'
 import '../seasons/matchflow/matchflow.css'
 
-const POLL_MS = 40000
+const POLL_MS = 20000
 const SHOT_KINDS = new Set(['goal', 'pen_goal', 'save', 'shot_off', 'pen_miss'])
+// Postura do time: muda na hora, sem abrir o painel de instruções.
+const STYLES = [
+  ['defensive', 'Defensivo', Shield],
+  ['neutral', 'Equilibrado', Scale],
+  ['attacking', 'Ofensivo', Swords],
+  ['counter', 'Contra-ataque', Zap],
+]
 const TABS = [
   ['feed', 'Lances'],
   ['stats', 'Estatísticas'],
@@ -23,7 +30,7 @@ const TABS = [
 ]
 
 // PARTIDA AO VIVO DO MODO ONLINE. O relógio é real (12 minutos, no horário marcado) e não para para ninguém.
-// A tela consulta o servidor a cada 40 s e mostra o jogo ~6 minutos atrás dele, para nunca ficar sem lances.
+// A tela consulta o servidor a cada 20 s e mostra o jogo ~3 minutos atrás dele, para nunca ficar sem lances.
 // As mudanças do técnico valem no minuto em que o servidor está ("vale a partir de X'").
 export default function OnlineMatchLive({ fixtureId = null, onClose, notify }) {
   const { catalog } = useCatalog()
@@ -156,8 +163,8 @@ export default function OnlineMatchLive({ fixtureId = null, onClose, notify }) {
     try {
       const r = await actOnlineMatch(data.fixture_id, changes)
       merge(r)
-      setApplied({ minute: r.applied_at, at: Date.now() })
-      notify?.(`Mudança feita. Vale a partir do ${r.applied_at}'.`, 'success')
+      setApplied({ minute: r.applied_at, at: now })
+      notify?.(`Ordem dada aos ${r.applied_at}'`, 'success')
     } catch (e) {
       if (!isSessionError(e)) notify?.(e.message, 'alert')
     } finally {
@@ -183,6 +190,8 @@ export default function OnlineMatchLive({ fixtureId = null, onClose, notify }) {
   const opp = side ? (side === 'h' ? data.away : data.home) : null
   const oppPresent = side ? Boolean(data.present?.[side === 'h' ? 'a' : 'h']) : false
   const myFormation = side ? data.formation?.[side === 'h' ? 0 : 1] : null
+  const myTactics = side ? data.tactics?.[side] || {} : {}
+  const myStyle = myTactics.style || (Number(myTactics.mentality || 0) < 0 ? 'defensive' : Number(myTactics.mentality || 0) > 0 ? 'attacking' : 'neutral')
   const injuredOff = side ? players.filter((p) => p.side === side && p.status === 'injured_off' && p.slot) : []
   const fixes = (data.fixes || []).map((f) => ({ ...f, inName: players.find((p) => p.id === f.in)?.name }))
   const clockLabel = phase === 'pre' || clock < 0 ? '0\'' : ended ? 'FIM' : phase === 'ht' ? 'INT' : phase === 'et_wait' ? 'PRO' : `${Math.min(shownMinute, endMin)}'`
@@ -201,9 +210,9 @@ export default function OnlineMatchLive({ fixtureId = null, onClose, notify }) {
           <span className="gx-tag">{data.comp === 'C' ? 'Copa' : `Liga · rodada ${data.round}`}</span>
         </header>
         <div className="onm-vs">
-          <div className={`onm-vs-team ${side === 'h' ? 'is-mine' : ''}`}><OnlineCrest club={data.home} size={88} /><b>{data.home.name}</b><small>{data.home.bot ? 'Comandado pelo jogo' : 'Técnico humano'}</small></div>
+          <div className={`onm-vs-team ${side === 'h' ? 'is-mine' : ''}`}><OnlineCrest club={data.home} size={88} /><b>{data.home.name}</b><small>Mandante</small></div>
           <span className="onm-vs-x">VS</span>
-          <div className={`onm-vs-team ${side === 'a' ? 'is-mine' : ''}`}><OnlineCrest club={data.away} size={88} /><b>{data.away.name}</b><small>{data.away.bot ? 'Comandado pelo jogo' : 'Técnico humano'}</small></div>
+          <div className={`onm-vs-team ${side === 'a' ? 'is-mine' : ''}`}><OnlineCrest club={data.away} size={88} /><b>{data.away.name}</b><small>Visitante</small></div>
         </div>
         <div className="onm-count">
           {left > 0 ? (
@@ -218,10 +227,7 @@ export default function OnlineMatchLive({ fixtureId = null, onClose, notify }) {
             </>
           )}
         </div>
-        <p className="onm-pre-hint">
-          <Clock size={14} /> A partida dura 12 minutos reais e não espera ninguém. Se você não estiver aqui, o jogo comanda o seu time.
-          {side && ' A escalação salva no Elenco é a que entra em campo.'}
-        </p>
+        <p className="onm-pre-hint"><MapPin size={14} /> {data.home.colors?.stadium || `Arena ${data.home.short}`}</p>
       </div>
     )
   }
@@ -281,24 +287,24 @@ export default function OnlineMatchLive({ fixtureId = null, onClose, notify }) {
 
       {side && !ended && (
         <div className="onm-presence">
-          <span className="is-me"><Wifi size={13} /> Você no comando</span>
+          <span className="is-me"><Wifi size={13} /> No comando</span>
           <span className={oppPresent ? 'is-on' : ''}>
-            {opp.bot ? <><Users size={13} /> {opp.short}: comandado pelo jogo</> : oppPresent ? <><Wifi size={13} /> {opp.short}: técnico presente</> : <><WifiOff size={13} /> {opp.short}: ausente (o jogo comanda)</>}
+            {opp.bot ? <><Users size={13} /> {opp.short} · auxiliar</> : oppPresent ? <><Wifi size={13} /> {opp.short} · técnico no banco</> : <><WifiOff size={13} /> {opp.short} · auxiliar</>}
           </span>
         </div>
       )}
-      {!online && <p className="onm-warn"><WifiOff size={14} /> Sem conexão. Tentando de novo… {error}</p>}
+      {!online && <p className="onm-warn"><WifiOff size={14} /> Reconectando…</p>}
       {fixes.length > 0 && clock < 8 && (
         <p className="onm-warn">
-          <Repeat2 size={14} /> Ajustes no pontapé: {fixes.map((f) => f.inName).filter(Boolean).join(', ')} entrou no lugar de quem não podia jogar.
+          <Repeat2 size={14} /> Mudança na escalação: {fixes.map((f) => f.inName).filter(Boolean).join(', ')}
         </p>
       )}
       {injuredOff.length > 0 && !ended && (
         <button type="button" className="onm-alert" onClick={() => setPanel('lineup')}>
-          <Ambulance size={16} /> {injuredOff.map((p) => p.name).join(', ')} se machucou. Troque até o {Math.min(endMin, (data.minute || 0) + 8)}' ou o auxiliar troca.
+          <Ambulance size={16} /> {injuredOff.map((p) => p.name).join(', ')} lesionado · substituir
         </button>
       )}
-      {applied && now - applied.at < 15000 && <p className="ml-pending"><Repeat2 size={14} /> Mudança feita. Vale a partir do {applied.minute}' (a tela está um pouco atrás do jogo).</p>}
+      {applied && now - applied.at < 12000 && <p className="ml-pending"><Repeat2 size={14} /> Ordem dada aos {applied.minute}'</p>}
 
       <div className="sn-seg ml-tabs" role="tablist">
         {TABS.map(([id, label]) => (
@@ -395,10 +401,19 @@ export default function OnlineMatchLive({ fixtureId = null, onClose, notify }) {
             <b>{data.home.name} {data.summary?.home_goals ?? live.sc.h} × {data.summary?.away_goals ?? live.sc.a} {data.away.name}</b>
             {data.summary?.motm && <small>Melhor em campo: {data.summary.motm.name} ({Number(data.summary.motm.rating).toFixed(1)})</small>}
           </div>
-          <button type="button" className="gx-btn" onClick={onClose}>Voltar</button>
+          <button type="button" className="gx-btn" onClick={onClose}>Continuar</button>
         </div>
       ) : (
         <>
+          {side && (
+            <div className="onm-styles" role="group" aria-label="Postura do time">
+              {STYLES.map(([id, label, Icon]) => (
+                <button key={id} type="button" className={myStyle === id ? 'is-on' : ''} disabled={busy || myStyle === id} onClick={() => apply({ tactics: { style: id } })}>
+                  <Icon size={15} /><small>{label}</small>
+                </button>
+              ))}
+            </div>
+          )}
           {side && (
             <nav className="ml-quick" aria-label="Ajustes do time">
               <button type="button" className="gx-btn-ghost" disabled={busy} onClick={() => setPanel('lineup')}><Users size={16} /> Time</button>
@@ -406,7 +421,7 @@ export default function OnlineMatchLive({ fixtureId = null, onClose, notify }) {
             </nav>
           )}
           <footer className="ml-ctrl onm-ctrl">
-            <span className="onm-real"><Clock size={15} /> Relógio real{phase === 'ht' ? ' · intervalo: bom momento para mexer' : ''}</span>
+            <span className="onm-real">{phase === 'ht' ? 'Intervalo' : data.home.colors?.stadium || ''}</span>
             <button
               type="button"
               className={`ml-ic ${broadcast ? 'is-on' : ''}`}
@@ -423,11 +438,6 @@ export default function OnlineMatchLive({ fixtureId = null, onClose, notify }) {
         </>
       )}
 
-      {phase === 'ht' && !ended && side && (
-        <div className="onm-ht" role="status">
-          <Square size={14} /> Intervalo (90 s reais). As trocas feitas agora entram no minuto 45 e não gastam parada.
-        </div>
-      )}
 
       {panel && side && (
         <MatchLineupEditor

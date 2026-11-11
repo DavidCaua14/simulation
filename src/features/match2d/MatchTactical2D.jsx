@@ -94,6 +94,12 @@ export default function MatchTactical2D({ data, catalog, clock, events, paused, 
     const poss = data.stats?.poss?.[0]
     director.current?.setPossession(poss ? poss / 100 : 0.5)
   }, [data.stats])
+  const styleH = data.tactics?.h?.style
+  const styleA = data.tactics?.a?.style
+  useEffect(() => {
+    director.current?.setStyle('h', styleH)
+    director.current?.setStyle('a', styleA)
+  }, [styleH, styleA])
   useEffect(() => {
     const m = minute ?? 0
     director.current?.setHalf(m < 45 ? 1 : m < 90 ? 2 : m < 105 ? 1 : 2)

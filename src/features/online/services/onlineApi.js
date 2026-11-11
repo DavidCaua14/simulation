@@ -28,6 +28,8 @@ export const saveOnlineLineup = ({ formation, slots, bench, tactics = null }) =>
   rpc('on_lineup_save', { p_formation: formation, p_slots: slots, p_bench: bench, p_tactics: tactics })
 export const autoOnlineLineup = (formation = null) => rpc('on_lineup_auto', { p_formation: formation })
 export const renameOnlineClub = (name) => rpc('on_club_rename', { p_name: name })
+// Identidade do clube: nome, sigla, cores, desenho e formato do escudo, estádio. Só as chaves enviadas mudam.
+export const saveOnlineIdentity = (identity) => rpc('on_club_identity', { p: identity })
 
 // Calendário e classificação da liga compartilhada
 export const fetchOnlineCalendar = () => rpc('on_calendar')
@@ -36,7 +38,7 @@ export const fetchOnlineStandings = () => rpc('on_standings')
 // Catálogo de formações (o mesmo do modo Temporadas)
 export const fetchFormations = () => unwrap(supabase.from('sim_formations').select('id,name,slots').order('sort'))
 
-// Partida ao vivo (Fase 2). A tela consulta a cada 40 s; cada mudança leva um identificador único (p_req)
+// Partida ao vivo (Fase 2). A tela consulta a cada 20 s; cada mudança leva um identificador único (p_req)
 // para que um duplo clique não seja aplicado duas vezes.
 export const pollOnlineMatch = (fixtureId = null, afterSeq = 0) => rpc('on_match_poll', { p_fixture: fixtureId, p_after_seq: afterSeq })
 export const actOnlineMatch = (fixtureId, changes) =>
@@ -45,7 +47,8 @@ export const saveOnlineRoles = (roles) => rpc('on_roles_save', { p_roles: roles 
 
 // Mercado de leilões (Fase 3)
 export const fetchOnlineMarket = () => rpc('on_market')
-export const bidOnline = (lotId, amount) => rpc('on_bid', { p_lot: lotId, p_amount: amount })
+export const bidOnline = (lotId, amount, coins = false) => rpc('on_bid', { p_lot: lotId, p_amount: amount, p_coins: coins })
+export const markOnlineNewsSeen = (ids) => rpc('on_news_seen', { p_ids: ids })
 export const createOnlineLot = (playerId, price) => rpc('on_lot_create', { p_player: playerId, p_price: price })
 export const cancelOnlineLot = (lotId) => rpc('on_lot_cancel', { p_lot: lotId })
 export const fetchOnlineFinance = () => rpc('on_finance')
