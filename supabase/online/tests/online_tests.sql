@@ -956,7 +956,7 @@ begin
  if not (j->>'online')::boolean or (j->'me'->>'points')::int<>v1 or j->'rules'->>'win'<>'30' then raise exception 'ranking_overall: %',j->'me';end if;
  if (j->'entries'->0->>'points')::int<(j->'entries'->1->>'points')::int then raise exception 'ranking fora de ordem';end if;
  -- força: média dos relacionados (titulares + banco)
- if public.on_strength(k.id) is distinct from (select round(avg(p.ovr),1) from public.on_players p where p.club_id=k.id and p.id in(
+ if exists(select 1 from public.on_lineups l where l.club_id=k.id) and public.on_strength(k.id) is distinct from (select round(avg(p.ovr),1) from public.on_players p where p.club_id=k.id and p.id in(
    select e.value from public.on_lineups l,jsonb_each_text(l.slots) e where l.club_id=k.id union all select unnest(l.bench) from public.on_lineups l where l.club_id=k.id)) then
   raise exception 'força do clube';
  end if;

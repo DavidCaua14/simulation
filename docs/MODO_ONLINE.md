@@ -242,3 +242,7 @@ Fonte: `supabase/online/14_coin_prizes_head_to_head.sql` (migração `2026111317
 - Ranking: vencer outro técnico soma 20 além dos 30 da vitória; perder para outro técnico tira 15 (`rank_rules.human`, `human_loss`).
 - Energia de treino com moedas custa 5.000.
 - O aviso de leilão encerrado abre em qualquer aba (a tela consulta o servidor a cada 15 a 30 segundos).
+
+## Fase 14 — nada passa do fechamento
+
+Fonte: `supabase/online/15_market_close_cleanup.sql` (migração `20261113180000`). Leilão do mercado marcado para depois do fechamento é retirado; o último leilão comum do dia termina no fechamento; lance perto do fechamento não empurra o relógio para depois dele.
