@@ -1,42 +1,11 @@
-import { useState } from 'react'
-import { Building2, CalendarDays, ChevronRight, Clock, Dumbbell, Gavel, LogOut, MapPin, Radio, Shirt, Trophy, X } from 'lucide-react'
+import { Building2, CalendarDays, ChevronRight, Clock, Dumbbell, Gavel, LogOut, MapPin, Radio, Shirt, Trophy } from 'lucide-react'
 import OnlineCrest from './components/OnlineCrest'
 import OnlinePrep from './OnlinePrep'
-import { OvrBadge, PlayerFace } from './components/PlayerFut'
-import { markOnlineNewsSeen } from './services/onlineApi'
-import { kickoffDay, kickoffTime, money, moneyShort, timeLeft, untilKickoff } from './onlineUtils'
+import { OvrBadge } from './components/PlayerFut'
+import { kickoffDay, kickoffTime, moneyShort, timeLeft, untilKickoff } from './onlineUtils'
 
 const ordinal = (n) => (n ? `${n}º` : '–')
 const FORM = { W: 'V', D: 'E', L: 'D' }
-
-// Resultado dos leilões que o técnico disputou: aparece para o vencedor e para quem perdeu.
-function AuctionResults({ results, onSeen }) {
-  const [i, setI] = useState(0)
-  const r = results[i]
-  if (!r) return null
-  const d = r.data || {}
-  const next = () => (i + 1 < results.length ? setI(i + 1) : onSeen(results.map((x) => x.id)))
-  return (
-    <div className="on-modal" role="dialog" aria-modal="true" aria-label="Leilão encerrado">
-      <div className={`on-result ${d.won ? 'is-won' : 'is-lost'}`}>
-        <button type="button" className="on-result-x" onClick={() => onSeen(results.map((x) => x.id))} aria-label="Fechar"><X size={16} /></button>
-        <small><Gavel size={13} /> Leilão encerrado{results.length > 1 ? ` · ${i + 1}/${results.length}` : ''}</small>
-        <h3>{d.won ? 'Contratado!' : 'Você perdeu a disputa'}</h3>
-        <div className="on-result-player">
-          <PlayerFace seed={d.player?.name} colors={d.winner?.colors} size={84} />
-          {d.player && <OvrBadge p={d.player} />}
-          <strong>{d.player?.name}</strong>
-        </div>
-        <div className="on-result-winner">
-          <OnlineCrest club={d.winner} size={34} />
-          <span><small>Vencedor</small><b>{d.winner?.name}</b></span>
-          <em>{money(d.price)}</em>
-        </div>
-        <button type="button" className="gx-btn" onClick={next}>{i + 1 < results.length ? 'Próximo' : 'Continuar'}</button>
-      </div>
-    </div>
-  )
-}
 
 function BidRow({ lot, now, onOpen }) {
   const left = new Date(lot.ends_at).getTime() - now
@@ -55,11 +24,10 @@ function BidRow({ lot, now, onOpen }) {
 }
 
 export default function OnlineHome({ status, now, go, onOpenMatch, onExit, onReload, notify }) {
-  const { club, next, position, last, standing, form = [], bids = [], results = [], news = [], featured, train } = status
+  const { club, next, position, last, standing, form = [], bids = [], news = [], featured, train } = status
   const live = next && new Date(next.kickoff).getTime() <= now
   const homeClub = next ? (next.at_home ? club : next.opp) : null
   const awayClub = next ? (next.at_home ? next.opp : club) : null
-  const seen = (ids) => markOnlineNewsSeen(ids).catch(() => {}).finally(onReload)
   const stadium = next ? (next.at_home ? club : next.opp).colors?.stadium : null
 
   return (
@@ -163,7 +131,6 @@ export default function OnlineHome({ status, now, go, onOpenMatch, onExit, onRel
 
       <button type="button" className="on-exit" onClick={onExit}><LogOut size={16} /> Sair do modo Online</button>
 
-      {results.length > 0 && <AuctionResults key={results[0].id} results={results} onSeen={seen} />}
     </section>
   )
 }

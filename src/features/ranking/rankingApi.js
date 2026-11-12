@@ -7,13 +7,14 @@ export async function fetchRanking(limit = 50) {
   return data
 }
 
-const DEFAULT_RULES = { win: 30, draw: 10, goal: 2, goal_cap: 5, clean: 5, human: 10, prep: 5, league: [1000, 600, 400, 250, 150, 100, 50, 50], cup: { champion: 400, final: 200, sf: 80 } }
+const DEFAULT_RULES = { win: 30, draw: 10, goal: 2, goal_cap: 5, clean: 5, human: 20, human_loss: 15, prep: 5, league: [1000, 600, 400, 250, 150, 100, 50, 50], cup: { champion: 400, final: 200, sf: 80 } }
 
 // Critérios do ranking: só o modo Online pontua. Os valores vêm do servidor (on_config.rank_rules).
 export function criteria(rules) {
   const r = { ...DEFAULT_RULES, ...(rules || {}) }
   return [
     ['Vitória', `${r.win} pontos; +${r.human} contra outro técnico`],
+    ['Confronto direto', `Perder para outro técnico tira ${r.human_loss ?? 0} pontos`],
     ['Empate', `${r.draw} pontos`],
     ['Gols', `${r.goal} por gol marcado (até ${r.goal_cap} por jogo)`],
     ['Defesa', `${r.clean} por jogo sem sofrer gol`],

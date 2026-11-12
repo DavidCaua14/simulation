@@ -10,7 +10,8 @@ import OnlineLeague from './OnlineLeague'
 import OnlineMarket from './OnlineMarket'
 import OnlineMatchLive from './OnlineMatchLive'
 import OnlineSquad from './OnlineSquad'
-import { fetchOnlineStatus, joinOnlineQueue } from './services/onlineApi'
+import AuctionResults from './components/AuctionResults'
+import { fetchOnlineStatus, joinOnlineQueue, markOnlineNewsSeen } from './services/onlineApi'
 import { moneyShort } from './onlineUtils'
 import './online.css'
 
@@ -58,12 +59,15 @@ export default function OnlineScreen({ onBack, params }) {
     const id = setInterval(() => setTick(Date.now()), tab === 'home' ? 1000 : 15000)
     return () => clearInterval(id)
   }, [tab])
-  // Na tela inicial o servidor é consultado a cada 30 s: leilões em andamento, resultado de leilão e jogo ao vivo.
+  // O servidor é consultado em qualquer aba (15 s no início e no mercado, 30 s nas outras): leilões em andamento,
+  // resultado de leilão (o aviso abre na tela em que o técnico estiver) e jogo ao vivo.
   useEffect(() => {
-    if (!ready || tab !== 'home' || match != null) return undefined
-    const id = setInterval(load, 30000)
+    if (!ready || match != null) return undefined
+    const id = setInterval(load, tab === 'home' || tab === 'market' ? 15000 : 30000)
     return () => clearInterval(id)
   }, [ready, tab, match, load])
+  const results = ready && match == null ? status.results || [] : []
+  const seenResults = (ids) => markOnlineNewsSeen(ids).catch(() => {}).finally(load)
 
   const go = (id, view = null) => setNav((v) => ({ tab: id, view, n: v.n + 1 }))
   const join = () => joinOnlineQueue().then(apply).catch((e) => setError(e.message))
@@ -138,6 +142,7 @@ export default function OnlineScreen({ onBack, params }) {
             ))}
           </nav>
         )}
+        {results.length > 0 && <AuctionResults key={results[0].id} results={results} onSeen={seenResults} />}
         {toast && <div key={toast.id} className={`on-toast is-${toast.kind}`} role="status">{toast.text}</div>}
         {match != null && (
           <OnlineMatchLive

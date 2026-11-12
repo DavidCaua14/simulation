@@ -5,4 +5,5 @@ import { isMaintenanceAdmin } from '../../maintenance/policy'
 export const canTestModes = (user) => isMaintenanceAdmin(user)
 export const isLockedFor = (item, user) => Boolean(item.locked) && !(item.testerOnly && canTestModes(user))
 
-export const canAccessSeasons = (user) => isMaintenanceAdmin(user)
+// Temporadas liberado para todos (13/11/2026)
+export const canAccessSeasons = () => true

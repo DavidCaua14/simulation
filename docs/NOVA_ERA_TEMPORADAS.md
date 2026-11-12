@@ -29,3 +29,13 @@ O último passo da partida (`mgr_match_step`) simula o resto da rodada, avança 
 ## Banco pequeno
 
 O reinício levou as tabelas de temporada ao tamanho de um mundo novo. A manutenção automática (`cw_runtime_maintenance`, a cada 15 minutos) continua compactando temporadas encerradas, estatísticas e finanças antigas.
+
+## Ajustes de 13/11 (segunda rodada)
+
+Migração `20261113160000_seasons_serie_b_start_no_investment.sql`.
+
+- O recomeço traz três propostas sorteadas entre clubes da Série B (reputação inicial 25). As carreiras foram reiniciadas de novo com essa regra.
+- Série B paga 1.000 moedas por vitória. Exercícios pré-jogo custam 4.000 moedas.
+- Não é mais possível investir moedas no clube do modo Temporadas (`career_club_invest` recusa; a tela não mostra o aporte).
+- O modo voltou a ficar liberado para todos (`seasons_require_access` não barra mais).
+- Jeff, brunomartins, Edson e davidcaua receberam 1 milhão de moedas na caixa de mensagens.

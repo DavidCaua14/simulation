@@ -22,7 +22,7 @@ export const COMPETITIONS_NEWS_RELEASE = '2026-11-campeonatos'
 // Anúncio da abertura do modo Online para todos (12/11/2026)
 export const ONLINE_NEWS_RELEASE = '2026-11-modo-online'
 // Nova era (13/11/2026): Temporadas reiniciado em 2026, premiação real, ranking pelo Online
-export const NEW_ERA_NEWS_RELEASE = '2026-11-nova-era'
+export const NEW_ERA_NEWS_RELEASE = '2026-11-nova-era-2'
 
 // Novidades dos eventos (sem presente): o banco guarda se esta carreira já viu a versão.
 export async function fetchNewsStatus(release) {

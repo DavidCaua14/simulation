@@ -232,3 +232,13 @@ Fonte: `supabase/online/12_ranking_market_hours.sql` (migração `20261113130000
 ## Fase 12 — mercado das 08:00 às 18:30
 
 Fonte: `supabase/online/13_market_hours_minutes.sql` (migração `20261113150000`). `on_config.market_close_min` guarda os minutos do fechamento (18 + 30). `on_market_hours` devolve `open_label` e `close_label`. As janelas de destaque e lenda passam a ser duas por dia: 08–13 (destaque 11:00, lenda 12:00) e 13–18 (destaque 16:00, lenda 17:00). A tela de escalação mostra a mesma "Força geral" do início do modo (média de titulares e reservas).
+
+## Fase 13 — prêmios em moedas e confronto direto
+
+Fonte: `supabase/online/14_coin_prizes_head_to_head.sql` (migração `20261113170000`).
+
+- Vitória rende 5.000 moedas e empate 1.500 (`win_coins`, `draw_coins`).
+- Fim de temporada: o técnico recebe moedas pela colocação (`league_coins`: 500 mil, 400 mil, 320 mil … 40 mil) e pela copa (`cup_coin_prizes`: 250 mil, 120 mil, 60 mil). O caixa do clube dele não recebe prêmio; bots continuam recebendo em caixa.
+- Ranking: vencer outro técnico soma 20 além dos 30 da vitória; perder para outro técnico tira 15 (`rank_rules.human`, `human_loss`).
+- Energia de treino com moedas custa 5.000.
+- O aviso de leilão encerrado abre em qualquer aba (a tela consulta o servidor a cada 15 a 30 segundos).

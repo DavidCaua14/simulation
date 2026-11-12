@@ -85,7 +85,8 @@ export default function EventsScreen({ career, onBack }) {
     }
   }
 
-  const active = data?.active || []
+  // quem tem recompensa pronta vem primeiro (antes o cartão ficava escondido no fim da lista)
+  const active = [...(data?.active || [])].sort((a, b) => Number(Boolean(b.completion?.claimable)) - Number(Boolean(a.completion?.claimable)))
   const upcoming = data?.upcoming || []
   const ended = data?.ended || []
   const history = data?.history || []

@@ -57,7 +57,12 @@ export function InvestmentConfirmation({ amount, onClose, onInvested }) {
   </div>
 }
 
-export function FundingAdvice({ playerId, negotiationId = null, terms, onInvested, disabled = false }) {
+// Aporte de moedas no clube saiu do modo Temporadas (13/11/2026): as moedas servem para o modo Online.
+export function FundingAdvice() {
+  return null
+}
+// eslint-disable-next-line no-unused-vars
+function FundingAdviceOld({ playerId, negotiationId = null, terms, onInvested, disabled = false }) {
   const [state, setState] = useState({ quote: null, error: '' })
   const [confirmation, setConfirmation] = useState(null)
   const [revision, setRevision] = useState(0)
@@ -101,7 +106,11 @@ export function FundingAdvice({ playerId, negotiationId = null, terms, onInveste
   </div>
 }
 
-export default function ClubInvestment({ coins, board, onInvested, disabled = false }) {
+export default function ClubInvestment() {
+  return null
+}
+// eslint-disable-next-line no-unused-vars
+function ClubInvestmentOld({ coins, board, onInvested, disabled = false }) {
   const [amount, setAmount] = useState(100)
   const [confirmation, setConfirmation] = useState(null)
   const valid = Number.isInteger(Number(amount)) && amount >= 1 && amount <= Math.min(coins, 1000000)

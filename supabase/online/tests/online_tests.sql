@@ -7,7 +7,7 @@ insert into public.careers(user_id,nickname) values
  ('00000000-0000-0000-0000-000000000005','Dennis'),('00000000-0000-0000-0000-000000000009','novato');
 
 -- a entrada na hora (Fase 10) fica desligada nos testes das fases anteriores e é ligada no teste dela
-update public.on_config set join_instant=false,win_coins=0,draw_coins=0;
+update public.on_config set join_instant=false,win_coins=0,draw_coins=0,train_energy_cost=40,league_coins=array[300,200,150,100,80,60,50,40,30,20,10,10],cup_coin_prizes=array[100,0,0];
 
 select public.on_season_bootstrap(array['00000000-0000-0000-0000-000000000001','00000000-0000-0000-0000-000000000002',
  '00000000-0000-0000-0000-000000000003','00000000-0000-0000-0000-000000000004','00000000-0000-0000-0000-000000000005']::uuid[],
@@ -946,7 +946,7 @@ begin
  update public.on_fixtures set hg=3,ag=0,status='done' where id=f.id;
  perform public.on_rank_hook(f.id);
  select points into v1 from public.on_ranking where user_id=k.user_id;
- if v1-v0 not in(30+6+5,30+10+6+5) then raise exception 'pontos da vitória: %',v1-v0;end if;
+ if v1-v0 not in(30+6+5,30+20+6+5) then raise exception 'pontos da vitória: %',v1-v0;end if;
  if (select coins from public.careers where id=public.on_career_of(k.user_id))<>c0+15 then raise exception 'moedas da vitória';end if;
  delete from public.on_matches where fixture_id=f.id;
  update public.on_fixtures set hg=null,ag=null,status='sched' where id=f.id;
@@ -969,4 +969,27 @@ begin
  if (select count(*) from public.on_lineups l,jsonb_each_text(l.slots) e where l.club_id=k.id)<>11 then raise exception 'bot sem onze';end if;
  if v1<v0-22 then raise exception 'bot escalou time bem mais fraco: % -> %',v0,v1;end if;
  raise notice 'PASS fase 11';
+end $$;
+
+-- Fase 13: confronto direto tira pontos de quem perde; moedas de fim de temporada pela colocação e copa
+do $$
+declare a public.on_clubs;b public.on_clubs;f public.on_fixtures;pa int;pb int;
+begin
+ update public.on_config set league_coins=array[500000,400000,320000,260000,210000,170000,140000,110000,90000,70000,55000,40000],cup_coin_prizes=array[250000,120000,60000];
+ if public.on_season_coins(1,'champion')<>750000 or public.on_season_coins(12,null)<>40000 or public.on_season_coins(2,'sf')<>460000 then raise exception 'moedas de fim de temporada';end if;
+ select c.* into a from public.on_clubs c join public.on_seasons s on s.id=c.season_id and s.status='live' where c.user_id is not null order by c.id limit 1;
+ select c.* into b from public.on_clubs c where c.season_id=a.season_id and c.user_id is not null and c.id<>a.id order by c.id limit 1;
+ if b.id is null then raise notice 'PASS fase 13 (um técnico só: confronto direto não testado)';return;end if;
+ select x.* into f from public.on_fixtures x where x.season_id=a.season_id and x.status='sched' and x.home=a.id and x.away=b.id limit 1;
+ if f.id is null then select x.* into f from public.on_fixtures x where x.season_id=a.season_id and x.status='sched' and x.home=b.id and x.away=a.id limit 1;end if;
+ if f.id is null then raise notice 'PASS fase 13 (sem jogo entre técnicos na tabela)';return;end if;
+ select coalesce((select points from public.on_ranking where user_id=a.user_id),0),coalesce((select points from public.on_ranking where user_id=b.user_id),0) into pa,pb;
+ insert into public.on_matches(fixture_id,season_id,state,status) values(f.id,f.season_id,'{}','finished') on conflict(fixture_id) do update set state='{}';
+ update public.on_fixtures set hg=case when home=a.id then 1 else 0 end,ag=case when home=a.id then 0 else 1 end,status='done' where id=f.id;
+ perform public.on_rank_hook(f.id);
+ if (select points from public.on_ranking where user_id=a.user_id)-pa<>30+20+2+5 then raise exception 'vitória no confronto direto';end if;
+ if (select points from public.on_ranking where user_id=b.user_id)-pb<>-15 then raise exception 'derrota no confronto direto: %',(select points from public.on_ranking where user_id=b.user_id)-pb;end if;
+ delete from public.on_matches where fixture_id=f.id;
+ update public.on_fixtures set hg=null,ag=null,status='sched' where id=f.id;
+ raise notice 'PASS fase 13';
 end $$;
