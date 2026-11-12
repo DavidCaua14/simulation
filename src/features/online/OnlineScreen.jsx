@@ -85,10 +85,10 @@ export default function OnlineScreen({ onBack, params }) {
     )
   } else {
     const gate = status.access === 'queued'
-      ? { icon: Clock, title: 'Vaga garantida', text: 'Você entra na próxima temporada.' }
+      ? { icon: Clock, title: 'Liga cheia', text: 'Sua vaga está garantida para a próxima temporada.' }
       : status.access === 'unavailable'
         ? { icon: Swords, title: 'Em breve', text: 'A liga online ainda não abriu.' }
-        : { icon: Swords, title: 'Liga Online', text: 'Garanta seu clube na próxima temporada.', action: 'Entrar na fila', onAction: join }
+        : { icon: Swords, title: 'Liga Online', text: 'Assuma um clube, contrate três craques e dispute a liga contra outros técnicos.', action: 'Entrar na liga', onAction: join }
     body = (
       <>
         <EmptyState {...gate} />

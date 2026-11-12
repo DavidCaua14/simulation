@@ -21,6 +21,8 @@ export const EVENTS_NEWS_RELEASE = '2026-11-eventos'
 export const COMPETITIONS_NEWS_RELEASE = '2026-11-campeonatos'
 // versão da dica de moral e elenco (tela MoraleNews)
 export const MORALE_NEWS_RELEASE = '2026-11-moral-elenco'
+// Anúncio da abertura do modo Online para todos (12/11/2026)
+export const ONLINE_NEWS_RELEASE = '2026-11-modo-online'
 
 // Novidades dos eventos (sem presente): o banco guarda se esta carreira já viu a versão.
 export async function fetchNewsStatus(release) {

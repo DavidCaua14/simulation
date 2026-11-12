@@ -6,6 +6,9 @@ insert into public.careers(user_id,nickname) values
  ('00000000-0000-0000-0000-000000000003','brunomartins'),('00000000-0000-0000-0000-000000000004','davidcaua'),
  ('00000000-0000-0000-0000-000000000005','Dennis'),('00000000-0000-0000-0000-000000000009','novato');
 
+-- a entrada na hora (Fase 10) fica desligada nos testes das fases anteriores e é ligada no teste dela
+update public.on_config set join_instant=false;
+
 select public.on_season_bootstrap(array['00000000-0000-0000-0000-000000000001','00000000-0000-0000-0000-000000000002',
  '00000000-0000-0000-0000-000000000003','00000000-0000-0000-0000-000000000004','00000000-0000-0000-0000-000000000005']::uuid[],
  date '2026-11-16');
@@ -365,29 +368,32 @@ begin
  update public.on_lots set status='cancelled' where status='open';
  -- destaques: um por faixa, os mesmos para todos, até a virada da hora; fora do horário não abre
  perform public.on_market_tick(timestamptz '2026-11-12 05:00+00',false);
- if exists(select 1 from public.on_lots where season_id=s.id and status='open' and featured between 1 and 3) then raise exception 'destaque de madrugada';end if;
+ if exists(select 1 from public.on_lots where season_id=s.id and status='open' and featured between 1 and 4) then raise exception 'destaque de madrugada';end if;
  perform public.on_market_tick(timestamptz '2026-11-12 13:20+00',false);
  perform public.on_market_tick(timestamptz '2026-11-12 13:21+00',false);
- select count(*) into n from public.on_lots where season_id=s.id and seller is null and status='open' and featured between 1 and 3;
- if n<>3 then raise exception 'destaques: %',n;end if;
- if (select count(distinct featured) from public.on_lots where status='open' and featured between 1 and 3)<>3 then raise exception 'faixas repetidas';end if;
- if exists(select 1 from public.on_lots where status='open' and featured between 1 and 3 and ends_at<>timestamptz '2026-11-12 14:00+00') then raise exception 'destaque não fecha na virada da hora';end if;
- if (select min(p.ovr) from public.on_lots x join public.on_players p on p.id=x.player_id where x.status='open' and x.featured=1)<74 then raise exception 'faixa 1 fraca';end if;
- if (select max(p.ovr) from public.on_lots x join public.on_players p on p.id=x.player_id where x.status='open' and x.featured between 1 and 3)>80 then raise exception 'leilão comum acima de 80';end if;
+ select count(*) into n from public.on_lots where season_id=s.id and seller is null and status='open' and featured between 1 and 4;
+ if n<>4 then raise exception 'destaques: %',n;end if;
+ if (select count(distinct featured) from public.on_lots where status='open' and featured between 1 and 4)<>4 then raise exception 'faixas repetidas';end if;
+ if exists(select 1 from public.on_lots where status='open' and featured between 1 and 4 and ends_at<>timestamptz '2026-11-12 14:00+00') then raise exception 'destaque não fecha na virada da hora';end if;
+ if (select min(p.ovr) from public.on_lots x join public.on_players p on p.id=x.player_id where x.status='open' and x.featured=1)<76 then raise exception 'faixa 1 fraca';end if;
+ if (select max(p.ovr) from public.on_lots x join public.on_players p on p.id=x.player_id where x.status='open' and x.featured between 1 and 4)>80 then raise exception 'leilão comum acima de 80';end if;
  -- especial do dia: aparece cedo, travado até as 19:00 (22:00 UTC), acima de 80 ou lenda, lance inicial acima de $ 400 mil
  select * into l from public.on_lots where season_id=s.id and featured=9 and status='open' and opens_at=timestamptz '2026-11-12 22:00+00';
- if l.id is null or l.opens_at<>timestamptz '2026-11-12 22:00+00' or l.ends_at<>timestamptz '2026-11-12 23:00+00' or l.start_price<=400000 then raise exception 'especial do dia: %',l;end if;
- if not exists(select 1 from public.on_players p where p.id=l.player_id and (p.legend or p.level>=81)) then raise exception 'especial fraco';end if;
+ if l.id is null or l.opens_at<>timestamptz '2026-11-12 22:00+00' or l.ends_at<>timestamptz '2026-11-12 23:00+00' or l.start_price<=400000 then raise exception 'destaque do dia: %',l;end if;
+ if not exists(select 1 from public.on_players p where p.id=l.player_id and not p.legend and p.level>=81) then raise exception 'destaque fraco';end if;
+ -- e uma lenda por dia, uma hora depois
+ if not exists(select 1 from public.on_lots x join public.on_players p on p.id=x.player_id where x.season_id=s.id and x.featured=8 and x.status='open'
+   and x.opens_at=timestamptz '2026-11-12 23:00+00' and p.legend and x.start_price>=600000) then raise exception 'lenda do dia';end if;
  begin perform public.on_bid_as((select id from public.on_clubs where season_id=s.id limit 1),l.id,l.start_price,timestamptz '2026-11-12 15:00+00');raise exception 'lance no especial antes da hora';
  exception when others then if sqlerrm not like 'Leilão encerrado%' then raise;end if;end;
  if (select count(*) from public.on_lots where season_id=s.id and featured=9 and opens_at=timestamptz '2026-11-12 22:00+00')<>1 then raise exception 'mais de um especial no dia';end if;
  -- sem lances: sai (jogador apagado) e entra outro
- select array_agg(player_id) into ids from public.on_lots where status='open' and featured between 1 and 3;
+ select array_agg(player_id) into ids from public.on_lots where status='open' and featured between 1 and 4;
  perform public.on_market_tick(timestamptz '2026-11-12 14:00+00',false);
  if exists(select 1 from public.on_players where id=any(ids)) then raise exception 'destaque sem lance ficou no banco';end if;
- if (select count(*) from public.on_lots where status='open' and featured between 1 and 3 and ends_at=timestamptz '2026-11-12 15:00+00')<>3 then raise exception 'destaque não foi trocado';end if;
+ if (select count(*) from public.on_lots where status='open' and featured between 1 and 4 and ends_at=timestamptz '2026-11-12 15:00+00')<>4 then raise exception 'destaque não foi trocado';end if;
 
- select * into l from public.on_lots where status='open' and seller is null and featured between 1 and 3 order by opens_at limit 1;
+ select * into l from public.on_lots where status='open' and seller is null and featured between 1 and 4 order by opens_at limit 1;
  select * into a from public.on_clubs where season_id=s.id and user_id is not null order by id limit 1;
  select * into b from public.on_clubs where season_id=s.id and user_id is null order by id limit 1;
  update public.on_clubs set cash=100000,reserved=0,debt=0 where id in(a.id,b.id);
@@ -464,7 +470,7 @@ begin
  begin perform public.on_lot_create((select id from public.on_players where club_id=a.id limit 1),100000);raise exception 'vendeu com 16';
  exception when others then if sqlerrm not like 'Elenco com 16%' then raise;end if;end;
  update public.on_clubs set debt=5 where id=a.id;
- select * into l from public.on_lots where status='open' and seller is null and featured between 1 and 3 order by opens_at limit 1;
+ select * into l from public.on_lots where status='open' and seller is null and featured between 1 and 4 order by opens_at limit 1;
  begin perform public.on_bid_as(a.id,l.id,l.start_price,l.opens_at);raise exception 'lance com dívida';
  exception when others then if sqlerrm not like 'Clube com dívida%' then raise;end if;end;
  perform public.on_money(a.id,100,'test');
@@ -798,6 +804,33 @@ begin
 end $$;
 reset role;
 do $$ begin perform public.on_advance(current_setting('test.fx')::bigint,now()+interval '2 days',null);end $$;
+
+-- ═════════════════════════════════════════════════════════════════════════════
+-- Fase 10: entrada na hora no lugar de um bot
+-- ═════════════════════════════════════════════════════════════════════════════
+insert into public.careers(user_id,nickname) values('00000000-0000-0000-0000-0000000000a1','Chegou Agora') on conflict do nothing;
+update public.on_config set join_instant=true;
+set request.jwt.claim.sub='00000000-0000-0000-0000-0000000000a1';
+set role authenticated;
+do $$
+declare j jsonb;
+begin
+ j:=public.on_join_queue();
+ if j->>'access'<>'playing' or (j->'club'->>'draft_step')::int<>0 or j->'club'->>'name'<>'FC Chegou Agora' or (j->'club'->>'roster')::int<>19
+  or (j->'club'->>'cash')::bigint<>150000 or j->'next'->>'id' is null then raise exception 'entrada na hora: %',j;end if;
+ if jsonb_array_length(public.on_draft_read()->'options')<>3 then raise exception 'novo técnico sem craques para escolher';end if;
+ if public.on_join_queue()->'club'->>'id'<>j->'club'->>'id' then raise exception 'entrou duas vezes';end if;
+ raise notice 'PASS fase 10';
+end $$;
+reset role;
+do $$ begin
+ if (select count(*) from public.on_clubs where user_id='00000000-0000-0000-0000-0000000000a1')<>1 then raise exception 'clube duplicado';end if;
+ -- o teste da virada de temporada conta com os clubes de antes: o novo técnico devolve o clube ao bot
+ update public.on_clubs set user_id=null,draft_step=3 where user_id='00000000-0000-0000-0000-0000000000a1';
+ delete from public.on_players where hold is not null and hold in(select id from public.on_clubs where user_id is null);
+ perform public.on_auto_lineup(c.id) from public.on_clubs c where c.user_id is null and not exists(select 1 from public.on_lineups l where l.club_id=c.id);
+ update public.on_config set join_instant=false;
+end $$;
 
 -- ═════════════════════════════════════════════════════════════════════════════
 -- Fase 5: copa, fim de temporada e novos técnicos (temporada sandbox inteira)

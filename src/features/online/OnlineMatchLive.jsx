@@ -231,6 +231,10 @@ export default function OnlineMatchLive({ fixtureId = null, onClose, notify }) {
   const opp = side ? (side === 'h' ? data.away : data.home) : null
   const oppPresent = side ? Boolean(data.present?.[side === 'h' ? 'a' : 'h']) : false
   const myFormation = side ? data.formation?.[side === 'h' ? 0 : 1] : null
+  const finalH = data.summary?.home_goals ?? live.sc.h
+  const finalA = data.summary?.away_goals ?? live.sc.a
+  const myGoals = side === 'h' ? finalH : finalA
+  const oppGoals = side === 'h' ? finalA : finalH
   const myPrep = side ? data.prep?.[side === 'h' ? 0 : 1] : null
   const myTactics = side ? data.tactics?.[side] || {} : {}
   const myStyle = myTactics.style || (Number(myTactics.mentality || 0) < 0 ? 'defensive' : Number(myTactics.mentality || 0) > 0 ? 'attacking' : 'neutral')
@@ -487,12 +491,15 @@ export default function OnlineMatchLive({ fixtureId = null, onClose, notify }) {
       </div>
 
       {ended ? (
-        <div className="onm-end">
-          <Trophy size={20} />
-          <div>
-            <b>{data.home.name} {data.summary?.home_goals ?? live.sc.h} × {data.summary?.away_goals ?? live.sc.a} {data.away.name}</b>
-            {data.summary?.motm && <small>Melhor em campo: {data.summary.motm.name} ({Number(data.summary.motm.rating).toFixed(1)})</small>}
+        <div className={`onm-final ${side ? (myGoals > oppGoals ? 'is-win' : myGoals < oppGoals ? 'is-loss' : 'is-draw') : ''}`}>
+          <small><Trophy size={13} /> {side ? (myGoals > oppGoals ? 'Vitória' : myGoals < oppGoals ? 'Derrota' : 'Empate') : 'Fim de jogo'}</small>
+          <div className="onm-final-score">
+            <span><OnlineCrest club={data.home} size={42} /><em>{data.home.short}</em></span>
+            <b>{finalH}<i>×</i>{finalA}</b>
+            <span><OnlineCrest club={data.away} size={42} /><em>{data.away.short}</em></span>
           </div>
+          {data.summary?.pens && <span className="onm-final-pens">Pênaltis {data.summary.pens[0]} – {data.summary.pens[1]}</span>}
+          {data.summary?.motm && <span className="onm-final-motm">Melhor em campo · <strong>{data.summary.motm.name}</strong> {Number(data.summary.motm.rating).toFixed(1)}</span>}
           <button type="button" className="gx-btn" onClick={onClose}>Continuar</button>
         </div>
       ) : (

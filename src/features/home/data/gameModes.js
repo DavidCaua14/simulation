@@ -35,8 +35,7 @@ export const GAME_MODES = [
     desc: 'Liga compartilhada: um jogo por dia contra outros técnicos!',
     Icon: OnlineMatchIcon,
     image: confronto,
-    locked: true,
-    testerOnly: true, // em teste: liberado só para o dono do jogo (ver data/access.js)
+    locked: false,
   },
   {
     id: 'seasons',

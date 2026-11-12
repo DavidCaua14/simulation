@@ -18,7 +18,7 @@ function Auction({ lot, now, busy, wallet, coins, onBid }) {
   const [step, setStep] = useState(0)
   const opensIn = new Date(lot.opens_at).getTime() - now
   const locked = opensIn > 0
-  const special = lot.featured === 9
+  const special = lot.featured >= 8
   const left = new Date(lot.ends_at).getTime() - now
   const hot = !locked && left < 120000
   const amount = step === 0 ? lot.min_bid : round100(lot.min_bid * (1 + step))
@@ -31,7 +31,7 @@ function Auction({ lot, now, busy, wallet, coins, onBid }) {
     <article className={`on-auc ${special ? 'is-special' : ''} ${p.legend ? 'is-legend' : ''} ${locked ? 'is-locked' : ''} ${lot.featured ? 'is-featured' : ''} ${lot.leading ? 'is-leading' : lot.bidding ? 'is-outbid' : ''} ${hot ? 'is-hot' : ''}`}>
       <FutCard p={p} club={lot.seller} size="sm" />
       <div className="on-auc-body">
-        {special && <span className="on-auc-tag"><Crown size={11} /> {p.legend ? 'Lenda do dia' : 'Especial do dia'}</span>}
+        {special && <span className="on-auc-tag"><Crown size={11} /> {p.legend ? 'Lenda do dia' : 'Destaque do dia'}</span>}
         <header>
           {locked
             ? <span className="on-auc-clock is-locked"><Lock size={13} /> Abre às {new Date(lot.opens_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</span>
@@ -91,7 +91,7 @@ export default function OnlineMarket({ notify, onChanged }) {
     return () => clearInterval(id)
   }, [])
   const serverNow = now + offset
-  const open = useMemo(() => (data?.lots || []).filter((l) => l.featured === 9 || new Date(l.opens_at).getTime() <= serverNow), [data, serverNow])
+  const open = useMemo(() => (data?.lots || []).filter((l) => l.featured >= 8 || new Date(l.opens_at).getTime() <= serverNow), [data, serverNow])
   const active = open.some((l) => l.bidding || l.mine || new Date(l.ends_at).getTime() - serverNow < 120000)
   useEffect(() => {
     const id = setInterval(load, active ? 5000 : 15000)

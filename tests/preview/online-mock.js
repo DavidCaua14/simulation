@@ -202,7 +202,9 @@ const lots = Array.from({ length: 7 }, (_, i) => {
 lots[0].best_bid = 31000; lots[0].best_club = clubs[6]; lots[0].min_bid = 32600; lots[0].start_price = 28000
 const special = { id: 999, status: 'open', featured: 9, opens_at: new Date(Date.now() + 3 * 3600e3).toISOString(), ends_at: new Date(Date.now() + 4 * 3600e3).toISOString(), start_price: 800000, best_bid: null, bids: 0, min_bid: 800000, mine: false, leading: false, bidding: false, bidders: 0, history: [], seller: null, best_club: null,
   player: { id: 'lg', name: 'Zico', pos: 'MEI', sec: [], age: 30, ovr: 93, pot: 93, star: true, legend: true, nat: 'BRA', cond: 100, wage: 9000, value: 300000, card: cardOf('MEI', 93, 1) } }
-const market = () => ({ server_now: new Date().toISOString(), my_club: 1, club: { cash: 30000, reserved: 12000, debt: 0, roster: players.length }, coins: { wallet: 820, rate: 1000, bid_rate: 600, converted: 40, cap: 5000 }, lots: [special, ...lots], recent: lots.slice(0, 3).map((l) => ({ ...l, status: 'sold', best_bid: 8000, best_club: clubs[5], seller: null })) })
+const daily = { ...special, id: 998, featured: 9, start_price: 520000, min_bid: 520000, opens_at: new Date(Date.now() + 2 * 3600e3).toISOString(), player: { ...special.player, id: 'sp', name: 'Rodrygo', pos: 'PE', ovr: 86, pot: 90, age: 26, legend: false, card: cardOf('PE', 86, 2) } }
+special.featured = 8
+const market = () => ({ server_now: new Date().toISOString(), my_club: 1, club: { cash: 30000, reserved: 12000, debt: 0, roster: players.length }, coins: { wallet: 820, rate: 1000, bid_rate: 600, converted: 40, cap: 5000 }, lots: [daily, special, ...lots], recent: lots.slice(0, 3).map((l) => ({ ...l, status: 'sold', best_bid: 8000, best_club: clubs[5], seller: null })) })
 
 const prepState = { scout: false, talk: null }
 const status = () => {
