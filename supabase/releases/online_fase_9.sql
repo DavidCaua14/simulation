@@ -180,7 +180,8 @@ begin
 end $$;
 
 -- ─────────────────────────────────────────────────────────────────────────────
--- Melhor time: a cada passo entra a dupla jogador-vaga de maior rendimento (nota × encaixe × condição).
+-- Melhor time: a cada passo entra a dupla jogador-vaga de maior rendimento (nota × encaixe × condição),
+-- começando por quem joga na própria posição: o melhor de cada posição fica com a vaga dela.
 -- ─────────────────────────────────────────────────────────────────────────────
 create or replace function public.on_auto_lineup(p_club int,p_formation text default null) returns void
 language plpgsql security definer set search_path=public as $$
@@ -199,6 +200,8 @@ begin
   order by (p.inj_until is not null and p.inj_until>current_date),
    -- goleiro só no gol e o gol só com goleiro, enquanto houver um
    ((p.pos='GOL')<>(s.value->>'pos'='GOL')),
+   -- primeiro quem joga na própria posição (natural ou secundária); as vagas que sobram vão para o melhor encaixe
+   (greatest(coalesce(ft.fit,.5),case when s.value->>'pos'=any(p.sec) then .97 else 0 end)>=.97) desc,
    p.ovr*greatest(coalesce(ft.fit,.5),case when s.value->>'pos'=any(p.sec) then .97 else 0 end)*(.7+.3*p.cond/100.0) desc,p.id
   limit 1;
   if r.id is null then raise exception 'Elenco insuficiente para escalar';end if;
