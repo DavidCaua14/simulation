@@ -14,7 +14,7 @@ const BUILDINGS = [
   { id: 'medical', label: 'Departamento médico', Icon: HeartPulse, effect: (n) => `+${n * 5} condição/dia` },
   { id: 'youth', label: 'Categoria de base', Icon: GraduationCap, effect: (n) => `${n * 4}% revelação/dia` },
 ]
-const KIND = { buy: 'Compra', sell: 'Venda', wage: 'Salários', gate: 'Bilheteria', build: 'Obra', renew: 'Renovação', coins: 'Investimento', prize: 'Prêmio' }
+const KIND = { buy: 'Compra', sell: 'Venda', wage: 'Salários', gate: 'Bilheteria', build: 'Obra', renew: 'Renovação', coins: 'Investimento', economy_refund: 'Estorno de investimento', prize: 'Prêmio' }
 const GAME_ICON = { penalty: Goal, aim: Crosshair, passing: Waypoints, tackle: Shield, reaction: Hand, dribble: Footprints, timing: Timer }
 const MODES = [
   { id: 'solo', label: 'Individual', Icon: User, max: 1, bonus: '+50%' },
@@ -258,18 +258,22 @@ function Structure({ club, notify, onChanged }) {
 function Finance({ club, notify, onChanged }) {
   const [data, setData] = useState(null)
   const [busy, setBusy] = useState(false)
+  const [amount, setAmount] = useState('')
+  const [ask, setAsk] = useState(null)
   useEffect(() => {
     fetchOnlineFinance().then(setData).catch(() => setData({ ledger: [], news: [] }))
   }, [club])
   const c = club.coins
-  const room = Math.max(0, Math.min(c.cap - c.converted, c.wallet ?? 0))
-  const [ask, setAsk] = useState(null)
+  const room = Math.max(0, c.unlimited ? (c.wallet ?? 0) : Math.min(c.cap - c.converted, c.wallet ?? 0))
+  const customAmount = Number(amount)
+  const validAmount = /^\d+$/.test(amount) && Number.isSafeInteger(customAmount) && customAmount > 0 && customAmount <= room
   const invest = (n) => {
-    if (!n) return
+    if (busy || !Number.isSafeInteger(n) || n < 1 || n > room) return
     setAsk(null)
     setBusy(true)
     convertOnlineCoins(n)
       .then(() => {
+        setAmount('')
         notify?.(`+${money(n * c.rate)} no caixa`, 'success')
         onChanged?.()
       })
@@ -288,16 +292,30 @@ function Finance({ club, notify, onChanged }) {
           <Coins size={22} />
           <div><b>Investir no clube</b><small>{c.wallet ?? 0} moedas · 1 = {money(c.rate)} · limite {Math.max(0, c.cap - c.converted)}</small></div>
         </header>
+        <form className="on-invest-custom" onSubmit={(event) => {
+          event.preventDefault()
+          if (validAmount) setAsk(customAmount)
+        }}>
+          <label htmlFor="online-invest-amount">Quantidade de moedas</label>
+          <div>
+            <input id="online-invest-amount" type="number" inputMode="numeric" min="1" max={room} step="1" placeholder="Ex.: 15000" value={amount} disabled={busy || room < 1} onChange={(event) => setAmount(event.target.value)} aria-describedby="online-invest-preview" />
+            <button type="submit" className="gx-btn" disabled={busy || !validAmount}>Investir</button>
+          </div>
+          <small id="online-invest-preview" aria-live="polite">
+            {amount === '' ? `Disponível: ${c.wallet ?? 0} moedas` : validAmount ? `${money(customAmount * c.rate)} entrarão no caixa` : customAmount > room ? 'Valor acima do saldo disponível para investir.' : 'Digite uma quantidade inteira de moedas maior que zero.'}
+          </small>
+        </form>
         <div className="on-invest-opts">
-          {[10, 50, 100].map((n) => (
+          {[1000, 10000, 30000].map((n) => (
             <button key={n} type="button" className="gx-btn-ghost" disabled={busy || room < n} onClick={() => setAsk(n)}>
               <b><Coins size={12} /> {n}</b><small>{moneyShort(n * c.rate)}</small>
             </button>
           ))}
           <button type="button" className="gx-btn" disabled={busy || room < 1} onClick={() => setAsk(room)}>
-            <b>Tudo</b><small>{moneyShort(room * c.rate)}</small>
+            <b>{c.unlimited ? 'Tudo' : 'Até o limite'}</b><small>{moneyShort(room * c.rate)}</small>
           </button>
         </div>
+        <small>{c.unlimited ? 'Sem limite por temporada. Invista quantas vezes quiser, usando o saldo disponível da carteira.' : `Aportes e lances compartilham o limite de ${money(c.cap * c.rate)} por temporada.`}</small>
       </div>
       {ask && (
         <div className="on-modal" role="dialog" aria-modal="true" aria-label="Confirmar investimento">

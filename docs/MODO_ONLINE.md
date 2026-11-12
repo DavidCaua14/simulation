@@ -27,7 +27,7 @@ Todas ficam em `on_config` e podem mudar sem migration.
 | Treino gasta condição | Sim: 6 pontos por sessão; a tela avisa no dia de jogo | `train_cond` |
 | Caixa sem dinheiro para salários | A diferença vira dívida; dívida bloqueia lances; receitas pagam a dívida primeiro | `on_money` |
 | Leilão | Mudou na Fase 6 (destaques por hora; técnico: 60 min; cada lance garante 5 min; teto de 6 h) | `featured_*`, `user_lot_minutes`, `bid_extend`, `lot_extend_max` |
-| Conversão de moedas | 1 moeda = $ 1.000, até 1.000 por temporada (300 até a Fase 5) | `coin_rate`, `coin_cap` |
+| Conversão de moedas | 1 moeda = $ 1, sem teto por temporada; limitado ao saldo da carteira | `coin_rate`, `coin_cap` |
 | Nomes de jogadores | Mantido o gerador atual | — |
 | Horários | 09:00, 10:00, 11:00, 14:00, 15:30 e 17:00 desde a Fase 6 | `on_seasons.slots` |
 | Prêmios | Liga: $ 200 mil (1º) a $ 10 mil (12º); copa: $ 120/60/30 mil; moedas na conta: 300 a 10 (+100 pelo título da copa) | `league_prizes`, `cup_prizes`, `league_coins`, `cup_coins` |
@@ -92,7 +92,7 @@ A Fase 6 redefine funções das fases anteriores com `create or replace`. Os arq
 | Leilões em destaque | Sempre 3 jogadores do sistema (faixas 77–85, 70–77 e 62–70), os mesmos para todos, das 08:00 às 22:59. Cada um fica até a virada da hora; sem lances, o jogador é apagado e entra outro. Cada lance garante mais 5 minutos (`bid_extend`), até 6 horas depois do fim original (`lot_extend_max`) | `on_market_tick`, `on_gen_featured` |
 | Bots no leilão | Só entram depois do lance de um técnico, nos últimos 3 minutos, até 70% a 90% do valor | `on_market_tick` |
 | Resultado do leilão | Todo técnico que deu lance recebe um aviso `auction` com vencedor e preço. A tela inicial mostra até ser visto | `on_lot_settle`, `on_status.results`, `on_news_seen` |
-| Moedas | Investir: 1 moeda = $ 1.000 (`coin_rate`), teto de 1.000 por temporada (`coin_cap`). Lance direto com moedas: 1 moeda = $ 600 (`coin_bid_rate`), só a diferença que falta no caixa livre; as moedas viram caixa e não voltam | `online_coins_convert`, `on_bid(p_lot,p_amount,p_coins)` |
+| Moedas | Investir e completar lances: 1 moeda = $ 1 (`coin_rate` e `coin_bid_rate`). Ambos permitem usar todo o saldo da carteira, sem teto por temporada. `coins_conv` é apenas histórico acumulado em bigint; `coins.unlimited` indica a ausência de teto. As moedas viram caixa e não voltam quando o lance é coberto | `online_coins_convert`, `on_bid(p_lot,p_amount,p_coins)` |
 | Identidade | Nome, sigla (2 a 4), duas cores, desenho e formato do escudo e estádio, tudo em `on_clubs.colors` | `on_club_identity`, `OnlineClub.jsx` |
 | Treino | Seis mini-games (finalização, passes, desarme, reflexo, drible, explosão). 1 jogador rende 150%, 2 a 6 rendem 100%, 7 a 11 rendem 65% | `on_train_scale`, `MiniGames.jsx` |
 | Partida | Consulta a cada 20 s e tela ~3 minutos de jogo atrás do servidor (antes 40 s e ~6 minutos). Barra de postura (defensivo, equilibrado, ofensivo, contra-ataque) muda a tática na hora | `OnlineMatchLive.jsx`, `onlineUtils.js` |
@@ -201,3 +201,13 @@ ajuda perdendo por 2 ou mais sem ser azarão e atrapalha muito vencendo.
 
 Limite atual: uma liga de 12 clubes. Com mais de 12 técnicos ativos será preciso criar ligas paralelas
 (em 12/11/2026 havia 9 contas com carreira).
+
+### Equilíbrio da economia online (12/11/2026)
+
+Aplicado em produção, nesta ordem: `online_economy_shared_season_cap` e `online_investments_unlimited_one_to_one`. Os scripts correspondentes estão em `supabase/releases/online_economia_equilibrada.sql` e `supabase/releases/online_aportes_sem_limite.sql`; executar atomicamente e uma única vez após a Fase 10 em instalações novas. A segunda atualização prevalece: câmbio 1:1, sem limite de aporte por temporada, conforme solicitado.
+
+A conversão antiga registrada foi estornada com devolução integral das moedas e lançamento compensatório no extrato, sem apagar o histórico. Carteiras pessoais, prêmios, jogadores e temporadas foram preservados. O saldo é validado no servidor e bloqueado durante o débito, impedindo gasto duplicado por chamadas simultâneas.
+
+Os payloads mantêm compatibilidade com clientes antigos: `cap - converted` equivale ao saldo atual da carteira. O campo de configuração `coin_cap` permanece por compatibilidade, mas não restringe aportes ou lances. A interface nova oferece aportes de 1.000, 10.000, 30.000 ou todo o saldo, além de um campo para digitar qualquer quantidade disponível.
+
+Verificação: `supabase/online/tests/economy_regression.sql`, com testes revertidos ao final.

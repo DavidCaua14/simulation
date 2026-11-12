@@ -24,7 +24,8 @@ function Auction({ lot, now, busy, wallet, coins, onBid }) {
   const amount = step === 0 ? lot.min_bid : round100(lot.min_bid * (1 + step))
   const need = amount - (lot.leading ? lot.best_bid : 0) - wallet.free
   const coinCost = need > 0 ? Math.ceil(need / coins.bid_rate) : 0
-  const canCoins = coinCost > 0 && coinCost <= coins.wallet
+  const coinRoom = coins.unlimited ? coins.wallet : Math.max(0, (coins.cap ?? 0) - (coins.converted ?? 0))
+  const canCoins = coinCost > 0 && coinCost <= coins.wallet && coinCost <= coinRoom
   const blocked = coinCost > 0 && !canCoins
   const p = lot.player
   return (
@@ -61,6 +62,7 @@ function Auction({ lot, now, busy, wallet, coins, onBid }) {
               <Gavel size={16} /> {money(amount)}
               {coinCost > 0 && <em><Coins size={12} /> {coinCost}</em>}
             </button>
+            {coinCost > coinRoom && <small>{coins.unlimited ? 'Moedas insuficientes para completar o lance.' : 'Limite de aporte da temporada insuficiente.'}</small>}
           </>
         )}
       </div>
@@ -115,7 +117,7 @@ export default function OnlineMarket({ notify, onChanged }) {
 
   if (!data) return error ? <Notice kind="error">{error}</Notice> : <Skeleton rows={6} />
   const c = data.club
-  const coins = data.coins || { wallet: 0, bid_rate: 600 }
+  const coins = data.coins || { wallet: 0, bid_rate: 1, cap: 0, converted: 0 }
   const wallet = { free: c.cash - c.reserved }
   const lists = {
     featured: open.filter((l) => !l.mine),
