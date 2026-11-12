@@ -343,7 +343,7 @@ export default function CareerTab({ ctx, initialView, actions }) {
               <div className="cm-meters">
                 <Meter icon={Building2} label="Diretoria" value={coach.board} mood={boardMood(coach.board)} />
                 <Meter icon={Megaphone} label="Torcida" value={coach.fans} mood={fansMood(coach.fans)} />
-                {coach.squad?.harmony != null && (
+                {coach.squad?.harmony != null && !coach.squad.disabled && (
                   <Meter icon={Users} label="Elenco" value={Math.round(coach.squad.harmony)} mood={squadMood(coach.squad.harmony)} />
                 )}
               </div>
@@ -407,7 +407,7 @@ export default function CareerTab({ ctx, initialView, actions }) {
           <section className="sn-sec">
             <h2 className="gx-title">Conquistas</h2>
             {hub.world && <JobTerms coach={hub.world.coach} employed={coach.status === 'employed'} onRefresh={actions.refresh} />}
-            <TrophyCabinet history={hist?.seasons || []} titles={coach.titles} />
+            <TrophyCabinet history={hist?.seasons || []} titles={coach.titles} trophies={hist?.trophies} />
           </section>
           <section className="sn-sec">
             <h2 className="gx-title">Números da carreira</h2>

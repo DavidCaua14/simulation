@@ -2,13 +2,11 @@ import { useEffect, useState } from 'react'
 import { ArrowLeft, Calculator, Crown, Trophy, X } from 'lucide-react'
 import { EmptyState, Notice, Skeleton } from '../../components/ui/feedback'
 import { avatarSrcOf } from '../profile/components/ProfileAvatar'
-import { getClubById } from '../club/data/clubs'
-import { breakdown, CRITERIA, fetchRanking, fetchRankingPhotos } from './rankingApi'
+import { breakdown, criteria, fetchRanking, fetchRankingPhotos } from './rankingApi'
 import './ranking.css'
 
 // RANKING GERAL DOS TREINADORES: pódio, lista em ordem e a sua posição, com a pontuação explicada num modal.
 const fmt = (n) => Number(n || 0).toLocaleString('pt-BR')
-const clubName = (id) => (id ? getClubById(id)?.name || id : 'Sem clube')
 
 // Avatar do jogador: foto enviada, foto pronta, avatar de lenda ou a foto da criação; sem nada, a inicial.
 function Avatar({ e, photo, size }) {
@@ -27,14 +25,14 @@ function Line({ e, photo }) {
       <Avatar e={e} photo={photo} size={36} />
       <span className="rk-who">
         <strong>{e.nickname}{e.is_me ? ' (você)' : ''}</strong>
-        <small>Nível {e.level} · {clubName(e.club_id)} · {e.titles} {e.titles === 1 ? 'título' : 'títulos'}</small>
+        <small>{e.club_name || 'Fora da liga'} · {e.wins}V {e.draws}E {e.losses}D{e.titles ? ` · ${e.titles} ${e.titles === 1 ? 'título' : 'títulos'}` : ''}</small>
       </span>
       <span className="rk-pts"><b>{fmt(e.points)}</b><small>pts</small></span>
     </li>
   )
 }
 
-// Campanha no modo Temporadas: vitórias, empates e derrotas lado a lado, com barra proporcional.
+// Campanha no modo Online: vitórias, empates e derrotas lado a lado, com barra proporcional.
 function Campaign({ wins, draws, losses }) {
   const total = Math.max(1, wins + draws + losses)
   return (
@@ -53,7 +51,7 @@ function Campaign({ wins, draws, losses }) {
   )
 }
 
-function ScoringModal({ me, onClose }) {
+function ScoringModal({ me, rules, onClose }) {
   const rows = me ? breakdown(me) : null
   return (
     <div className="rk-modal" role="dialog" aria-modal="true" aria-labelledby="rk-modal-title" onClick={onClose}>
@@ -62,7 +60,7 @@ function ScoringModal({ me, onClose }) {
           <h2 id="rk-modal-title"><Calculator size={18} /> Como funciona a pontuação</h2>
           <button type="button" className="rk-x" onClick={onClose} aria-label="Fechar"><X size={18} /></button>
         </header>
-        <ul className="rk-rules">{CRITERIA.map(([k, v]) => <li key={k}><b>{k}</b><span>{v}</span></li>)}</ul>
+        <ul className="rk-rules">{criteria(rules).map(([k, v]) => <li key={k}><b>{k}</b><span>{v}</span></li>)}</ul>
         {rows && (
           <>
             <h3>Seus pontos</h3>
@@ -76,7 +74,7 @@ function ScoringModal({ me, onClose }) {
             </table>
           </>
         )}
-        <p className="rk-note">Empate em pontos: vence quem tem mais nível, depois mais vitórias, depois quem se cadastrou primeiro.</p>
+        <p className="rk-note">Só a Liga Online pontua. Empate em pontos: mais vitórias, depois nível.</p>
       </div>
     </div>
   )
@@ -107,7 +105,7 @@ export default function RankingScreen({ onBack }) {
       </header>
       {error && <Notice kind="error">{error}</Notice>}
       {!data && !error ? <Skeleton rows={6} /> : entries.length === 0 ? (
-        <EmptyState icon={Trophy} title="Ranking vazio" text="Jogue partidas e evolua seu nível para aparecer aqui." />
+        <EmptyState icon={Trophy} title="Ranking vazio" text="Entre na Liga Online para pontuar." />
       ) : data && (
         <>
           <section className="rk-podium" aria-label="Pódio">
@@ -130,10 +128,10 @@ export default function RankingScreen({ onBack }) {
                 <span className="rk-me-pts"><small>Pontos</small><b>{fmt(me.points)}</b></span>
               </div>
               <div className="rk-me-stats">
-                <span><b>{me.level}</b><small>nível</small></span>
+                <span><b>{me.matches ?? 0}</b><small>jogos</small></span>
                 <span><b>{me.titles}</b><small>títulos</small></span>
-                <span><b>{String(me.reputation).replace('.', ',')}</b><small>reputação</small></span>
-                <span><b>{me.events}</b><small>eventos</small></span>
+                <span><b>{me.gf ?? 0}</b><small>gols</small></span>
+                <span><b>{me.clean ?? 0}</b><small>sem sofrer</small></span>
               </div>
               <Campaign wins={me.wins} draws={me.draws} losses={me.losses} />
             </section>
@@ -144,7 +142,7 @@ export default function RankingScreen({ onBack }) {
           </ol>
         </>
       )}
-      {howOpen && <ScoringModal me={me} onClose={() => setHowOpen(false)} />}
+      {howOpen && <ScoringModal me={me} rules={data?.rules} onClose={() => setHowOpen(false)} />}
     </div>
   )
 }

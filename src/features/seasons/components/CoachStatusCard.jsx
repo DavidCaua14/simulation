@@ -55,7 +55,7 @@ export default function CoachStatusCard({ coach, onOpen }) {
         <span className="cst-meters">
           <Meter icon={Building2} label="Diretoria" value={coach.board} mood={boardMood(coach.board)} />
           <Meter icon={Megaphone} label="Torcida" value={coach.fans} mood={fansMood(coach.fans)} />
-          {coach.squad?.harmony != null && (
+          {coach.squad?.harmony != null && !coach.squad.disabled && (
             <Meter icon={Users} label="Elenco" value={Math.round(coach.squad.harmony)} mood={squadMood(coach.squad.harmony)} />
           )}
         </span>

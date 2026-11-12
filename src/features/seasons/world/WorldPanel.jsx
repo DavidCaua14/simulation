@@ -122,7 +122,7 @@ export default function WorldPanel({ hub, onRefresh, initialArea = 'news', world
       {player.club_id!==own && player.project_reason && <p className="cw-alert" role="status">{player.project_reason}</p>}
       <button className="gx-btn-ghost" disabled={busy} onClick={()=>run(async()=>setDetail(await fetchPlayer(player.id)))}>Atributos e estatísticas</button>
       {player.club_id===own && <RenewalNotice expiresOn={player.expires_on} today={w.today} demand={player.salary_demand} projectReason={player.project_reason} />}
-      {player.club_id===own ? <div className="sn-stack"><h3>Gestão do contrato</h3><p>Moral {Math.round(player.morale ?? 0)}%: sobe com minutos em campo e vitórias.</p><button className="gx-btn" disabled={busy} onClick={()=>run(async()=>{await invoke('career_contract_renew',{p_player:player.id});setPlayer(null);setArea('deals')})}>Negociar renovação</button></div> : player.club_id == null ? <form onSubmit={freeContract} className="sn-stack">
+      {player.club_id===own ? <div className="sn-stack"><h3>Gestão do contrato</h3><button className="gx-btn" disabled={busy} onClick={()=>run(async()=>{await invoke('career_contract_renew',{p_player:player.id});setPlayer(null);setArea('deals')})}>Negociar renovação</button></div> : player.club_id == null ? <form onSubmit={freeContract} className="sn-stack">
         <h3>Negociar com o atleta livre</h3>
         <p className="sn-hint">Sem taxa de transferência. O jogador decide conforme salário, luvas e projeto esportivo.</p>
         <NumberField cash label="Salário mensal (R$)" min={1} max={10000000} value={terms.salary} onChange={edit('salary')} />

@@ -34,6 +34,8 @@ export const autoLineup = (formation = null) => rpc('mgr_lineup_auto', { p_forma
 export const startMatch = () => rpc('mgr_match_start')
 export const stepMatch = ({ fixtureId, from, to, changes = null, auto = false, afterSeq = 0 }) =>
   rpc('mgr_match_step', { p_fixture: fixtureId, p_from: from, p_to: to, p_changes: changes, p_auto: auto, p_after_seq: afterSeq })
+// Premiação em moedas de cada competição (posição final, fase alcançada, vitória e empate)
+export const fetchPrizeTable = () => rpc('sim_prize_table')
 export const fetchMatchReport = (fixtureId) => rpc('mgr_match_report', { p_fixture: fixtureId })
 
 // Calendário: dias sem jogo do seu clube (e a espera por propostas quando está sem clube)

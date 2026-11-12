@@ -19,10 +19,10 @@ export async function markReleaseSeen() {
 export const EVENTS_NEWS_RELEASE = '2026-11-eventos'
 // versão das novidades dos campeonatos (tela CompetitionsNews)
 export const COMPETITIONS_NEWS_RELEASE = '2026-11-campeonatos'
-// versão da dica de moral e elenco (tela MoraleNews)
-export const MORALE_NEWS_RELEASE = '2026-11-moral-elenco'
 // Anúncio da abertura do modo Online para todos (12/11/2026)
 export const ONLINE_NEWS_RELEASE = '2026-11-modo-online'
+// Nova era (13/11/2026): Temporadas reiniciado em 2026, premiação real, ranking pelo Online
+export const NEW_ERA_NEWS_RELEASE = '2026-11-nova-era'
 
 // Novidades dos eventos (sem presente): o banco guarda se esta carreira já viu a versão.
 export async function fetchNewsStatus(release) {

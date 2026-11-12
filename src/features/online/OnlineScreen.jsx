@@ -108,7 +108,7 @@ export default function OnlineScreen({ onBack, params }) {
       )}
       <div className="on-top-title">
         <strong>{drafting ? 'Monte seu time' : ready && tab !== 'home' ? TITLES[tab] : 'Liga Online'}</strong>
-        {ready && status.season && <small>Temporada {status.season.id} · Dia {status.day?.n ?? 1}</small>}
+        {ready && status.season && <small>Temporada {status.season.id} · {status.day?.round ? `Rodada ${status.day.n}/${status.day.of}` : `Dia ${status.day?.n ?? 1}`}</small>}
       </div>
       {liveNow && match == null && (
         <button type="button" className="on-top-live" onClick={() => setMatch(status.next.id)}><Radio size={13} /> AO VIVO</button>
