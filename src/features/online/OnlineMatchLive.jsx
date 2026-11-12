@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Ambulance, ArrowLeft, ClipboardList, MapPin, Radio, Repeat2, Shield, Swords, Scale, Trophy, Tv, Users, Wifi, WifiOff, Zap } from 'lucide-react'
+import { Ambulance, ArrowLeft, ClipboardList, MapPin, Megaphone, Radio, Repeat2, Shield, Swords, Scale, Trophy, Tv, Users, Wifi, WifiOff, Zap } from 'lucide-react'
 import { isSessionError } from '../../lib/sessionRecovery'
 import MatchTactical2D from '../match2d/MatchTactical2D'
 import MatchLineupEditor, { draftFromMatch } from '../seasons/components/MatchLineupEditor'
@@ -7,7 +7,8 @@ import useCatalog from '../seasons/hooks/useCatalog'
 import { MAJOR_EVENTS, condTone, eventText, isGoal, posFit } from '../seasons/utils/managerUtils'
 import useMatchAudio from '../audio/useMatchAudio'
 import OnlineCrest from './components/OnlineCrest'
-import { actOnlineMatch, fetchOnlineSquad, pollOnlineMatch } from './services/onlineApi'
+import { OvrBadge } from './components/PlayerFut'
+import { actOnlineMatch, fetchOnlineScout, fetchOnlineSquad, pollOnlineMatch, sendOnlineHalftimeTalk } from './services/onlineApi'
 import { kickoffState } from './kickoffState'
 import { SCREEN_LAG_MS, asSeasonPlayer, clockPhase, clubColors, matchClock } from './onlineUtils'
 import '../seasons/seasons.css'
@@ -23,6 +24,17 @@ const STYLES = [
   ['attacking', 'Ofensivo', Swords],
   ['counter', 'Contra-ataque', Zap],
 ]
+// Preleção do intervalo: o efeito depende do placar e de quem é o favorito (pode ajudar ou atrapalhar).
+const HT_TALKS = [
+  ['praise', 'Elogiar', 'Estou satisfeito. Continuem assim.'],
+  ['focus', 'Pedir foco', 'Não relaxem, o jogo não acabou.'],
+  ['demand', 'Cobrar mais', 'Espero muito mais de vocês.'],
+  ['encourage', 'Incentivar', 'Vocês conseguem. Acreditem!'],
+  ['calm', 'Tirar a pressão', 'Sem pressão. Joguem soltos.'],
+  ['angry', 'Dar bronca', 'Isso não é aceitável!'],
+]
+const HT_REACT = { fired: 'O time voltou inflamado', good: 'O time reagiu bem', flat: 'Pouco efeito', upset: 'O time não gostou' }
+const LINES = [['DEF', 'Defesa'], ['MID', 'Meio'], ['ATT', 'Ataque']]
 const TABS = [
   ['feed', 'Lances'],
   ['stats', 'Estatísticas'],
@@ -45,6 +57,7 @@ export default function OnlineMatchLive({ fixtureId = null, onClose, notify }) {
   const [busy, setBusy] = useState(false)
   const [applied, setApplied] = useState(null) // {minute, until} aviso "vale a partir de X'"
   const [squadById, setSquadById] = useState(null)
+  const [scout, setScout] = useState(null) // vestiário: comparação dos times (só no jogo do próprio técnico)
   const [revealed, setRevealed] = useState(() => new Set())
   const [online, setOnline] = useState(true)
   const [broadcast, setBroadcast] = useState(() => {
@@ -111,6 +124,26 @@ export default function OnlineMatchLive({ fixtureId = null, onClose, notify }) {
     const id = setInterval(() => setNow(Date.now()), 250)
     return () => clearInterval(id)
   }, [])
+
+  const mySide = data?.my_side
+  useEffect(() => {
+    if (status !== 'sched' || !mySide || scout) return
+    fetchOnlineScout(false).then(setScout).catch(() => {})
+  }, [status, mySide, scout])
+  const halftimeTalk = async (talk) => {
+    if (busy) return
+    setBusy(true)
+    try {
+      const r = await sendOnlineHalftimeTalk(data.fixture_id, talk)
+      merge(r)
+      const mine = r.ht_talk?.[r.my_side]
+      notify?.(HT_REACT[mine?.react] || 'Preleção feita', mine?.react === 'upset' ? 'alert' : 'success')
+    } catch (e) {
+      if (!isSessionError(e)) notify?.(e.message, 'alert')
+    } finally {
+      setBusy(false)
+    }
+  }
 
   const serverNow = now + offset
   const et = Boolean(data?.et)
@@ -212,17 +245,28 @@ export default function OnlineMatchLive({ fixtureId = null, onClose, notify }) {
     const left = Math.max(0, Math.round((kick - serverNow) / 1000))
     const mm = Math.floor(left / 60)
     const ss = String(left % 60).padStart(2, '0')
+    const sc = scout && scout.fixture === data.fixture_id ? scout : null
+    const meHome = side === 'h'
+    const info = (sd) => (!sc || !side ? null : (sd === 'h') === meHome ? sc.me : sc.opp)
+    const teamCol = (sd, club) => (
+      <div className={`onm-vs-team ${side === sd ? 'is-mine' : ''}`}>
+        <OnlineCrest club={club} size={80} />
+        <b>{club.name}</b>
+        <small>{info(sd) ? `${info(sd).position}º · ${info(sd).formation || '4-3-3'}` : sd === 'h' ? 'Mandante' : 'Visitante'}</small>
+      </div>
+    )
     return (
-      <div className="onm onm-pre" role="dialog" aria-modal="true" aria-label="Antes da partida">
+      <div className="onm onm-pre" role="dialog" aria-modal="true" aria-label="Vestiário">
         <header className="onm-pre-top">
           <button type="button" className="on-back" onClick={onClose} aria-label="Voltar"><ArrowLeft size={20} /></button>
-          <span className="gx-tag">{data.comp === 'C' ? 'Copa' : `Liga · rodada ${data.round}`}</span>
+          <span className="on-match-comp">{data.comp === 'C' ? 'Copa Online' : `Liga · Rodada ${data.round}`}</span>
         </header>
         <div className="onm-vs">
-          <div className={`onm-vs-team ${side === 'h' ? 'is-mine' : ''}`}><OnlineCrest club={data.home} size={88} /><b>{data.home.name}</b><small>Mandante</small></div>
+          {teamCol('h', data.home)}
           <span className="onm-vs-x">VS</span>
-          <div className={`onm-vs-team ${side === 'a' ? 'is-mine' : ''}`}><OnlineCrest club={data.away} size={88} /><b>{data.away.name}</b><small>Visitante</small></div>
+          {teamCol('a', data.away)}
         </div>
+        <p className="onm-pre-hint"><MapPin size={14} /> {data.home.colors?.stadium || `Arena ${data.home.short}`} · {new Date(data.kickoff).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</p>
         <div className="onm-count">
           {left > 0 ? (
             <>
@@ -237,7 +281,45 @@ export default function OnlineMatchLive({ fixtureId = null, onClose, notify }) {
             </div>
           )}
         </div>
-        <p className="onm-pre-hint"><MapPin size={14} /> {data.home.colors?.stadium || `Arena ${data.home.short}`}</p>
+        {sc && (
+          <>
+            <div className="onm-pre-card">
+              <h3 className="on-h">Confronto</h3>
+              <div className="on-scout-bars">
+                {LINES.map(([k, label]) => {
+                  const mine = Number(sc.sectors?.me?.[k] ?? 0)
+                  const theirs = Number(sc.sectors?.opp?.[k] ?? 0)
+                  const h = meHome ? mine : theirs
+                  const a = meHome ? theirs : mine
+                  return (
+                    <div key={k}>
+                      <b>{Math.round(h)}</b>
+                      <span><small>{label}</small><i className="is-neutral"><em style={{ width: `${h + a ? (h / (h + a)) * 100 : 50}%` }} /></i></span>
+                      <b>{Math.round(a)}</b>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+            <div className="onm-pre-card">
+              <h3 className="on-h">Destaques</h3>
+              <div className="onm-pre-stars">
+                {[meHome ? sc.me : sc.opp, meHome ? sc.opp : sc.me].map((t, col) => (
+                  <ul key={col} className={col ? 'is-away' : ''}>
+                    {(t.stars || []).map((p) => <li key={p.id}><OvrBadge p={p} small /><span>{p.name}</span></li>)}
+                  </ul>
+                ))}
+              </div>
+            </div>
+            {sc.prep && (
+              <div className={`onm-pre-prep ${sc.prep.score >= 100 ? 'is-full' : ''}`}>
+                <b>{sc.prep.score}%</b>
+                <span><small>Preparação do time</small><strong>+{String(sc.prep.bonus).replace('.', ',')}% em campo</strong></span>
+                {sc.prep.score < 100 && left > 60 && <button type="button" className="gx-btn-ghost" onClick={onClose}>Preparar</button>}
+              </div>
+            )}
+          </>
+        )}
       </div>
     )
   }
@@ -297,7 +379,7 @@ export default function OnlineMatchLive({ fixtureId = null, onClose, notify }) {
 
       {side && !ended && (
         <div className="onm-presence">
-          <span className="is-me"><Wifi size={13} /> No comando{myPrep ? ` · preparo ${myPrep.score}% (+${String(myPrep.bonus).replace('.', ',')}%)` : ''}</span>
+          <span className="is-me"><Wifi size={13} /> No comando{data.ht_talk?.[side] ? ` · ${HT_REACT[data.ht_talk[side].react]}` : myPrep ? ` · preparo ${myPrep.score}% (+${String(myPrep.bonus).replace('.', ',')}%)` : ''}</span>
           <span className={oppPresent ? 'is-on' : ''}>
             {opp.bot ? <><Users size={13} /> {opp.short} · auxiliar</> : oppPresent ? <><Wifi size={13} /> {opp.short} · técnico no banco</> : <><WifiOff size={13} /> {opp.short} · auxiliar</>}
           </span>
@@ -448,6 +530,23 @@ export default function OnlineMatchLive({ fixtureId = null, onClose, notify }) {
         </>
       )}
 
+
+      {side && !ended && !data.ht_talk?.[side] && data.minute >= 45 && data.minute <= 55 && shownMinute >= 44 && shownMinute <= 46 && (
+        <div className="onm-talk" role="dialog" aria-label="Preleção do intervalo">
+          <header>
+            <Megaphone size={18} />
+            <div><small>Intervalo · {data.home.short} {live.sc.h} × {live.sc.a} {data.away.short}</small><strong>O que você diz ao time?</strong></div>
+          </header>
+          <div className="onm-talk-opts">
+            {HT_TALKS.map(([id, label, line]) => (
+              <button key={id} type="button" disabled={busy} onClick={() => halftimeTalk(id)}>
+                <strong>{label}</strong>
+                <span>“{line}”</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {panel && side && (
         <MatchLineupEditor

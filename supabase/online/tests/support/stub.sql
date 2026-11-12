@@ -956,3 +956,10 @@ select 'real-'||i,'Jogador Real '||i,'Real '||i,(array['GOL','LD','ZAG','LE','VO
 from generate_series(1,3000) i;
 insert into public.sim_player_base(player_id,rating,age0,potential)
 select 'real-'||i,50+((i*37)%401)/10.0,18+i%17,least(99,55+((i*37)%401)/10.0+i%9)::smallint from generate_series(1,3000) i;
+
+-- Jogadores reais sem nota-base (só nível): o modo online usa attr_level. Diamantes da conta.
+alter table public.sim_players add column attr_level smallint;
+insert into public.sim_players(id,full_name,short_name,position,secondary_positions,nationality,age,attr_level)
+select 'tierb-'||i,'Jogador B '||i,'B '||i,(array['GOL','LD','ZAG','LE','VOL','MC','MEI','PD','PE','ATA'])[1+i%10],'{}','ARG',20+i%15,50+i%27
+from generate_series(1,500) i;
+alter table public.careers add column if not exists diamonds int not null default 0;

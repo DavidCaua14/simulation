@@ -77,8 +77,9 @@ export function asSeasonPlayer(p, posFit) {
   }
 }
 
-// Tom da carta pela nota (bronze, prata, ouro, craque).
-export const cardTier = (ovr, star) => (star ? 'star' : ovr >= 75 ? 'gold' : ovr >= 65 ? 'silver' : 'bronze')
+// Tipo da carta: normal (até 80), especial (81 ou mais) ou lenda. Cada tipo tem uma cor própria.
+export const cardTier = (p) => (p?.legend ? 'legend' : Number(p?.ovr) >= 80.5 ? 'special' : 'normal')
+export const TIER_LABEL = { normal: 'Normal', special: 'Especial', legend: 'Lenda' }
 // "$ 150 mil", "$ 1,2 mi" (para espaços curtos)
 export function moneyShort(n) {
   const v = Math.round(Number(n || 0))

@@ -13,7 +13,6 @@ import OnlineSquad from './OnlineSquad'
 import { fetchOnlineStatus, joinOnlineQueue } from './services/onlineApi'
 import { moneyShort } from './onlineUtils'
 import './online.css'
-import './online-v2.css'
 
 // MODO ONLINE: liga compartilhada com um jogo por dia em horário real. Mesma moldura de celular do resto do jogo.
 const TABS = [

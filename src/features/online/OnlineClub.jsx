@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { ArrowUp, Building2, Coins, Crosshair, Goal, Plus, Dumbbell, Footprints, GraduationCap, Hand, HeartPulse, Landmark, MapPin, Palette, Receipt, Save, Shield, Star, Timer, Trophy, User, Users, Waypoints, Zap } from 'lucide-react'
+import { ArrowUp, Building2, Check, Clock, Coins, Crosshair, Gem, Goal, Plus, X, Dumbbell, Footprints, GraduationCap, Hand, HeartPulse, Landmark, MapPin, Palette, Receipt, Save, Shield, Star, Timer, Trophy, User, Users, Waypoints, Zap } from 'lucide-react'
 import { Notice, Skeleton } from '../../components/ui/feedback'
 import MiniGame from './components/MiniGames'
 import { GAMES } from './components/miniGamesInfo'
@@ -32,11 +32,93 @@ const until = (iso) => {
   return m >= 60 ? `${Math.floor(m / 60)} h ${String(m % 60).padStart(2, '0')}` : `${m} min`
 }
 
-function Training({ club, colors, notify, onChanged }) {
-  const [squad, setSquad] = useState(null)
-  const [game, setGame] = useState('penalty')
+// Energia de treino: quando os treinos grátis do dia acabam, cada treino gasta 1 de energia do estoque.
+function EnergySheet({ club, busy, onBuy, onClose }) {
+  const t = club.train
+  const packs = Object.entries(t.packs || {}).sort((a, b) => a[1][0] - b[1][0])
+  return (
+    <div className="on-modal" role="dialog" aria-modal="true" aria-label="Energia de treino">
+      <div className="on-sheet">
+        <button type="button" className="on-result-x" onClick={onClose} aria-label="Fechar"><X size={16} /></button>
+        <small className="on-sheet-kicker"><Zap size={13} /> Energia de treino</small>
+        <div className="on-energy-now"><b>{t.energy}</b><span>em estoque</span><em>{t.free_left} de {t.max} treinos grátis hoje</em></div>
+        <ul className="on-energy-how">
+          <li><Clock size={14} /> {t.max} treinos grátis todo dia</li>
+          <li><Coins size={14} /> 1 energia por {t.coin_cost} moedas</li>
+          <li><Gem size={14} /> Pacotes com diamantes, aqui ou na Loja</li>
+        </ul>
+        <div className="on-energy-packs">
+          <button type="button" className="gx-btn-ghost" disabled={busy || (club.coins?.wallet ?? 0) < t.coin_cost} onClick={() => onBuy('coin')}>
+            <b><Zap size={13} /> 1</b><small><Coins size={11} /> {t.coin_cost}</small>
+          </button>
+          {packs.map(([id, [energy, price]]) => (
+            <button key={id} type="button" className="gx-btn-ghost" disabled={busy || (club.coins?.diamonds ?? 0) < price} onClick={() => onBuy(id)}>
+              <b><Zap size={13} /> {energy}</b><small><Gem size={11} /> {price}</small>
+            </button>
+          ))}
+        </div>
+        <small className="on-energy-wallet"><Coins size={11} /> {club.coins?.wallet ?? 0} · <Gem size={11} /> {club.coins?.diamonds ?? 0}</small>
+      </div>
+    </div>
+  )
+}
+
+// Passo 2 do treino: quem treina. Abre ao tocar em um mini-game.
+function TrainSheet({ game, club, squad, colors, busy, onStart, onClose }) {
+  const info = GAMES[game]
+  const modes = info.solo ? MODES.slice(0, 1) : MODES
   const [mode, setMode] = useState('solo')
   const [picked, setPicked] = useState([])
+  const max = MODES.find((m) => m.id === mode).max
+  const fit = (p) => !p.injured && p.cond >= 30
+  const starters = new Set(Object.values(squad.lineup?.slots || {}))
+  const changeMode = (id) => {
+    setMode(id)
+    const cap = MODES.find((m) => m.id === id).max
+    if (id === 'team') setPicked(squad.players.filter((p) => starters.has(p.id) && fit(p)).slice(0, 11).map((p) => p.id))
+    else setPicked((list) => list.slice(0, cap))
+  }
+  const toggle = (id) => setPicked((p) => (p.includes(id) ? p.filter((x) => x !== id) : max === 1 ? [id] : p.length >= max ? p : [...p, id]))
+  const free = club.train.free_left > 0
+  const Icon = GAME_ICON[game]
+  return (
+    <div className="on-modal" role="dialog" aria-modal="true" aria-label={`Treino de ${info.title}`}>
+      <div className="on-sheet on-train-sheet">
+        <button type="button" className="on-result-x" onClick={onClose} aria-label="Fechar"><X size={16} /></button>
+        <header className={`on-train-sheet-head g-${game}`}>
+          <Icon size={26} />
+          <div><strong>{info.title}</strong><small>Evolui {info.group}</small></div>
+        </header>
+        {modes.length > 1 && (
+          <div className="on-seg on-seg-3" role="group" aria-label="Tipo de treino">
+            {modes.map(({ id, label, Icon: I, bonus }) => (
+              <button key={id} type="button" className={mode === id ? 'is-on' : ''} onClick={() => changeMode(id)}><I size={14} /> {label}<small>{bonus}</small></button>
+            ))}
+          </div>
+        )}
+        <h3 className="on-h">{max === 1 ? 'Escolha quem treina' : `Escolha até ${max} jogadores`} <small>{picked.length}/{max}</small></h3>
+        <div className="on-train-pick">
+          {squad.players.map((p) => (
+            <button key={p.id} type="button" disabled={!fit(p)} className={`on-chip2 t-${cardTier(p)} ${picked.includes(p.id) ? 'is-on' : ''}`} onClick={() => toggle(p.id)}>
+              <PlayerFace seed={p.name} colors={colors} size={34} />
+              <span><strong>{p.star && <Star size={10} />}{p.name}</strong><small>{p.pos} · {Math.round(p.ovr)} · {p.cond}%</small></span>
+              <i className="on-xp"><em style={{ width: `${p.xp?.[info.gi] ?? 0}%` }} /></i>
+              {picked.includes(p.id) && <b className="on-chip2-check"><Check size={12} /></b>}
+            </button>
+          ))}
+        </div>
+        <button type="button" className="gx-btn on-train-start" disabled={busy || !picked.length} onClick={() => onStart(game, picked)}>
+          <Dumbbell size={16} /> {picked.length ? 'Começar treino' : max === 1 ? 'Escolha um jogador' : 'Escolha os jogadores'}
+          {picked.length > 0 && <em>{free ? 'Grátis' : <><Zap size={12} /> 1</>}</em>}
+        </button>
+      </div>
+    </div>
+  )
+}
+
+function Training({ club, colors, notify, onChanged }) {
+  const [squad, setSquad] = useState(null)
+  const [sheet, setSheet] = useState(null) // id do mini-game aberto ou 'energy'
   const [session, setSession] = useState(null)
   const [result, setResult] = useState(null)
   const [busy, setBusy] = useState(false)
@@ -44,43 +126,26 @@ function Training({ club, colors, notify, onChanged }) {
   useEffect(() => {
     fetchOnlineSquad().then(setSquad).catch(() => setSquad({ players: [] }))
   }, [result])
-  const left = club.train.max - club.train.used
-  const max = MODES.find((m) => m.id === mode).max
-  const fit = (p) => !p.injured && p.cond >= 30
-  const buyEnergy = () => {
+  const t = club.train
+  const canTrain = t.free_left > 0 || t.energy > 0
+  const start = (game, picked) => {
     setBusy(true)
-    buyOnlineTrainEnergy()
-      .then(() => {
-        notify?.('+1 treino hoje', 'success')
+    startOnlineTraining(game, picked)
+      .then((s) => {
+        doneRef.current = false
+        setSheet(null)
+        setSession({ ...s, t0: Date.now() })
+        setResult(null)
         onChanged?.()
       })
       .catch((e) => notify?.(e.message, 'alert'))
       .finally(() => setBusy(false))
   }
-  const pickGame = (id) => {
-    setGame(id)
-    if (GAMES[id].solo && mode !== 'solo') {
-      setMode('solo')
-      setPicked((list) => list.slice(0, 1))
-    }
-  }
-  const changeMode = (id) => {
-    const m = MODES.find((x) => x.id === id)
-    if (id !== 'solo' && GAMES[game].solo) setGame('aim')
-    setMode(id)
-    if (id === 'team' && squad) {
-      const starters = new Set(Object.values(squad.lineup?.slots || {}))
-      setPicked(squad.players.filter((p) => starters.has(p.id) && fit(p)).slice(0, 11).map((p) => p.id))
-    } else setPicked((list) => list.slice(0, m.max))
-  }
-  const toggle = (id) => setPicked((p) => (p.includes(id) ? p.filter((x) => x !== id) : max === 1 ? [id] : p.length >= max ? p : [...p, id]))
-  const start = () => {
+  const buy = (pack) => {
     setBusy(true)
-    startOnlineTraining(game, picked)
-      .then((s) => {
-        doneRef.current = false
-        setSession({ ...s, t0: Date.now() })
-        setResult(null)
+    buyOnlineTrainEnergy(pack)
+      .then(() => {
+        notify?.('Energia de treino comprada', 'success')
         onChanged?.()
       })
       .catch((e) => notify?.(e.message, 'alert'))
@@ -94,7 +159,6 @@ function Training({ club, colors, notify, onChanged }) {
       if (wait > 0) await new Promise((r) => setTimeout(r, wait))
       try {
         setResult(await finishOnlineTraining(session.session, score))
-        setPicked([])
       } catch (e) {
         notify?.(e.message, 'alert')
       } finally {
@@ -112,7 +176,6 @@ function Training({ club, colors, notify, onChanged }) {
       </div>
     )
   }
-  const gi = GAMES[game].gi
   return (
     <div className="on-train">
       {result && (
@@ -129,48 +192,28 @@ function Training({ club, colors, notify, onChanged }) {
           </ul>
         </div>
       )}
-      <div className="on-train-top">
-        <span className="on-train-left"><Zap size={14} /> {left}/{club.train.max}</span>
-        {club.train.extra_cost != null && (
-          <button type="button" className="on-train-buy" disabled={busy || club.train.extra >= club.train.extra_max} onClick={buyEnergy} aria-label="Comprar energia de treino">
-            <Plus size={13} /> <Coins size={12} /> {club.train.extra_cost}
-          </button>
-        )}
-        <div className="on-seg on-seg-3" role="group" aria-label="Tipo de treino">
-          {MODES.map(({ id, label, Icon, bonus }) => (
-            <button key={id} type="button" className={mode === id ? 'is-on' : ''} onClick={() => changeMode(id)}><Icon size={14} /> {label}<small>{bonus}</small></button>
-          ))}
-        </div>
+      <div className="on-train-bar">
+        <span><small>Treinos grátis hoje</small><b>{t.free_left}/{t.max}</b></span>
+        <span><small>Energia</small><b><Zap size={14} /> {t.energy}</b></span>
+        <button type="button" className="gx-btn-ghost" onClick={() => setSheet('energy')}><Plus size={15} /> Energia</button>
       </div>
+      <h3 className="on-h">Escolha o treino</h3>
       <div className="on-games">
         {Object.entries(GAMES).map(([id, g]) => {
           const Icon = GAME_ICON[id]
           return (
-            <button key={id} type="button" className={`on-game g-${id} ${game === id ? 'is-on' : ''}`} onClick={() => pickGame(id)} aria-pressed={game === id}>
+            <button key={id} type="button" className={`on-game g-${id}`} onClick={() => setSheet(canTrain ? id : 'energy')}>
               <Icon size={20} />
               <b>{g.title}</b>
-              <small>{g.group}</small>
+              <small>{g.group}{g.solo ? ' · individual' : ''}</small>
             </button>
           )
         })}
       </div>
-      <h3 className="on-h">Jogadores <small>{picked.length}/{max}</small></h3>
-      {!squad ? (
-        <Skeleton rows={4} />
-      ) : (
-        <div className="on-train-pick">
-          {squad.players.map((p) => (
-            <button key={p.id} type="button" disabled={!fit(p)} className={`on-chip2 t-${cardTier(p.ovr, p.star)} ${picked.includes(p.id) ? 'is-on' : ''}`} onClick={() => toggle(p.id)}>
-              <PlayerFace seed={p.name} colors={colors} size={34} />
-              <span><strong>{p.star && <Star size={10} />}{p.name}</strong><small>{p.pos} · {Math.round(p.ovr)} · {p.cond}%</small></span>
-              <i className="on-xp"><em style={{ width: `${p.xp?.[gi] ?? 0}%` }} /></i>
-            </button>
-          ))}
-        </div>
+      {sheet === 'energy' && <EnergySheet club={club} busy={busy} onBuy={buy} onClose={() => setSheet(null)} />}
+      {sheet && sheet !== 'energy' && squad && (
+        <TrainSheet game={sheet} club={club} squad={squad} colors={colors} busy={busy} onStart={start} onClose={() => setSheet(null)} />
       )}
-      <button type="button" className="gx-btn on-train-go" disabled={busy || !picked.length || left <= 0} onClick={start}>
-        <Dumbbell size={16} /> {left <= 0 ? 'Treinos de hoje concluídos' : `Treinar ${GAMES[game].title}`}
-      </button>
     </div>
   )
 }
@@ -220,8 +263,10 @@ function Finance({ club, notify, onChanged }) {
   }, [club])
   const c = club.coins
   const room = Math.max(0, Math.min(c.cap - c.converted, c.wallet ?? 0))
+  const [ask, setAsk] = useState(null)
   const invest = (n) => {
     if (!n) return
+    setAsk(null)
     setBusy(true)
     convertOnlineCoins(n)
       .then(() => {
@@ -241,19 +286,36 @@ function Finance({ club, notify, onChanged }) {
       <div className="on-invest">
         <header>
           <Coins size={22} />
-          <div><b>Investir no clube</b><small>{c.wallet ?? 0} moedas · 1 = {money(c.rate)}</small></div>
+          <div><b>Investir no clube</b><small>{c.wallet ?? 0} moedas · 1 = {money(c.rate)} · limite {Math.max(0, c.cap - c.converted)}</small></div>
         </header>
         <div className="on-invest-opts">
           {[10, 50, 100].map((n) => (
-            <button key={n} type="button" className="gx-btn-ghost" disabled={busy || room < n} onClick={() => invest(n)}>
+            <button key={n} type="button" className="gx-btn-ghost" disabled={busy || room < n} onClick={() => setAsk(n)}>
               <b><Coins size={12} /> {n}</b><small>{moneyShort(n * c.rate)}</small>
             </button>
           ))}
-          <button type="button" className="gx-btn" disabled={busy || room < 1} onClick={() => invest(room)}>
+          <button type="button" className="gx-btn" disabled={busy || room < 1} onClick={() => setAsk(room)}>
             <b>Tudo</b><small>{moneyShort(room * c.rate)}</small>
           </button>
         </div>
       </div>
+      {ask && (
+        <div className="on-modal" role="dialog" aria-modal="true" aria-label="Confirmar investimento">
+          <div className="on-sheet on-confirm">
+            <small className="on-sheet-kicker"><Coins size={13} /> Investir no clube</small>
+            <div className="on-confirm-swap">
+              <span><b><Coins size={16} /> {ask}</b><small>moedas da conta</small></span>
+              <i>→</i>
+              <span><b>{money(ask * c.rate)}</b><small>no caixa do clube</small></span>
+            </div>
+            <p>Depois de investidas, as moedas não voltam para a conta.</p>
+            <div className="on-modal-actions">
+              <button type="button" className="gx-btn-ghost" onClick={() => setAsk(null)}>Cancelar</button>
+              <button type="button" className="gx-btn" disabled={busy} onClick={() => invest(ask)}>Confirmar</button>
+            </div>
+          </div>
+        </div>
+      )}
       <h3 className="on-h">Extrato</h3>
       <ul className="on-ledger">
         {(data?.ledger || []).length === 0 && <li className="is-empty">Sem movimentações</li>}

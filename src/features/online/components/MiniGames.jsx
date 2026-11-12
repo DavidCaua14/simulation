@@ -309,68 +309,153 @@ function Dribble({ onDone }) {
   )
 }
 
-// 7) Pênaltis (treino individual): arraste o dedo ou o mouse até o canto escolhido e solte. O goleiro tenta adivinhar. 5 cobranças.
-const GOAL = { x0: 10, x1: 90, y0: 6, y1: 42 }
+// 7) Pênaltis (treino individual). Toque no gol para escolher o canto e segure CHUTAR para dar força.
+// Força baixa: chute fraco, fácil de defender. Força demais: a bola sobe e abre, podendo ir para fora.
+// O goleiro escolhe um lado; quando acerta, ainda precisa alcançar a bola (cantos altos e chutes fortes são mais difíceis).
+const GOAL = { x0: 12, x1: 88, y0: 8, y1: 44 }
+const SPOT = { x: 50, y: 88 }
+const clampN = (v, a, b) => Math.max(a, Math.min(b, v))
+
+function Keeper({ pose }) {
+  // pose: { x, y, rot } em % do campo; nulo = parado no meio, balançando
+  const style = pose ? { left: `${pose.x}%`, top: `${pose.y}%`, transform: `translate(-50%, -100%) rotate(${pose.rot}deg)` } : undefined
+  return (
+    <div className={`pk-keeper ${pose ? 'is-dive' : ''}`} style={style} aria-hidden="true">
+      <svg viewBox="0 0 80 110" width="100%" height="100%">
+        <ellipse cx="40" cy="106" rx="20" ry="3" fill="rgba(0,0,0,.35)" />
+        <path d="M30 70 26 102h8l6-26 6 26h8l-4-32Z" fill="#0f172a" />
+        <path d="M24 100h11v5H22ZM45 100h11l2 5H45Z" fill="#f8fafc" />
+        <path d="M22 34c4-5 32-5 36 0l3 38H19Z" fill="#16a34a" />
+        <path d="M22 34c4-5 32-5 36 0l1 8H21Z" fill="#15803d" />
+        <path d="M23 36 6 14l6-5 18 20ZM57 36 74 14l-6-5-18 20Z" fill="#16a34a" />
+        <circle cx="8" cy="9" r="8" fill="#fde047" stroke="#a16207" strokeWidth="1.5" />
+        <circle cx="72" cy="9" r="8" fill="#fde047" stroke="#a16207" strokeWidth="1.5" />
+        <rect x="35" y="26" width="10" height="8" fill="#e2b488" />
+        <circle cx="40" cy="19" r="10" fill="#e2b488" />
+        <path d="M30 17c0-9 20-9 20 0-3-4-17-4-20 0Z" fill="#2b1d14" />
+        <text x="40" y="60" textAnchor="middle" fontSize="16" fontWeight="900" fill="#fff" fontFamily="var(--font-heading, sans-serif)">1</text>
+      </svg>
+    </div>
+  )
+}
+
 function Penalty({ onDone }) {
   const [n, setN] = useState(0)
   const [goals, setGoals] = useState(0)
-  const [aim, setAim] = useState(null)
-  const [shot, setShot] = useState(null)
+  const [aim, setAim] = useState({ x: 50, y: 30 })
+  const [power, setPower] = useState(0)
+  const [shot, setShot] = useState(null) // { x, y, result, keeper:{x,y,rot}, ms }
+  const [log, setLog] = useState([])
   const box = useRef(null)
-  const dragging = useRef(false)
+  const aiming = useRef(false)
+  const charge = useRef(null)
+  const powerRef = useRef(0)
   const done = useRef(false)
-  const point = (e) => {
+  const busy = Boolean(shot) || n >= 5
+
+  const toAim = (e) => {
     const r = box.current.getBoundingClientRect()
-    return { x: Math.max(0, Math.min(100, ((e.clientX - r.left) / r.width) * 100)), y: Math.max(0, Math.min(78, ((e.clientY - r.top) / r.height) * 100)) }
+    setAim({
+      x: clampN(((e.clientX - r.left) / r.width) * 100, GOAL.x0 + 3, GOAL.x1 - 3),
+      y: clampN(((e.clientY - r.top) / r.height) * 100, GOAL.y0 + 3, GOAL.y1 - 2),
+    })
   }
-  const down = (e) => {
-    if (shot || n >= 5) return
-    dragging.current = true
+  const aimDown = (e) => {
+    if (busy) return
+    aiming.current = true
     e.currentTarget.setPointerCapture?.(e.pointerId)
-    setAim(point(e))
+    toAim(e)
   }
-  const move = (e) => dragging.current && setAim(point(e))
-  const up = (e) => {
-    if (!dragging.current) return
-    dragging.current = false
-    const t = point(e)
-    setAim(null)
-    // quanto mais perto da trave, menos precisa sai a batida
-    const x = t.x + (Math.random() - 0.5) * 7
-    const y = t.y + (Math.random() - 0.5) * 7
-    const inside = x > GOAL.x0 + 1 && x < GOAL.x1 - 1 && y > GOAL.y0 + 1 && y < GOAL.y1
-    const kx = Math.random() < 0.55 ? Math.max(22, Math.min(78, x + (Math.random() - 0.5) * 34)) : 22 + Math.random() * 56
-    const saved = inside && Math.abs(x - kx) < 13 && !(y < 17 && Math.abs(x - 50) > 26)
-    const result = !inside ? 'out' : saved ? 'save' : 'goal'
-    setShot({ x, y, kx, result })
+  const aimMove = (e) => aiming.current && !busy && toAim(e)
+  const aimUp = () => {
+    aiming.current = false
+  }
+
+  const stopCharge = () => {
+    if (charge.current) cancelAnimationFrame(charge.current)
+    charge.current = null
+  }
+  useEffect(() => stopCharge, [])
+  const chargeDown = (e) => {
+    if (busy || charge.current) return
+    e.currentTarget.setPointerCapture?.(e.pointerId)
+    const t0 = performance.now()
+    const step = (t) => {
+      // sobe em 1,1 s e fica oscilando perto do máximo
+      const k = (t - t0) / 1100
+      const v = k <= 1 ? k * 100 : 100 - Math.abs(Math.sin((k - 1) * 4)) * 14
+      powerRef.current = v
+      setPower(v)
+      charge.current = requestAnimationFrame(step)
+    }
+    charge.current = requestAnimationFrame(step)
+  }
+  const chargeUp = () => {
+    if (!charge.current) return
+    stopCharge()
+    shoot(Math.max(8, powerRef.current))
+  }
+
+  const shoot = (pw) => {
+    // desvio: força acima de 78 levanta e abre a bola; abaixo disso, pequeno erro natural
+    const over = Math.max(0, pw - 78)
+    const side = aim.x >= 50 ? 1 : -1
+    const x = aim.x + side * over * 0.55 + (Math.random() - 0.5) * 3
+    const y = aim.y - over * 1.35 + (Math.random() - 0.5) * 3
+    const inside = x > GOAL.x0 + 1.5 && x < GOAL.x1 - 1.5 && y > GOAL.y0 + 1.5
+    const zone = x < 38 ? 0 : x > 62 ? 2 : 1
+    const weak = pw < 38
+    // o goleiro escolhe um lado; chute fraco dá tempo de ele ler a batida
+    const read = Math.random() < (weak ? 0.85 : 0.5)
+    const guess = read ? zone : [0, 1, 2].filter((z) => z !== zone)[Math.floor(Math.random() * 2)]
+    const topCorner = y < GOAL.y0 + 11 && Math.abs(x - 50) > 26
+    const reach = guess === zone && Math.random() < (topCorner ? 0.12 : weak ? 0.95 : 0.78 - ((pw - 38) / 62) * 0.38)
+    const result = !inside ? 'out' : reach ? 'save' : 'goal'
+    const kx = reach ? x : [22, 50, 78][guess] + (Math.random() - 0.5) * 6
+    const ky = reach ? Math.max(y + 9, GOAL.y0 + 14) : guess === 1 ? GOAL.y1 : GOAL.y1 - 6
+    const rot = guess === 1 && !reach ? 0 : clampN((kx - 50) * 2.4, -78, 78)
+    const end = result === 'out' ? { x: clampN(x, -6, 106), y: Math.max(-8, y - 4) } : result === 'save' ? { x: kx + (kx - 50) * 0.08, y: ky - 12 } : { x, y }
+    setShot({ ...end, result, keeper: { x: kx, y: ky, rot }, ms: Math.round(520 - pw * 2.6) })
     const g = goals + (result === 'goal' ? 1 : 0)
     setGoals(g)
+    setLog((l) => [...l, result])
     setTimeout(() => {
       setShot(null)
-      if (n + 1 >= 5) {
-        if (!done.current) {
-          done.current = true
-          onDone(g / 5)
-        }
+      setPower(0)
+      powerRef.current = 0
+      if (n + 1 >= 5 && !done.current) {
+        done.current = true
+        onDone(g / 5)
       }
       setN(n + 1)
-    }, 1150)
+    }, 1500)
   }
-  const ball = shot ? { left: `${shot.x}%`, top: `${shot.y}%` } : { left: '50%', top: '88%' }
+
+  const zoneClass = power < 38 ? 'is-weak' : power > 78 ? 'is-over' : 'is-good'
   return (
-    <div className={`mg-pen ${shot ? `is-${shot.result}` : ''}`} ref={box} onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={() => { dragging.current = false; setAim(null) }}>
-      <span className="mg-pen-goal"><i className="mg-pen-net" /></span>
-      <i className={`mg-pen-gk ${shot ? 'is-dive' : ''}`} style={shot ? { left: `${shot.kx}%`, transform: `translateX(-50%) rotate(${(shot.kx - 50) * 1.6}deg)` } : undefined} />
-      {aim && (
-        <>
-          <svg className="mg-pen-line" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><line x1="50" y1="88" x2={aim.x} y2={aim.y} /></svg>
-          <i className="mg-pen-aim" style={{ left: `${aim.x}%`, top: `${aim.y}%` }} />
-        </>
-      )}
-      <i className={`mg-pen-ball ${shot ? 'is-shot' : ''}`} style={ball} />
-      {shot && <b className="mg-result">{shot.result === 'goal' ? 'GOL!' : shot.result === 'save' ? 'DEFENDEU' : 'FORA'}</b>}
-      <span className="mg-score">{goals} / {Math.min(n + (shot ? 1 : 0), 5)}</span>
-      <ol className="mg-pen-dots">{[0, 1, 2, 3, 4].map((k) => <li key={k} className={k < n ? 'is-done' : k === n ? 'is-now' : ''} />)}</ol>
+    <div className={`pk ${shot ? `is-${shot.result}` : ''}`}>
+      <div className="pk-field" ref={box} onPointerDown={aimDown} onPointerMove={aimMove} onPointerUp={aimUp} onPointerCancel={aimUp}>
+        <div className="pk-crowd" />
+        <div className="pk-goal"><i className="pk-net" /></div>
+        <i className="pk-spot" />
+        <Keeper pose={shot?.keeper} />
+        {!shot && n < 5 && <i className="pk-aim" style={{ left: `${aim.x}%`, top: `${aim.y}%` }} />}
+        <i
+          className={`pk-ball ${shot ? 'is-shot' : ''}`}
+          style={shot ? { left: `${shot.x}%`, top: `${shot.y}%`, transitionDuration: `${shot.ms}ms` } : { left: `${SPOT.x}%`, top: `${SPOT.y}%` }}
+        />
+        {shot && <b className="pk-call">{shot.result === 'goal' ? 'GOL!' : shot.result === 'save' ? 'DEFENDEU!' : 'PRA FORA!'}</b>}
+        <ol className="pk-log">{[0, 1, 2, 3, 4].map((k) => <li key={k} className={log[k] ? `is-${log[k]}` : k === n ? 'is-now' : ''} />)}</ol>
+      </div>
+      <div className="pk-ctrl">
+        <div className={`pk-power ${zoneClass}`} aria-label="Força do chute">
+          <i className="pk-power-good" />
+          <em style={{ width: `${power}%` }} />
+        </div>
+        <button type="button" className="pk-kick" disabled={busy} onPointerDown={chargeDown} onPointerUp={chargeUp} onPointerCancel={chargeUp} onContextMenu={(e) => e.preventDefault()}>
+          {power > 0 && !shot ? 'SOLTE!' : 'SEGURE PARA CHUTAR'}
+        </button>
+      </div>
     </div>
   )
 }

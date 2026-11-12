@@ -55,9 +55,9 @@ export default function OnlineDraft({ onDone }) {
       </header>
       {error && <Notice kind="error" onClose={() => setError('')}>{error}</Notice>}
 
-      <div className="on-draft-options" key={draft.step}>
+      <div className={`on-draft-options ${focus != null ? 'has-pick' : ''}`} key={draft.step}>
         {draft.options.map((o, i) => (
-          <FutCard key={o.idx} p={{ ...o, star: true }} club={draft.club} delay={i * 110} selected={focus === o.idx} disabled={busy} onClick={() => setFocus(o.idx)} />
+          <FutCard key={o.idx} p={o} club={draft.club} delay={i * 110} selected={focus === o.idx} disabled={busy} onClick={() => setFocus(o.idx)} />
         ))}
       </div>
 

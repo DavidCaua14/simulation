@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Banknote, Coins, Flame, Gavel, Hourglass, TrendingUp, Users } from 'lucide-react'
+import { Banknote, Coins, Crown, Flame, Gavel, Hourglass, Lock, TrendingUp, Users } from 'lucide-react'
 import { EmptyState, Notice, Skeleton } from '../../components/ui/feedback'
 import OnlineCrest from './components/OnlineCrest'
 import { FutCard, OvrBadge } from './components/PlayerFut'
@@ -16,8 +16,11 @@ const round100 = (n) => Math.ceil(n / 100) * 100
 
 function Auction({ lot, now, busy, wallet, coins, onBid }) {
   const [step, setStep] = useState(0)
+  const opensIn = new Date(lot.opens_at).getTime() - now
+  const locked = opensIn > 0
+  const special = lot.featured === 9
   const left = new Date(lot.ends_at).getTime() - now
-  const hot = left < 120000
+  const hot = !locked && left < 120000
   const amount = step === 0 ? lot.min_bid : round100(lot.min_bid * (1 + step))
   const need = amount - (lot.leading ? lot.best_bid : 0) - wallet.free
   const coinCost = need > 0 ? Math.ceil(need / coins.bid_rate) : 0
@@ -25,11 +28,14 @@ function Auction({ lot, now, busy, wallet, coins, onBid }) {
   const blocked = coinCost > 0 && !canCoins
   const p = lot.player
   return (
-    <article className={`on-auc ${lot.featured ? 'is-featured' : ''} ${lot.leading ? 'is-leading' : lot.bidding ? 'is-outbid' : ''} ${hot ? 'is-hot' : ''}`}>
+    <article className={`on-auc ${special ? 'is-special' : ''} ${p.legend ? 'is-legend' : ''} ${locked ? 'is-locked' : ''} ${lot.featured ? 'is-featured' : ''} ${lot.leading ? 'is-leading' : lot.bidding ? 'is-outbid' : ''} ${hot ? 'is-hot' : ''}`}>
       <FutCard p={p} club={lot.seller} size="sm" />
       <div className="on-auc-body">
+        {special && <span className="on-auc-tag"><Crown size={11} /> {p.legend ? 'Lenda do dia' : 'Especial do dia'}</span>}
         <header>
-          <span className={`on-auc-clock ${hot ? 'is-hot' : ''}`}>{hot ? <Flame size={13} /> : <Hourglass size={13} />} {timeLeft(left)}</span>
+          {locked
+            ? <span className="on-auc-clock is-locked"><Lock size={13} /> Abre às {new Date(lot.opens_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</span>
+            : <span className={`on-auc-clock ${hot ? 'is-hot' : ''}`}>{hot ? <Flame size={13} /> : <Hourglass size={13} />} {timeLeft(left)}</span>}
           {lot.bidders > 0 && <span className="on-auc-count"><Users size={12} /> {lot.bidders}</span>}
           {lot.seller && <span className="on-auc-seller"><OnlineCrest club={lot.seller} size={16} /> {lot.seller.short}</span>}
         </header>
@@ -45,7 +51,8 @@ function Auction({ lot, now, busy, wallet, coins, onBid }) {
             {lot.history.slice(0, 3).map((h, i) => <li key={i} className={h.me ? 'is-me' : ''}><span>{h.club.short}</span><b>{moneyShort(h.amount)}</b></li>)}
           </ol>
         )}
-        {!lot.mine && (
+        {locked && <span className="on-auc-wait">Faltam {timeLeft(opensIn)}</span>}
+        {!lot.mine && !locked && (
           <>
             <div className="on-auc-steps" role="group" aria-label="Valor do lance">
               {STEPS.map(([v, label]) => <button key={v} type="button" className={step === v ? 'is-on' : ''} onClick={() => setStep(v)}>{label}</button>)}
@@ -84,7 +91,7 @@ export default function OnlineMarket({ notify, onChanged }) {
     return () => clearInterval(id)
   }, [])
   const serverNow = now + offset
-  const open = useMemo(() => (data?.lots || []).filter((l) => new Date(l.opens_at).getTime() <= serverNow), [data, serverNow])
+  const open = useMemo(() => (data?.lots || []).filter((l) => l.featured === 9 || new Date(l.opens_at).getTime() <= serverNow), [data, serverNow])
   const active = open.some((l) => l.bidding || l.mine || new Date(l.ends_at).getTime() - serverNow < 120000)
   useEffect(() => {
     const id = setInterval(load, active ? 5000 : 15000)

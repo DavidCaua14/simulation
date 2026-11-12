@@ -1,4 +1,5 @@
-import { cardLabels, cardTier } from '../onlineUtils'
+import { Crown } from 'lucide-react'
+import { TIER_LABEL, cardLabels, cardTier } from '../onlineUtils'
 
 // Carta do jogador (retrato, nota, posição e os seis atributos) e peças menores usadas no mercado e no elenco.
 
@@ -43,7 +44,7 @@ export function PlayerFace({ seed, colors, size = 72 }) {
 
 // Carta grande. `club` pinta a camisa do retrato; `footer` recebe a ação (botão, preço…).
 export function FutCard({ p, club, size = 'md', onClick, selected = false, disabled = false, footer = null, delay = 0 }) {
-  const tier = cardTier(p.ovr, p.star)
+  const tier = cardTier(p)
   const Tag = onClick ? 'button' : 'div'
   return (
     <Tag
@@ -54,6 +55,8 @@ export function FutCard({ p, club, size = 'md', onClick, selected = false, disab
       style={{ animationDelay: `${delay}ms` }}
     >
       <span className="fut-shine" aria-hidden="true" />
+      {tier !== 'normal' && <span className="fut-kind">{tier === 'legend' && <Crown size={9} />}{TIER_LABEL[tier]}</span>}
+      {selected && <span className="fut-check" aria-hidden="true">✓</span>}
       <span className="fut-top">
         <span className="fut-ovr"><b>{Math.round(p.ovr)}</b><small>{p.pos}</small><i className="fut-nat">{p.nat || 'BRA'}</i></span>
         <PlayerFace seed={p.name} colors={club?.colors} size={size === 'lg' ? 96 : size === 'sm' ? 54 : 78} />
@@ -66,7 +69,7 @@ export function FutCard({ p, club, size = 'md', onClick, selected = false, disab
           ))}
         </span>
       )}
-      <span className="fut-meta">{p.age} anos{p.pot != null && <> · POT <b>{p.pot}</b></>}</span>
+      <span className="fut-meta">{tier === 'legend' ? 'Lenda do futebol' : <>{p.age} anos{p.pot != null && <> · POT <b>{p.pot}</b></>}</>}</span>
       {footer}
     </Tag>
   )
@@ -75,6 +78,6 @@ export function FutCard({ p, club, size = 'md', onClick, selected = false, disab
 // Selo pequeno de nota e posição (listas).
 export function OvrBadge({ p, small = false }) {
   return (
-    <span className={`on-ovr t-${cardTier(p.ovr, p.star)} ${small ? 'is-small' : ''}`}><b>{Math.round(p.ovr)}</b><small>{p.pos}</small></span>
+    <span className={`on-ovr t-${cardTier(p)} ${small ? 'is-small' : ''}`}><b>{Math.round(p.ovr)}</b><small>{p.pos}</small></span>
   )
 }

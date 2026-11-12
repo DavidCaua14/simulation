@@ -457,3 +457,13 @@ button.mk-row:active { transform: scale(0.99); }
 .te-info strong { font: 800 1.05rem var(--font-heading); text-transform: uppercase; letter-spacing: .04em; }
 .te-info span { color: #c4d0ea; font-size: .78rem; }
 .te-buy { display: inline-flex; align-items: center; gap: 6px; }
+.te-head { display: grid; grid-template-columns: 60px minmax(0, 1fr); align-items: center; gap: 12px; padding: 14px; border-radius: 16px; border: 1px solid rgba(74, 222, 128, .45); background: linear-gradient(150deg, rgba(74, 222, 128, .2), rgba(11, 20, 38, .9) 70%); color: #fff; }
+.te-info span { display: inline-flex; align-items: center; gap: 4px; }
+.te-packs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.te-pack { position: relative; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 14px 8px 10px; border-radius: 16px; border: 1px solid rgba(148, 186, 255, .22); background: linear-gradient(180deg, #13203b, #0b1426); color: #fff; font: inherit; cursor: pointer; }
+.te-pack b { display: inline-flex; align-items: center; gap: 4px; font: 900 1.5rem var(--font-heading); color: #4ade80; }
+.te-pack small { color: #93a3c4; font-size: .68rem; }
+.te-pack em { display: inline-flex; align-items: center; gap: 4px; margin-top: 6px; padding: 5px 14px; border-radius: 999px; background: linear-gradient(180deg, #67e8f9, #0e7490); color: #031018; font: 800 .86rem var(--font-body); font-style: normal; }
+.te-pack.is-coin em { background: linear-gradient(180deg, #fde68a, #ca8a04); }
+.te-pack.is-best { border-color: #facc15; box-shadow: 0 0 16px rgba(250, 204, 21, .25); }
+.te-pack:disabled { opacity: .45; cursor: default; }

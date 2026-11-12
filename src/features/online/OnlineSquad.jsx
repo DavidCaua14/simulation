@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { AlertTriangle, Ambulance, Ban, ClipboardList, Crown, Banknote, FileSignature, Radio, RotateCcw, Save, Shirt, Star, Target, Users, Wand2 } from 'lucide-react'
+import { AlertTriangle, Ambulance, Ban, ClipboardList, Crown, FileSignature, Radio, UserMinus, RotateCcw, Save, Shirt, Star, Target, Users, Wand2 } from 'lucide-react'
 import { Notice, Skeleton } from '../../components/ui/feedback'
 import Pitch from '../seasons/components/Pitch'
 import TacticsPanel from '../seasons/components/TacticsPanel'
@@ -50,7 +50,7 @@ function lineupWarnings(formation, slots, byId) {
 }
 
 export function PlayerCard({ p, tag, colors, selected, onClick, compact }) {
-  const tier = cardTier(p.ovr, p.star)
+  const tier = cardTier(p)
   return (
     <button type="button" className={`on-card t-${tier} ${selected ? 'is-sel' : ''} ${compact ? 'is-compact' : ''}`} onClick={onClick} aria-pressed={selected}>
       <span className="on-card-ovr"><b>{Math.round(p.ovr)}</b><small>{p.pos}</small></span>
@@ -83,15 +83,15 @@ function PlayerDeal({ p, seasonId, colors, busy, onSell, onRenew }) {
       <PlayerCard p={p} colors={colors} tag={left <= 0 ? 'último ano' : `contrato +${left}`} onClick={() => setMode(mode ? null : 'menu')} />
       {mode === 'menu' && (
         <div className="on-deal-actions">
-          <button type="button" className="gx-btn-ghost" onClick={() => setMode('sell')}><Banknote size={14} /> Vender</button>
+          <button type="button" className="gx-btn-ghost" onClick={() => setMode('sell')}><UserMinus size={14} /> Dispensar</button>
           <button type="button" className="gx-btn-ghost" disabled={left >= 3} onClick={() => setMode('renew')}><FileSignature size={14} /> Renovar</button>
         </div>
       )}
       {mode === 'sell' && (
         <div className="on-deal-actions">
-          <button type="button" className="gx-btn" disabled={busy} onClick={() => onSell(p)}><Banknote size={14} /> Vender por {money(p.sell ?? Math.round(p.value * 0.6))}</button>
+          <button type="button" className="gx-btn" disabled={busy} onClick={() => onSell(p)}><UserMinus size={14} /> Dispensar · +{money(p.sell ?? Math.round(p.value * 0.6))}</button>
           <button type="button" className="gx-btn-ghost" onClick={() => setMode(null)}>Cancelar</button>
-          <small>Valor de mercado {money(p.value)}</small>
+          <small>Ele deixa o clube e volta ao mercado</small>
         </div>
       )}
       {mode === 'renew' && (
@@ -224,7 +224,7 @@ export default function OnlineSquad({ onOpenMatch, notify, seasonId }) {
         <button type="button" role="tab" aria-selected={view === 'team'} className={view === 'team' ? 'is-on' : ''} onClick={() => setView('team')}><Shirt size={15} /> Time</button>
         <button type="button" role="tab" aria-selected={view === 'tactics'} className={view === 'tactics' ? 'is-on' : ''} onClick={() => setView('tactics')}><ClipboardList size={15} /> Táticas</button>
         <button type="button" role="tab" aria-selected={view === 'roles'} className={view === 'roles' ? 'is-on' : ''} onClick={() => setView('roles')}><Crown size={15} /> Funções</button>
-        <button type="button" role="tab" aria-selected={view === 'players'} className={view === 'players' ? 'is-on' : ''} onClick={() => setView('players')}><Users size={15} /> Contratos</button>
+        <button type="button" role="tab" aria-selected={view === 'players'} className={view === 'players' ? 'is-on' : ''} onClick={() => setView('players')}><Users size={15} /> Jogadores</button>
       </div>
       {error && <Notice kind="error" onClose={() => setError('')}>{error}</Notice>}
       {saved && !dirty && <Notice kind="success" onClose={() => setSaved('')}>{saved}</Notice>}
@@ -298,7 +298,7 @@ export default function OnlineSquad({ onOpenMatch, notify, seasonId }) {
             <PlayerDeal key={p.id} p={byId[p.id]} seasonId={seasonId} colors={colors} busy={busy}
               onSell={(pl) => {
                 setBusy(true)
-                sellOnlinePlayer(pl.id).then((sq) => { load(sq); notify?.(`${pl.name} vendido`, 'success') }).catch((e) => notify?.(e.message, 'alert')).finally(() => setBusy(false))
+                sellOnlinePlayer(pl.id).then((sq) => { load(sq); notify?.(`${pl.name} dispensado`, 'success') }).catch((e) => notify?.(e.message, 'alert')).finally(() => setBusy(false))
               }}
               onRenew={(pl, y) => {
                 setBusy(true)

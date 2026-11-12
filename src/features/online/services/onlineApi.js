@@ -62,10 +62,12 @@ export const renewOnlinePlayer = (playerId, years) => rpc('on_renew', { p_player
 // Sem prefixo on_: o cache do app trata como escrita e atualiza a carteira de moedas nas outras telas.
 export const convertOnlineCoins = (coins) => rpc('online_coins_convert', { p_coins: coins })
 // Energia de treino: um treino extra hoje, pago com moedas da conta.
-export const buyOnlineTrainEnergy = () => rpc('online_train_energy_buy')
+export const buyOnlineTrainEnergy = (pack = 'coin') => rpc('online_train_energy_buy', { p_pack: pack })
 
 // Preparação para o jogo (Fase 8): relatório do adversário e preleção
-export const fetchOnlineScout = () => rpc('on_scout')
+export const fetchOnlineScout = (mark = true) => rpc('on_scout', { p_mark: mark })
+// Preleção do intervalo: praise, focus, demand, encourage, calm ou angry
+export const sendOnlineHalftimeTalk = (fixtureId, talk) => rpc('on_match_talk', { p_fixture: fixtureId, p_talk: talk })
 export const sendOnlineTeamTalk = (talk) => rpc('on_team_talk', { p_talk: talk })
 
 // Copa e histórico (Fase 5)

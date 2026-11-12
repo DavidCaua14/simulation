@@ -1,4 +1,4 @@
-# Modo Online — Fases 2 a 8
+# Modo Online — Fases 2 a 9
 
 Situação em 10/11/2026. Tudo continua atrás do portão de testes (`on_config.public_open = false`): só o e-mail
 em `on_config.testers` entra.
@@ -14,6 +14,7 @@ em `on_config.testers` entra.
 | 6 Experiência de clube | `supabase/online/06_experience.sql` | `20261111120000_online_phase6_experience.sql` | todas (ver abaixo) |
 | 7 Jogadores reais | `supabase/online/07_real_players.sql` | `20261112120000_online_phase7_real_players.sql` | ver abaixo |
 | 8 Preparação para o jogo | `supabase/online/08_preparation.sql` | `20261112130000_online_phase8_preparation.sql` | `OnlinePrep.jsx` |
+| 9 Lendas e mercado | `supabase/online/09_market_legends.sql`, `10_legends_data.sql` | `20261112140000_…`, `20261112150000_…` | ver abaixo |
 
 A migration é uma cópia literal do arquivo em `supabase/online/`. Altere o arquivo de `supabase/online/` e copie.
 
@@ -161,3 +162,27 @@ Motivo: dar ao técnico o que fazer entre um jogo e outro, com efeito real em ca
   (`prep_streak_every`), mais 30 moedas (`prep_streak_coins`). Menos de 100% zera a sequência.
 - A partida mostra o preparo do técnico ("preparo 85% (+2,55%)"). Bots não têm preparação.
 - As marcas ficam em `on_clubs.prep` e valem só para o próximo jogo.
+
+## Fase 9 (12/11/2026): lendas, especial do dia e ajustes de tela
+
+| Assunto | Regra | Onde |
+|---|---|---|
+| CSS | Um arquivo só (`online.css`). Com dois arquivos, o build de produção carregava o antigo por último e desfazia o layout novo (cartas em coluna, botões sobre o menu). Para conferir, gere a prévia com build de produção | `online.css` |
+| Catálogo | `on_pool`: reais com nota-base (6.058), reais só com nível `attr_level` (2.594, antes fora do modo) e lendas (`on_legends`, 338 aposentados escritos à mão) | `09_market_legends.sql`, `10_legends_data.sql` |
+| Tipos de carta | Normal até 80 (aço), especial 81+ (roxo), lenda (preto e dourado) | `cardTier`, `online.css` |
+| Leilões comuns | Três, sempre até 80: 74–80, 68–74, 62–68 | `on_gen_featured` |
+| Especial do dia | Criado na primeira hora do dia, travado, mostrando o horário; abre às 19:00 (`special_hour`) e dura uma hora (mais 5 min a cada lance). A cada três dias é uma lenda. Bots não disputam | `on_market_tick`, `on_gen_special` |
+| Preço | Especial: $ 400 mil + $ 40 mil por ponto acima de 80. Lenda: $ 600 mil + $ 50 mil por ponto acima de 85 | `on_start_price` |
+| Moedas | Teto de investimento por temporada: 5.000. Investir pede confirmação | `coin_cap`, `OnlineClub.jsx` |
+| Energia de treino | Estoque (`on_clubs.train_energy`). Os 3 treinos do dia são grátis; cada treino além deles gasta 1. Compra: 1 por 40 moedas ou pacotes por diamantes (5/15, 20/50, 50/100), na tela de treino e na Loja | `online_train_energy_buy(p_pack)`, `energy_packs` |
+| Treino | Dois passos: toque no mini-game, depois escolha quem treina e comece. Sem energia, abre a tela que explica como conseguir mais | `OnlineClub.jsx` |
+| Pênaltis | Toque no gol para mirar; segure o botão para dar força. Força baixa: fácil de defender. Força demais: a bola sobe e abre, podendo sair. O goleiro escolhe um lado e precisa alcançar a bola | `MiniGames.jsx` |
+| Melhor time | Escolhe a melhor dupla jogador-vaga a cada passo; goleiro só no gol | `on_auto_lineup` |
+| Dispensar | Em Elenco > Jogadores. O clube recebe 60% do valor e o jogador volta a ficar livre para leilão | `on_sell` |
+| Vestiário | Posição e formação dos dois times, confronto por setor, destaques e preparação | `OnlineMatchLive.jsx`, `on_scout(false)` |
+| Preleção do intervalo | Seis conversas. O efeito na forma do segundo tempo (de -4,5% a +5%, mais um sorteio de ±0,8%) depende do saldo e de quem é o favorito | `on_talk_effect`, `on_match_talk` |
+
+Tabela da preleção (saldo no intervalo): elogiar ajuda vencendo por pouco e atrapalha perdendo; pedir foco ajuda
+vencendo; cobrar mais ajuda no empate como favorito ou perdendo por 1, e atrapalha vencendo por 2 ou perdendo por
+3; incentivar ajuda perdendo por 1 ou 2; tirar a pressão ajuda o azarão que perde ou a goleada sofrida; bronca
+ajuda perdendo por 2 ou mais sem ser azarão e atrapalha muito vencendo.

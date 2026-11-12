@@ -150,6 +150,7 @@ function payload(m, after) {
     status: new Date(f.kickoff).getTime() > Date.now() ? 'sched' : m.done ? 'finished' : 'live', minute: m.minute, my_side: m.mineSide,
     home: { ...clubs[f.home - 1], ...(f.home === 1 ? { name: state.name } : {}) }, away: { ...clubs[f.away - 1], ...(f.away === 1 ? { name: state.name } : {}) },
     present: { h: m.mineSide === 'h' || !clubs[f.home - 1].bot, a: m.mineSide === 'a' }, score: m.score, et: false, pens: null, decisive: false,
+    ht_talk: m.ht_talk || null, prep: m.mineSide === 'h' ? [{ score: 85, bonus: 2.55 }, null] : [null, { score: 85, bonus: 2.55 }],
     tactics: m.tactics, formation: m.formation, subs: m.subs, max_subs: 5, max_windows: 3, fixes: [],
     events: m.events.filter((e) => e.seq > (after || 0)),
     stats: { poss: [Math.round((100 * m.poss[0]) / Math.max(1, m.poss[0] + m.poss[1])), 100 - Math.round((100 * m.poss[0]) / Math.max(1, m.poss[0] + m.poss[1]))], fouls: [3, 4], saves: [1, 2], corners: [2, 3], offsides: [1, 0] },
@@ -186,11 +187,11 @@ function act({ p_fixture, p_changes }) {
 const club = { used: 1, conv: 40, build: null, extra: 0 }
 const clubState = () => ({ server_now: new Date().toISOString(), cash: 150000, reserved: 12000, debt: 0, levels: { stadium: 1, training: 2, medical: 0, youth: 0 }, build: club.build,
   costs: Object.fromEntries(['stadium', 'training', 'medical', 'youth'].map((k, i) => [k, { cost: 25000 * Math.round((([1, 2, 0, 0][i]) + 1) ** 1.5), time: (([1, 2, 0, 0][i]) + 1) * 43200 }])),
-  train: { used: club.used, max: 3 + club.extra, cond_cost: 6, extra: club.extra, extra_max: 5, extra_cost: 40 }, coins: { wallet: 820, converted: club.conv, cap: 1000, rate: 1000 }, match_today: true, wages: 6900 })
+  train: { used: club.used, max: 3, free_left: Math.max(0, 3 - club.used), energy: club.extra, cond_cost: 6, coin_cost: 40, packs: { d5: [5, 15], d20: [20, 50], d50: [50, 100] } }, coins: { wallet: 820, diamonds: 60, converted: club.conv, cap: 5000, rate: 1000 }, match_today: true, wages: 6900 })
 
 // ---- mercado fictício ----
 const lots = Array.from({ length: 7 }, (_, i) => {
-  const ovr = i < 3 ? [84, 74, 66][i] : 62 + ((i * 7) % 20)
+  const ovr = i < 3 ? [79, 73, 66][i] : 62 + ((i * 7) % 20)
   const opens = Date.now() - 60000 + (i > 4 ? (i - 4) * 2400000 : 0)
   return { id: 100 + i, status: 'open', opens_at: new Date(opens).toISOString(), ends_at: new Date(Date.now() + [45, 200, 420, 90, 600, 2400, 4800][i] * 1000).toISOString(),
     start_price: 4000 + i * 1500, best_bid: i % 2 ? 6000 + i * 2000 : null, bids: i % 2 ? 3 : 0, min_bid: i % 2 ? 6300 + i * 2100 : 4000 + i * 1500, mine: false, leading: i === 3 || i === 1, featured: i < 3 ? i + 1 : 0, bidding: i === 1 || i === 3 || i === 0, bidders: i % 2 ? 3 : i === 0 ? 2 : 0,
@@ -199,7 +200,9 @@ const lots = Array.from({ length: 7 }, (_, i) => {
     seller: i === 4 ? clubs[2] : null, best_club: i % 2 ? (i === 3 ? clubs[0] : clubs[6]) : null }
 })
 lots[0].best_bid = 31000; lots[0].best_club = clubs[6]; lots[0].min_bid = 32600; lots[0].start_price = 28000
-const market = () => ({ server_now: new Date().toISOString(), my_club: 1, club: { cash: 30000, reserved: 12000, debt: 0, roster: players.length }, coins: { wallet: 820, rate: 1000, bid_rate: 600, converted: 40, cap: 1000 }, lots, recent: lots.slice(0, 3).map((l) => ({ ...l, status: 'sold', best_bid: 8000, best_club: clubs[5], seller: null })) })
+const special = { id: 999, status: 'open', featured: 9, opens_at: new Date(Date.now() + 3 * 3600e3).toISOString(), ends_at: new Date(Date.now() + 4 * 3600e3).toISOString(), start_price: 800000, best_bid: null, bids: 0, min_bid: 800000, mine: false, leading: false, bidding: false, bidders: 0, history: [], seller: null, best_club: null,
+  player: { id: 'lg', name: 'Zico', pos: 'MEI', sec: [], age: 30, ovr: 93, pot: 93, star: true, legend: true, nat: 'BRA', cond: 100, wage: 9000, value: 300000, card: cardOf('MEI', 93, 1) } }
+const market = () => ({ server_now: new Date().toISOString(), my_club: 1, club: { cash: 30000, reserved: 12000, debt: 0, roster: players.length }, coins: { wallet: 820, rate: 1000, bid_rate: 600, converted: 40, cap: 5000 }, lots: [special, ...lots], recent: lots.slice(0, 3).map((l) => ({ ...l, status: 'sold', best_bid: 8000, best_club: clubs[5], seller: null })) })
 
 const prepState = { scout: false, talk: null }
 const status = () => {
@@ -214,7 +217,7 @@ const status = () => {
     day: { n: 3, of: 26 },
     standing: { p: 2, w: 1, d: 1, l: 0, gf: 4, ga: 2, pts: 4 },
     form: ['W', 'D'],
-    train: { used: 1, max: 3 },
+    train: { used: club.used, max: 3, energy: club.extra },
     prep: playing ? { fixture: 1, score: (prepState.scout ? 20 : 0) + (prepState.talk ? 20 : 0) + 30 + 15, bonus: (((prepState.scout ? 20 : 0) + (prepState.talk ? 20 : 0) + 45) * 0.03).toFixed(2), lineup: true, train: 1, train_max: 2, scout: prepState.scout, talk: prepState.talk, streak: 3, best: 4, coins: 5, streak_every: 5, streak_coins: 30 } : null,
     featured: { count: 3, ends_at: new Date(Date.now() + 1380000).toISOString() },
     bids: playing ? [lots[1], lots[0]] : [],
@@ -255,7 +258,8 @@ const RPC = {
     clubs[0].colors = { ...clubs[0].colors, ...Object.fromEntries(Object.entries(p).filter(([k]) => ['a', 'b', 'pattern', 'shape', 'stadium'].includes(k))) }
     return status()
   },
-  on_scout: () => { prepState.scout = true; return { fixture: 1, opp: { ...clubs[3], position: 4, formation: '4-4-2', style: 'attacking', form: ['W', 'L', 'W'], stars: [0, 1, 2].map((i) => ({ id: `st${i}`, name: person(90 + i), pos: ['ATA', 'MC', 'ZAG'][i], nat: 'ARG', ovr: 80 - i * 2, age: 26, star: i === 0, card: cardOf(['ATA', 'MC', 'ZAG'][i], 80 - i * 2, i) })) }, sectors: { me: { GK: 60, DEF: 68.2, MID: 70.4, ATT: 66 }, opp: { GK: 64, DEF: 66, MID: 67.5, ATT: 71.2 } } } },
+  on_scout: () => { prepState.scout = true; const next = fixtures.find((f) => f.status !== 'done' && (f.home === 1 || f.away === 1)); return { fixture: next.id, prep: status().prep, me: { position: 3, formation: '4-3-3', stars: players.slice().sort((a, b) => b.ovr - a.ovr).slice(0, 3) }, opp: { ...clubs[3], position: 4, formation: '4-4-2', style: 'attacking', form: ['W', 'L', 'W'], stars: [0, 1, 2].map((i) => ({ id: `st${i}`, name: person(90 + i), pos: ['ATA', 'MC', 'ZAG'][i], nat: 'ARG', ovr: 80 - i * 2, age: 26, star: i === 0, card: cardOf(['ATA', 'MC', 'ZAG'][i], 80 - i * 2, i) })) }, sectors: { me: { GK: 60, DEF: 68.2, MID: 70.4, ATT: 66 }, opp: { GK: 64, DEF: 66, MID: 67.5, ATT: 71.2 } } } },
+  on_match_talk: ({ p_fixture, p_talk }) => { const m = matches.get(p_fixture); m.ht_talk = { [m.mineSide]: { talk: p_talk, react: p_talk === 'angry' ? 'upset' : 'good', effect: 2 } }; return payload(m, 0) },
   on_team_talk: ({ p_talk }) => { prepState.talk = p_talk; return {} },
   on_news_seen: () => { state.seen = true; return null },
   on_club_rename: ({ p_name }) => {
@@ -288,7 +292,7 @@ const RPC = {
   on_train_start: ({ p_game }) => { club.used += 1; return { session: 1, game: p_game, seed: 'x', started_at: new Date().toISOString() } },
   on_train_finish: ({ p_score }) => ({ score: p_score, group: 3, players: players.slice(0, 3).map((p, i) => ({ id: p.id, name: p.name, pos: p.pos, gain: Math.round(p_score * 40), before: p.ovr, ovr: p.ovr + (i === 0 ? 0.5 : 0), xp: 20 })) }),
   on_renew: () => squad(),
-  online_train_energy_buy: () => { club.extra += 1; return clubState() },
+  online_train_energy_buy: ({ p_pack }) => { club.extra += { coin: 1, d5: 5, d20: 20, d50: 50 }[p_pack || 'coin']; return clubState() },
   on_sell: ({ p_player }) => { players.splice(players.findIndex((x) => x.id === p_player), 1); return squad() },
   online_coins_convert: ({ p_coins }) => { club.conv += p_coins; return clubState() },
   on_finance: () => ({ cash: 150000, reserved: 12000, debt: 0, wages: players.reduce((a, p) => a + p.wage, 0), ledger: [{ kind: 'gate', amount: 8200, note: 'Bilheteria', at: new Date().toISOString() }, { kind: 'wage', amount: -5400, note: 'Salários do dia', at: new Date().toISOString() }], news: [{ kind: 'market', text: 'Rafael Santos foi vendido por $ 6.500.', at: new Date().toISOString() }] }),

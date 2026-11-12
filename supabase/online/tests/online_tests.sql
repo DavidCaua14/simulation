@@ -364,21 +364,29 @@ begin
  update public.on_lots set status='cancelled' where status='open';
  -- destaques: um por faixa, os mesmos para todos, até a virada da hora; fora do horário não abre
  perform public.on_market_tick(timestamptz '2026-11-12 05:00+00',false);
- if exists(select 1 from public.on_lots where season_id=s.id and status='open' and featured>0) then raise exception 'destaque de madrugada';end if;
+ if exists(select 1 from public.on_lots where season_id=s.id and status='open' and featured between 1 and 3) then raise exception 'destaque de madrugada';end if;
  perform public.on_market_tick(timestamptz '2026-11-12 13:20+00',false);
  perform public.on_market_tick(timestamptz '2026-11-12 13:21+00',false);
- select count(*) into n from public.on_lots where season_id=s.id and seller is null and status='open' and featured>0;
+ select count(*) into n from public.on_lots where season_id=s.id and seller is null and status='open' and featured between 1 and 3;
  if n<>3 then raise exception 'destaques: %',n;end if;
- if (select count(distinct featured) from public.on_lots where status='open' and featured>0)<>3 then raise exception 'faixas repetidas';end if;
- if exists(select 1 from public.on_lots where status='open' and featured>0 and ends_at<>timestamptz '2026-11-12 14:00+00') then raise exception 'destaque não fecha na virada da hora';end if;
- if (select min(p.ovr) from public.on_lots x join public.on_players p on p.id=x.player_id where x.status='open' and x.featured=1)<77 then raise exception 'faixa 1 fraca';end if;
+ if (select count(distinct featured) from public.on_lots where status='open' and featured between 1 and 3)<>3 then raise exception 'faixas repetidas';end if;
+ if exists(select 1 from public.on_lots where status='open' and featured between 1 and 3 and ends_at<>timestamptz '2026-11-12 14:00+00') then raise exception 'destaque não fecha na virada da hora';end if;
+ if (select min(p.ovr) from public.on_lots x join public.on_players p on p.id=x.player_id where x.status='open' and x.featured=1)<74 then raise exception 'faixa 1 fraca';end if;
+ if (select max(p.ovr) from public.on_lots x join public.on_players p on p.id=x.player_id where x.status='open' and x.featured between 1 and 3)>80 then raise exception 'leilão comum acima de 80';end if;
+ -- especial do dia: aparece cedo, travado até as 19:00 (22:00 UTC), acima de 80 ou lenda, lance inicial acima de $ 400 mil
+ select * into l from public.on_lots where season_id=s.id and featured=9 and status='open' and opens_at=timestamptz '2026-11-12 22:00+00';
+ if l.id is null or l.opens_at<>timestamptz '2026-11-12 22:00+00' or l.ends_at<>timestamptz '2026-11-12 23:00+00' or l.start_price<=400000 then raise exception 'especial do dia: %',l;end if;
+ if not exists(select 1 from public.on_players p where p.id=l.player_id and (p.legend or p.level>=81)) then raise exception 'especial fraco';end if;
+ begin perform public.on_bid_as((select id from public.on_clubs where season_id=s.id limit 1),l.id,l.start_price,timestamptz '2026-11-12 15:00+00');raise exception 'lance no especial antes da hora';
+ exception when others then if sqlerrm not like 'Leilão encerrado%' then raise;end if;end;
+ if (select count(*) from public.on_lots where season_id=s.id and featured=9 and opens_at=timestamptz '2026-11-12 22:00+00')<>1 then raise exception 'mais de um especial no dia';end if;
  -- sem lances: sai (jogador apagado) e entra outro
- select array_agg(player_id) into ids from public.on_lots where status='open' and featured>0;
+ select array_agg(player_id) into ids from public.on_lots where status='open' and featured between 1 and 3;
  perform public.on_market_tick(timestamptz '2026-11-12 14:00+00',false);
  if exists(select 1 from public.on_players where id=any(ids)) then raise exception 'destaque sem lance ficou no banco';end if;
- if (select count(*) from public.on_lots where status='open' and featured>0 and ends_at=timestamptz '2026-11-12 15:00+00')<>3 then raise exception 'destaque não foi trocado';end if;
+ if (select count(*) from public.on_lots where status='open' and featured between 1 and 3 and ends_at=timestamptz '2026-11-12 15:00+00')<>3 then raise exception 'destaque não foi trocado';end if;
 
- select * into l from public.on_lots where status='open' and seller is null order by opens_at limit 1;
+ select * into l from public.on_lots where status='open' and seller is null and featured between 1 and 3 order by opens_at limit 1;
  select * into a from public.on_clubs where season_id=s.id and user_id is not null order by id limit 1;
  select * into b from public.on_clubs where season_id=s.id and user_id is null order by id limit 1;
  update public.on_clubs set cash=100000,reserved=0,debt=0 where id in(a.id,b.id);
@@ -455,7 +463,7 @@ begin
  begin perform public.on_lot_create((select id from public.on_players where club_id=a.id limit 1),100000);raise exception 'vendeu com 16';
  exception when others then if sqlerrm not like 'Elenco com 16%' then raise;end if;end;
  update public.on_clubs set debt=5 where id=a.id;
- select * into l from public.on_lots where status='open' and seller is null order by opens_at limit 1;
+ select * into l from public.on_lots where status='open' and seller is null and featured between 1 and 3 order by opens_at limit 1;
  begin perform public.on_bid_as(a.id,l.id,l.start_price,l.opens_at);raise exception 'lance com dívida';
  exception when others then if sqlerrm not like 'Clube com dívida%' then raise;end if;end;
  perform public.on_money(a.id,100,'test');
@@ -503,7 +511,7 @@ begin
  perform public.on_train_start('timing',ids);
  perform public.on_train_start('reaction',ids);
  begin perform public.on_train_start('passing',ids);raise exception 'passou do limite diário';
- exception when others then if sqlerrm not like 'Limite de%' then raise;end if;end;
+ exception when others then if sqlerrm not like 'Sem energia de treino%' then raise;end if;end;
  raise notice 'PASS treino';
 end $$;
 reset role;
@@ -550,7 +558,7 @@ begin
  -- moedas: saem da carteira, entram no caixa, com teto
  j:=public.online_coins_convert(100);
  if (j->'coins'->>'converted')::int<>100 then raise exception 'conversão: %',j->'coins';end if;
- begin perform public.online_coins_convert(901);raise exception 'passou do teto';
+ begin perform public.online_coins_convert(4901);raise exception 'passou do teto';
  exception when others then if sqlerrm not like 'Teto da temporada%' then raise;end if;end;
  raise notice 'PASS obra, renovação e moedas';
 end $$;
@@ -650,7 +658,8 @@ begin
  if public.on_real_pick(null,0,100,'x') in(select p.src from public.on_players p where p.src is not null) then raise exception 'sorteou jogador que já tem dono';end if;
  delete from public.on_players where id=pid;
  update public.on_clubs set train_day=null,train_used=0,train_extra=0,cash=200000,debt=0 where user_id='00000000-0000-0000-0000-000000000004';
- update public.careers set coins=1000 where user_id='00000000-0000-0000-0000-000000000004';
+ update public.careers set coins=1000,diamonds=100 where user_id='00000000-0000-0000-0000-000000000004';
+ update public.on_clubs set train_energy=0 where user_id='00000000-0000-0000-0000-000000000004';
 end $$;
 set request.jwt.claim.sub='00000000-0000-0000-0000-000000000004';
 set role authenticated;
@@ -667,12 +676,16 @@ begin
  perform public.on_train_start('aim',ids[1:1]);
  perform public.on_train_start('aim',ids[1:1]);
  begin perform public.on_train_start('aim',ids[1:1]);raise exception 'quarto treino sem energia';
- exception when others then if sqlerrm not like 'Limite de%' then raise;end if;end;
- -- energia de treino: moedas viram um treino extra hoje
+ exception when others then if sqlerrm not like 'Sem energia de treino%' then raise;end if;end;
+ -- energia de treino: 1 por moedas ou pacote por diamantes; cada treino além dos 3 do dia gasta 1
  j:=public.online_train_energy_buy();
- if (j->'train'->>'max')::int<>4 or (j->'train'->>'extra')::int<>1 or (j->'coins'->>'wallet')::int<>1000-(j->'train'->>'extra_cost')::int then raise exception 'energia de treino: %',j;end if;
+ if (j->'train'->>'energy')::int<>1 or (j->'train'->>'free_left')::int<>0 or (j->'coins'->>'wallet')::int<>1000-(j->'train'->>'coin_cost')::int then raise exception 'energia por moedas: %',j;end if;
+ j:=public.online_train_energy_buy('d5');
+ if (j->'train'->>'energy')::int<>6 or (j->'coins'->>'diamonds')::int<>100-15 then raise exception 'energia por diamantes: %',j;end if;
+ begin perform public.online_train_energy_buy('d50');raise exception 'pacote sem diamantes';
+ exception when others then if sqlerrm not like 'Diamantes insuficientes%' then raise;end if;end;
  perform public.on_train_start('aim',ids[1:1]);
- if (public.on_status()->'train'->>'max')::int<>4 then raise exception 'status sem treino extra';end if;
+ if (public.on_status()->'train'->>'energy')::int<>5 then raise exception 'treino extra não gastou energia';end if;
  -- venda direta: 60% do valor entra no caixa e o jogador sai
  n:=jsonb_array_length(public.on_squad()->'players');
  if n>16 then
@@ -737,6 +750,51 @@ begin
  perform public.on_advance(f.id,f.kickoff+interval '1 day',null);
  raise notice 'PASS fase 8';
 end $$;
+
+-- ═════════════════════════════════════════════════════════════════════════════
+-- Fase 9: catálogo ampliado, lendas, melhor time e preleção do intervalo
+-- ═════════════════════════════════════════════════════════════════════════════
+do $$
+declare c public.on_clubs;f public.on_fixtures;pid text;i int;v0 numeric;j jsonb;
+begin
+ if (select count(*) from public.on_pool where legend)<300 then raise exception 'lendas não carregadas';end if;
+ if not exists(select 1 from public.on_pool where id like 'tierb-%') then raise exception 'reais sem nota-base fora do catálogo';end if;
+ pid:=public.on_gen_special('teste-lenda',true);
+ if not (select legend and star and src like 'lg-%' from public.on_players where id=pid) then raise exception 'especial não é lenda';end if;
+ if public.on_start_price((select p from public.on_players p where p.id=pid))<600000 then raise exception 'lenda barata';end if;
+ delete from public.on_players where id=pid;
+ -- efeito da preleção: bronca perdendo por 2 ajuda, elogio perdendo atrapalha, cobrança ganhando de 2 atrapalha
+ if public.on_talk_effect('angry',-2,0)<=0 or public.on_talk_effect('praise',-1,0)>=0 or public.on_talk_effect('demand',2,0)>=0
+  or public.on_talk_effect('focus',1,0)<=0 or public.on_talk_effect('angry',1,0)>=0 then raise exception 'tabela da preleção';end if;
+ -- melhor time: o melhor do elenco em cada posição natural entra
+ select * into c from public.on_clubs where user_id='00000000-0000-0000-0000-000000000004' and season_id=(select id from public.on_seasons where status='live');
+ update public.on_players set cond=100,inj_until=null where club_id=c.id;
+ perform public.on_auto_lineup(c.id,'4-3-3');
+ if not exists(select 1 from public.on_lineups l where l.club_id=c.id and l.slots::text like '%"'||(select p.id from public.on_players p where p.club_id=c.id and p.pos='ATA' order by p.ovr desc,p.id limit 1)||'"%') then
+  raise exception 'melhor atacante fora do melhor time';end if;
+ if (select pos from public.on_players where id=(select l.slots->>'GOL' from public.on_lineups l where l.club_id=c.id))<>'GOL' then raise exception 'gol sem goleiro';end if;
+ -- preleção no intervalo: só no intervalo, uma vez, e mexe na forma
+ f:=public.on_next_fixture(c.id);
+ perform public.on_match_open(f);
+ perform set_config('test.fx',f.id::text,false);
+ perform public.on_advance(f.id,f.kickoff+interval '330 seconds','');
+end $$;
+set request.jwt.claim.sub='00000000-0000-0000-0000-000000000004';
+set role authenticated;
+do $$
+declare j jsonb;fx bigint:=current_setting('test.fx')::bigint;sd text;
+begin
+ j:=public.on_match_talk(fx,'encourage');
+ sd:=j->>'my_side';
+ if j->'ht_talk'->sd->>'talk'<>'encourage' or j->'ht_talk'->sd->>'react' is null then raise exception 'preleção do intervalo: %',j->'ht_talk';end if;
+ begin perform public.on_match_talk(fx,'angry');raise exception 'duas preleções';
+ exception when others then if sqlerrm not like 'Você já falou%' then raise;end if;end;
+ j:=public.on_scout(false);
+ if jsonb_array_length(j->'me'->'stars')<>3 or (public.on_status()->'prep'->>'scout')::boolean then raise exception 'relatório do vestiário contou como tarefa';end if;
+ raise notice 'PASS fase 9';
+end $$;
+reset role;
+do $$ begin perform public.on_advance(current_setting('test.fx')::bigint,now()+interval '2 days',null);end $$;
 
 -- ═════════════════════════════════════════════════════════════════════════════
 -- Fase 5: copa, fim de temporada e novos técnicos (temporada sandbox inteira)

@@ -4,7 +4,7 @@ import { useAudio } from '../audio/AudioContext'
 import OnlineCrest from './components/OnlineCrest'
 import { kickoffState } from './kickoffState'
 import { fetchOnlineStatus } from './services/onlineApi'
-import './online-v2.css'
+import './online.css'
 
 const MARKS = [10, 5] // minutos antes do pontapé
 const seenKey = (id, m) => `on.kick.${id}.${m}`

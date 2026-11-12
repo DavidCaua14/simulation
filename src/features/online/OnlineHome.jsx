@@ -125,7 +125,7 @@ export default function OnlineHome({ status, now, go, onOpenMatch, onExit, onRel
         <button type="button" className="on-tile t-train" onClick={() => go('club', 'train')}>
           <Dumbbell size={22} />
           <strong>Treino</strong>
-          <small>{train ? `${Math.max(0, train.max - train.used)} de ${train.max} hoje` : ''}</small>
+          <small>{train ? `${Math.max(0, train.max - train.used)} grátis · ${train.energy ?? 0} de energia` : ''}</small>
         </button>
         <button type="button" className="on-tile t-squad" onClick={() => go('squad')}>
           <Shirt size={22} />
