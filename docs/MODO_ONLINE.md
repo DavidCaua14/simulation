@@ -1,7 +1,7 @@
-# Modo Online — Fases 2 a 9
+# Modo Online — Fases 2 a 10
 
-Situação em 10/11/2026. Tudo continua atrás do portão de testes (`on_config.public_open = false`): só o e-mail
-em `on_config.testers` entra.
+Situação em 12/11/2026: o modo está aberto para todos (`on_config.public_open = true`). Para fechar de novo:
+`update public.on_config set public_open=false;` (volta a valer a lista `on_config.testers`).
 
 ## Arquivos
 
@@ -186,3 +186,18 @@ Tabela da preleção (saldo no intervalo): elogiar ajuda vencendo por pouco e at
 vencendo; cobrar mais ajuda no empate como favorito ou perdendo por 1, e atrapalha vencendo por 2 ou perdendo por
 3; incentivar ajuda perdendo por 1 ou 2; tirar a pressão ajuda o azarão que perde ou a goleada sofrida; bronca
 ajuda perdendo por 2 ou mais sem ser azarão e atrapalha muito vencendo.
+
+## Fase 10 (12/11/2026): abertura para todos
+
+| Assunto | Regra | Onde |
+|---|---|---|
+| Acesso | `public_open = true`. O cartão e a aba do modo deixaram de ser só do dono; os avisos de jogo valem para todos | `App.jsx`, `home/data/gameModes.js`, `home/data/tabs.js` |
+| Entrada na hora | Quem entra com a temporada em andamento assume o clube de bot pior colocado que não esteja jogando nem liderando leilão. Recebe elenco real novo (19), $ 150 mil e a escolha dos três craques; o clube mantém calendário e pontos. Se o jogo chegar antes da escolha, o time entra com os 19 | `on_join_queue`, `join_instant` |
+| Liga cheia | Com os 12 clubes ocupados por técnicos, o próximo entra na fila e assume um clube na virada da temporada | `on_join_queue`, `on_season_end` |
+| Mercado | Quatro leilões comuns até 80 (76–80, 72–76, 68–72, 63–68). Todo dia um destaque (81+, 19:00) e uma lenda (20:00), visíveis e travados desde cedo | `on_market_tick`, `on_gen_featured`, `on_gen_special` |
+| Copa | As quartas usam os quatro clubes que folgaram na primeira fase. Antes recalculavam os quatro primeiros da liga e um clube podia ficar fora ou entrar duas vezes | `on_cup_stage`, `on_cup` (via `on_patch`) |
+| Fim de partida | Painel com resultado, escudos, melhor em campo e botão | `OnlineMatchLive.jsx` (`.onm-final`) |
+| Anúncio | Tela "O modo Online chegou", uma vez por carreira, com botão que leva ao modo | `update/OnlineNews.jsx`, `ONLINE_NEWS_RELEASE` |
+
+Limite atual: uma liga de 12 clubes. Com mais de 12 técnicos ativos será preciso criar ligas paralelas
+(em 12/11/2026 havia 9 contas com carreira).

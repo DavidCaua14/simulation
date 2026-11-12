@@ -859,7 +859,9 @@ begin
  end loop;
  if r1 is null then raise exception 'copa não foi sorteada';end if;
  if (select count(*) from public.on_fixtures where season_id=s.id and comp='C')<>4+4+2+1 then raise exception 'jogos de copa: %',(select array_agg(round||':'||status) from public.on_fixtures where season_id=s.id and comp='C');end if;
- if exists(select 1 from public.on_fixtures where season_id=s.id and comp='C' and round=2 and (home=any(top) or away=any(top))) is not true then raise exception 'folgados fora das quartas';end if;
+ -- quartas: os quatro que folgaram na primeira fase e os quatro vencedores dela, cada clube uma vez
+ if (select count(distinct v.x) from public.on_fixtures q cross join lateral(values(q.home),(q.away)) v(x) where q.season_id=s.id and q.comp='C' and q.round=2)<>8 then raise exception 'clube repetido nas quartas';end if;
+ if exists(select 1 from unnest(top) t where not exists(select 1 from public.on_fixtures q where q.season_id=s.id and q.comp='C' and q.round=2 and t in(q.home,q.away))) then raise exception 'folgados fora das quartas';end if;
  if exists(select 1 from public.on_fixtures x join public.on_fixtures y on y.season_id=x.season_id and y.id<>x.id and y.kickoff=x.kickoff where x.season_id=s.id) then
   raise exception 'dois jogos no mesmo horário no sandbox';
  end if;

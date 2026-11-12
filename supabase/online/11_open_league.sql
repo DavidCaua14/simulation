@@ -6,6 +6,7 @@
 --    falso desliga a entrada na hora).
 --  • Mercado: quatro leilões comuns (até 80) e, todo dia, um destaque (81 ou mais, 19:00) e uma lenda (20:00).
 --    Os dois aparecem cedo, travados, com o horário.
+--  • Copa: as quartas usam os clubes que de fato folgaram na primeira fase.
 
 alter table public.on_config add column if not exists join_instant boolean not null default true;
 alter table public.on_config alter column featured_count set default 4;
@@ -141,6 +142,17 @@ begin
     select * from public.on_lots x where x.season_id=c.season_id and x.status='open' and x.featured<8 and x.opens_at<=now()) l),'[]'::jsonb),
   'recent',coalesce((select jsonb_agg(public.on_lot_json(l,c.id) order by l.settled_at desc) from(
     select * from public.on_lots x where x.season_id=c.season_id and x.status='sold' order by x.settled_at desc limit 8) l),'[]'::jsonb));
+end $$;
+
+-- Copa: nas quartas entram os vencedores da primeira fase e os quatro clubes que folgaram nela. Antes a função
+-- recalculava os quatro primeiros da liga na hora das quartas; como a classificação muda entre as duas fases,
+-- um clube podia ficar sem jogar a copa e outro entrar duas vezes.
+do $$ begin
+ perform public.on_patch('public.on_cup_stage(smallint,int,timestamptz)',
+  'if p_round=2 then v_teams:=v_teams||array(select r.club_id from public.on_rank(p_season) r where r.pos<=4);end if;',
+  'if p_round=2 then v_teams:=v_teams||array(select k.id from public.on_clubs k where k.season_id=p_season and not exists(select 1 from public.on_fixtures g where g.season_id=p_season and g.comp=''C'' and g.round=1 and k.id in(g.home,g.away)) order by k.id);end if;');
+ perform public.on_patch('public.on_cup()','where r.pos<=4 and exists(',
+  'where not exists(select 1 from public.on_fixtures g where g.season_id=c.season_id and g.comp=''C'' and g.round=1 and k.id in(g.home,g.away)) and exists(');
 end $$;
 
 revoke all on function public.on_gen_featured(text,int),public.on_gen_special(text,boolean),public.on_market_tick(timestamptz,boolean) from public,anon,authenticated;
