@@ -1138,3 +1138,45 @@ button.fut:disabled { cursor: default; }
 .on-auc-cancel { display: inline-flex; align-items: center; gap: 6px; justify-content: center; }
 .on-auc-wait { display: inline-flex; align-items: center; gap: 6px; }
 .on-deal-auction .on-auc-steps { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+
+/* Fase 15: escalações do jogo e ficha do jogador */
+.on-lus { align-items: stretch; padding: 10px; }
+.on-lus-card { width: min(460px, 100%); max-height: 100%; margin: auto; display: flex; flex-direction: column; gap: 10px; padding: 14px; overflow-y: auto; }
+.on-lus-head { display: flex; align-items: center; gap: 10px; }
+.on-lus-head h3 { flex: 1; display: flex; align-items: center; gap: 8px; margin: 0; font: 900 1.05rem var(--font-display, var(--font-body)); text-transform: uppercase; }
+.on-lus-head .on-result-x { position: static; }
+.on-lus-live { display: inline-flex; align-items: center; gap: 5px; padding: 3px 8px; border-radius: 999px; background: rgba(239, 68, 68, .18); color: #fca5a5; font-size: .68rem; font-weight: 800; text-transform: uppercase; }
+.on-lus .on-seg { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.on-lus .on-seg button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+.on-lus-info { display: grid; grid-template-columns: 1.6fr 1fr 1fr; gap: 6px; }
+.on-lus-info span { display: flex; flex-direction: column; gap: 2px; padding: 7px 10px; border-radius: 10px; background: var(--gx-panel); border: 1px solid var(--gx-line); min-width: 0; }
+.on-lus-info small { color: var(--gx-ink-2); font-size: .64rem; text-transform: uppercase; letter-spacing: .05em; }
+.on-lus-info b { font-size: .9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.onm-pre-lus { display: inline-flex; align-items: center; justify-content: center; gap: 8px; align-self: center; margin: 4px auto; }
+.on-ps-card { position: relative; width: min(420px, 100%); max-height: 100%; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; padding: 16px; }
+.on-ps-card > .on-result-x { position: absolute; top: 10px; right: 10px; }
+.on-ps-top { display: flex; align-items: center; gap: 14px; }
+.on-ps-id { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.on-ps-id h3 { margin: 0; font: 900 1.2rem var(--font-display, var(--font-body)); text-transform: uppercase; }
+.on-ps-id small { color: var(--gx-ink-2); font-size: .78rem; }
+.on-ps-tag { display: inline-flex; align-items: center; gap: 5px; align-self: flex-start; padding: 3px 8px; border-radius: 999px; background: rgba(250, 204, 21, .16); color: #fde047; font-size: .7rem; font-weight: 800; }
+.on-ps-grow { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 6px 10px; padding: 12px; border-radius: 14px; background: var(--gx-panel); border: 1px solid var(--gx-line); }
+.on-ps-grow span { display: flex; flex-direction: column; align-items: center; }
+.on-ps-grow small { color: var(--gx-ink-2); font-size: .66rem; text-transform: uppercase; letter-spacing: .05em; }
+.on-ps-grow b { font: 900 1.9rem var(--font-display, var(--font-body)); line-height: 1; }
+.on-ps-grow .is-pot b { color: #4ade80; }
+.on-ps-grow > i { color: var(--gx-ink-2); }
+.on-ps-grow em { grid-column: 1 / -1; text-align: center; font-style: normal; font-size: .76rem; color: #86efac; font-weight: 700; }
+.on-ps-bar { grid-column: 1 / -1; position: relative; display: block; height: 8px; border-radius: 999px; background: rgba(255, 255, 255, .08); overflow: hidden; }
+.on-ps-bar i { position: absolute; inset: 0 auto 0 0; border-radius: 999px; background: var(--gx-accent, #ffd34d); }
+.on-ps-bar i.is-pot { background: rgba(74, 222, 128, .45); }
+.on-ps-stats { margin: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.on-ps-stats div { display: flex; flex-direction: column; gap: 2px; padding: 8px 10px; border-radius: 10px; background: var(--gx-panel); border: 1px solid var(--gx-line); }
+.on-ps-stats dt { color: var(--gx-ink-2); font-size: .64rem; text-transform: uppercase; letter-spacing: .05em; }
+.on-ps-stats dd { margin: 0; font-weight: 800; font-size: .92rem; }
+.on-ps-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.on-ps-actions button, .on-ps-step button { display: inline-flex; align-items: center; justify-content: center; gap: 7px; }
+.on-ps-actions .gx-btn { grid-column: 1 / -1; }
+.on-ps-step { display: flex; flex-direction: column; gap: 8px; }
+.on-ps-step small { color: var(--gx-ink-2); font-size: .76rem; }
+.on-ps-step .on-auc-steps { grid-template-columns: repeat(5, minmax(0, 1fr)); }

@@ -993,3 +993,17 @@ begin
  update public.on_fixtures set hg=null,ag=null,status='sched' where id=f.id;
  raise notice 'PASS fase 13';
 end $$;
+
+-- Fase 15: escalações dos dois times de um jogo
+do $$
+declare k public.on_clubs;f public.on_fixtures;j jsonb;
+begin
+ select c.* into k from public.on_clubs c join public.on_seasons s on s.id=c.season_id and s.status='live' where c.user_id is not null order by c.id limit 1;
+ select x.* into f from public.on_fixtures x where x.season_id=k.season_id and x.status='sched' and k.id in(x.home,x.away) order by x.kickoff limit 1;
+ perform set_config('request.jwt.claim.sub',k.user_id::text,true);
+ j:=public.on_fixture_lineups(f.id);
+ if jsonb_array_length(j->'home'->'players')<>11 or jsonb_array_length(j->'away'->'players')<>11 or j->'home'->>'formation' is null or j->>'my_side' not in('h','a') then
+  raise exception 'escalações do jogo: %',j;
+ end if;
+ raise notice 'PASS fase 15';
+end $$;

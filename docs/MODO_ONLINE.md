@@ -246,3 +246,7 @@ Fonte: `supabase/online/14_coin_prizes_head_to_head.sql` (migração `2026111317
 ## Fase 14 — nada passa do fechamento
 
 Fonte: `supabase/online/15_market_close_cleanup.sql` (migração `20261113180000`). Leilão do mercado marcado para depois do fechamento é retirado; o último leilão comum do dia termina no fechamento; lance perto do fechamento não empurra o relógio para depois dele.
+
+## Fase 15 — escalações do jogo e ficha do jogador
+
+Fonte: `supabase/online/16_fixture_lineups.sql` (migração `20261113190000`). `on_fixture_lineups(fixture)` devolve formação e onze de cada lado: antes do pontapé, a escalação salva; com a partida aberta, quem está em campo agora. A tela (`LineupsSheet`) abre no vestiário ("Ver escalações") e durante o jogo ("Adversário") e se atualiza sozinha. Em Elenco > Jogadores, tocar em um atleta abre a ficha (`PlayerSheet`) com nota atual, potencial, valor, salário, contrato e as ações de leiloar, renovar e dispensar. O botão Novidades do Perfil aparece para todos.

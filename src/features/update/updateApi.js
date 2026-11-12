@@ -21,6 +21,8 @@ export const EVENTS_NEWS_RELEASE = '2026-11-eventos'
 export const COMPETITIONS_NEWS_RELEASE = '2026-11-campeonatos'
 // Anúncio da abertura do modo Online para todos (12/11/2026)
 export const ONLINE_NEWS_RELEASE = '2026-11-modo-online'
+// Tutorial: escalações no vestiário e na partida, ficha do jogador (13/11/2026)
+export const LINEUPS_NEWS_RELEASE = '2026-11-escalacoes'
 // Nova era (13/11/2026): Temporadas reiniciado em 2026, premiação real, ranking pelo Online
 export const NEW_ERA_NEWS_RELEASE = '2026-11-nova-era-2'
 

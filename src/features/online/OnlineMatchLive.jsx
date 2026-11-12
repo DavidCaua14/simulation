@@ -6,6 +6,7 @@ import MatchLineupEditor, { draftFromMatch } from '../seasons/components/MatchLi
 import useCatalog from '../seasons/hooks/useCatalog'
 import { MAJOR_EVENTS, condTone, eventText, isGoal, posFit } from '../seasons/utils/managerUtils'
 import useMatchAudio from '../audio/useMatchAudio'
+import LineupsSheet from './components/LineupsSheet'
 import OnlineCrest from './components/OnlineCrest'
 import { OvrBadge } from './components/PlayerFut'
 import { actOnlineMatch, fetchOnlineScout, fetchOnlineSquad, pollOnlineMatch, sendOnlineHalftimeTalk } from './services/onlineApi'
@@ -54,6 +55,7 @@ export default function OnlineMatchLive({ fixtureId = null, onClose, notify }) {
   const [now, setNow] = useState(() => Date.now())
   const [tab, setTab] = useState('feed')
   const [panel, setPanel] = useState(false)
+  const [lineups, setLineups] = useState(false)
   const [busy, setBusy] = useState(false)
   const [applied, setApplied] = useState(null) // {minute, until} aviso "vale a partir de X'"
   const [squadById, setSquadById] = useState(null)
@@ -270,6 +272,7 @@ export default function OnlineMatchLive({ fixtureId = null, onClose, notify }) {
           <span className="onm-vs-x">VS</span>
           {teamCol('a', data.away)}
         </div>
+        {lineups && <LineupsSheet fixtureId={data.fixture_id} onClose={() => setLineups(false)} />}
         <p className="onm-pre-hint"><MapPin size={14} /> {data.home.colors?.stadium || `Arena ${data.home.short}`} · {new Date(data.kickoff).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</p>
         <div className="onm-count">
           {left > 0 ? (
@@ -285,6 +288,7 @@ export default function OnlineMatchLive({ fixtureId = null, onClose, notify }) {
             </div>
           )}
         </div>
+        <button type="button" className="gx-btn-ghost onm-pre-lus" onClick={() => setLineups(true)}><Users size={16} /> Ver escalações</button>
         {sc && (
           <>
             <div className="onm-pre-card">
@@ -470,6 +474,9 @@ export default function OnlineMatchLive({ fixtureId = null, onClose, notify }) {
         )}
 
         {tab === 'lineups' && (
+          <button type="button" className="gx-btn-ghost onm-pre-lus" onClick={() => setLineups(true)}><Users size={16} /> Ver no campo</button>
+        )}
+        {tab === 'lineups' && (
           <div className="ml-lineups">
             {['h', 'a'].map((sd) => (
               <div key={sd} className="ml-lu">
@@ -517,6 +524,7 @@ export default function OnlineMatchLive({ fixtureId = null, onClose, notify }) {
             <nav className="ml-quick" aria-label="Ajustes do time">
               <button type="button" className="gx-btn-ghost" disabled={busy} onClick={() => setPanel('lineup')}><Users size={16} /> Time</button>
               <button type="button" className="gx-btn-ghost" disabled={busy} onClick={() => setPanel('tactics')}><ClipboardList size={16} /> Instruções</button>
+              <button type="button" className="gx-btn-ghost" onClick={() => setLineups(true)}><Shield size={16} /> Adversário</button>
             </nav>
           )}
           <footer className="ml-ctrl onm-ctrl">
@@ -555,6 +563,7 @@ export default function OnlineMatchLive({ fixtureId = null, onClose, notify }) {
         </div>
       )}
 
+      {lineups && <LineupsSheet fixtureId={data.fixture_id} live onClose={() => setLineups(false)} />}
       {panel && side && (
         <MatchLineupEditor
           initialView={panel === 'tactics' ? 'tactics' : 'lineup'}

@@ -26,14 +26,16 @@ const OnlineScreen = lazy(() => import('./features/online/OnlineScreen')) // car
 const OnlineKickoffAlerts = lazy(() => import('./features/online/OnlineKickoffAlerts')) // só para quem tem acesso ao modo online
 import MaintenanceGate from './features/maintenance/MaintenanceGate'
 import { isMaintenanceAdmin as isOwner } from './features/maintenance/policy'
-import { COMPETITIONS_NEWS_RELEASE, EVENTS_NEWS_RELEASE, NEW_ERA_NEWS_RELEASE, ONLINE_NEWS_RELEASE, claimReleaseGift, fetchNewsStatus, markNewsSeen, markReleaseSeen } from './features/update/updateApi'
+import { COMPETITIONS_NEWS_RELEASE, EVENTS_NEWS_RELEASE, LINEUPS_NEWS_RELEASE, NEW_ERA_NEWS_RELEASE, ONLINE_NEWS_RELEASE, claimReleaseGift, fetchNewsStatus, markNewsSeen, markReleaseSeen } from './features/update/updateApi'
 import EventsNews from './features/update/EventsNews'
 import CompetitionsNews from './features/update/CompetitionsNews'
+import LineupsNews from './features/update/LineupsNews'
 import NewEraNews from './features/update/NewEraNews'
 import OnlineNews from './features/update/OnlineNews'
 
 // Telas de novidades, da mais nova para a mais antiga. Cada uma aparece uma vez por carreira (release_news).
 const NEWS = [
+  { id: LINEUPS_NEWS_RELEASE, Screen: LineupsNews, target: 'online' },
   { id: NEW_ERA_NEWS_RELEASE, Screen: NewEraNews, target: 'seasons' },
   { id: ONLINE_NEWS_RELEASE, Screen: OnlineNews, target: 'online' },
   { id: COMPETITIONS_NEWS_RELEASE, Screen: CompetitionsNews, target: 'seasons' },
@@ -232,7 +234,8 @@ function Gate() {
     setScreen('home')
   }
 
-  const openNews = news ? () => setNews((n) => ({ ...n, open: NEWS[0].id, replay: !n.unseen.includes(NEWS[0].id) })) : gift?.eligible ? () => setGift((g) => ({ ...g, open: true })) : null
+  // Novidades no Perfil: sempre disponível, para qualquer usuário (revê a mais recente; as demais vêm em seguida)
+  const openNews = () => setNews((n) => ({ unseen: n?.unseen || [], open: NEWS[0].id, replay: !(n?.unseen || []).includes(NEWS[0].id) }))
   const view = renderScreen()
   return (
     <>

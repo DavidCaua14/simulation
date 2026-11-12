@@ -74,5 +74,8 @@ export const fetchOnlineScout = (mark = true) => rpc('on_scout', { p_mark: mark 
 export const sendOnlineHalftimeTalk = (fixtureId, talk) => rpc('on_match_talk', { p_fixture: fixtureId, p_talk: talk })
 export const sendOnlineTeamTalk = (talk) => rpc('on_team_talk', { p_talk: talk })
 
+// Escalações dos dois times de um jogo (vestiário e partida)
+export const fetchOnlineFixtureLineups = (fixtureId) => rpc('on_fixture_lineups', { p_fixture: fixtureId })
+
 // Copa e histórico (Fase 5)
 export const fetchOnlineCup = () => rpc('on_cup')

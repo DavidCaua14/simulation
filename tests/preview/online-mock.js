@@ -272,6 +272,13 @@ const RPC = {
   on_calendar: () => ({ server_now: new Date().toISOString(), my_club: 1, clubs, fixtures }),
   on_standings: table,
   on_match_poll: poll,
+  on_fixture_lineups: ({ p_fixture }) => {
+    const f = fixtures.find((x) => x.id === p_fixture) || fixtures[0]
+    const mine = Object.entries(lineup.slots).map(([slot, id]) => ({ ...players.find((p) => p.id === id), slot, starter: true }))
+    const opp = mine.map((p, i) => ({ ...p, id: `o${i}`, name: `Rival ${i + 1}`, ovr: Math.max(50, p.ovr - 3), number: i + 1 }))
+    const team = (id, list) => ({ club: clubs.find((c) => c.id === id), formation: lineup.formation, live: false, players: list })
+    return { fixture: f.id, my_side: f.home === 1 ? 'h' : 'a', home: team(f.home, f.home === 1 ? mine : opp), away: team(f.away, f.away === 1 ? mine : opp) }
+  },
   on_market: market,
   on_lot_create: market,
   on_lot_cancel: market,
