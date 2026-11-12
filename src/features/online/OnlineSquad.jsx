@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
-import { AlertTriangle, Ambulance, Ban, ClipboardList, Crown, FileSignature, Gavel, Radio, RotateCcw, Save, Shirt, Star, Target, Users, Wand2 } from 'lucide-react'
+import { AlertTriangle, Ambulance, Ban, ClipboardList, Crown, Banknote, FileSignature, Radio, RotateCcw, Save, Shirt, Star, Target, Users, Wand2 } from 'lucide-react'
 import { Notice, Skeleton } from '../../components/ui/feedback'
 import Pitch from '../seasons/components/Pitch'
 import TacticsPanel from '../seasons/components/TacticsPanel'
 import useCatalog from '../seasons/hooks/useCatalog'
 import { POS_NAME, condTone, posFit } from '../seasons/utils/managerUtils'
-import { autoOnlineLineup, createOnlineLot, fetchOnlineSquad, renewOnlinePlayer, saveOnlineLineup, saveOnlineRoles } from './services/onlineApi'
+import { autoOnlineLineup, fetchOnlineSquad, sellOnlinePlayer, renewOnlinePlayer, saveOnlineLineup, saveOnlineRoles } from './services/onlineApi'
 import { asSeasonPlayer, cardTier, clubColors, money } from './onlineUtils'
 import '../seasons/seasons.css'
 import '../seasons/manager.css'
@@ -76,7 +76,6 @@ const wageFor = (ovr, age) => Math.ceil((Math.max(1, ovr - 45) ** 2 * 0.65 + Mat
 
 function PlayerDeal({ p, seasonId, colors, busy, onSell, onRenew }) {
   const [mode, setMode] = useState(null)
-  const [price, setPrice] = useState(String(p.value))
   const ends = p.contract_end ?? 0
   const left = ends - (seasonId || 0)
   return (
@@ -84,16 +83,16 @@ function PlayerDeal({ p, seasonId, colors, busy, onSell, onRenew }) {
       <PlayerCard p={p} colors={colors} tag={left <= 0 ? 'último ano' : `contrato +${left}`} onClick={() => setMode(mode ? null : 'menu')} />
       {mode === 'menu' && (
         <div className="on-deal-actions">
-          <button type="button" className="gx-btn-ghost" onClick={() => setMode('sell')}><Gavel size={14} /> Vender</button>
+          <button type="button" className="gx-btn-ghost" onClick={() => setMode('sell')}><Banknote size={14} /> Vender</button>
           <button type="button" className="gx-btn-ghost" disabled={left >= 3} onClick={() => setMode('renew')}><FileSignature size={14} /> Renovar</button>
         </div>
       )}
       {mode === 'sell' && (
-        <form className="on-deal-actions" onSubmit={(e) => { e.preventDefault(); onSell(p, Math.round(Number(price))) }}>
-          <label>Lance inicial<input inputMode="numeric" value={price} onChange={(e) => setPrice(e.target.value.replace(/\D/g, ''))} /></label>
-          <button type="submit" className="gx-btn" disabled={busy || !price}><Gavel size={14} /> Pôr em leilão</button>
+        <div className="on-deal-actions">
+          <button type="button" className="gx-btn" disabled={busy} onClick={() => onSell(p)}><Banknote size={14} /> Vender por {money(p.sell ?? Math.round(p.value * 0.6))}</button>
+          <button type="button" className="gx-btn-ghost" onClick={() => setMode(null)}>Cancelar</button>
           <small>Valor de mercado {money(p.value)}</small>
-        </form>
+        </div>
       )}
       {mode === 'renew' && (
         <div className="on-deal-actions">
@@ -297,9 +296,9 @@ export default function OnlineSquad({ onOpenMatch, notify, seasonId }) {
           <h3 className="on-h">Elenco <small>{squad.players.length}/28</small></h3>
           {squad.players.map((p) => (
             <PlayerDeal key={p.id} p={byId[p.id]} seasonId={seasonId} colors={colors} busy={busy}
-              onSell={(pl, price) => {
+              onSell={(pl) => {
                 setBusy(true)
-                createOnlineLot(pl.id, price).then(() => notify?.(`${pl.name} está em leilão.`, 'success')).catch((e) => notify?.(e.message, 'alert')).finally(() => setBusy(false))
+                sellOnlinePlayer(pl.id).then((sq) => { load(sq); notify?.(`${pl.name} vendido`, 'success') }).catch((e) => notify?.(e.message, 'alert')).finally(() => setBusy(false))
               }}
               onRenew={(pl, y) => {
                 setBusy(true)

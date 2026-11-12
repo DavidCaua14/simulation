@@ -49,8 +49,8 @@ export const saveOnlineRoles = (roles) => rpc('on_roles_save', { p_roles: roles 
 export const fetchOnlineMarket = () => rpc('on_market')
 export const bidOnline = (lotId, amount, coins = false) => rpc('on_bid', { p_lot: lotId, p_amount: amount, p_coins: coins })
 export const markOnlineNewsSeen = (ids) => rpc('on_news_seen', { p_ids: ids })
-export const createOnlineLot = (playerId, price) => rpc('on_lot_create', { p_player: playerId, p_price: price })
-export const cancelOnlineLot = (lotId) => rpc('on_lot_cancel', { p_lot: lotId })
+// Venda direta ao mercado (60% do valor, na hora). Técnico não leiloa jogador do próprio elenco.
+export const sellOnlinePlayer = (playerId) => rpc('on_sell', { p_player: playerId })
 export const fetchOnlineFinance = () => rpc('on_finance')
 
 // Clube: treino, estrutura, contratos e moedas (Fase 4)
@@ -61,6 +61,8 @@ export const finishOnlineTraining = (session, score) => rpc('on_train_finish', {
 export const renewOnlinePlayer = (playerId, years) => rpc('on_renew', { p_player: playerId, p_years: years })
 // Sem prefixo on_: o cache do app trata como escrita e atualiza a carteira de moedas nas outras telas.
 export const convertOnlineCoins = (coins) => rpc('online_coins_convert', { p_coins: coins })
+// Energia de treino: um treino extra hoje, pago com moedas da conta.
+export const buyOnlineTrainEnergy = () => rpc('online_train_energy_buy')
 
 // Copa e histórico (Fase 5)
 export const fetchOnlineCup = () => rpc('on_cup')

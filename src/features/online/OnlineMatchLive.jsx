@@ -8,6 +8,7 @@ import { MAJOR_EVENTS, condTone, eventText, isGoal, posFit } from '../seasons/ut
 import useMatchAudio from '../audio/useMatchAudio'
 import OnlineCrest from './components/OnlineCrest'
 import { actOnlineMatch, fetchOnlineSquad, pollOnlineMatch } from './services/onlineApi'
+import { kickoffState } from './kickoffState'
 import { SCREEN_LAG_MS, asSeasonPlayer, clockPhase, clubColors, matchClock } from './onlineUtils'
 import '../seasons/seasons.css'
 import '../seasons/manager.css'
@@ -53,6 +54,13 @@ export default function OnlineMatchLive({ fixtureId = null, onClose, notify }) {
       return true
     }
   })
+  // no vestiário ou na partida, o aviso de "seu jogo vai começar" não aparece
+  useEffect(() => {
+    kickoffState.inMatchRoom = true
+    return () => {
+      kickoffState.inMatchRoom = false
+    }
+  }, [])
   const lastSeq = useRef(0)
   const idRef = useRef(fixtureId)
 
@@ -221,10 +229,11 @@ export default function OnlineMatchLive({ fixtureId = null, onClose, notify }) {
               <b>{left >= 3600 ? `${Math.floor(mm / 60)} h ${String(mm % 60).padStart(2, '0')}` : `${mm}:${ss}`}</b>
             </>
           ) : (
-            <>
-              <small>Os times entram em campo</small>
-              <b className="is-pulse">AGORA</b>
-            </>
+            <div className="onm-starting" role="status">
+              <i className="onm-starting-ball" aria-hidden="true" />
+              <b>A partida vai começar</b>
+              <span className="onm-starting-bar" aria-hidden="true"><i /></span>
+            </div>
           )}
         </div>
         <p className="onm-pre-hint"><MapPin size={14} /> {data.home.colors?.stadium || `Arena ${data.home.short}`}</p>

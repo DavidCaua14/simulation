@@ -55,7 +55,7 @@ export function FutCard({ p, club, size = 'md', onClick, selected = false, disab
     >
       <span className="fut-shine" aria-hidden="true" />
       <span className="fut-top">
-        <span className="fut-ovr"><b>{Math.round(p.ovr)}</b><small>{p.pos}</small><i className="fut-flag" title="Brasil" /></span>
+        <span className="fut-ovr"><b>{Math.round(p.ovr)}</b><small>{p.pos}</small><i className="fut-nat">{p.nat || 'BRA'}</i></span>
         <PlayerFace seed={p.name} colors={club?.colors} size={size === 'lg' ? 96 : size === 'sm' ? 54 : 78} />
       </span>
       <strong className="fut-name">{p.name}</strong>

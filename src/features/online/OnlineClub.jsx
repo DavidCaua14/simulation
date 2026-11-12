@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { ArrowUp, Building2, Coins, Crosshair, Dumbbell, Footprints, GraduationCap, Hand, HeartPulse, Landmark, MapPin, Palette, Receipt, Save, Shield, Star, Timer, Trophy, User, Users, Waypoints, Zap } from 'lucide-react'
+import { ArrowUp, Building2, Coins, Crosshair, Goal, Plus, Dumbbell, Footprints, GraduationCap, Hand, HeartPulse, Landmark, MapPin, Palette, Receipt, Save, Shield, Star, Timer, Trophy, User, Users, Waypoints, Zap } from 'lucide-react'
 import { Notice, Skeleton } from '../../components/ui/feedback'
 import MiniGame from './components/MiniGames'
 import { GAMES } from './components/miniGamesInfo'
 import OnlineCrest from './components/OnlineCrest'
 import { PlayerFace } from './components/PlayerFut'
-import { buildOnline, convertOnlineCoins, fetchOnlineClub, fetchOnlineFinance, fetchOnlineSquad, finishOnlineTraining, saveOnlineIdentity, startOnlineTraining } from './services/onlineApi'
+import { buildOnline, buyOnlineTrainEnergy, convertOnlineCoins, fetchOnlineClub, fetchOnlineFinance, fetchOnlineSquad, finishOnlineTraining, saveOnlineIdentity, startOnlineTraining } from './services/onlineApi'
 import { CREST_PATTERNS, CREST_SHAPES, cardTier, money, moneyShort } from './onlineUtils'
 
 const BUILDINGS = [
@@ -15,7 +15,7 @@ const BUILDINGS = [
   { id: 'youth', label: 'Categoria de base', Icon: GraduationCap, effect: (n) => `${n * 4}% revelação/dia` },
 ]
 const KIND = { buy: 'Compra', sell: 'Venda', wage: 'Salários', gate: 'Bilheteria', build: 'Obra', renew: 'Renovação', coins: 'Investimento', prize: 'Prêmio' }
-const GAME_ICON = { aim: Crosshair, passing: Waypoints, tackle: Shield, reaction: Hand, dribble: Footprints, timing: Timer }
+const GAME_ICON = { penalty: Goal, aim: Crosshair, passing: Waypoints, tackle: Shield, reaction: Hand, dribble: Footprints, timing: Timer }
 const MODES = [
   { id: 'solo', label: 'Individual', Icon: User, max: 1, bonus: '+50%' },
   { id: 'group', label: 'Grupo', Icon: Users, max: 6, bonus: '100%' },
@@ -34,7 +34,7 @@ const until = (iso) => {
 
 function Training({ club, colors, notify, onChanged }) {
   const [squad, setSquad] = useState(null)
-  const [game, setGame] = useState('aim')
+  const [game, setGame] = useState('penalty')
   const [mode, setMode] = useState('solo')
   const [picked, setPicked] = useState([])
   const [session, setSession] = useState(null)
@@ -47,8 +47,26 @@ function Training({ club, colors, notify, onChanged }) {
   const left = club.train.max - club.train.used
   const max = MODES.find((m) => m.id === mode).max
   const fit = (p) => !p.injured && p.cond >= 30
+  const buyEnergy = () => {
+    setBusy(true)
+    buyOnlineTrainEnergy()
+      .then(() => {
+        notify?.('+1 treino hoje', 'success')
+        onChanged?.()
+      })
+      .catch((e) => notify?.(e.message, 'alert'))
+      .finally(() => setBusy(false))
+  }
+  const pickGame = (id) => {
+    setGame(id)
+    if (GAMES[id].solo && mode !== 'solo') {
+      setMode('solo')
+      setPicked((list) => list.slice(0, 1))
+    }
+  }
   const changeMode = (id) => {
     const m = MODES.find((x) => x.id === id)
+    if (id !== 'solo' && GAMES[game].solo) setGame('aim')
     setMode(id)
     if (id === 'team' && squad) {
       const starters = new Set(Object.values(squad.lineup?.slots || {}))
@@ -113,6 +131,11 @@ function Training({ club, colors, notify, onChanged }) {
       )}
       <div className="on-train-top">
         <span className="on-train-left"><Zap size={14} /> {left}/{club.train.max}</span>
+        {club.train.extra_cost != null && (
+          <button type="button" className="on-train-buy" disabled={busy || club.train.extra >= club.train.extra_max} onClick={buyEnergy} aria-label="Comprar energia de treino">
+            <Plus size={13} /> <Coins size={12} /> {club.train.extra_cost}
+          </button>
+        )}
         <div className="on-seg on-seg-3" role="group" aria-label="Tipo de treino">
           {MODES.map(({ id, label, Icon, bonus }) => (
             <button key={id} type="button" className={mode === id ? 'is-on' : ''} onClick={() => changeMode(id)}><Icon size={14} /> {label}<small>{bonus}</small></button>
@@ -123,7 +146,7 @@ function Training({ club, colors, notify, onChanged }) {
         {Object.entries(GAMES).map(([id, g]) => {
           const Icon = GAME_ICON[id]
           return (
-            <button key={id} type="button" className={`on-game g-${id} ${game === id ? 'is-on' : ''}`} onClick={() => setGame(id)} aria-pressed={game === id}>
+            <button key={id} type="button" className={`on-game g-${id} ${game === id ? 'is-on' : ''}`} onClick={() => pickGame(id)} aria-pressed={game === id}>
               <Icon size={20} />
               <b>{g.title}</b>
               <small>{g.group}</small>

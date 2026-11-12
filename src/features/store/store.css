@@ -446,3 +446,14 @@ button.mk-row:active { transform: scale(0.99); }
 .sh-screen .cx-pill { backdrop-filter: blur(6px); background: color-mix(in srgb, var(--surface) 82%, transparent); }
 .sh-tabs { grid-template-columns: repeat(3, minmax(0, 1fr)); backdrop-filter: blur(8px); background: color-mix(in srgb, var(--surface) 88%, transparent); }
 .sh-tabs .gx-icon { filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.35)); }
+
+/* Energia de treino (modo Online) */
+.te { display: flex; flex-direction: column; gap: 12px; }
+.te-card { display: grid; grid-template-columns: 60px minmax(0, 1fr) auto; align-items: center; gap: 12px; padding: 14px; border-radius: 16px; border: 1px solid rgba(74, 222, 128, .45); background: linear-gradient(150deg, rgba(74, 222, 128, .2), rgba(11, 20, 38, .9) 70%); color: #fff; }
+.te-icon { position: relative; display: grid; place-items: center; width: 60px; height: 60px; border-radius: 16px; background: linear-gradient(160deg, #4ade80, #15803d); color: #04120a; }
+.te-icon i { position: absolute; right: -4px; bottom: -4px; display: grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; background: #facc15; color: #0b1220; }
+.te-info { min-width: 0; display: flex; flex-direction: column; }
+.te-info small { color: #86efac; font: 800 .62rem var(--font-body); letter-spacing: .1em; text-transform: uppercase; }
+.te-info strong { font: 800 1.05rem var(--font-heading); text-transform: uppercase; letter-spacing: .04em; }
+.te-info span { color: #c4d0ea; font-size: .78rem; }
+.te-buy { display: inline-flex; align-items: center; gap: 6px; }

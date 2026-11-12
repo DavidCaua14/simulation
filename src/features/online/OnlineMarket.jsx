@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Banknote, Coins, Flame, Gavel, Hourglass, Tag, TrendingUp, Users, X } from 'lucide-react'
+import { Banknote, Coins, Flame, Gavel, Hourglass, TrendingUp, Users } from 'lucide-react'
 import { EmptyState, Notice, Skeleton } from '../../components/ui/feedback'
 import OnlineCrest from './components/OnlineCrest'
 import { FutCard, OvrBadge } from './components/PlayerFut'
-import { bidOnline, cancelOnlineLot, fetchOnlineMarket } from './services/onlineApi'
+import { bidOnline, fetchOnlineMarket } from './services/onlineApi'
 import { money, moneyShort, timeLeft } from './onlineUtils'
 
 const STEPS = [
@@ -14,7 +14,7 @@ const STEPS = [
 ]
 const round100 = (n) => Math.ceil(n / 100) * 100
 
-function Auction({ lot, now, busy, wallet, coins, onBid, onCancel }) {
+function Auction({ lot, now, busy, wallet, coins, onBid }) {
   const [step, setStep] = useState(0)
   const left = new Date(lot.ends_at).getTime() - now
   const hot = left < 120000
@@ -56,15 +56,13 @@ function Auction({ lot, now, busy, wallet, coins, onBid, onCancel }) {
             </button>
           </>
         )}
-        {lot.mine && !lot.best_club && (
-          <button type="button" className="gx-btn-ghost on-auc-cancel" disabled={busy} onClick={() => onCancel(lot)}><X size={14} /> Retirar</button>
-        )}
       </div>
     </article>
   )
 }
 
-// MERCADO: três jogadores em destaque (os mesmos para todos, trocados a cada hora) e as vendas dos técnicos.
+// MERCADO: três jogadores reais em leilão, os mesmos para todos. Sem lance, saem na virada da hora; cada lance
+// põe o relógio em 5 minutos. Só entra jogador que não está em nenhum clube.
 export default function OnlineMarket({ notify, onChanged }) {
   const [data, setData] = useState(null)
   const [error, setError] = useState('')
@@ -113,12 +111,10 @@ export default function OnlineMarket({ notify, onChanged }) {
   const coins = data.coins || { wallet: 0, bid_rate: 600 }
   const wallet = { free: c.cash - c.reserved }
   const lists = {
-    featured: open.filter((l) => l.featured > 0),
-    coaches: open.filter((l) => !l.featured && !l.mine),
+    featured: open.filter((l) => !l.mine),
     mine: open.filter((l) => l.mine || l.bidding),
   }
   const bid = (lot, v, useCoins) => run(bidOnline(lot.id, v, useCoins), `Lance de ${money(v)} em ${lot.player.name}`)
-  const cancel = (lot) => run(cancelOnlineLot(lot.id), 'Jogador retirado da venda')
   const list = lists[view] || []
   return (
     <section className="on-market">
@@ -128,9 +124,8 @@ export default function OnlineMarket({ notify, onChanged }) {
         <span><small><Coins size={11} /> Moedas</small><b>{coins.wallet}</b></span>
       </div>
       {c.debt > 0 && <Notice kind="error">Dívida de {money(c.debt)}: lances bloqueados.</Notice>}
-      <div className="on-seg on-seg-4" role="tablist">
-        <button type="button" role="tab" aria-selected={view === 'featured'} className={view === 'featured' ? 'is-on' : ''} onClick={() => setView('featured')}><Flame size={14} /> Destaques</button>
-        <button type="button" role="tab" aria-selected={view === 'coaches'} className={view === 'coaches' ? 'is-on' : ''} onClick={() => setView('coaches')}><Tag size={14} /> Vendas{lists.coaches.length ? ` ${lists.coaches.length}` : ''}</button>
+      <div className="on-seg on-seg-3" role="tablist">
+        <button type="button" role="tab" aria-selected={view === 'featured'} className={view === 'featured' ? 'is-on' : ''} onClick={() => setView('featured')}><Flame size={14} /> Leilões</button>
         <button type="button" role="tab" aria-selected={view === 'mine'} className={view === 'mine' ? 'is-on' : ''} onClick={() => setView('mine')}><Gavel size={14} /> Meus{lists.mine.length ? ` ${lists.mine.length}` : ''}</button>
         <button type="button" role="tab" aria-selected={view === 'recent'} className={view === 'recent' ? 'is-on' : ''} onClick={() => setView('recent')}><TrendingUp size={14} /> Fechados</button>
       </div>
@@ -138,10 +133,10 @@ export default function OnlineMarket({ notify, onChanged }) {
       {view !== 'recent' && (
         <>
           {list.length === 0 && (
-            <EmptyState compact icon={Gavel} title={view === 'featured' ? 'Próximos destaques às 08:00' : view === 'coaches' ? 'Nenhum jogador à venda' : 'Nenhum leilão em andamento'} />
+            <EmptyState compact icon={Gavel} title={view === 'featured' ? 'Próximos jogadores às 08:00' : 'Nenhum leilão em andamento'} />
           )}
           <div className="on-aucs">
-            {list.map((l) => <Auction key={l.id} lot={l} now={serverNow} busy={busy} wallet={wallet} coins={coins} onBid={bid} onCancel={cancel} />)}
+            {list.map((l) => <Auction key={l.id} lot={l} now={serverNow} busy={busy} wallet={wallet} coins={coins} onBid={bid} />)}
           </div>
         </>
       )}

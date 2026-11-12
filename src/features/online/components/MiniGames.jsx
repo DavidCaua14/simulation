@@ -309,6 +309,72 @@ function Dribble({ onDone }) {
   )
 }
 
+// 7) Pênaltis (treino individual): arraste o dedo ou o mouse até o canto escolhido e solte. O goleiro tenta adivinhar. 5 cobranças.
+const GOAL = { x0: 10, x1: 90, y0: 6, y1: 42 }
+function Penalty({ onDone }) {
+  const [n, setN] = useState(0)
+  const [goals, setGoals] = useState(0)
+  const [aim, setAim] = useState(null)
+  const [shot, setShot] = useState(null)
+  const box = useRef(null)
+  const dragging = useRef(false)
+  const done = useRef(false)
+  const point = (e) => {
+    const r = box.current.getBoundingClientRect()
+    return { x: Math.max(0, Math.min(100, ((e.clientX - r.left) / r.width) * 100)), y: Math.max(0, Math.min(78, ((e.clientY - r.top) / r.height) * 100)) }
+  }
+  const down = (e) => {
+    if (shot || n >= 5) return
+    dragging.current = true
+    e.currentTarget.setPointerCapture?.(e.pointerId)
+    setAim(point(e))
+  }
+  const move = (e) => dragging.current && setAim(point(e))
+  const up = (e) => {
+    if (!dragging.current) return
+    dragging.current = false
+    const t = point(e)
+    setAim(null)
+    // quanto mais perto da trave, menos precisa sai a batida
+    const x = t.x + (Math.random() - 0.5) * 7
+    const y = t.y + (Math.random() - 0.5) * 7
+    const inside = x > GOAL.x0 + 1 && x < GOAL.x1 - 1 && y > GOAL.y0 + 1 && y < GOAL.y1
+    const kx = Math.random() < 0.55 ? Math.max(22, Math.min(78, x + (Math.random() - 0.5) * 34)) : 22 + Math.random() * 56
+    const saved = inside && Math.abs(x - kx) < 13 && !(y < 17 && Math.abs(x - 50) > 26)
+    const result = !inside ? 'out' : saved ? 'save' : 'goal'
+    setShot({ x, y, kx, result })
+    const g = goals + (result === 'goal' ? 1 : 0)
+    setGoals(g)
+    setTimeout(() => {
+      setShot(null)
+      if (n + 1 >= 5) {
+        if (!done.current) {
+          done.current = true
+          onDone(g / 5)
+        }
+      }
+      setN(n + 1)
+    }, 1150)
+  }
+  const ball = shot ? { left: `${shot.x}%`, top: `${shot.y}%` } : { left: '50%', top: '88%' }
+  return (
+    <div className={`mg-pen ${shot ? `is-${shot.result}` : ''}`} ref={box} onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={() => { dragging.current = false; setAim(null) }}>
+      <span className="mg-pen-goal"><i className="mg-pen-net" /></span>
+      <i className={`mg-pen-gk ${shot ? 'is-dive' : ''}`} style={shot ? { left: `${shot.kx}%`, transform: `translateX(-50%) rotate(${(shot.kx - 50) * 1.6}deg)` } : undefined} />
+      {aim && (
+        <>
+          <svg className="mg-pen-line" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><line x1="50" y1="88" x2={aim.x} y2={aim.y} /></svg>
+          <i className="mg-pen-aim" style={{ left: `${aim.x}%`, top: `${aim.y}%` }} />
+        </>
+      )}
+      <i className={`mg-pen-ball ${shot ? 'is-shot' : ''}`} style={ball} />
+      {shot && <b className="mg-result">{shot.result === 'goal' ? 'GOL!' : shot.result === 'save' ? 'DEFENDEU' : 'FORA'}</b>}
+      <span className="mg-score">{goals} / {Math.min(n + (shot ? 1 : 0), 5)}</span>
+      <ol className="mg-pen-dots">{[0, 1, 2, 3, 4].map((k) => <li key={k} className={k < n ? 'is-done' : k === n ? 'is-now' : ''} />)}</ol>
+    </div>
+  )
+}
+
 export default function MiniGame({ game, onDone }) {
   const [count, setCount] = useState(3)
   useEffect(() => {
@@ -316,7 +382,7 @@ export default function MiniGame({ game, onDone }) {
     const t = setTimeout(() => setCount(count - 1), 700)
     return () => clearTimeout(t)
   }, [count])
-  const G = { timing: Timing, reaction: Reaction, passing: Passing, aim: Aim, tackle: Tackle, dribble: Dribble }[game]
+  const G = { timing: Timing, reaction: Reaction, passing: Passing, aim: Aim, tackle: Tackle, dribble: Dribble, penalty: Penalty }[game]
   if (count > 0) return <div className="mg-count" aria-live="assertive"><small>{GAMES[game].title}</small>{count}</div>
   return <G onDone={onDone} />
 }

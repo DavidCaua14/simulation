@@ -22,6 +22,7 @@ const AdminDashboard = lazy(() => import('./features/admin/AdminDashboard')) // 
 const InboxScreen = lazy(() => import('./features/inbox/InboxScreen')) // carregada sob demanda
 const RankingScreen = lazy(() => import('./features/ranking/RankingScreen')) // carregada sob demanda
 const OnlineScreen = lazy(() => import('./features/online/OnlineScreen')) // carregada sob demanda
+const OnlineKickoffAlerts = lazy(() => import('./features/online/OnlineKickoffAlerts')) // só para quem tem acesso ao modo online
 import MaintenanceGate from './features/maintenance/MaintenanceGate'
 import { isMaintenanceAdmin as isOwner } from './features/maintenance/policy'
 import { COMPETITIONS_NEWS_RELEASE, EVENTS_NEWS_RELEASE, MORALE_NEWS_RELEASE, claimReleaseGift, fetchNewsStatus, markNewsSeen, markReleaseSeen } from './features/update/updateApi'
@@ -235,6 +236,11 @@ function Gate() {
       <Suspense fallback={<AppLoadingScreen label="Carregando..." />}>{view}</Suspense>
       {giftLayer}
       {newsLayer}
+      {owner && (
+        <Suspense fallback={null}>
+          <OnlineKickoffAlerts onOpen={(id) => navigate('online', { match: id })} />
+        </Suspense>
+      )}
     </>
   )
 
@@ -248,7 +254,7 @@ function Gate() {
   }
 
   if (screen === 'online' && owner) {
-    return <OnlineScreen onBack={backHome} />
+    return <OnlineScreen key={screenParams?.match ?? 'online'} params={screenParams} onBack={backHome} />
   }
 
   if (screen === 'inbox') {

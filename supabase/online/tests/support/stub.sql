@@ -945,3 +945,14 @@ end;
 $function$;
 
 set check_function_bodies=on;
+
+-- Catálogo de jogadores reais (só o que o modo online lê): 3.000 jogadores fictícios, notas de 50 a 90.
+create table public.sim_players(id text primary key, full_name text, short_name text, position text, secondary_positions text[],
+ nationality text, age smallint, active boolean not null default true, career_id uuid);
+create table public.sim_player_base(player_id text primary key, rating numeric(5,2), age0 smallint, potential smallint);
+insert into public.sim_players(id,full_name,short_name,position,secondary_positions,nationality,age)
+select 'real-'||i,'Jogador Real '||i,'Real '||i,(array['GOL','LD','ZAG','LE','VOL','MC','MEI','PD','PE','ATA'])[1+i%10],
+ case when i%4=0 then array['MC'] else '{}'::text[] end,(array['BRA','ARG','URU'])[1+i%3],18+i%17
+from generate_series(1,3000) i;
+insert into public.sim_player_base(player_id,rating,age0,potential)
+select 'real-'||i,50+((i*37)%401)/10.0,18+i%17,least(99,55+((i*37)%401)/10.0+i%9)::smallint from generate_series(1,3000) i;

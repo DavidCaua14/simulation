@@ -1,4 +1,4 @@
-# Modo Online — Fases 2 a 6
+# Modo Online — Fases 2 a 7
 
 Situação em 10/11/2026. Tudo continua atrás do portão de testes (`on_config.public_open = false`): só o e-mail
 em `on_config.testers` entra.
@@ -12,6 +12,7 @@ em `on_config.testers` entra.
 | 4 Clube | `supabase/online/04_club.sql` | `20261110200000_online_phase4_club.sql` | `OnlineClub.jsx`, `components/MiniGames.jsx` |
 | 5 Copa e temporada | `supabase/online/05_cup_season.sql` | `20261110210000_online_phase5_cup_season.sql` | `OnlineCup.jsx` |
 | 6 Experiência de clube | `supabase/online/06_experience.sql` | `20261111120000_online_phase6_experience.sql` | todas (ver abaixo) |
+| 7 Jogadores reais | `supabase/online/07_real_players.sql` | `20261112120000_online_phase7_real_players.sql` | ver abaixo |
 
 A migration é uma cópia literal do arquivo em `supabase/online/`. Altere o arquivo de `supabase/online/` e copie.
 
@@ -122,3 +123,22 @@ teste, que voltam para a escolha dos craques.
    O app antigo continua funcionando com o banco novo.
 2. Publicar o app (merge do branch).
 3. Rodar `supabase/releases/online_reiniciar.sql` para recomeçar com a escolha dos craques.
+
+## Fase 7 (12/11/2026): jogadores reais e ajustes
+
+| Assunto | Regra | Onde |
+|---|---|---|
+| Jogadores reais | Elencos, craques e leilões vêm de `sim_players` + `sim_player_base` (linhas sem `career_id`). `on_players.src` guarda o id do catálogo e tem índice único: cada jogador real existe uma vez no modo. Sem real livre na faixa, entra um gerado | `on_real_pick`, `on_real_insert`, `on_gen_squad`, `on_star_add` |
+| Faixas de nota | Elenco base: nota do clube ±4 (técnico 62; bot 60 a 64). Craques do técnico 78 a 82; dos bots 76 a 80. Leilão: 77–85, 70–77, 62–70 | `07_real_players.sql` |
+| Craques | As nove opções ficam reservadas (`hold`, `hold_slot`) até a escolha; as duas não escolhidas de cada linha voltam a ficar livres | `on_draft_prepare`, `on_draft_pick` |
+| Leilão | Todo lance põe o relógio em 5 minutos (`bid_extend`), mesmo que faltasse mais; teto em `hard_end` | `on_bid_as` |
+| Venda | O técnico não leiloa jogador do elenco. Venda direta por 60% do valor; o jogador sai do modo e, se for real, volta a ficar livre | `on_sell` (as funções `on_lot_create` e `on_lot_cancel` ficaram sem permissão para o app) |
+| Energia de treino | 40 moedas da conta por treino extra no dia, até 5 por dia. Na Loja (aba Treino) e na tela de treino | `online_train_energy_buy`, `train_energy_cost`, `train_energy_max`, `TrainEnergyTab.jsx` |
+| Pênaltis | Mini-game individual (grupo de ataque): 5 cobranças, arrastando até o canto; o goleiro tenta adivinhar | `MiniGames.jsx`, `on_train_start` |
+| Aviso de jogo | Em qualquer tela do jogo, aviso 10 e 5 minutos antes do pontapé. Não aparece no vestiário nem na partida. Só para quem tem acesso ao modo | `OnlineKickoffAlerts.jsx`, `App.jsx` |
+| Vestiário | Quando o relógio zera, a tela mostra "A partida vai começar" até a partida abrir | `OnlineMatchLive.jsx` |
+
+`on_squad`, `on_lot_json`, `on_club` e `on_status` recebem os campos novos por `on_patch`, que troca um trecho do
+texto da função e falha se o trecho não aparecer exatamente uma vez.
+
+Os testes usam um catálogo fictício de 3.000 jogadores (`tests/support/stub.sql`).

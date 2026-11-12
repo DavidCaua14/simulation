@@ -19,7 +19,9 @@ begin
  if exists(select 1 from public.on_clubs c where (select count(*) from public.on_players p where p.club_id=c.id)<>case when c.user_id is null then 22 else 19 end) then
   raise exception 'tamanho de elenco errado';
  end if;
- if exists(select 1 from public.on_players where level not between 54 and 82 or pot<level or ovr<>level) then raise exception 'nível fora da faixa';end if;
+ if exists(select 1 from public.on_players where level not between 54 and 84 or pot<level or ovr<>level) then raise exception 'nível fora da faixa';end if;
+ if exists(select 1 from public.on_players where src is null) then raise exception 'jogador gerado com catálogo real disponível';end if;
+ if (select count(*) from public.on_players where hold is not null)<>45 then raise exception 'opções de craque não reservadas';end if;
  if (select count(*) from public.on_lineups)<>7 then raise exception 'bots sem escalação';end if;
  if exists(select 1 from public.on_lineups l where (select count(*) from jsonb_object_keys(l.slots))<>11 or cardinality(l.bench)<>11) then
   raise exception 'escalação de bot incompleta';
@@ -388,15 +390,19 @@ begin
  exception when others then if sqlerrm not like 'O lance mínimo%' then raise;end if;end;
  perform public.on_bid_as(a.id,l.id,l.start_price,l.opens_at+interval '10 seconds');
  if (select reserved from public.on_clubs where id=a.id)<>l.start_price then raise exception 'reserva do lance';end if;
- -- cobertura libera a reserva do anterior
+ -- todo lance põe o relógio em 5 minutos (mesmo que faltasse mais)
+ if (select ends_at from public.on_lots where id=l.id)<>l.opens_at+interval '10 seconds'+interval '5 minutes' then raise exception 'relógio de 5 min no primeiro lance';end if;
+ -- cobertura libera a reserva do anterior e reinicia os 5 minutos
  v:=public.on_min_bid((select x from public.on_lots x where x.id=l.id));
- perform public.on_bid_as(b.id,l.id,v,l.ends_at-interval '5 seconds');
+ perform public.on_bid_as(b.id,l.id,v,l.opens_at+interval '4 minutes');
  if (select reserved from public.on_clubs where id=a.id)<>0 or (select reserved from public.on_clubs where id=b.id)<>v then raise exception 'reserva liberada';end if;
- -- lance no fim garante mais 5 minutos
- if (select ends_at from public.on_lots where id=l.id)<>l.ends_at-interval '5 seconds'+interval '5 minutes' then raise exception 'prorrogação de 5 min';end if;
+ if (select ends_at from public.on_lots where id=l.id)<>l.opens_at+interval '9 minutes' then raise exception 'relógio não voltou para 5 min';end if;
+ -- passou dos 5 minutos sem lance: encerrado
+ begin perform public.on_bid_as(a.id,l.id,v*2,l.opens_at+interval '10 minutes');raise exception 'lance depois do fim';
+ exception when others then if sqlerrm not like 'Leilão encerrado%' then raise;end if;end;
  -- mesmo clube cobrindo o próprio lance só reserva a diferença
  v:=public.on_min_bid((select x from public.on_lots x where x.id=l.id));
- perform public.on_bid_as(b.id,l.id,v,l.ends_at+interval '1 minute');
+ perform public.on_bid_as(b.id,l.id,v,l.opens_at+interval '8 minutes');
  if (select reserved from public.on_clubs where id=b.id)<>v then raise exception 'reserva própria';end if;
  -- prorrogação tem teto
  update public.on_clubs set cash=100000000 where id in(a.id,b.id);
@@ -630,6 +636,56 @@ end $$;
 reset role;
 update public.on_clubs set cash=200000 where user_id='00000000-0000-0000-0000-000000000004';
 update public.on_clubs set user_id=null where user_id='00000000-0000-0000-0000-0000000000f6' and current_setting('test.rival_bot')::boolean;
+
+-- ═════════════════════════════════════════════════════════════════════════════
+-- Fase 7: jogadores reais, venda direta, energia de treino e pênaltis
+-- ═════════════════════════════════════════════════════════════════════════════
+do $$
+declare pid text;v_src text;
+begin
+ -- destaque é sempre um jogador real que não está em nenhum clube
+ pid:=public.on_gen_featured('teste-fase7',2);
+ select p.src into v_src from public.on_players p where p.id=pid;
+ if v_src is null or (select count(*) from public.on_players o where o.src=v_src)<>1 then raise exception 'destaque não é real e único';end if;
+ if public.on_real_pick(null,0,100,'x') in(select p.src from public.on_players p where p.src is not null) then raise exception 'sorteou jogador que já tem dono';end if;
+ delete from public.on_players where id=pid;
+ update public.on_clubs set train_day=null,train_used=0,train_extra=0,cash=200000,debt=0 where user_id='00000000-0000-0000-0000-000000000004';
+ update public.careers set coins=1000 where user_id='00000000-0000-0000-0000-000000000004';
+end $$;
+set request.jwt.claim.sub='00000000-0000-0000-0000-000000000004';
+set role authenticated;
+do $$
+declare j jsonb;ids text[];n int;cash bigint;v bigint;
+begin
+ j:=public.on_squad();
+ if exists(select 1 from jsonb_array_elements(j->'players') p where p->>'nat' is null or (p->>'sell')::bigint<=0) then raise exception 'elenco sem nacionalidade ou preço de venda';end if;
+ ids:=array(select p->>'id' from jsonb_array_elements(j->'players') p where not (p->>'injured')::boolean and (p->>'cond')::int>=60 order by (p->>'ovr')::numeric limit 2);
+ -- pênaltis: só individual
+ begin perform public.on_train_start('penalty',ids);raise exception 'pênaltis em grupo';
+ exception when others then if sqlerrm not like 'O treino de pênaltis%' then raise;end if;end;
+ perform public.on_train_start('penalty',ids[1:1]);
+ perform public.on_train_start('aim',ids[1:1]);
+ perform public.on_train_start('aim',ids[1:1]);
+ begin perform public.on_train_start('aim',ids[1:1]);raise exception 'quarto treino sem energia';
+ exception when others then if sqlerrm not like 'Limite de%' then raise;end if;end;
+ -- energia de treino: moedas viram um treino extra hoje
+ j:=public.online_train_energy_buy();
+ if (j->'train'->>'max')::int<>4 or (j->'train'->>'extra')::int<>1 or (j->'coins'->>'wallet')::int<>1000-(j->'train'->>'extra_cost')::int then raise exception 'energia de treino: %',j;end if;
+ perform public.on_train_start('aim',ids[1:1]);
+ if (public.on_status()->'train'->>'max')::int<>4 then raise exception 'status sem treino extra';end if;
+ -- venda direta: 60% do valor entra no caixa e o jogador sai
+ n:=jsonb_array_length(public.on_squad()->'players');
+ if n>16 then
+  select (p->>'sell')::bigint into v from jsonb_array_elements(public.on_squad()->'players') p where p->>'id'=ids[2];
+  cash:=(public.on_club()->>'cash')::bigint;
+  j:=public.on_sell(ids[2]);
+  if jsonb_array_length(j->'players')<>n-1 or (public.on_club()->>'cash')::bigint<>cash+v then raise exception 'venda direta';end if;
+ end if;
+ begin perform public.on_lot_create(ids[1],5000);raise exception 'técnico leiloou jogador do elenco';
+ exception when insufficient_privilege then null;end;
+ raise notice 'PASS fase 7';
+end $$;
+reset role;
 
 -- ═════════════════════════════════════════════════════════════════════════════
 -- Fase 5: copa, fim de temporada e novos técnicos (temporada sandbox inteira)

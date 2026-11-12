@@ -25,7 +25,7 @@ const TABS = [
 ]
 const TITLES = { squad: 'Elenco', market: 'Mercado', club: 'Clube', league: 'Competições' }
 
-export default function OnlineScreen({ onBack }) {
+export default function OnlineScreen({ onBack, params }) {
   const [toast, setToast] = useState(null)
   const notify = useCallback((text, kind = 'info') => setToast({ text, kind, id: Date.now() }), [])
   useEffect(() => {
@@ -36,7 +36,7 @@ export default function OnlineScreen({ onBack }) {
   const [status, setStatus] = useState(null)
   const [error, setError] = useState('')
   const [nav, setNav] = useState({ tab: 'home', view: null, n: 0 })
-  const [match, setMatch] = useState(null) // id da partida aberta
+  const [match, setMatch] = useState(params?.match ?? null) // id da partida aberta (o aviso de jogo já abre o vestiário)
   const [offset, setOffset] = useState(0) // diferença entre o relógio do servidor e o do aparelho
   const [tick, setTick] = useState(() => Date.now())
 
