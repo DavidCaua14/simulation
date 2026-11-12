@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Building2, CalendarDays, ChevronRight, Clock, Dumbbell, Gavel, LogOut, MapPin, Radio, Shirt, Trophy, X } from 'lucide-react'
 import OnlineCrest from './components/OnlineCrest'
+import OnlinePrep from './OnlinePrep'
 import { OvrBadge, PlayerFace } from './components/PlayerFut'
 import { markOnlineNewsSeen } from './services/onlineApi'
 import { kickoffDay, kickoffTime, money, moneyShort, timeLeft, untilKickoff } from './onlineUtils'
@@ -53,7 +54,7 @@ function BidRow({ lot, now, onOpen }) {
   )
 }
 
-export default function OnlineHome({ status, now, go, onOpenMatch, onExit, onReload }) {
+export default function OnlineHome({ status, now, go, onOpenMatch, onExit, onReload, notify }) {
   const { club, next, position, last, standing, form = [], bids = [], results = [], news = [], featured, train } = status
   const live = next && new Date(next.kickoff).getTime() <= now
   const homeClub = next ? (next.at_home ? club : next.opp) : null
@@ -105,6 +106,8 @@ export default function OnlineHome({ status, now, go, onOpenMatch, onExit, onRel
       ) : (
         <div className="on-match-card is-empty"><CalendarDays size={22} /><b>Temporada encerrada</b></div>
       )}
+
+      {next && !live && <OnlinePrep prep={status.prep} go={go} notify={notify} onReload={onReload} />}
 
       {bids.length > 0 && (
         <div className="on-block">

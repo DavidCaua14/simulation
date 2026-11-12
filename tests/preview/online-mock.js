@@ -201,6 +201,7 @@ const lots = Array.from({ length: 7 }, (_, i) => {
 lots[0].best_bid = 31000; lots[0].best_club = clubs[6]; lots[0].min_bid = 32600; lots[0].start_price = 28000
 const market = () => ({ server_now: new Date().toISOString(), my_club: 1, club: { cash: 30000, reserved: 12000, debt: 0, roster: players.length }, coins: { wallet: 820, rate: 1000, bid_rate: 600, converted: 40, cap: 1000 }, lots, recent: lots.slice(0, 3).map((l) => ({ ...l, status: 'sold', best_bid: 8000, best_club: clubs[5], seller: null })) })
 
+const prepState = { scout: false, talk: null }
 const status = () => {
   const playing = state.access === 'playing'
   const next = fixtures.find((f) => f.status !== 'done' && (f.home === 1 || f.away === 1))
@@ -214,6 +215,7 @@ const status = () => {
     standing: { p: 2, w: 1, d: 1, l: 0, gf: 4, ga: 2, pts: 4 },
     form: ['W', 'D'],
     train: { used: 1, max: 3 },
+    prep: playing ? { fixture: 1, score: (prepState.scout ? 20 : 0) + (prepState.talk ? 20 : 0) + 30 + 15, bonus: (((prepState.scout ? 20 : 0) + (prepState.talk ? 20 : 0) + 45) * 0.03).toFixed(2), lineup: true, train: 1, train_max: 2, scout: prepState.scout, talk: prepState.talk, streak: 3, best: 4, coins: 5, streak_every: 5, streak_coins: 30 } : null,
     featured: { count: 3, ends_at: new Date(Date.now() + 1380000).toISOString() },
     bids: playing ? [lots[1], lots[0]] : [],
     results: playing && !state.seen && params.get('result') ? [{ id: 1, text: '', at: new Date().toISOString(), data: { lot: 1, won: params.get('result') === 'won', price: 48200, player: { id: 'x', name: person(77), pos: 'ATA', ovr: 83, age: 24, star: true }, winner: params.get('result') === 'won' ? myClub() : clubs[3] } }] : [],
@@ -253,6 +255,8 @@ const RPC = {
     clubs[0].colors = { ...clubs[0].colors, ...Object.fromEntries(Object.entries(p).filter(([k]) => ['a', 'b', 'pattern', 'shape', 'stadium'].includes(k))) }
     return status()
   },
+  on_scout: () => { prepState.scout = true; return { fixture: 1, opp: { ...clubs[3], position: 4, formation: '4-4-2', style: 'attacking', form: ['W', 'L', 'W'], stars: [0, 1, 2].map((i) => ({ id: `st${i}`, name: person(90 + i), pos: ['ATA', 'MC', 'ZAG'][i], nat: 'ARG', ovr: 80 - i * 2, age: 26, star: i === 0, card: cardOf(['ATA', 'MC', 'ZAG'][i], 80 - i * 2, i) })) }, sectors: { me: { GK: 60, DEF: 68.2, MID: 70.4, ATT: 66 }, opp: { GK: 64, DEF: 66, MID: 67.5, ATT: 71.2 } } } },
+  on_team_talk: ({ p_talk }) => { prepState.talk = p_talk; return {} },
   on_news_seen: () => { state.seen = true; return null },
   on_club_rename: ({ p_name }) => {
     if (p_name.trim().length < 3) return { error: 'O nome do clube precisa ter de 3 a 24 caracteres' }

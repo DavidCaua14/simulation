@@ -1,4 +1,4 @@
-# Modo Online — Fases 2 a 7
+# Modo Online — Fases 2 a 8
 
 Situação em 10/11/2026. Tudo continua atrás do portão de testes (`on_config.public_open = false`): só o e-mail
 em `on_config.testers` entra.
@@ -13,6 +13,7 @@ em `on_config.testers` entra.
 | 5 Copa e temporada | `supabase/online/05_cup_season.sql` | `20261110210000_online_phase5_cup_season.sql` | `OnlineCup.jsx` |
 | 6 Experiência de clube | `supabase/online/06_experience.sql` | `20261111120000_online_phase6_experience.sql` | todas (ver abaixo) |
 | 7 Jogadores reais | `supabase/online/07_real_players.sql` | `20261112120000_online_phase7_real_players.sql` | ver abaixo |
+| 8 Preparação para o jogo | `supabase/online/08_preparation.sql` | `20261112130000_online_phase8_preparation.sql` | `OnlinePrep.jsx` |
 
 A migration é uma cópia literal do arquivo em `supabase/online/`. Altere o arquivo de `supabase/online/` e copie.
 
@@ -142,3 +143,21 @@ teste, que voltam para a escolha dos craques.
 texto da função e falha se o trecho não aparecer exatamente uma vez.
 
 Os testes usam um catálogo fictício de 3.000 jogadores (`tests/support/stub.sql`).
+
+## Fase 8 (12/11/2026): preparação para o jogo
+
+Motivo: dar ao técnico o que fazer entre um jogo e outro, com efeito real em campo.
+
+| Tarefa | Vale | Como conta |
+|---|---|---|
+| Escalação | 30 | Salvar ou montar a escalação depois do último jogo (`on_lineup_save`, `on_lineup_auto`) |
+| Treino | 15 por sessão, até 30 | Sessões concluídas com resultado acima de zero desde o último jogo |
+| Adversário | 20 | Abrir o relatório do olheiro (`on_scout`): formação, postura, campanha, força por setor e os 3 melhores |
+| Preleção | 20 | Escolher uma das três (`on_team_talk`); a escolha é só de estilo, as três valem o mesmo |
+
+- No pontapé (`on_prep_apply`, chamado por `on_match_open`) o percentual multiplica a forma do time: até +3%
+  (`prep_bonus`). A forma sorteada vai de 0,90 a 1,10, então o bônus pesa mas não decide sozinho.
+- 100% rende 5 moedas na conta (`prep_coins`) e soma na sequência. A cada 5 jogos seguidos com 100%
+  (`prep_streak_every`), mais 30 moedas (`prep_streak_coins`). Menos de 100% zera a sequência.
+- A partida mostra o preparo do técnico ("preparo 85% (+2,55%)"). Bots não têm preparação.
+- As marcas ficam em `on_clubs.prep` e valem só para o próximo jogo.

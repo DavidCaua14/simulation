@@ -198,6 +198,7 @@ export default function OnlineMatchLive({ fixtureId = null, onClose, notify }) {
   const opp = side ? (side === 'h' ? data.away : data.home) : null
   const oppPresent = side ? Boolean(data.present?.[side === 'h' ? 'a' : 'h']) : false
   const myFormation = side ? data.formation?.[side === 'h' ? 0 : 1] : null
+  const myPrep = side ? data.prep?.[side === 'h' ? 0 : 1] : null
   const myTactics = side ? data.tactics?.[side] || {} : {}
   const myStyle = myTactics.style || (Number(myTactics.mentality || 0) < 0 ? 'defensive' : Number(myTactics.mentality || 0) > 0 ? 'attacking' : 'neutral')
   const injuredOff = side ? players.filter((p) => p.side === side && p.status === 'injured_off' && p.slot) : []
@@ -296,7 +297,7 @@ export default function OnlineMatchLive({ fixtureId = null, onClose, notify }) {
 
       {side && !ended && (
         <div className="onm-presence">
-          <span className="is-me"><Wifi size={13} /> No comando</span>
+          <span className="is-me"><Wifi size={13} /> No comando{myPrep ? ` · preparo ${myPrep.score}% (+${String(myPrep.bonus).replace('.', ',')}%)` : ''}</span>
           <span className={oppPresent ? 'is-on' : ''}>
             {opp.bot ? <><Users size={13} /> {opp.short} · auxiliar</> : oppPresent ? <><Wifi size={13} /> {opp.short} · técnico no banco</> : <><WifiOff size={13} /> {opp.short} · auxiliar</>}
           </span>

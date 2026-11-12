@@ -64,5 +64,9 @@ export const convertOnlineCoins = (coins) => rpc('online_coins_convert', { p_coi
 // Energia de treino: um treino extra hoje, pago com moedas da conta.
 export const buyOnlineTrainEnergy = () => rpc('online_train_energy_buy')
 
+// Preparação para o jogo (Fase 8): relatório do adversário e preleção
+export const fetchOnlineScout = () => rpc('on_scout')
+export const sendOnlineTeamTalk = (talk) => rpc('on_team_talk', { p_talk: talk })
+
 // Copa e histórico (Fase 5)
 export const fetchOnlineCup = () => rpc('on_cup')

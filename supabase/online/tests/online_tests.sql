@@ -688,6 +688,57 @@ end $$;
 reset role;
 
 -- ═════════════════════════════════════════════════════════════════════════════
+-- Fase 8: preparação para o jogo
+-- ═════════════════════════════════════════════════════════════════════════════
+do $$ begin
+ update public.on_clubs set prep='{}',prep_streak=0 where user_id='00000000-0000-0000-0000-000000000004';
+ update public.on_train t set started_at=now()-interval '400 days' from public.on_clubs c where c.id=t.club_id and c.user_id='00000000-0000-0000-0000-000000000004';
+ update public.careers set coins=1000 where user_id='00000000-0000-0000-0000-000000000004';
+end $$;
+set request.jwt.claim.sub='00000000-0000-0000-0000-000000000004';
+set role authenticated;
+do $$
+declare j jsonb;sq jsonb;
+begin
+ j:=public.on_status()->'prep';
+ if (j->>'score')::int<>0 or (j->>'streak')::int<>0 then raise exception 'preparação inicial: %',j;end if;
+ j:=public.on_scout();
+ if (j->'prep'->>'score')::int<>20 or jsonb_array_length(j->'opp'->'stars')<>3 or j->'sectors'->'opp'->>'DEF' is null or j->'sectors'->'me'->>'ATT' is null then raise exception 'relatório: %',j;end if;
+ begin perform public.on_team_talk('gritar');raise exception 'preleção inválida aceita';
+ exception when others then if sqlerrm not like 'Preleção inválida%' then raise;end if;end;
+ j:=public.on_team_talk('focus');
+ if (j->>'score')::int<>40 or j->>'talk'<>'focus' then raise exception 'preleção: %',j;end if;
+ sq:=public.on_squad();
+ perform public.on_lineup_save(sq->'lineup'->>'formation',sq->'lineup'->'slots',array(select jsonb_array_elements_text(sq->'lineup'->'bench')));
+ j:=public.on_status()->'prep';
+ if (j->>'score')::int<>70 or not (j->>'lineup')::boolean then raise exception 'escalação na preparação: %',j;end if;
+end $$;
+reset role;
+do $$
+declare c public.on_clubs;f public.on_fixtures;j jsonb;i int;v_form numeric;
+begin
+ select * into c from public.on_clubs where user_id='00000000-0000-0000-0000-000000000004' and season_id=(select id from public.on_seasons where status='live');
+ -- dois treinos concluídos desde o último jogo completam os 100%
+ insert into public.on_train(club_id,game,players,seed,started_at,finished_at,score)
+ select c.id,'aim',array['x'],'s',now(),now(),.8 from generate_series(1,2);
+ f:=public.on_next_fixture(c.id);
+ j:=public.on_prep_json(c,f);
+ if (j->>'score')::int<>100 or (j->>'bonus')::numeric<>3 then raise exception 'preparação completa: %',j;end if;
+ -- pontapé: bônus na forma, sequência e moedas
+ perform public.on_match_open(f);
+ i:=case when f.home=c.id then 0 else 1 end;
+ select (state->'prep'->i->>'score')::int,(state->'form'->>i)::numeric into j,v_form from public.on_matches where fixture_id=f.id;
+ if (select (state->'prep'->i->>'score')::int from public.on_matches where fixture_id=f.id)<>100 or v_form<.92 then raise exception 'bônus no pontapé';end if;
+ select * into c from public.on_clubs where id=c.id;
+ if c.prep_streak<>1 or c.prep<>'{}' then raise exception 'sequência: % %',c.prep_streak,c.prep;end if;
+ if (select coins from public.careers where user_id='00000000-0000-0000-0000-000000000004')<>1005 then raise exception 'moedas da preparação';end if;
+ if (public.on_match_payload(f.id,0,'h')->'prep'->i->>'score')::int<>100 then raise exception 'preparação fora da partida';end if;
+ -- a partida aberta pelo teste termina para não travar a temporada
+ perform public.on_advance(f.id,f.kickoff+interval '1 day',null);
+ raise notice 'PASS fase 8';
+end $$;
+
+-- ═════════════════════════════════════════════════════════════════════════════
 -- Fase 5: copa, fim de temporada e novos técnicos (temporada sandbox inteira)
 -- ═════════════════════════════════════════════════════════════════════════════
 update public.on_seasons set status='closed' where status='live';

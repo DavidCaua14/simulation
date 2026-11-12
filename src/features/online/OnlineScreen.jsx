@@ -77,7 +77,7 @@ export default function OnlineScreen({ onBack, params }) {
   else if (playing) {
     body = (
       <>
-        {tab === 'home' && <OnlineHome status={status} now={now} go={go} onOpenMatch={setMatch} onExit={onBack} onReload={load} />}
+        {tab === 'home' && <OnlineHome status={status} now={now} go={go} onOpenMatch={setMatch} onExit={onBack} onReload={load} notify={notify} />}
         {tab === 'squad' && <OnlineSquad onOpenMatch={setMatch} notify={notify} seasonId={status.season?.id} />}
         {tab === 'league' && <OnlineLeague now={now} onOpenMatch={setMatch} />}
         {tab === 'market' && <OnlineMarket notify={notify} onChanged={load} />}
