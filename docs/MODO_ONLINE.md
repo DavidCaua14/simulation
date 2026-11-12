@@ -228,3 +228,7 @@ Fonte: `supabase/online/12_ranking_market_hours.sql` (migração `20261113130000
 - **Calendário**: rodada a cada `round_gap` (7 horas), jogos da rodada espaçados em `match_stagger` (10 minutos). A fase K da copa entra meia janela depois da rodada 5K. A condição física recupera 5 pontos por hora.
 - **Força do clube** (`on_strength`): média de titulares e reservas relacionados. A tela de escalação mostra força dos onze, com reservas e do banco.
 - **Idade**: não sobe mais na virada de temporada.
+
+## Fase 12 — mercado das 08:00 às 18:30
+
+Fonte: `supabase/online/13_market_hours_minutes.sql` (migração `20261113150000`). `on_config.market_close_min` guarda os minutos do fechamento (18 + 30). `on_market_hours` devolve `open_label` e `close_label`. As janelas de destaque e lenda passam a ser duas por dia: 08–13 (destaque 11:00, lenda 12:00) e 13–18 (destaque 16:00, lenda 17:00). A tela de escalação mostra a mesma "Força geral" do início do modo (média de titulares e reservas).

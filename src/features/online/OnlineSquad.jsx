@@ -232,12 +232,11 @@ export default function OnlineSquad({ onOpenMatch, notify, seasonId }) {
   }
 
   const fieldIds = Object.values(draft.slots)
-  // força: titulares pela nota na vaga; relacionados = titulares + banco (o que aparece no início do modo)
-  const xi = (formation?.slots || []).map((sl) => byId[draft.slots[sl.slot]]?.ratings?.[sl.pos]).filter((v) => v != null)
+  // força geral: média da nota de titulares + reservas relacionados (mesma conta de on_strength, mostrada no início do modo)
+  const xiOvr = fieldIds.map((id) => byId[id]?.ovr).filter((v) => v != null)
   const benchOvr = draft.bench.map((id) => byId[id]?.ovr).filter((v) => v != null)
   const avg = (list) => (list.length ? list.reduce((a, b) => a + b, 0) / list.length : 0)
-  const xiStrength = avg(xi)
-  const squadStrength = avg([...fieldIds.map((id) => byId[id]?.ovr).filter((v) => v != null), ...benchOvr])
+  const squadStrength = avg([...xiOvr, ...benchOvr])
   return (
     <section className="on-squad">
       {squad.live_fixture && (
@@ -266,9 +265,9 @@ export default function OnlineSquad({ onOpenMatch, notify, seasonId }) {
             <button type="button" className="gx-btn-ghost" disabled={busy} onClick={auto}><Wand2 size={15} /> Melhor time</button>
           </div>
           <div className="on-strength" aria-label="Força do time">
-            <span className="is-main"><Gauge size={15} /><small>Força do time</small><b>{xiStrength ? xiStrength.toFixed(1).replace('.', ',') : '–'}</b></span>
-            <span><small>Com reservas</small><b>{squadStrength ? squadStrength.toFixed(1).replace('.', ',') : '–'}</b></span>
-            <span><small>Banco</small><b>{benchOvr.length ? avg(benchOvr).toFixed(1).replace('.', ',') : '–'}</b></span>
+            <span className="is-main"><Gauge size={15} /><small>Força geral</small><b>{squadStrength ? squadStrength.toFixed(1).replace('.', ',') : '–'}</b></span>
+            <span><small>Titulares</small><b>{xiOvr.length ? avg(xiOvr).toFixed(1).replace('.', ',') : '–'}</b></span>
+            <span><small>Reservas</small><b>{benchOvr.length ? avg(benchOvr).toFixed(1).replace('.', ',') : '–'}</b></span>
           </div>
           <div className="on-pitch-wrap">
             <Pitch

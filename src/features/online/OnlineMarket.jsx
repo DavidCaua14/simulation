@@ -142,7 +142,7 @@ export default function OnlineMarket({ notify, onChanged }) {
       </div>
       {hours && (
         <div className={`on-mkt-hours ${closed ? 'is-closed' : ''}`}>
-          {closed ? <><DoorClosed size={14} /> Mercado fechado <b>Abre às {hh(hours.open_hour)}</b></> : <><Gavel size={14} /> Mercado aberto <b>Fecha às {hh(hours.close_hour)}</b></>}
+          {closed ? <><DoorClosed size={14} /> Mercado fechado <b>Abre às {hours.open_label || hh(hours.open_hour)}</b></> : <><Gavel size={14} /> Mercado aberto <b>Fecha às {hours.close_label || hh(hours.close_hour)}</b></>}
         </div>
       )}
       {c.debt > 0 && <Notice kind="error">Dívida de {money(c.debt)}: lances bloqueados.</Notice>}
@@ -155,7 +155,7 @@ export default function OnlineMarket({ notify, onChanged }) {
       {view !== 'recent' && (
         <>
           {list.length === 0 && (
-            <EmptyState compact icon={Gavel} title={view === 'featured' ? `Próximos jogadores às ${hours ? hh(hours.open_hour) : '08:00'}` : 'Nenhum leilão em andamento'} />
+            <EmptyState compact icon={Gavel} title={view === 'featured' ? `Próximos jogadores às ${hours?.open_label || '08:00'}` : 'Nenhum leilão em andamento'} />
           )}
           <div className="on-aucs">
             {list.map((l) => <Auction key={l.id} lot={l} now={serverNow} busy={busy} wallet={wallet} coins={coins} closed={closed} onBid={bid} onCancel={cancel} />)}

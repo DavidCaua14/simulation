@@ -14,11 +14,11 @@ Fontes: `supabase/migrations/20261113120000_seasons_new_era_rules.sql` (regras; 
 
 - **Idade congelada e sem aposentadoria.** `cw_dev_rules.retirement_enabled=false`; nenhuma função soma mais os anos passados à idade inicial. Veterano não cai por idade; jovem evolui até o potencial.
 - **Sem insatisfação.** Moral fixa e neutra, sem pedido de saída, sem perda de rendimento e sem cobrança da diretoria por vestiário. As funções continuam existindo e devolvem valores neutros.
-- **Premiação em moedas** (`sim_prizes`, 1 moeda ≈ R$ 10 mil do prêmio real; a aba Prêmios de cada competição mostra a tabela):
-  - Brasileirão: 4.810 ao campeão, 4.570 ao vice, descendo até 1.630 ao 16º; rebaixados não recebem. 30 por vitória, 10 por empate.
-  - Copa do Brasil (acumulado): oitavas 346, quartas 819, semifinal 1.764, vice 4.914, campeão 9.114. 40 por vitória.
-  - Libertadores (acumulado): grupos 1.620, oitavas 2.295, quartas 3.215, semifinal 4.455, vice 8.235, campeão 16.875. 180 por vitória.
-  - Série B: 350 ao campeão. Ligas e copas europeias usam valores reduzidos em relação ao real, para não desequilibrar a economia.
+- **Premiação em moedas** (`sim_prizes`; 1 moeda = $ 1 no caixa do clube no modo online; a aba Prêmios de cada competição mostra a tabela). Migração `20261113140000_seasons_prizes_in_online_money.sql`.
+  - Brasileirão: 1.000.000 ao campeão, 950 mil ao vice, descendo até 340 mil ao 16º; rebaixados não recebem. 2.500 por vitória, 800 por empate.
+  - Copa do Brasil (acumulado): oitavas 60 mil, quartas 150 mil, semifinal 350 mil, vice 800 mil, campeão 1,5 milhão. 3.000 por vitória.
+  - Libertadores (acumulado): grupos 250 mil, oitavas 400 mil, quartas 600 mil, semifinal 900 mil, vice 1,5 milhão, campeão 2,5 milhões. 4.000 por vitória, 1.000 por empate.
+  - Série B: 150 mil ao campeão. Premier League 1,8 milhão, demais grandes ligas 1 a 1,4 milhão, Champions 3,5 milhões.
   - O prêmio fixo de 400 moedas por título no fim da temporada saiu; as moedas por meta cumprida continuam.
 - **Dificuldade.** A IA aproveita menos a vantagem de elenco do técnico (`career_difficulty_levels`: normal de 0,50/1,25 para 0,38/1,32).
 

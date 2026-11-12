@@ -10,10 +10,11 @@ const SECTIONS = [
     'Cada título da sua história virou moedas: o prêmio está na sua caixa de mensagens.',
     'Jogadores não envelhecem nem se aposentam, e não existe mais insatisfação de elenco.',
   ]],
-  ['Moedas pelo futebol real', Coins, [
-    'Brasileirão paga por posição: 4.810 ao campeão, 4.570 ao vice, até 1.630 ao 16º.',
-    'Copa do Brasil: até 9.114 ao campeão. Libertadores: até 16.875.',
-    'Vitória e empate também rendem moedas em todos os campeonatos.',
+  ['Premiação em moedas', Coins, [
+    'Brasileirão: 1 milhão ao campeão, 950 mil ao vice, até 340 mil ao 16º.',
+    'Copa do Brasil: até 1,5 milhão. Libertadores: até 2,5 milhões.',
+    'Cada vitória rende de 2.500 a 4.000 moedas; empate também paga.',
+    'Use as moedas no modo Online: 1 moeda vale $ 1 no caixa do seu clube.',
   ]],
   ['Ranking pelo modo Online', Trophy, [
     'O ranking geral foi zerado. Só a Liga Online pontua.',
@@ -24,7 +25,7 @@ const SECTIONS = [
     'Vitória rende 15 moedas na conta; empate, 5.',
   ]],
   ['Mercado', Gavel, [
-    'Aberto das 08:00 às 23:00.',
+    'Aberto das 08:00 às 18:30, todos os dias.',
     'Destaque e lenda novos a cada 5 horas. Bots não disputam essas cartas.',
     'Agora você pode leiloar um jogador do seu elenco por uma hora.',
   ]],

@@ -394,6 +394,7 @@ begin
  exception when others then if sqlerrm not like 'Leilão encerrado%' and sqlerrm not like 'Mercado fechado%' then raise;end if;end;
  if public.on_market_open(timestamptz '2026-11-13 02:30+00') or not public.on_market_open(timestamptz '2026-11-13 11:00+00') then raise exception 'horário do mercado';end if;
  -- o resto dos testes usa a hora real: mercado aberto o dia todo
+ if public.on_market_open(timestamptz '2026-11-13 21:40+00') or not public.on_market_open(timestamptz '2026-11-13 21:20+00') or public.on_market_hours()->>'close_label'<>'18:30' then raise exception 'fechamento às 18:30';end if;
  update public.on_config set market_open=0,market_close=24;
  -- sem lances: sai (jogador apagado) e entra outro
  select array_agg(player_id) into ids from public.on_lots where status='open' and featured between 1 and 4;
@@ -955,7 +956,7 @@ begin
  if not (j->>'online')::boolean or (j->'me'->>'points')::int<>v1 or j->'rules'->>'win'<>'30' then raise exception 'ranking_overall: %',j->'me';end if;
  if (j->'entries'->0->>'points')::int<(j->'entries'->1->>'points')::int then raise exception 'ranking fora de ordem';end if;
  -- força: média dos relacionados (titulares + banco)
- if public.on_strength(k.id) is distinct from (select round(avg(p.ovr),1) from public.on_players p where p.id in(
+ if public.on_strength(k.id) is distinct from (select round(avg(p.ovr),1) from public.on_players p where p.club_id=k.id and p.id in(
    select e.value from public.on_lineups l,jsonb_each_text(l.slots) e where l.club_id=k.id union all select unnest(l.bench) from public.on_lineups l where l.club_id=k.id)) then
   raise exception 'força do clube';
  end if;
