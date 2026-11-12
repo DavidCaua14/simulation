@@ -26,16 +26,16 @@ const OnlineScreen = lazy(() => import('./features/online/OnlineScreen')) // car
 const OnlineKickoffAlerts = lazy(() => import('./features/online/OnlineKickoffAlerts')) // só para quem tem acesso ao modo online
 import MaintenanceGate from './features/maintenance/MaintenanceGate'
 import { isMaintenanceAdmin as isOwner } from './features/maintenance/policy'
-import { COMPETITIONS_NEWS_RELEASE, EVENTS_NEWS_RELEASE, MORALE_NEWS_RELEASE, ONLINE_NEWS_RELEASE, claimReleaseGift, fetchNewsStatus, markNewsSeen, markReleaseSeen } from './features/update/updateApi'
+import { COMPETITIONS_NEWS_RELEASE, EVENTS_NEWS_RELEASE, NEW_ERA_NEWS_RELEASE, ONLINE_NEWS_RELEASE, claimReleaseGift, fetchNewsStatus, markNewsSeen, markReleaseSeen } from './features/update/updateApi'
 import EventsNews from './features/update/EventsNews'
 import CompetitionsNews from './features/update/CompetitionsNews'
-import MoraleNews from './features/update/MoraleNews'
+import NewEraNews from './features/update/NewEraNews'
 import OnlineNews from './features/update/OnlineNews'
 
 // Telas de novidades, da mais nova para a mais antiga. Cada uma aparece uma vez por carreira (release_news).
 const NEWS = [
+  { id: NEW_ERA_NEWS_RELEASE, Screen: NewEraNews, target: 'seasons' },
   { id: ONLINE_NEWS_RELEASE, Screen: OnlineNews, target: 'online' },
-  { id: MORALE_NEWS_RELEASE, Screen: MoraleNews, target: 'seasons' },
   { id: COMPETITIONS_NEWS_RELEASE, Screen: CompetitionsNews, target: 'seasons' },
   { id: EVENTS_NEWS_RELEASE, Screen: EventsNews, target: 'events' },
 ]

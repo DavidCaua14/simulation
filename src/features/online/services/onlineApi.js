@@ -49,8 +49,12 @@ export const saveOnlineRoles = (roles) => rpc('on_roles_save', { p_roles: roles 
 export const fetchOnlineMarket = () => rpc('on_market')
 export const bidOnline = (lotId, amount, coins = false) => rpc('on_bid', { p_lot: lotId, p_amount: amount, p_coins: coins })
 export const markOnlineNewsSeen = (ids) => rpc('on_news_seen', { p_ids: ids })
-// Venda direta ao mercado (60% do valor, na hora). Técnico não leiloa jogador do próprio elenco.
+// Venda direta ao mercado (60% do valor, na hora).
 export const sellOnlinePlayer = (playerId) => rpc('on_sell', { p_player: playerId })
+// Leilão de jogador do próprio elenco: uma hora no mercado, lance inicial entre o mínimo e o máximo de on_lot_range.
+export const fetchOnlineLotRange = (playerId) => rpc('on_lot_range', { p_player: playerId })
+export const createOnlineLot = (playerId, price) => rpc('on_lot_create', { p_player: playerId, p_price: price })
+export const cancelOnlineLot = (lotId) => rpc('on_lot_cancel', { p_lot: lotId })
 export const fetchOnlineFinance = () => rpc('on_finance')
 
 // Clube: treino, estrutura, contratos e moedas (Fase 4)

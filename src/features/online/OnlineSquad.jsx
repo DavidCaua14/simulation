@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
-import { AlertTriangle, Ambulance, Ban, ClipboardList, Crown, FileSignature, Radio, UserMinus, RotateCcw, Save, Shirt, Star, Target, Users, Wand2 } from 'lucide-react'
+import { AlertTriangle, Ambulance, Ban, ClipboardList, Crown, FileSignature, Gauge, Gavel, Radio, UserMinus, RotateCcw, Save, Shirt, Star, Target, Users, Wand2 } from 'lucide-react'
 import { Notice, Skeleton } from '../../components/ui/feedback'
 import Pitch from '../seasons/components/Pitch'
 import TacticsPanel from '../seasons/components/TacticsPanel'
 import useCatalog from '../seasons/hooks/useCatalog'
 import { POS_NAME, condTone, posFit } from '../seasons/utils/managerUtils'
-import { autoOnlineLineup, fetchOnlineSquad, sellOnlinePlayer, renewOnlinePlayer, saveOnlineLineup, saveOnlineRoles } from './services/onlineApi'
+import { autoOnlineLineup, createOnlineLot, fetchOnlineMarket, fetchOnlineSquad, sellOnlinePlayer, renewOnlinePlayer, saveOnlineLineup, saveOnlineRoles } from './services/onlineApi'
 import { asSeasonPlayer, cardTier, clubColors, money } from './onlineUtils'
 import '../seasons/seasons.css'
 import '../seasons/manager.css'
@@ -74,16 +74,22 @@ export function PlayerCard({ p, tag, colors, selected, onClick, compact }) {
 // salário pela nota (mesma fórmula de on_wage no banco)
 const wageFor = (ovr, age) => Math.ceil((Math.max(1, ovr - 45) ** 2 * 0.65 + Math.max(0, ovr - 75) ** 2 * 12) * (age < 24 ? 1.1 : age >= 31 ? 0.9 : 1))
 
-function PlayerDeal({ p, seasonId, colors, busy, onSell, onRenew }) {
+const AUCTION_STEPS = [[0.5, 'Mínimo'], [0.75, '75%'], [1, 'Valor'], [1.5, '+50%'], [2, 'Dobro']]
+const round100 = (n) => Math.ceil(n / 100) * 100
+
+function PlayerDeal({ p, seasonId, colors, busy, listed, onSell, onRenew, onAuction }) {
   const [mode, setMode] = useState(null)
+  const [step, setStep] = useState(1)
+  const startPrice = step === 0.5 ? Math.max(500, Math.round(p.value * 0.5)) : round100(p.value * step)
   const ends = p.contract_end ?? 0
   const left = ends - (seasonId || 0)
   return (
     <div className={`on-deal-card ${mode ? 'is-open' : ''}`}>
-      <PlayerCard p={p} colors={colors} tag={left <= 0 ? 'último ano' : `contrato +${left}`} onClick={() => setMode(mode ? null : 'menu')} />
+      <PlayerCard p={p} colors={colors} tag={listed ? 'em leilão' : left <= 0 ? 'último ano' : `contrato +${left}`} onClick={() => setMode(mode ? null : 'menu')} />
       {mode === 'menu' && (
         <div className="on-deal-actions">
-          <button type="button" className="gx-btn-ghost" onClick={() => setMode('sell')}><UserMinus size={14} /> Dispensar</button>
+          <button type="button" className="gx-btn-ghost" disabled={listed} onClick={() => setMode('auction')}><Gavel size={14} /> Leiloar</button>
+          <button type="button" className="gx-btn-ghost" disabled={listed} onClick={() => setMode('sell')}><UserMinus size={14} /> Dispensar</button>
           <button type="button" className="gx-btn-ghost" disabled={left >= 3} onClick={() => setMode('renew')}><FileSignature size={14} /> Renovar</button>
         </div>
       )}
@@ -92,6 +98,16 @@ function PlayerDeal({ p, seasonId, colors, busy, onSell, onRenew }) {
           <button type="button" className="gx-btn" disabled={busy} onClick={() => onSell(p)}><UserMinus size={14} /> Dispensar · +{money(p.sell ?? Math.round(p.value * 0.6))}</button>
           <button type="button" className="gx-btn-ghost" onClick={() => setMode(null)}>Cancelar</button>
           <small>Ele deixa o clube e volta ao mercado</small>
+        </div>
+      )}
+      {mode === 'auction' && (
+        <div className="on-deal-actions on-deal-auction">
+          <div className="on-auc-steps" role="group" aria-label="Lance inicial">
+            {AUCTION_STEPS.map(([v, label]) => <button key={v} type="button" className={step === v ? 'is-on' : ''} onClick={() => setStep(v)}>{label}</button>)}
+          </div>
+          <button type="button" className="gx-btn" disabled={busy} onClick={() => { onAuction(p, startPrice); setMode(null) }}><Gavel size={14} /> Leiloar · {money(startPrice)}</button>
+          <button type="button" className="gx-btn-ghost" onClick={() => setMode(null)}>Cancelar</button>
+          <small>1 hora no mercado · valor {money(p.value)}</small>
         </div>
       )}
       {mode === 'renew' && (
@@ -121,13 +137,16 @@ export default function OnlineSquad({ onOpenMatch, notify, seasonId }) {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const [saved, setSaved] = useState('')
+  const [listed, setListed] = useState(() => new Set())
 
   const load = (sq) => {
     setSquad(sq)
     if (sq?.lineup) setDraft({ formation: sq.lineup.formation, slots: { ...sq.lineup.slots }, bench: [...sq.lineup.bench], tactics: sq.lineup.tactics || {} })
   }
+  const markListed = (market) => setListed(new Set((market?.lots || []).filter((l) => l.mine).map((l) => l.player.id)))
   useEffect(() => {
     fetchOnlineSquad().then(load).catch((e) => setError(e.message))
+    fetchOnlineMarket().then(markListed).catch(() => {})
   }, [])
 
   const byId = useMemo(() => Object.fromEntries((squad?.players || []).map((p) => [p.id, asSeasonPlayer(p, posFit)])), [squad])
@@ -213,6 +232,12 @@ export default function OnlineSquad({ onOpenMatch, notify, seasonId }) {
   }
 
   const fieldIds = Object.values(draft.slots)
+  // força: titulares pela nota na vaga; relacionados = titulares + banco (o que aparece no início do modo)
+  const xi = (formation?.slots || []).map((sl) => byId[draft.slots[sl.slot]]?.ratings?.[sl.pos]).filter((v) => v != null)
+  const benchOvr = draft.bench.map((id) => byId[id]?.ovr).filter((v) => v != null)
+  const avg = (list) => (list.length ? list.reduce((a, b) => a + b, 0) / list.length : 0)
+  const xiStrength = avg(xi)
+  const squadStrength = avg([...fieldIds.map((id) => byId[id]?.ovr).filter((v) => v != null), ...benchOvr])
   return (
     <section className="on-squad">
       {squad.live_fixture && (
@@ -239,6 +264,11 @@ export default function OnlineSquad({ onOpenMatch, notify, seasonId }) {
               </select>
             </label>
             <button type="button" className="gx-btn-ghost" disabled={busy} onClick={auto}><Wand2 size={15} /> Melhor time</button>
+          </div>
+          <div className="on-strength" aria-label="Força do time">
+            <span className="is-main"><Gauge size={15} /><small>Força do time</small><b>{xiStrength ? xiStrength.toFixed(1).replace('.', ',') : '–'}</b></span>
+            <span><small>Com reservas</small><b>{squadStrength ? squadStrength.toFixed(1).replace('.', ',') : '–'}</b></span>
+            <span><small>Banco</small><b>{benchOvr.length ? avg(benchOvr).toFixed(1).replace('.', ',') : '–'}</b></span>
           </div>
           <div className="on-pitch-wrap">
             <Pitch
@@ -295,7 +325,11 @@ export default function OnlineSquad({ onOpenMatch, notify, seasonId }) {
         <div className="on-deals">
           <h3 className="on-h">Elenco <small>{squad.players.length}/28</small></h3>
           {squad.players.map((p) => (
-            <PlayerDeal key={p.id} p={byId[p.id]} seasonId={seasonId} colors={colors} busy={busy}
+            <PlayerDeal key={p.id} p={byId[p.id]} seasonId={seasonId} colors={colors} busy={busy} listed={listed.has(p.id)}
+              onAuction={(pl, price) => {
+                setBusy(true)
+                createOnlineLot(pl.id, price).then((m) => { markListed(m); notify?.(`${pl.name} em leilão por 1 hora`, 'success') }).catch((e) => notify?.(e.message, 'alert')).finally(() => setBusy(false))
+              }}
               onSell={(pl) => {
                 setBusy(true)
                 sellOnlinePlayer(pl.id).then((sq) => { load(sq); notify?.(`${pl.name} dispensado`, 'success') }).catch((e) => notify?.(e.message, 'alert')).finally(() => setBusy(false))

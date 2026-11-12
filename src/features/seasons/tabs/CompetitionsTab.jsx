@@ -1,3 +1,4 @@
+import PrizeTable from '../components/PrizeTable'
 import { useEffect, useMemo, useState } from 'react'
 import { BarChart3, ChevronLeft, ChevronRight, Globe2, Trophy } from 'lucide-react'
 import StandingsTable from '../components/StandingsTable'
@@ -101,7 +102,7 @@ function RoundBrowser({ fixtures, myClub, lastKey, onOpenReport }) {
 }
 
 function CompetitionView({ comp, fixtures, flat, myClub, lastKey, seasonId, onOpenReport, onCups }) {
-  const views = viewsFor(comp.id)
+  const views = useMemo(() => [...viewsFor(comp.id), { id: 'prizes', label: 'Prêmios' }], [comp.id])
   const [view, setView] = useState(views[0].id)
   const phases = COMPETITIONS[comp.id]?.phases || []
   const isGroups = phases.some((p) => p.type === 'groups')
@@ -169,6 +170,7 @@ function CompetitionView({ comp, fixtures, flat, myClub, lastKey, seasonId, onOp
       {view === 'bracket' && <Bracket comp={comp.id} fixtures={fixtures} myClub={myClub} />}
       {view === 'rounds' && <RoundBrowser key={comp.id} fixtures={fixtures} myClub={myClub} lastKey={lastKey} onOpenReport={onOpenReport} />}
       {view === 'scorers' && <Scorers comp={comp.id} version={version} myClub={myClub} />}
+      {view === 'prizes' && <PrizeTable comp={comp.id} myPos={mine?.pos} />}
     </>
   )
 }

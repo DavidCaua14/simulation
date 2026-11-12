@@ -1,0 +1,8 @@
+.pz { display: flex; flex-direction: column; gap: 10px; }
+.pz-match { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.pz-match span { display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; border-radius: 12px; background: rgba(255, 255, 255, .05); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .08); }
+.pz-match small { font-size: .68rem; text-transform: uppercase; letter-spacing: .05em; opacity: .7; }
+.pz-match b, .pz-list b { display: inline-flex; align-items: center; gap: 5px; color: #ffd34d; font-weight: 900; }
+.pz-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.pz-list li { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 12px; border-radius: 10px; background: rgba(255, 255, 255, .04); font-size: .88rem; }
+.pz-list li.is-me { box-shadow: inset 0 0 0 1px #ffd34d; background: rgba(255, 211, 77, .08); }

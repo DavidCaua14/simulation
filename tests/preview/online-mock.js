@@ -204,7 +204,7 @@ const special = { id: 999, status: 'open', featured: 9, opens_at: new Date(Date.
   player: { id: 'lg', name: 'Zico', pos: 'MEI', sec: [], age: 30, ovr: 93, pot: 93, star: true, legend: true, nat: 'BRA', cond: 100, wage: 9000, value: 300000, card: cardOf('MEI', 93, 1) } }
 const daily = { ...special, id: 998, featured: 9, start_price: 520000, min_bid: 520000, opens_at: new Date(Date.now() + 2 * 3600e3).toISOString(), player: { ...special.player, id: 'sp', name: 'Rodrygo', pos: 'PE', ovr: 86, pot: 90, age: 26, legend: false, card: cardOf('PE', 86, 2) } }
 special.featured = 8
-const market = () => ({ server_now: new Date().toISOString(), my_club: 1, club: { cash: 30000, reserved: 12000, debt: 0, roster: players.length }, coins: { wallet: 820, rate: 1000, bid_rate: 600, converted: 40, cap: 5000 }, lots: [daily, special, ...lots], recent: lots.slice(0, 3).map((l) => ({ ...l, status: 'sold', best_bid: 8000, best_club: clubs[5], seller: null })) })
+const market = () => ({ server_now: new Date().toISOString(), my_club: 1, hours: { open: !new URLSearchParams(location.search).has('closed'), open_hour: 8, close_hour: 23, opens_at: new Date(Date.now() + 9 * 3600e3).toISOString(), closes_at: new Date(Date.now() + 5 * 3600e3).toISOString() }, club: { cash: 30000, reserved: 12000, debt: 0, roster: players.length }, coins: { wallet: 820, rate: 1000, bid_rate: 600, converted: 40, cap: 5000 }, lots: [daily, special, ...lots], recent: lots.slice(0, 3).map((l) => ({ ...l, status: 'sold', best_bid: 8000, best_club: clubs[5], seller: null })) })
 
 const prepState = { scout: false, talk: null }
 const status = () => {
@@ -216,7 +216,7 @@ const status = () => {
     club: playing ? myClub() : null,
     position: 3,
     coins: 820,
-    day: { n: 3, of: 26 },
+    day: { n: 3, of: 22, round: true },
     standing: { p: 2, w: 1, d: 1, l: 0, gf: 4, ga: 2, pts: 4 },
     form: ['W', 'D'],
     train: { used: club.used, max: 3, energy: club.extra },
@@ -273,6 +273,8 @@ const RPC = {
   on_standings: table,
   on_match_poll: poll,
   on_market: market,
+  on_lot_create: market,
+  on_lot_cancel: market,
   on_bid: ({ p_lot, p_amount }) => {
     const l = lots.find((x) => x.id === p_lot)
     if (p_amount < l.min_bid) return { error: `O lance mínimo agora é $ ${l.min_bid}` }

@@ -1,14 +1,13 @@
 import MoneyKeypad from './MoneyKeypad'
 import { useState } from 'react'
 import { FileSignature, Tag, UserMinus } from 'lucide-react'
-import MoraleTag from './MoraleTag'
 import { dateLabel, money, renewOffer, requestId, wageDemand, weekly, worldRpc } from '../services/careerWorldApi'
 import { clubMoney, clubMoneyShort } from '../utils/clubMoney'
 import { isSessionError } from '../../../lib/sessionRecovery'
 
 const monthsLeft = (until, today) => (until && today ? Math.max(0, Math.ceil((Date.parse(until) - Date.parse(today)) / (30 * 86400000))) : null)
 
-// Moral e contrato do atleta do SEU elenco: renovar (até 5 anos), colocar na lista de transferências ou rescindir.
+// Contrato do atleta do SEU elenco: renovar (até 5 anos), colocar na lista de transferências ou rescindir.
 export default function ContractPanel({ player: p, today, maxYears = 5, notify, onChanged }) {
   const [busy, setBusy] = useState(false)
   const [renewal, setRenewal] = useState(null) // { demand, maxYears }
@@ -67,14 +66,9 @@ export default function ContractPanel({ player: p, today, maxYears = 5, notify, 
     })
 
   return (
-    <section className="ps-deal" aria-label="Moral e contrato">
-      <h4>Moral e contrato</h4>
+    <section className="ps-deal" aria-label="Contrato">
+      <h4>Contrato</h4>
       <p className="sn-hint">Você pode negociar a renovação mesmo com a janela fechada. O atleta avalia salário e projeto esportivo e pode recusar. Sem renovação, o vínculo termina na data prevista.</p>
-      <p>
-        Moral <MoraleTag morale={p.morale} trend={p.morale_trend} />
-      </p>
-      {p.unrest && <p className="ps-unrest"><b>Pediu para sair.</b> Enquanto não tiver minutos ou não for colocado à venda, a moral dele cai e o vestiário sente.</p>}
-      {!p.unrest && p.morale != null && p.morale < 35 && <p className="ps-unrest">Insatisfeito com a falta de oportunidades. Muitos atletas assim derrubam o rendimento do time.</p>}
       {left != null && left > 6 && left <= 12 && !p.precontract && <p className="ps-ending">Contrato no último ano: renove antes dos seis meses finais, quando outros clubes podem levá-lo de graça.</p>}
       {p.precontract && <p><b>Já assinou pré-contrato com outro clube</b> e sai de graça quando o vínculo terminar.</p>}
       <dl>

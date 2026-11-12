@@ -215,3 +215,16 @@ Verificação: `supabase/online/tests/economy_regression.sql`, com testes revert
 ### Acesso temporário a Temporadas
 
 O modo Temporadas está indisponível para o público; somente a conta `contatodavidcaua@gmail.com` mantém acesso. A interface mostra cadeado no banner e no menu e bloqueia a navegação. A migration `20261112165026_restrict_seasons_to_owner.sql` protege as RPCs públicas de Temporadas, conferindo `auth.uid()` contra o email armazenado em `auth.users`. Não usa metadados editáveis e não apaga progresso. O modo Online e as carteiras permanecem disponíveis.
+## Fase 11 — ranking pelo online, horário do mercado e rodadas a cada 7 horas (13/11/2026)
+
+Fonte: `supabase/online/12_ranking_market_hours.sql` (migração `20261113130000`, pacote `supabase/releases/online_fase_11.sql`).
+
+- **Ranking geral**: só o modo online pontua. `on_ranking` guarda os pontos por usuário; `on_rank_hook` soma a cada partida e `on_rank_season` no fim da temporada. Regras em `on_config.rank_rules`: vitória 30 (+10 contra outro técnico), empate 10, 2 por gol (até 5 por jogo), 5 por jogo sem sofrer gol, 5 por preparação completa; liga 1000/600/400/250/150/100/50/50; copa 400 (campeão), 200 (vice), 80 (semifinal). `ranking_overall` devolve as regras para a tela.
+- **Moedas por resultado**: `win_coins` (15) e `draw_coins` (5) caem na conta do técnico.
+- **Horário do mercado**: `market_open` (8) a `market_close` (23), no fuso da temporada. Fora dele não há lance, anúncio nem leilão novo; `on_market` devolve `hours`.
+- **Destaque e lenda**: trocam a cada `special_every` horas (janelas 08–13, 13–18, 18–23). Ficam à mostra travados; o destaque abre na penúltima hora da janela e a lenda na última.
+- **Bots**: não dão lance em destaque nem em lenda (recusa em `on_bid_as`). No pontapé usam `on_bot_lineup`: testa cada formação e fica com a que soma mais nota em campo.
+- **Leilão do próprio jogador**: `on_lot_create` voltou para o técnico. Uma hora, lance inicial de 50% a 300% do valor (`on_lot_range`), sem lance do dono, cada lance põe o relógio em 5 minutos. Sem lances, um bot paga o preço pedido só se ele for até 80% do valor; acima disso o jogador volta ao elenco.
+- **Calendário**: rodada a cada `round_gap` (7 horas), jogos da rodada espaçados em `match_stagger` (10 minutos). A fase K da copa entra meia janela depois da rodada 5K. A condição física recupera 5 pontos por hora.
+- **Força do clube** (`on_strength`): média de titulares e reservas relacionados. A tela de escalação mostra força dos onze, com reservas e do banco.
+- **Idade**: não sobe mais na virada de temporada.

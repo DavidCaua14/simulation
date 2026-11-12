@@ -231,7 +231,7 @@ export const MSG_KIND = {
 // Assuntos da caixa de mensagens (categoria gravada no banco; mensagens antigas sem categoria ficam em Clube).
 export const MSG_CATEGORIES = [
   { id: 'all', label: 'Todas' },
-  { id: 'squad', label: 'Elenco', hint: 'Moral, lesões e contratos' },
+  { id: 'squad', label: 'Elenco', hint: 'Lesões e contratos' },
   { id: 'market', label: 'Mercado', hint: 'Propostas recebidas e respostas das negociações' },
   { id: 'club', label: 'Clube', hint: 'Diretoria, torcida, departamento médico e resultados' },
   { id: 'career', label: 'Carreira', hint: 'Propostas de trabalho para você' },

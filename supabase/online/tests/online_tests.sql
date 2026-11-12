@@ -7,7 +7,7 @@ insert into public.careers(user_id,nickname) values
  ('00000000-0000-0000-0000-000000000005','Dennis'),('00000000-0000-0000-0000-000000000009','novato');
 
 -- a entrada na hora (Fase 10) fica desligada nos testes das fases anteriores e é ligada no teste dela
-update public.on_config set join_instant=false;
+update public.on_config set join_instant=false,win_coins=0,draw_coins=0;
 
 select public.on_season_bootstrap(array['00000000-0000-0000-0000-000000000001','00000000-0000-0000-0000-000000000002',
  '00000000-0000-0000-0000-000000000003','00000000-0000-0000-0000-000000000004','00000000-0000-0000-0000-000000000005']::uuid[],
@@ -34,8 +34,8 @@ begin
  select count(*) into n from public.on_fixtures;
  if n<>132 then raise exception 'jogos: %',n;end if;
  if exists(select 1 from public.on_fixtures where home=away) then raise exception 'clube contra ele mesmo';end if;
- if exists(select 1 from(select round,count(*) c,count(distinct kickoff) k,count(distinct (kickoff at time zone 'America/Sao_Paulo')::date) d from public.on_fixtures group by round) x
-  where x.c<>6 or x.k<>6 or x.d<>1) then raise exception 'rodada sem 6 jogos em 6 horários do mesmo dia';end if;
+ if exists(select 1 from(select round,count(*) c,count(distinct kickoff) k,max(kickoff)-min(kickoff) span from public.on_fixtures group by round) x
+  where x.c<>6 or x.k<>6 or x.span<>interval '50 minutes') then raise exception 'rodada sem 6 jogos espaçados em 10 minutos';end if;
  if exists(select 1 from(select round,club,count(*) c from public.on_fixtures f cross join lateral(values(f.home),(f.away)) v(club) group by 1,2) x where x.c<>1) then
   raise exception 'clube joga mais de uma vez na rodada';
  end if;
@@ -43,16 +43,9 @@ begin
  if (select count(*) from(select home,away from public.on_fixtures group by 1,2 having count(*)=1) x)<>132 then raise exception 'mando repetido';end if;
  if exists(select 1 from(select club,count(*) filter(where at_home) h from public.on_fixtures f
    cross join lateral(values(f.home,true),(f.away,false)) v(club,at_home) group by 1) x where x.h<>11) then raise exception 'mandos desbalanceados';end if;
- -- um jogo por clube por dia; dias de copa (6, 12, 18, 24) livres; 26 dias de liga
- if exists(select 1 from(select (kickoff at time zone 'America/Sao_Paulo')::date d,club,count(*) c from public.on_fixtures f
-   cross join lateral(values(f.home),(f.away)) v(club) group by 1,2) x where x.c<>1) then raise exception 'dois jogos no mesmo dia';end if;
- if exists(select 1 from public.on_fixtures where (kickoff at time zone 'America/Sao_Paulo')::date-date '2026-11-16'+1 in(6,12,18,24)) then
-  raise exception 'jogo de liga em dia de copa';
- end if;
- if (select max((kickoff at time zone 'America/Sao_Paulo')::date)-date '2026-11-16'+1 from public.on_fixtures)<>26 then raise exception 'liga não fecha em 26 dias';end if;
- -- o horário de cada clube varia ao longo da temporada
- if exists(select 1 from(select club,count(distinct (kickoff at time zone 'America/Sao_Paulo')::time) k from public.on_fixtures f
-   cross join lateral(values(f.home),(f.away)) v(club) group by 1) x where x.k<3) then raise exception 'clube sempre no mesmo horário';end if;
+ -- rodadas a cada 7 horas a partir das 09:00 do dia de início; a liga fecha em 21 intervalos
+ if exists(select 1 from(select round,min(kickoff) k from public.on_fixtures group by round) x
+  where x.k<>(timestamp '2026-11-16 09:00' at time zone 'America/Sao_Paulo')+(x.round-1)*interval '7 hours') then raise exception 'rodada fora do passo de 7 horas';end if;
  if (select count(*) from public.on_table)<>12 then raise exception 'tabela incompleta';end if;
  raise notice 'PASS criação da temporada';
 end $$;
@@ -348,13 +341,13 @@ begin
  if (select minute from public.on_matches where fixture_id=f.id)<>45 then raise exception 'primeiro bloco';end if;
  perform public.on_tick(f.kickoff+interval '14 minutes');
  if (select status from public.on_fixtures where id=f.id)<>'done' then raise exception 'tick não terminou';end if;
- -- recuperação diária uma vez só
+ -- recuperação por hora (5 pontos) uma vez só dentro da mesma hora
  update public.on_players set cond=50 where id in(select player_id from public.on_match_players where fixture_id=f.id);
- update public.on_seasons set last_recovery=null where status='live';
+ update public.on_seasons set last_recovery=null,last_hourly=null where status='live';
  perform public.on_tick(f.kickoff+interval '15 minutes');
  perform public.on_tick(f.kickoff+interval '16 minutes');
  select max(cond) into n from public.on_players where id in(select player_id from public.on_match_players where fixture_id=f.id);
- if n<>85 then raise exception 'recuperação diária: %',n;end if;
+ if n<>55 then raise exception 'recuperação por hora: %',n;end if;
  raise notice 'PASS cron';
 end $$;
 
@@ -377,16 +370,31 @@ begin
  if exists(select 1 from public.on_lots where status='open' and featured between 1 and 4 and ends_at<>timestamptz '2026-11-12 14:00+00') then raise exception 'destaque não fecha na virada da hora';end if;
  if (select min(p.ovr) from public.on_lots x join public.on_players p on p.id=x.player_id where x.status='open' and x.featured=1)<76 then raise exception 'faixa 1 fraca';end if;
  if (select max(p.ovr) from public.on_lots x join public.on_players p on p.id=x.player_id where x.status='open' and x.featured between 1 and 4)>80 then raise exception 'leilão comum acima de 80';end if;
- -- especial do dia: aparece cedo, travado até as 19:00 (22:00 UTC), acima de 80 ou lenda, lance inicial acima de $ 400 mil
- select * into l from public.on_lots where season_id=s.id and featured=9 and status='open' and opens_at=timestamptz '2026-11-12 22:00+00';
- if l.id is null or l.opens_at<>timestamptz '2026-11-12 22:00+00' or l.ends_at<>timestamptz '2026-11-12 23:00+00' or l.start_price<=400000 then raise exception 'destaque do dia: %',l;end if;
+ -- especiais por janela de 5 horas (08, 13 e 18 h): às 10:20 a janela é 08–13, destaque abre às 11:00 (14:00 UTC) e a lenda às 12:00
+ select * into l from public.on_lots where season_id=s.id and featured=9 and status='open' and opens_at=timestamptz '2026-11-12 14:00+00';
+ if l.id is null or l.ends_at<>timestamptz '2026-11-12 15:00+00' or l.start_price<=400000 then raise exception 'destaque da janela: %',l;end if;
  if not exists(select 1 from public.on_players p where p.id=l.player_id and not p.legend and p.level>=81) then raise exception 'destaque fraco';end if;
- -- e uma lenda por dia, uma hora depois
  if not exists(select 1 from public.on_lots x join public.on_players p on p.id=x.player_id where x.season_id=s.id and x.featured=8 and x.status='open'
-   and x.opens_at=timestamptz '2026-11-12 23:00+00' and p.legend and x.start_price>=600000) then raise exception 'lenda do dia';end if;
- begin perform public.on_bid_as((select id from public.on_clubs where season_id=s.id limit 1),l.id,l.start_price,timestamptz '2026-11-12 15:00+00');raise exception 'lance no especial antes da hora';
+   and x.opens_at=timestamptz '2026-11-12 15:00+00' and p.legend and x.start_price>=600000) then raise exception 'lenda da janela';end if;
+ begin perform public.on_bid_as((select id from public.on_clubs where season_id=s.id and user_id is not null limit 1),l.id,l.start_price,timestamptz '2026-11-12 13:30+00');raise exception 'lance no especial antes da hora';
  exception when others then if sqlerrm not like 'Leilão encerrado%' then raise;end if;end;
- if (select count(*) from public.on_lots where season_id=s.id and featured=9 and opens_at=timestamptz '2026-11-12 22:00+00')<>1 then raise exception 'mais de um especial no dia';end if;
+ if (select count(*) from public.on_lots where season_id=s.id and featured=9 and opens_at=timestamptz '2026-11-12 14:00+00')<>1 then raise exception 'mais de um destaque na janela';end if;
+ -- bot nunca disputa destaque ou lenda
+ begin perform public.on_bid_as((select id from public.on_clubs where season_id=s.id and user_id is null limit 1),l.id,l.start_price,timestamptz '2026-11-12 14:10+00');raise exception 'bot deu lance em destaque';
+ exception when others then if sqlerrm not like 'Destaque e lenda%' then raise;end if;end;
+ -- janela seguinte (13–18 h): novo destaque às 16:00 (19:00 UTC) e nova lenda às 17:00
+ perform public.on_market_tick(timestamptz '2026-11-12 16:05+00',false);
+ if (select count(*) from public.on_lots where season_id=s.id and featured=9 and opens_at=timestamptz '2026-11-12 19:00+00')<>1
+  or (select count(*) from public.on_lots where season_id=s.id and featured=8 and opens_at=timestamptz '2026-11-12 20:00+00')<>1 then raise exception 'especiais da segunda janela';end if;
+ delete from public.on_lots where featured>=8 and opens_at>=timestamptz '2026-11-12 19:00+00';
+ delete from public.on_lots where status='open' and featured between 1 and 4 and opens_at>=timestamptz '2026-11-12 16:00+00';
+ -- mercado fechado (23:30 em São Paulo): sem lance
+ begin perform public.on_bid_as((select id from public.on_clubs where season_id=s.id and user_id is not null limit 1),
+   (select id from public.on_lots where status='open' and featured=1 limit 1),10000000,timestamptz '2026-11-13 02:30+00');raise exception 'lance com mercado fechado';
+ exception when others then if sqlerrm not like 'Leilão encerrado%' and sqlerrm not like 'Mercado fechado%' then raise;end if;end;
+ if public.on_market_open(timestamptz '2026-11-13 02:30+00') or not public.on_market_open(timestamptz '2026-11-13 11:00+00') then raise exception 'horário do mercado';end if;
+ -- o resto dos testes usa a hora real: mercado aberto o dia todo
+ update public.on_config set market_open=0,market_close=24;
  -- sem lances: sai (jogador apagado) e entra outro
  select array_agg(player_id) into ids from public.on_lots where status='open' and featured between 1 and 4;
  perform public.on_market_tick(timestamptz '2026-11-12 14:00+00',false);
@@ -454,7 +462,7 @@ begin
  if (select count(*) from jsonb_object_keys((select slots from public.on_lineups where club_id=a.id)))<>11 then raise exception 'vaga não preenchida';end if;
  if not exists(select 1 from public.on_news where club_id=a.id and text like '%vendido%') then raise exception 'técnico não avisado';end if;
 
- -- sem interessados: bot compra por 60% a 75% do valor
+ -- sem interessados e preço justo (até 80% do valor): um bot paga o preço pedido
  select l2.bench[1] into pid from public.on_lineups l2 where l2.club_id=a.id;
  perform public.on_lot_create(pid,greatest(500,round(public.on_value((select ovr from public.on_players where id=pid),(select age from public.on_players where id=pid),(select pot from public.on_players where id=pid))*.5))::bigint);
  select * into l from public.on_lots where player_id=pid and status='open';
@@ -462,7 +470,18 @@ begin
  select * into bot from public.on_clubs where id=(select club_id from public.on_players where id=pid);
  if bot.user_id is not null then raise exception 'bot não comprou';end if;
  v:=(select best_bid from public.on_lots where id=l.id);
- if v<round(public.on_value((select ovr from public.on_players where id=pid),(select age from public.on_players where id=pid),(select pot from public.on_players where id=pid))*.59) then raise exception 'bot pagou pouco: %',v;end if;
+ if v<>l.start_price then raise exception 'bot não pagou o preço pedido: %',v;end if;
+ -- preço acima do justo e sem lances: o jogador volta para o elenco
+ select l2.bench[1] into pid from public.on_lineups l2 where l2.club_id=a.id;
+ perform public.on_lot_create(pid,(public.on_value((select ovr from public.on_players where id=pid),(select age from public.on_players where id=pid),(select pot from public.on_players where id=pid))*2)::bigint);
+ select * into l from public.on_lots where player_id=pid and status='open';
+ begin perform public.on_bid_as(a.id,l.id,l.start_price,now());raise exception 'lance no próprio jogador';
+ exception when others then if sqlerrm not like 'Você não pode dar lance%' then raise;end if;end;
+ perform public.on_lot_settle(l.id,l.hard_end+interval '1 second');
+ if (select status from public.on_lots where id=l.id)<>'unsold' or (select club_id from public.on_players where id=pid)<>a.id then raise exception 'anúncio caro não voltou ao elenco';end if;
+ -- abaixo do mínimo (50% do valor): recusa
+ begin perform public.on_lot_create(pid,400);raise exception 'anúncio abaixo do mínimo';
+ exception when others then if sqlerrm not like 'Lance inicial entre%' then raise;end if;end;
 
  -- limite de elenco: 16 não vende; dívida bloqueia lance
  delete from public.on_players where club_id=a.id and id not in(select id from public.on_players where club_id=a.id order by ovr desc limit 16);
@@ -701,8 +720,9 @@ begin
   j:=public.on_sell(ids[2]);
   if jsonb_array_length(j->'players')<>n-1 or (public.on_club()->>'cash')::bigint<>cash+v then raise exception 'venda direta';end if;
  end if;
- begin perform public.on_lot_create(ids[1],5000);raise exception 'técnico leiloou jogador do elenco';
- exception when insufficient_privilege then null;end;
+ -- Fase 11: o técnico volta a poder leiloar jogador do elenco (a faixa de preço vem de on_lot_range)
+ if has_function_privilege('authenticated','public.on_lot_create(text,bigint)','execute') is not true then raise exception 'técnico sem acesso ao leilão';end if;
+ if (public.on_lot_range(ids[1])->>'min')::bigint<500 or (public.on_lot_range(ids[1])->>'max')::bigint<(public.on_lot_range(ids[1])->>'min')::bigint then raise exception 'faixa de preço';end if;
  raise notice 'PASS fase 7';
 end $$;
 reset role;
@@ -902,3 +922,50 @@ begin
  if jsonb_array_length(j->'history')<1 then raise exception 'histórico na copa';end if;
 end $$;
 reset role;
+
+-- ═════════════════════════════════════════════════════════════════════════════
+-- Fase 11: ranking pelo online, força do clube, escalação dos bots
+-- ═════════════════════════════════════════════════════════════════════════════
+do $$
+declare r public.on_ranking;j jsonb;k public.on_clubs;f public.on_fixtures;v0 int;v1 int;c0 int;
+begin
+ -- quem jogou tem linha no ranking e os pontos fecham com as parcelas
+ if not exists(select 1 from public.on_ranking) then raise exception 'ranking vazio depois de uma temporada';end if;
+ if exists(select 1 from public.on_ranking x where x.points<>x.pts_match+x.pts_goals+x.pts_prep+x.pts_season or x.matches<>x.wins+x.draws+x.losses) then
+  raise exception 'parcelas do ranking não fecham';
+ end if;
+ if not exists(select 1 from public.on_ranking x where x.seasons>=1) then raise exception 'fim de temporada não pontuou';end if;
+ -- uma vitória simulada: 30 + gols (2 cada, até 5) + 5 sem sofrer gol, e moedas na conta
+ update public.on_config set win_coins=15,draw_coins=5;
+ select c.* into k from public.on_clubs c join public.on_seasons s on s.id=c.season_id and s.status='live' where c.user_id is not null order by c.id limit 1;
+ select x.* into f from public.on_fixtures x where x.season_id=k.season_id and x.status='sched' and x.home=k.id order by x.kickoff limit 1;
+ select coalesce((select points from public.on_ranking where user_id=k.user_id),0) into v0;
+ select coins into c0 from public.careers where id=public.on_career_of(k.user_id);
+ insert into public.on_matches(fixture_id,season_id,state,status) values(f.id,f.season_id,'{}','finished') on conflict(fixture_id) do update set state='{}';
+ update public.on_fixtures set hg=3,ag=0,status='done' where id=f.id;
+ perform public.on_rank_hook(f.id);
+ select points into v1 from public.on_ranking where user_id=k.user_id;
+ if v1-v0 not in(30+6+5,30+10+6+5) then raise exception 'pontos da vitória: %',v1-v0;end if;
+ if (select coins from public.careers where id=public.on_career_of(k.user_id))<>c0+15 then raise exception 'moedas da vitória';end if;
+ delete from public.on_matches where fixture_id=f.id;
+ update public.on_fixtures set hg=null,ag=null,status='sched' where id=f.id;
+ -- ranking geral: só o online conta; quem tem mais pontos vem primeiro
+ perform set_config('request.jwt.claim.sub',k.user_id::text,true);
+ j:=public.ranking_overall(50);
+ if not (j->>'online')::boolean or (j->'me'->>'points')::int<>v1 or j->'rules'->>'win'<>'30' then raise exception 'ranking_overall: %',j->'me';end if;
+ if (j->'entries'->0->>'points')::int<(j->'entries'->1->>'points')::int then raise exception 'ranking fora de ordem';end if;
+ -- força: média dos relacionados (titulares + banco)
+ if public.on_strength(k.id) is distinct from (select round(avg(p.ovr),1) from public.on_players p where p.id in(
+   select e.value from public.on_lineups l,jsonb_each_text(l.slots) e where l.club_id=k.id union all select unnest(l.bench) from public.on_lineups l where l.club_id=k.id)) then
+  raise exception 'força do clube';
+ end if;
+ -- bot escala a formação que rende mais: nunca pior do que a que estava salva
+ select c.* into k from public.on_clubs c join public.on_seasons s on s.id=c.season_id and s.status='live' where c.user_id is null order by c.id limit 1;
+ perform public.on_auto_lineup(k.id,(select id from public.sim_formations order by sort desc limit 1));
+ select sum(p.ovr) into v0 from public.on_lineups l,jsonb_each_text(l.slots) e join public.on_players p on p.id=e.value where l.club_id=k.id;
+ perform public.on_bot_lineup(k.id);
+ select sum(p.ovr) into v1 from public.on_lineups l,jsonb_each_text(l.slots) e join public.on_players p on p.id=e.value where l.club_id=k.id;
+ if (select count(*) from public.on_lineups l,jsonb_each_text(l.slots) e where l.club_id=k.id)<>11 then raise exception 'bot sem onze';end if;
+ if v1<v0-22 then raise exception 'bot escalou time bem mais fraco: % -> %',v0,v1;end if;
+ raise notice 'PASS fase 11';
+end $$;

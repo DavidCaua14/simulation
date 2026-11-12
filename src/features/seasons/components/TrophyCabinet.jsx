@@ -4,11 +4,14 @@ import CompEmblem from '../ui/CompEmblem'
 import { COMP_NAME } from '../utils/seasonUtils'
 
 // Sala de troféus: títulos e campanhas de destaque tirados do resumo das temporadas encerradas.
-export default function TrophyCabinet({ history, titles }) {
+export default function TrophyCabinet({ history, titles, trophies }) {
   const items = history
     .filter((s) => s.status === 'finished')
     .flatMap((s) => (Array.isArray(s.summary) ? s.summary : s.summary?.competitions || []).filter((x) => x.player_result).map((x) => ({ ...x, year: s.year, club: x.player_club || s.club_id })))
-  const wins = items.filter((x) => x.player_result === 'Campeão')
+  // as taças vêm do servidor (eras anteriores + atual); sem elas, usa o resumo das temporadas encerradas
+  const wins = trophies?.length
+    ? [...trophies].sort((a, b) => b.year - a.year).map((t) => ({ competition: t.competition, year: t.year, club: t.club_id }))
+    : items.filter((x) => x.player_result === 'Campeão')
   const podium = items.filter((x) => x.player_result === 'Vice-campeão' || /^[234]º lugar$/.test(x.player_result || ''))
 
   return (
@@ -16,7 +19,7 @@ export default function TrophyCabinet({ history, titles }) {
       <div className="tc-shelf">
         {wins.length ? (
           wins.map((x) => (
-            <div key={`${x.year}-${x.competition}`} className="tc-cup">
+            <div key={`${x.year}-${x.competition}-${x.club}`} className="tc-cup">
               <span className="tc-cup-icon">
                 <Trophy size={30} />
               </span>

@@ -6,8 +6,6 @@ import PlayerPicker from '../components/PlayerPicker'
 import PlayerSheet from '../components/PlayerSheet'
 import TacticsPanel from '../components/TacticsPanel'
 import FreeTraining from '../components/FreeTraining'
-import MoraleTag from '../components/MoraleTag'
-import MoodFace, { MoodLegend } from '../components/MoodFace'
 import ContractPanel from '../components/ContractPanel'
 import { dateLabel, weekly } from '../services/careerWorldApi'
 import { clubMoneyShort } from '../utils/clubMoney'
@@ -17,7 +15,7 @@ import { EmptyState, ErrorState, LoadingState } from '../ui/States'
 import useCatalog from '../hooks/useCatalog'
 import useDragSwap from '../hooks/useDragSwap'
 import { autoLineup, fetchSquad, saveLineup } from '../services/managerApi'
-import { DEFAULT_TACTICS, LINES, POS_LINE, condTone, lineupStrength, moraleState, ovrTone, POS_ORDER, posFit } from '../utils/managerUtils'
+import { DEFAULT_TACTICS, LINES, POS_LINE, condTone, lineupStrength, ovrTone, POS_ORDER, posFit } from '../utils/managerUtils'
 import { COMP_SHORT } from '../utils/seasonUtils'
 import ClubDevPanel from '../../clubdev/ClubDevPanel'
 import { fetchClubDev } from '../../clubdev/clubDevApi'
@@ -406,7 +404,6 @@ export default function TeamTab({ hub, onSaved, notify, focusPlayerId = null, in
             </div>
           )}
 
-          <MoodLegend />
 
           <section className="sn-sec">
             <h2 className="gx-title">
@@ -526,7 +523,6 @@ export default function TeamTab({ hub, onSaved, notify, focusPlayerId = null, in
                 {squadCols === 'general' && (
                   <>
                     <th>Status</th>
-                    <th>Moral</th>
                     <th>Condição</th>
                   </>
                 )}
@@ -550,7 +546,7 @@ export default function TeamTab({ hub, onSaved, notify, focusPlayerId = null, in
               {groups.flatMap((g) => g.players).map((p) => {
                 const inXI = Object.values(draft.slots).includes(p.id)
                 const onBench = draft.bench.includes(p.id)
-                const status = p.injured_days > 0 ? 'Lesão' : p.suspended > 0 ? 'Susp.' : p.transfer_listed ? 'À venda' : p.unrest ? 'Quer sair' : p.morale != null && p.morale < 60 ? moraleState(p.morale).label : 'OK'
+                const status = p.injured_days > 0 ? 'Lesão' : p.suspended > 0 ? 'Susp.' : p.transfer_listed ? 'À venda' : 'OK'
                 const left = contractLeft(p.contract_expires)
                 return (
                   <tr key={p.id} className={`is-link ${p.available ? '' : 'is-out'}`} onClick={() => setInfo(p)}>
@@ -573,12 +569,6 @@ export default function TeamTab({ hub, onSaved, notify, focusPlayerId = null, in
                     {squadCols === 'general' && (
                       <>
                         <td className={status === 'OK' ? '' : 'sqt-bad'}>{status}</td>
-                        <td>
-                          <span className="sqt-mood">
-                            <MoodFace morale={p.morale} />
-                            <MoraleTag morale={p.morale} trend={p.morale_trend} />
-                          </span>
-                        </td>
                         <td>
                           <span className={`sqt-cond ${condTone(p.condition)}`}>
                             <i style={{ width: `${Math.max(3, p.condition)}%` }} />

@@ -1122,3 +1122,19 @@ button.fut:disabled { cursor: default; }
 .on-invest-custom input { flex: 1 1 140px; min-width: 0; min-height: 42px; padding: 8px 10px; border-radius: 10px; border: 1px solid rgba(148, 186, 255, .2); background: rgba(0, 0, 0, .35); color: #fff; font: 700 .95rem var(--font-body); }
 .on-invest-custom input:focus { outline: 2px solid #22d3ee; outline-offset: 1px; }
 .on-invest-custom > small { color: #b7c6e2; font-size: .75rem; }
+/* Fase 11: força do time na escalação, leilão do próprio jogador e horário do mercado */
+.on-strength { display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 6px; }
+.on-strength span { display: grid; grid-template-columns: auto 1fr; align-items: center; column-gap: 6px; padding: 8px 10px; border-radius: 12px; background: var(--gx-panel); border: 1px solid var(--gx-line); }
+.on-strength small { grid-column: 1 / -1; color: var(--gx-ink-2); font-size: .66rem; text-transform: uppercase; letter-spacing: .05em; }
+.on-strength b { grid-column: 1 / -1; font: 900 1.15rem var(--font-display, var(--font-body)); color: var(--gx-ink); }
+.on-strength .is-main { border-color: color-mix(in srgb, var(--gx-accent, #ffd34d) 55%, transparent); }
+.on-strength .is-main svg { grid-row: 1; color: var(--gx-accent, #ffd34d); }
+.on-strength .is-main small { grid-column: 2; }
+.on-strength .is-main b { color: var(--gx-accent, #ffd34d); }
+.on-deal-auction .on-auc-steps { width: 100%; }
+.on-mkt-hours { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 12px; background: var(--gx-panel); border: 1px solid var(--gx-line); color: var(--gx-ink-2); font-size: .78rem; }
+.on-mkt-hours b { margin-left: auto; color: var(--gx-ink); font-weight: 800; }
+.on-mkt-hours.is-closed { border-color: rgba(255, 120, 120, .45); color: #ffb4b4; }
+.on-auc-cancel { display: inline-flex; align-items: center; gap: 6px; justify-content: center; }
+.on-auc-wait { display: inline-flex; align-items: center; gap: 6px; }
+.on-deal-auction .on-auc-steps { grid-template-columns: repeat(5, minmax(0, 1fr)); }

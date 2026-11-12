@@ -17,8 +17,13 @@ grant usage on schema public to anon, authenticated;
 
 create table public.careers(
  id uuid primary key default gen_random_uuid(), user_id uuid not null, nickname text not null unique,
- status text not null default 'active', created_at timestamptz default now(), coins int not null default 1000
+ status text not null default 'active', created_at timestamptz default now(), coins int not null default 1000,
+ photo_id text, level int not null default 1, xp int not null default 0
 );
+-- perfil e carreira corrente (usados pelo ranking geral)
+create table public.player_profiles(career_id uuid primary key, avatar_data text);
+create function public.cw_current_career() returns uuid language sql stable as
+$$ select id from public.careers where user_id=auth.uid() order by created_at desc limit 1 $$;
 
 -- Catálogo real (cópia de produção em 10/11/2026).
 create table public.sim_positions(code text primary key, name text not null, line text not null, sort smallint not null,

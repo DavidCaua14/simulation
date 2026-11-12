@@ -6,7 +6,6 @@ import { fetchPlayer } from '../services/managerApi'
 import { dateLabel, weekly } from '../services/careerWorldApi'
 import { clubMoneyShort } from '../utils/clubMoney'
 import { ATTR_GROUPS } from '../utils/managerUtils'
-import MoraleTag from '../components/MoraleTag'
 import { isSessionError } from '../../../lib/sessionRecovery'
 
 const tone = (v) => (v >= 80 ? 'a-elite' : v >= 70 ? 'a-good' : v >= 55 ? 'a-mid' : 'a-low')
@@ -103,12 +102,6 @@ export default function PlayerProfile({ player, own, busy, shortlisted, onClose,
                   <em style={{ width: `${Math.max(3, Math.min(100, p.condition ?? 100))}%` }} />
                   <b>{Math.round(p.condition ?? 100)}%</b>
                 </i>
-              </dd>
-            </div>
-            <div>
-              <dt>Moral</dt>
-              <dd>
-                <MoraleTag morale={p.morale ?? 60} trend={p.morale_trend} />
               </dd>
             </div>
             <div>

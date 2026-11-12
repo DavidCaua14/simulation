@@ -181,6 +181,8 @@ export default function MatchLive({ initial, myClub, onFinished, notify }) {
         if (isSessionError(e)) return
         notify?.(e.message, 'alert')
         setPending(EMPTY)
+        // o relógio pede a etapa de novo assim que fica livre: espera um pouco para não repetir em sequência
+        await new Promise((resolve) => setTimeout(resolve, 3000))
       } finally {
         setBusy(false)
       }
