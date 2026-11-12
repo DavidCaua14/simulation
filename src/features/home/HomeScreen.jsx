@@ -1,3 +1,5 @@
+import { useAuth } from '../../context/AuthContext'
+import { isLockedFor } from './data/access'
 import AppShell from '../../components/layout/AppShell'
 import PlayerHeader from '../../components/PlayerHeader'
 import { getClubById } from '../club/data/clubs'
@@ -29,6 +31,7 @@ const QUICK = ['ranking', 'events', 'messages', 'friends']
 //   5. loja (energia e itens visuais)
 //   6. atalhos secundários (ranking, eventos, mensagens, convites)
 export default function HomeScreen({ career, onNavigate }) {
+  const { user } = useAuth()
   const { player } = career
   const club = getClubById(player.clubId)
   const photo = getProfilePhotoById(player.photoId)
@@ -47,7 +50,7 @@ export default function HomeScreen({ career, onNavigate }) {
     <AppShell header={<PlayerHeader player={player} wallet={wallet} avatarSrc={prefs.avatarUrl || photo?.src} />}>
       <div className="hm-shell">
         <div className="hm-scroll">
-          <MatchdayHero club={club} player={player} onPlay={() => !seasons?.locked && onNavigate?.('seasons')} />
+          <MatchdayHero club={club} player={player} locked={isLockedFor(seasons, user)} onPlay={() => !isLockedFor(seasons, user) && onNavigate?.('seasons')} />
 
           <RankingTicker me={player.nickname} onOpen={() => onNavigate?.('ranking')} />
 

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Briefcase, Play } from 'lucide-react'
+import { Briefcase, Lock, Play } from 'lucide-react'
 import ClubCrest from '../../club/components/ClubCrest'
 import { getClubById } from '../../club/data/clubs'
 import { fetchCoachStatus } from '../../seasons/services/managerApi'
@@ -8,9 +8,10 @@ import heroBg from '../assets/hero-bg.webp'
 
 // Banner principal: o clube que o TREINADOR comanda agora (pode mudar durante a carreira: demissão,
 // proposta aceita). As cores do clube tingem o estádio e o botão leva ao modo Temporadas.
-export default function MatchdayHero({ club: initialClub, player, onPlay }) {
+export default function MatchdayHero({ club: initialClub, player, onPlay, locked = false }) {
   const [status, setStatus] = useState(null)
   useEffect(() => {
+    if (locked) return undefined
     let alive = true
     fetchCoachStatus()
       .then((s) => alive && setStatus(s))
@@ -18,7 +19,7 @@ export default function MatchdayHero({ club: initialClub, player, onPlay }) {
     return () => {
       alive = false
     }
-  }, [])
+  }, [locked])
   const unemployed = status?.started && status.status === 'unemployed'
   const club = status?.started ? (status.club_id ? getClubById(status.club_id) : null) : initialClub
   const [c1, c2] = club?.colors || ['#1b3566', '#f5b800']
@@ -30,7 +31,7 @@ export default function MatchdayHero({ club: initialClub, player, onPlay }) {
 
       <div className="hm-hero-top">
         <span className="gx-tag is-live">
-          <span className="gx-dot" /> Temporadas · modo treinador
+          {locked ? <Lock size={14} /> : <span className="gx-dot" />} Temporadas · {locked ? 'Indisponível' : 'modo treinador'}
         </span>
         {player.country && <CountryFlag countryId={player.country} />}
       </div>
@@ -53,7 +54,7 @@ export default function MatchdayHero({ club: initialClub, player, onPlay }) {
 
       <div className="hm-hero-cta">
         <p>
-          {unemployed ? (
+          {locked ? 'O modo Temporadas está indisponível no momento.' : unemployed ? (
             <>
               Você está <b>sem clube</b>. Avance os dias e aguarde propostas.
             </>
@@ -63,8 +64,8 @@ export default function MatchdayHero({ club: initialClub, player, onPlay }) {
             </>
           )}
         </p>
-        <button type="button" className="gx-btn hm-hero-btn" onClick={onPlay}>
-          {unemployed ? <Briefcase size={18} /> : <Play size={18} fill="currentColor" />} {unemployed ? 'Carreira' : 'Comandar'}
+        <button type="button" className="gx-btn hm-hero-btn" disabled={locked} onClick={onPlay}>
+          {locked ? <Lock size={18} /> : unemployed ? <Briefcase size={18} /> : <Play size={18} fill="currentColor" />} {locked ? 'Indisponível' : unemployed ? 'Carreira' : 'Comandar'}
         </button>
       </div>
     </section>

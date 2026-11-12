@@ -43,7 +43,8 @@ export const GAME_MODES = [
     desc: 'Seja o treinador: escale, defina a tática e comande clubes reais!',
     Icon: SeasonsIcon,
     image: temporadas,
-    locked: false,
+    locked: true,
+    testerOnly: true,
   },
   {
     id: 'ranking',

@@ -211,3 +211,7 @@ A conversão antiga registrada foi estornada com devolução integral das moedas
 Os payloads mantêm compatibilidade com clientes antigos: `cap - converted` equivale ao saldo atual da carteira. O campo de configuração `coin_cap` permanece por compatibilidade, mas não restringe aportes ou lances. A interface nova oferece aportes de 1.000, 10.000, 30.000 ou todo o saldo, além de um campo para digitar qualquer quantidade disponível.
 
 Verificação: `supabase/online/tests/economy_regression.sql`, com testes revertidos ao final.
+
+### Acesso temporário a Temporadas
+
+O modo Temporadas está indisponível para o público; somente a conta `contatodavidcaua@gmail.com` mantém acesso. A interface mostra cadeado no banner e no menu e bloqueia a navegação. A migration `20261112165026_restrict_seasons_to_owner.sql` protege as RPCs públicas de Temporadas, conferindo `auth.uid()` contra o email armazenado em `auth.users`. Não usa metadados editáveis e não apaga progresso. O modo Online e as carteiras permanecem disponíveis.

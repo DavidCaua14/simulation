@@ -15,14 +15,14 @@ export default function PlayModeCard({ mode, size = 'tall', badge, onSelect }) {
       className={`hm-mode is-${size} ${locked ? 'is-locked' : ''}`}
       disabled={locked}
       onClick={() => onSelect?.(mode.id)}
-      aria-label={locked ? `${title} — em breve` : title}
+      aria-label={locked ? `${title} — Indisponível` : title}
     >
       {image && <img className="hm-mode-bg" src={image} alt="" />}
       <span className="hm-mode-scrim" aria-hidden="true" />
       <span className="hm-mode-state">
         {locked ? (
           <span className="gx-tag is-soon">
-            <GameIcon name="lock" size={16} /> Em breve
+            <GameIcon name="lock" size={16} /> Indisponível
           </span>
         ) : (
           badge || (

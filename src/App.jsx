@@ -6,6 +6,7 @@ import ErrorBoundary from './components/ErrorBoundary'
 import LoginScreen from './features/auth/LoginScreen'
 import CreateCharacterScreen from './features/player/CreateCharacterScreen'
 import ClubOfferScreen from './features/club/ClubOfferScreen'
+import { canAccessSeasons } from './features/home/data/access'
 import HomeScreen from './features/home/HomeScreen'
 const PredictionsScreen = lazy(() => import('./features/predictions/PredictionsScreen')) // carregada sob demanda
 const SeasonsScreen = lazy(() => import('./features/seasons/SeasonsScreen')) // carregada sob demanda
@@ -209,6 +210,7 @@ function Gate() {
 
   // Só estas telas estão construídas; os demais ids da barra/menu ainda não fazem nada.
   const navigate = (id, params = null) => {
+    if (id === 'seasons' && !canAccessSeasons(user)) return
     if (id === 'messages') id = 'inbox'
     if (id === 'online-match') id = 'online'
     if (id === 'home' || id === 'tips' || id === 'profile' || id === 'seasons' || id === 'store' || id === 'friends' || id === 'events' || id === 'inbox' || id === 'ranking' || id === 'online') {
@@ -266,7 +268,7 @@ function Gate() {
     return <PredictionsScreen career={career} onBack={backHome} />
   }
 
-  if (screen === 'seasons') {
+  if (screen === 'seasons' && canAccessSeasons(user)) {
     return <SeasonsScreen career={career} onBack={backHome} />
   }
 

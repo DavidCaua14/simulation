@@ -4,3 +4,5 @@ import { isMaintenanceAdmin } from '../../maintenance/policy'
 // O banco confere de novo (on_gate): destravar aqui não dá acesso a mais ninguém.
 export const canTestModes = (user) => isMaintenanceAdmin(user)
 export const isLockedFor = (item, user) => Boolean(item.locked) && !(item.testerOnly && canTestModes(user))
+
+export const canAccessSeasons = (user) => isMaintenanceAdmin(user)

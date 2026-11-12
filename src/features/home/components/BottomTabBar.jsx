@@ -1,3 +1,4 @@
+import { Lock } from 'lucide-react'
 import { useAuth } from '../../../context/AuthContext'
 import { isLockedFor } from '../data/access'
 import { TAB_ITEMS } from '../data/tabs'
@@ -15,10 +16,11 @@ export default function BottomTabBar({ active = 'home', onSelect }) {
           className={`tab-item ${active === id ? 'is-active' : ''}`}
           disabled={locked}
           onClick={() => onSelect?.(id)}
-          title={locked ? `${label} — em breve` : label}
+          title={locked ? `${label} — Indisponível` : label}
+          aria-label={locked ? `${label} — Indisponível` : label}
           aria-current={active === id ? 'page' : undefined}
         >
-          <Icon />
+          {locked ? <Lock size={20} /> : <Icon />}
           <span>{label}</span>
         </button>
       ))}
