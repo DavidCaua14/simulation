@@ -1148,12 +1148,13 @@ button.fut:disabled { cursor: default; }
 /* Fase 15: escalações do jogo e ficha do jogador */
 .on-lus { align-items: stretch; padding: 10px; }
 .on-lus-card { width: min(460px, 100%); max-height: 100%; margin: auto; display: flex; flex-direction: column; gap: 10px; padding: 14px; overflow-y: auto; }
+.on-lus-view { display: flex; flex-direction: column; gap: 10px; }
 .on-lus-head { display: flex; align-items: center; gap: 10px; }
 .on-lus-head h3 { flex: 1; display: flex; align-items: center; gap: 8px; margin: 0; font: 900 1.05rem var(--font-display, var(--font-body)); text-transform: uppercase; }
 .on-lus-head .on-result-x { position: static; }
 .on-lus-live { display: inline-flex; align-items: center; gap: 5px; padding: 3px 8px; border-radius: 999px; background: rgba(239, 68, 68, .18); color: #fca5a5; font-size: .68rem; font-weight: 800; text-transform: uppercase; }
-.on-lus .on-seg { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
-.on-lus .on-seg button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+.on-lus-view .on-seg { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.on-lus-view .on-seg button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
 .on-lus-info { display: grid; grid-template-columns: 1.6fr 1fr 1fr; gap: 6px; }
 .on-lus-info span { display: flex; flex-direction: column; gap: 2px; padding: 7px 10px; border-radius: 10px; background: var(--gx-panel); border: 1px solid var(--gx-line); min-width: 0; }
 .on-lus-info small { color: var(--gx-ink-2); font-size: .64rem; text-transform: uppercase; letter-spacing: .05em; }
@@ -1221,3 +1222,4 @@ button.fut-pitch { cursor: pointer; }
 .fut-pitch.is-empty small { font: 800 .55rem var(--font-body); }
 .pt-slot.is-drop .fut-pitch-card { filter: drop-shadow(0 0 8px #ffd23f); }
 @media (max-width: 380px) { .fut-pitch { width: 52px; } .fut-pitch-cond { width: 48px; } }
+.onm-lus-tab { padding: 4px 0 8px; }

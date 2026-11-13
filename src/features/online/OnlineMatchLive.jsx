@@ -6,7 +6,7 @@ import MatchLineupEditor, { draftFromMatch } from '../seasons/components/MatchLi
 import useCatalog from '../seasons/hooks/useCatalog'
 import { MAJOR_EVENTS, condTone, eventText, isGoal, posFit } from '../seasons/utils/managerUtils'
 import useMatchAudio from '../audio/useMatchAudio'
-import LineupsSheet from './components/LineupsSheet'
+import LineupsSheet, { LineupsView } from './components/LineupsSheet'
 import OnlineCrest from './components/OnlineCrest'
 import { OvrBadge } from './components/PlayerFut'
 import { actOnlineMatch, fetchOnlineScout, fetchOnlineSquad, pollOnlineMatch, sendOnlineHalftimeTalk } from './services/onlineApi'
@@ -473,28 +473,7 @@ export default function OnlineMatchLive({ fixtureId = null, onClose, notify }) {
           </div>
         )}
 
-        {tab === 'lineups' && (
-          <button type="button" className="gx-btn-ghost onm-pre-lus" onClick={() => setLineups(true)}><Users size={16} /> Ver no campo</button>
-        )}
-        {tab === 'lineups' && (
-          <div className="ml-lineups">
-            {['h', 'a'].map((sd) => (
-              <div key={sd} className="ml-lu">
-                <h4><OnlineCrest club={sd === 'h' ? data.home : data.away} size={18} /> {name(sd)}<small>{data.formation?.[sd === 'h' ? 0 : 1]}</small></h4>
-                <ul>
-                  {players.filter((p) => p.side === sd && p.status !== 'bench').map((p) => (
-                    <li key={p.id} className={`st-${p.status}`}>
-                      <span className="onm-num" style={{ background: (sd === 'h' ? home : away).colors[0], color: (sd === 'h' ? home : away).colors[1] }}>{p.number}</span>
-                      <span className="ml-pn">{p.name}{p.yellow > 0 && <i className="mcard y" />}{p.red > 0 && <i className="mcard r" />}{p.injured && <Ambulance size={11} />}</span>
-                      <span className={`ml-cond ${condTone(p.cond)}`}><i style={{ width: `${p.cond}%` }} /></span>
-                      <b className="ml-rt">{Number(p.rating).toFixed(1)}</b>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
-        )}
+        {tab === 'lineups' && <div className="onm-lus-tab"><LineupsView fixtureId={data.fixture_id} live /></div>}
       </div>
 
       {ended ? (
