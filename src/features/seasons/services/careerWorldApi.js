@@ -20,7 +20,7 @@ export const readNews = (ids) => worldRpc('career_news_read', { p_ids: ids })
 export const financeHistory = () => worldRpc('career_finance_history')
 export { clubMoney as money } from '../utils/clubMoney'
 export const dateLabel = (value) => value ? new Date(`${value}T12:00:00Z`).toLocaleDateString('pt-BR', { timeZone: 'UTC' }) : '—'
-// Negociação CM17 (evolução 66): oferta só de valor; contrato com salário semanal e anos.
+// Negociação CM17 (evolução 66): oferta só de valor; contrato com salário mensal e anos.
 export const transferOffer = (player, fee) => worldRpc('career_transfer_offer', { p_player: player, p_fee: fee, p_request: requestId() })
 export const contractOffer = (negotiation, weekly, years) => worldRpc('career_contract_offer', { p_negotiation: negotiation, p_weekly_wage: weekly, p_years: years, p_request: requestId() })
 export const renewOffer = (player, weekly, years) => worldRpc('career_contract_renew_offer', { p_player: player, p_weekly_wage: weekly, p_years: years, p_request: requestId() })
@@ -30,7 +30,7 @@ export const listPlayer = (player, listed) => worldRpc('career_player_list', { p
 // Pré-seleção (evolução 67)
 export const shortlist = () => worldRpc('career_shortlist')
 export const toggleShortlist = (player) => worldRpc('career_shortlist_toggle', { p_player: player })
-// Salário semanal (CM17) a partir do mensal guardado no banco
-export const weekly = (monthly) => Math.round((Number(monthly) || 0) * 12 / 52)
+// O jogo trabalha só com salário MENSAL (folha, teto e contratos). A função mantém o nome antigo e devolve o próprio valor.
+export const weekly = (monthly) => Math.round(Number(monthly) || 0)
 // Confirmação final (evolução 68): o atleta aceitou; o treinador confirma ou desiste.
 export const confirmTransfer = (id, accept) => worldRpc('career_transfer_confirm', { p_id: id, p_accept: accept, p_request: requestId() })

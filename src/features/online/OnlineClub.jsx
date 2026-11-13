@@ -9,9 +9,9 @@ import { buildOnline, buyOnlineTrainEnergy, convertOnlineCoins, fetchOnlineClub,
 import { CREST_PATTERNS, CREST_SHAPES, cardTier, money, moneyShort } from './onlineUtils'
 
 const BUILDINGS = [
-  { id: 'stadium', label: 'Estádio', Icon: Landmark, effect: (n) => `Bilheteria ${moneyShort(8000 + 3000 * n)}` },
+  { id: 'stadium', label: 'Estádio', Icon: Landmark, effect: (n) => `Bilheteria ${moneyShort(15000 + 10000 * n)} por jogo` },
   { id: 'training', label: 'Centro de treino', Icon: Dumbbell, effect: (n) => `+${n * 10}% evolução` },
-  { id: 'medical', label: 'Departamento médico', Icon: HeartPulse, effect: (n) => `+${n * 5} condição/dia` },
+  { id: 'medical', label: 'Departamento médico', Icon: HeartPulse, effect: (n) => `Recupera ${String(6 + 1.5 * n).replace('.', ',')} de condição por hora` },
   { id: 'youth', label: 'Categoria de base', Icon: GraduationCap, effect: (n) => `${n * 4}% revelação/dia` },
 ]
 const KIND = { buy: 'Compra', sell: 'Venda', wage: 'Salários', gate: 'Bilheteria', build: 'Obra', renew: 'Renovação', coins: 'Investimento', economy_refund: 'Estorno de investimento', prize: 'Prêmio' }

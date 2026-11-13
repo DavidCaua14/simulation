@@ -536,7 +536,7 @@ export default function TeamTab({ hub, onSaved, notify, focusPlayerId = null, in
                 )}
                 {squadCols === 'finance' && (
                   <>
-                    <th>Salário/sem</th>
+                    <th>Salário/mês</th>
                     <th>Contrato</th>
                   </>
                 )}

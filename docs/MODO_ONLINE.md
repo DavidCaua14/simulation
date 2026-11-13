@@ -250,3 +250,12 @@ Fonte: `supabase/online/15_market_close_cleanup.sql` (migração `20261113180000
 ## Fase 15 — escalações do jogo e ficha do jogador
 
 Fonte: `supabase/online/16_fixture_lineups.sql` (migração `20261113190000`). `on_fixture_lineups(fixture)` devolve formação e onze de cada lado: antes do pontapé, a escalação salva; com a partida aberta, quem está em campo agora. A tela (`LineupsSheet`) abre no vestiário ("Ver escalações") e durante o jogo ("Adversário") e se atualiza sozinha. Em Elenco > Jogadores, tocar em um atleta abre a ficha (`PlayerSheet`) com nota atual, potencial, valor, salário, contrato e as ações de leiloar, renovar e dispensar. O botão Novidades do Perfil aparece para todos.
+
+## Fase 17 — recuperação por hora, obras rápidas e bilheteria
+
+Fonte: `supabase/online/18_recovery_gate_build.sql` (migração `20261114140000`).
+
+- Condição física: +6 por hora, mais +1,5 por hora a cada nível do departamento médico (`on_recovery_rate`). Entre duas rodadas (7 horas): 42 pontos sem médico, 73 no nível 3, 94 no nível 5. O bônus diário do médico saiu.
+- Lesão: 1 ou 2 dias; com médico nível 3 ou mais, sempre 1 dia.
+- Obras: 1 hora por nível (`on_build_time`), de 1 h a 5 h. Obras em andamento foram encurtadas para o prazo novo.
+- Bilheteria por jogo em casa: $ 15 mil + $ 10 mil por nível do estádio (`on_gate_value`); copa paga 50% a mais.

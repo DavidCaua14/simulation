@@ -341,13 +341,14 @@ begin
  if (select minute from public.on_matches where fixture_id=f.id)<>45 then raise exception 'primeiro bloco';end if;
  perform public.on_tick(f.kickoff+interval '14 minutes');
  if (select status from public.on_fixtures where id=f.id)<>'done' then raise exception 'tick não terminou';end if;
- -- recuperação por hora (5 pontos) uma vez só dentro da mesma hora
+ -- recuperação por hora (6 pontos sem departamento médico) uma vez só dentro da mesma hora
  update public.on_players set cond=50 where id in(select player_id from public.on_match_players where fixture_id=f.id);
  update public.on_seasons set last_recovery=null,last_hourly=null where status='live';
  perform public.on_tick(f.kickoff+interval '15 minutes');
  perform public.on_tick(f.kickoff+interval '16 minutes');
  select max(cond) into n from public.on_players where id in(select player_id from public.on_match_players where fixture_id=f.id);
- if n<>55 then raise exception 'recuperação por hora: %',n;end if;
+ if n<>56 then raise exception 'recuperação por hora: %',n;end if;
+ if public.on_recovery_rate(4)<>12 or public.on_gate_value(2)<>35000 or public.on_build_time(1,false)<>interval '2 hours' then raise exception 'regras da fase 17';end if;
  raise notice 'PASS cron';
 end $$;
 
@@ -564,7 +565,7 @@ begin
  if f.id is null then select * into f from public.on_fixtures where home=c.id limit 1;end if;
  perform public.on_gate_income(f.id);
  select * into c from public.on_clubs where id=c.id;
- if c.debt<>greatest(0,w-1000-8000) or c.cash<>greatest(0,8000-(w-1000)) then raise exception 'bilheteria: caixa % dívida %',c.cash,c.debt;end if;
+ if c.debt<>greatest(0,w-1000-15000) or c.cash<>greatest(0,15000-(w-1000)) then raise exception 'bilheteria: caixa % dívida %',c.cash,c.debt;end if;
  update public.on_clubs set cash=200000,debt=0 where id=c.id;
  raise notice 'PASS salários e bilheteria';
 end $$;

@@ -113,7 +113,7 @@ export default function PlayerProfile({ player, own, busy, shortlisted, onClose,
               <dd>{player.expires_on || p.contract_expires ? dateLabel(player.expires_on || p.contract_expires) : '—'}</dd>
             </div>
             <div>
-              <dt>Salários semanais</dt>
+              <dt>Salário mensal</dt>
               <dd>{player.monthly_salary != null || p.monthly_salary != null ? clubMoneyShort(weekly(player.monthly_salary ?? p.monthly_salary)) : '—'}</dd>
             </div>
             <div>

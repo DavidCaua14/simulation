@@ -29,7 +29,7 @@ export default function ContractPanel({ player: p, today, maxYears = 5, notify, 
       setBusy(false)
     }
   }
-  // Renovação (CM17): salário semanal + anos. Abaixo da pedida o atleta recusa e diz quanto quer.
+  // Renovação (CM17): salário mensal + anos. Abaixo da pedida o atleta recusa e diz quanto quer.
   const openRenewal = () =>
     run(async () => {
       const d = await wageDemand(p.id)
@@ -73,7 +73,7 @@ export default function ContractPanel({ player: p, today, maxYears = 5, notify, 
       {p.precontract && <p><b>Já assinou pré-contrato com outro clube</b> e sai de graça quando o vínculo terminar.</p>}
       <dl>
         <div><dt>Contrato até</dt><dd>{dateLabel(p.contract_expires)}{left != null && left <= 6 ? ` · ${left} mês(es)` : ''}</dd></div>
-        <div><dt>Salário semanal</dt><dd>{clubMoney(weekly(p.monthly_salary))}</dd></div>
+        <div><dt>Salário mensal</dt><dd>{clubMoney(weekly(p.monthly_salary))}</dd></div>
         <div><dt>Situação</dt><dd>{p.transfer_listed ? 'Na lista de transferências' : 'No elenco'}</dd></div>
       </dl>
       {left != null && left <= 6 && !p.precontract && <p className="ps-ending">Nos seis meses finais outros clubes podem oferecer pré-contrato. Sem renovação, ele sai de graça.</p>}
@@ -96,10 +96,10 @@ export default function ContractPanel({ player: p, today, maxYears = 5, notify, 
           title="Renovar contrato"
           subtitle={p.name || p.short_name}
           info={[
-            ['Salário atual', `${clubMoneyShort(weekly(p.monthly_salary))}/sem`],
-            ['Pedida do atleta', renewal.demand ? `${clubMoneyShort(renewal.demand)}/sem` : '—'],
+            ['Salário atual', `${clubMoneyShort(weekly(p.monthly_salary))}/mês`],
+            ['Pedida do atleta', renewal.demand ? `${clubMoneyShort(renewal.demand)}/mês` : '—'],
           ]}
-          label="Salário por semana"
+          label="Salário por mês"
           initial={renewal.demand || weekly(p.monthly_salary)}
           busy={busy}
           error={padError}

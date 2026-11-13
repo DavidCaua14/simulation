@@ -91,8 +91,10 @@ function YearsPicker({ value, onChange, max = 5 }) {
 }
 
 // TRANSFERÊNCIAS (CM17): busca de atletas, pré-seleção, negociações e lista de venda.
-// Oferta só de valor (teclado); contrato com salário semanal e anos; renovação igual.
+// Oferta só de valor (teclado); contrato com salário mensal e anos; renovação igual.
 // Folga mensal no teto salarial (teto - folha atual).
+// Maior salário mensal que cabe hoje: a folga no teto mais o que a verba de transferências cobre (12 meses do excedente).
+const wageMax = (club) => wageRoom(club) + Math.floor(Math.max(0, club?.available || 0) / 12)
 const wageRoom = (club) => Math.max(0, (club?.wage_budget ?? Math.ceil((club?.payroll || 0) * 1.15)) - (club?.payroll || 0))
 
 export default function TransfersPanel({ hub, onRefresh, notify, onTeam, initialArea = 'search' }) {
@@ -217,7 +219,7 @@ export default function TransfersPanel({ hub, onRefresh, notify, onTeam, initial
             <td>
               <b className="tr-ovr">{p.overall}</b>
             </td>
-            <td className="tr-val">{opts.wage ? `${clubMoneyShort(weekly(p.monthly_salary))}/sem` : clubMoneyShort(p.value)}</td>
+            <td className="tr-val">{opts.wage ? `${clubMoneyShort(weekly(p.monthly_salary))}/mês` : clubMoneyShort(p.value)}</td>
           </tr>
         ))}
       </tbody>
@@ -238,9 +240,13 @@ export default function TransfersPanel({ hub, onRefresh, notify, onTeam, initial
             <small>Orçam. de transferência</small>
             <b>{clubMoneyShort(w.club.available)}</b>
           </span>
-          <span title={`Teto ${clubMoneyShort(weekly(w.club.wage_budget ?? w.club.payroll))}/sem. Acima da folga, 12 meses do excedente saem da verba de transferências.`}>
-            <small>Folga salarial (semana)</small>
-            <b>{clubMoneyShort(weekly(wageRoom(w.club)))}</b>
+          <span title={`Teto salarial ${clubMoneyShort(w.club.wage_budget ?? w.club.payroll)}/mês · folha atual ${clubMoneyShort(w.club.payroll)}/mês`}>
+            <small>Folga salarial (mês)</small>
+            <b>{clubMoneyShort(wageRoom(w.club))}</b>
+          </span>
+          <span title="Folga no teto mais o que a verba de transferências cobre: 12 meses do que passar do teto saem da verba.">
+            <small>Salário máximo (mês)</small>
+            <b>{clubMoneyShort(wageMax(w.club))}</b>
           </span>
         </div>
       )}
@@ -401,7 +407,8 @@ export default function TransfersPanel({ hub, onRefresh, notify, onTeam, initial
             ['Grl', pad.player.overall],
             ['Posição', pad.player.position],
             ['Valor', clubMoneyShort(pad.player.value)],
-            ['Fundos de transf.', clubMoneyShort(w?.club?.available)],
+            ['Verba disponível', clubMoneyShort(w?.club?.available)],
+            ['Salário que cabe', `até ${clubMoneyShort(wageMax(w?.club))}/mês`],
           ]}
           label="Oferta de transferência"
           initial={pad.player.value}
@@ -419,6 +426,7 @@ export default function TransfersPanel({ hub, onRefresh, notify, onTeam, initial
           info={[
             ['Valor atual', clubMoneyShort(pad.deal.fee)],
             ['Avaliação', clubMoneyShort(pad.deal.valuation)],
+            ['Verba disponível', clubMoneyShort(w?.club?.available)],
           ]}
           label={pad.kind === 'sell' ? 'Valor pedido' : 'Nova oferta'}
           initial={pad.deal.fee}
@@ -433,11 +441,11 @@ export default function TransfersPanel({ hub, onRefresh, notify, onTeam, initial
           title={pad.kind === 'renew' ? 'Renovar contrato' : 'Negociar contrato'}
           subtitle={pad.name}
           info={[
-            ['Pedida do atleta', pad.demand ? `${clubMoney(pad.demand)}/sem` : '—'],
-            ['Folga salarial', `${clubMoneyShort(weekly(wageRoom(w?.club)))}/sem`],
-            ['Acima da folga', 'verba cobre 12 meses'],
+            ['Pedida do atleta', pad.demand ? `${clubMoney(pad.demand)}/mês` : '—'],
+            ['Cabe no teto', `até ${clubMoneyShort(wageRoom(w?.club))}/mês`],
+            ['Máximo com a verba', `até ${clubMoneyShort(wageMax(w?.club))}/mês`],
           ]}
-          label="Salário por semana"
+          label="Salário por mês"
           initial={pad.demand || 0}
           busy={busy}
           error={padError}

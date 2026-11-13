@@ -39,3 +39,7 @@ Migração `20261113160000_seasons_serie_b_start_no_investment.sql`.
 - Não é mais possível investir moedas no clube do modo Temporadas (`career_club_invest` recusa; a tela não mostra o aporte).
 - O modo voltou a ficar liberado para todos (`seasons_require_access` não barra mais).
 - Jeff, brunomartins, Edson e davidcaua receberam 1 milhão de moedas na caixa de mensagens.
+
+## Salário sempre por mês (14/11)
+
+Migração `20261114150000_seasons_monthly_wages.sql`. A negociação com o atleta usava valor semanal enquanto folha e teto do clube eram mensais. Agora tudo é mensal: `cw_weekly` e `cw_monthly` devolvem o próprio valor e os textos dizem "por mês". A tela de transferências mostra verba, folga salarial e o salário máximo que cabe (folga + verba/12); os teclados de oferta repetem esses limites.
