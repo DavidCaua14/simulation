@@ -360,35 +360,36 @@ declare s public.on_seasons;n int;l public.on_lots;a public.on_clubs;b public.on
 begin
  select * into s from public.on_seasons where status='live';
  update public.on_lots set status='cancelled' where status='open';
- -- destaques: um por faixa, os mesmos para todos, até a virada da hora; fora do horário não abre
+ -- cartas base: uma por faixa (5), os mesmos para todos, até a virada da hora; fora do horário não abre
  perform public.on_market_tick(timestamptz '2026-11-12 05:00+00',false);
- if exists(select 1 from public.on_lots where season_id=s.id and status='open' and featured between 1 and 4) then raise exception 'destaque de madrugada';end if;
+ if exists(select 1 from public.on_lots where season_id=s.id and status='open' and featured between 1 and 9) then raise exception 'leilão de madrugada';end if;
  perform public.on_market_tick(timestamptz '2026-11-12 13:20+00',false);
  perform public.on_market_tick(timestamptz '2026-11-12 13:21+00',false);
- select count(*) into n from public.on_lots where season_id=s.id and seller is null and status='open' and featured between 1 and 4;
- if n<>4 then raise exception 'destaques: %',n;end if;
- if (select count(distinct featured) from public.on_lots where status='open' and featured between 1 and 4)<>4 then raise exception 'faixas repetidas';end if;
- if exists(select 1 from public.on_lots where status='open' and featured between 1 and 4 and ends_at<>timestamptz '2026-11-12 14:00+00') then raise exception 'destaque não fecha na virada da hora';end if;
- if (select min(p.ovr) from public.on_lots x join public.on_players p on p.id=x.player_id where x.status='open' and x.featured=1)<76 then raise exception 'faixa 1 fraca';end if;
- if (select max(p.ovr) from public.on_lots x join public.on_players p on p.id=x.player_id where x.status='open' and x.featured between 1 and 4)>80 then raise exception 'leilão comum acima de 80';end if;
- -- especiais por janela de 5 horas (08, 13 e 18 h): às 10:20 a janela é 08–13, destaque abre às 11:00 (14:00 UTC) e a lenda às 12:00
- select * into l from public.on_lots where season_id=s.id and featured=9 and status='open' and opens_at=timestamptz '2026-11-12 14:00+00';
- if l.id is null or l.ends_at<>timestamptz '2026-11-12 15:00+00' or l.start_price<=400000 then raise exception 'destaque da janela: %',l;end if;
- if not exists(select 1 from public.on_players p where p.id=l.player_id and not p.legend and p.level>=81) then raise exception 'destaque fraco';end if;
- if not exists(select 1 from public.on_lots x join public.on_players p on p.id=x.player_id where x.season_id=s.id and x.featured=8 and x.status='open'
-   and x.opens_at=timestamptz '2026-11-12 15:00+00' and p.legend and x.start_price>=600000) then raise exception 'lenda da janela';end if;
- begin perform public.on_bid_as((select id from public.on_clubs where season_id=s.id and user_id is not null limit 1),l.id,l.start_price,timestamptz '2026-11-12 13:30+00');raise exception 'lance no especial antes da hora';
- exception when others then if sqlerrm not like 'Leilão encerrado%' then raise;end if;end;
- if (select count(*) from public.on_lots where season_id=s.id and featured=9 and opens_at=timestamptz '2026-11-12 14:00+00')<>1 then raise exception 'mais de um destaque na janela';end if;
+ select count(*) into n from public.on_lots where season_id=s.id and seller is null and status='open' and featured between 1 and 5;
+ if n<>5 then raise exception 'cartas base: %',n;end if;
+ if (select count(distinct featured) from public.on_lots where status='open' and featured between 1 and 5)<>5 then raise exception 'faixas repetidas';end if;
+ if exists(select 1 from public.on_lots where status='open' and featured between 1 and 9 and ends_at<>timestamptz '2026-11-12 14:00+00') then raise exception 'leilão não fecha na virada da hora';end if;
+ if (select min(p.ovr) from public.on_lots x join public.on_players p on p.id=x.player_id where x.status='open' and x.featured=1)<78 then raise exception 'faixa 1 fraca';end if;
+ if (select max(p.ovr) from public.on_lots x join public.on_players p on p.id=x.player_id where x.status='open' and x.featured between 1 and 5)>80 then raise exception 'leilão comum acima de 80';end if;
+ if not exists(select 1 from public.on_lots x join public.on_players p on p.id=x.player_id where x.status='open' and x.featured=5 and p.age<=21 and p.pot>=p.ovr+10) then raise exception 'joia da base';end if;
+ if not exists(select 1 from public.on_lots x join public.on_players p on p.id=x.player_id where x.status='open' and x.featured=4 and p.age<=23 and p.pot>=p.ovr+6) then raise exception 'promessa da base';end if;
+ -- 5 destaques e 5 lendas por hora, abertos na hora; cada grupo em posições diferentes
+ if (select count(*) from public.on_lots x join public.on_players p on p.id=x.player_id where x.season_id=s.id and x.status='open' and x.featured=9
+   and not p.legend and p.level>=81 and x.start_price>400000 and x.opens_at<=timestamptz '2026-11-12 13:20+00')<>5 then raise exception 'destaques da hora';end if;
+ if (select count(*) from public.on_lots x join public.on_players p on p.id=x.player_id where x.season_id=s.id and x.status='open' and x.featured=8
+   and p.legend and x.start_price>=600000)<>5 then raise exception 'lendas da hora';end if;
+ if exists(select 1 from public.on_lots x join public.on_players p on p.id=x.player_id where x.status='open' and x.seller is null
+   group by case when x.featured>=8 then x.featured else 1 end having count(distinct p.pos)<>count(*)) then raise exception 'posições repetidas no mercado';end if;
+ select * into l from public.on_lots where season_id=s.id and featured=9 and status='open' order by id limit 1;
  -- bot nunca disputa destaque ou lenda
- begin perform public.on_bid_as((select id from public.on_clubs where season_id=s.id and user_id is null limit 1),l.id,l.start_price,timestamptz '2026-11-12 14:10+00');raise exception 'bot deu lance em destaque';
+ begin perform public.on_bid_as((select id from public.on_clubs where season_id=s.id and user_id is null limit 1),l.id,l.start_price,timestamptz '2026-11-12 13:30+00');raise exception 'bot deu lance em destaque';
  exception when others then if sqlerrm not like 'Destaque e lenda%' then raise;end if;end;
- -- janela seguinte (13–18 h): novo destaque às 16:00 (19:00 UTC) e nova lenda às 17:00
- perform public.on_market_tick(timestamptz '2026-11-12 16:05+00',false);
- if (select count(*) from public.on_lots where season_id=s.id and featured=9 and opens_at=timestamptz '2026-11-12 19:00+00')<>1
-  or (select count(*) from public.on_lots where season_id=s.id and featured=8 and opens_at=timestamptz '2026-11-12 20:00+00')<>1 then raise exception 'especiais da segunda janela';end if;
- delete from public.on_lots where featured>=8 and opens_at>=timestamptz '2026-11-12 19:00+00';
- delete from public.on_lots where status='open' and featured between 1 and 4 and opens_at>=timestamptz '2026-11-12 16:00+00';
+ -- hora seguinte: os sem lance saem e entram outros 5 de cada
+ select array_agg(player_id) into ids from public.on_lots where status='open' and featured>=8;
+ perform public.on_market_tick(timestamptz '2026-11-12 14:00+00',false);
+ if exists(select 1 from public.on_players where id=any(ids)) then raise exception 'especial sem lance ficou no banco';end if;
+ if (select count(*) from public.on_lots where status='open' and featured in(8,9) and ends_at=timestamptz '2026-11-12 15:00+00')<>10 then raise exception 'especiais não foram trocados';end if;
+ delete from public.on_players p using public.on_lots x where x.player_id=p.id and x.status='open' and x.featured>=8;
  -- mercado fechado (23:30 em São Paulo): sem lance
  begin perform public.on_bid_as((select id from public.on_clubs where season_id=s.id and user_id is not null limit 1),
    (select id from public.on_lots where status='open' and featured=1 limit 1),10000000,timestamptz '2026-11-13 02:30+00');raise exception 'lance com mercado fechado';
@@ -398,12 +399,13 @@ begin
  if public.on_market_open(timestamptz '2026-11-13 21:40+00') or not public.on_market_open(timestamptz '2026-11-13 21:20+00') or public.on_market_hours()->>'close_label'<>'18:30' then raise exception 'fechamento às 18:30';end if;
  update public.on_config set market_open=0,market_close=24;
  -- sem lances: sai (jogador apagado) e entra outro
- select array_agg(player_id) into ids from public.on_lots where status='open' and featured between 1 and 4;
- perform public.on_market_tick(timestamptz '2026-11-12 14:00+00',false);
+ select array_agg(player_id) into ids from public.on_lots where status='open' and featured between 1 and 5;
+ perform public.on_market_tick(timestamptz '2026-11-12 15:00+00',false);
  if exists(select 1 from public.on_players where id=any(ids)) then raise exception 'destaque sem lance ficou no banco';end if;
- if (select count(*) from public.on_lots where status='open' and featured between 1 and 4 and ends_at=timestamptz '2026-11-12 15:00+00')<>4 then raise exception 'destaque não foi trocado';end if;
+ if (select count(*) from public.on_lots where status='open' and featured between 1 and 5 and ends_at=timestamptz '2026-11-12 16:00+00')<>5 then raise exception 'carta base não foi trocada';end if;
+ delete from public.on_players p using public.on_lots x where x.player_id=p.id and x.status='open' and x.featured>=8;
 
- select * into l from public.on_lots where status='open' and seller is null and featured between 1 and 4 order by opens_at limit 1;
+ select * into l from public.on_lots where status='open' and seller is null and featured between 1 and 5 order by opens_at limit 1;
  select * into a from public.on_clubs where season_id=s.id and user_id is not null order by id limit 1;
  select * into b from public.on_clubs where season_id=s.id and user_id is null order by id limit 1;
  update public.on_clubs set cash=100000,reserved=0,debt=0 where id in(a.id,b.id);
@@ -495,7 +497,7 @@ begin
  begin perform public.on_lot_create((select id from public.on_players where club_id=a.id limit 1),100000);raise exception 'vendeu com 16';
  exception when others then if sqlerrm not like 'Elenco com 16%' then raise;end if;end;
  update public.on_clubs set debt=5 where id=a.id;
- select * into l from public.on_lots where status='open' and seller is null and featured between 1 and 4 order by opens_at limit 1;
+ select * into l from public.on_lots where status='open' and seller is null and featured between 1 and 5 order by opens_at limit 1;
  begin perform public.on_bid_as(a.id,l.id,l.start_price,l.opens_at);raise exception 'lance com dívida';
  exception when others then if sqlerrm not like 'Clube com dívida%' then raise;end if;end;
  perform public.on_money(a.id,100,'test');

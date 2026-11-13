@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Banknote, Coins, Crown, DoorClosed, Flame, Gavel, Hourglass, Lock, TrendingUp, Undo2, Users } from 'lucide-react'
+import { Banknote, Coins, Crown, DoorClosed, Flame, Gavel, Hourglass, Lock, Sprout, TrendingUp, Undo2, Users } from 'lucide-react'
 import { EmptyState, Notice, Skeleton } from '../../components/ui/feedback'
 import OnlineCrest from './components/OnlineCrest'
 import { FutCard, OvrBadge } from './components/PlayerFut'
@@ -33,6 +33,7 @@ function Auction({ lot, now, busy, wallet, coins, closed, onBid, onCancel }) {
       <FutCard p={p} club={lot.seller} size="sm" />
       <div className="on-auc-body">
         {special && <span className="on-auc-tag"><Crown size={11} /> {p.legend ? 'Lenda' : 'Destaque'}</span>}
+        {!special && !lot.seller && p.age <= 23 && p.pot - p.ovr >= 6 && <span className="on-auc-tag is-prospect"><Sprout size={11} /> Promessa · pot. {p.pot}</span>}
         <header>
           {locked
             ? <span className="on-auc-clock is-locked"><Lock size={13} /> Abre às {new Date(lot.opens_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</span>
@@ -75,7 +76,13 @@ function Auction({ lot, now, busy, wallet, coins, closed, onBid, onCancel }) {
 }
 
 // MERCADO: leilões iguais para todos, só no horário de funcionamento (data.hours). Sem lance, saem na virada da hora;
-// cada lance põe o relógio em 5 minutos. Destaque e lenda trocam a cada janela; técnicos também leiloam seus jogadores.
+// cada lance põe o relógio em 5 minutos. Toda hora entram cartas base, destaques e lendas; técnicos também leiloam seus jogadores.
+const KINDS = [
+  ['all', 'Todos', () => true],
+  ['legend', 'Lendas', (l) => l.featured >= 8 && l.player.legend],
+  ['star', 'Destaques', (l) => l.featured >= 8 && !l.player.legend],
+  ['base', 'Base', (l) => l.featured < 8],
+]
 export default function OnlineMarket({ notify, onChanged }) {
   const [data, setData] = useState(null)
   const [error, setError] = useState('')
@@ -83,6 +90,7 @@ export default function OnlineMarket({ notify, onChanged }) {
   const [offset, setOffset] = useState(0)
   const [now, setNow] = useState(() => Date.now())
   const [view, setView] = useState('featured')
+  const [kind, setKind] = useState('all')
 
   const apply = useCallback((d) => {
     setOffset(new Date(d.server_now).getTime() - Date.now())
@@ -132,7 +140,8 @@ export default function OnlineMarket({ notify, onChanged }) {
   const hh = (n) => `${String(n % 24).padStart(2, '0')}:00`
   const cancel = (lot) => run(cancelOnlineLot(lot.id), `${lot.player.name} voltou ao elenco`)
   const bid = (lot, v, useCoins) => run(bidOnline(lot.id, v, useCoins), `Lance de ${money(v)} em ${lot.player.name}`)
-  const list = lists[view] || []
+  const kindTest = (KINDS.find(([k]) => k === kind) || KINDS[0])[2]
+  const list = view === 'featured' ? lists.featured.filter(kindTest) : lists[view] || []
   return (
     <section className="on-market">
       <div className="on-wallet">
@@ -152,10 +161,19 @@ export default function OnlineMarket({ notify, onChanged }) {
         <button type="button" role="tab" aria-selected={view === 'recent'} className={view === 'recent' ? 'is-on' : ''} onClick={() => setView('recent')}><TrendingUp size={14} /> Fechados</button>
       </div>
 
+      {view === 'featured' && lists.featured.length > 0 && (
+        <div className="on-seg on-seg-4 on-mkt-kinds" role="tablist" aria-label="Tipo de carta">
+          {KINDS.map(([k, label, test]) => (
+            <button key={k} type="button" role="tab" aria-selected={kind === k} className={kind === k ? 'is-on' : ''} onClick={() => setKind(k)}>
+              {label} {lists.featured.filter(test).length}
+            </button>
+          ))}
+        </div>
+      )}
       {view !== 'recent' && (
         <>
           {list.length === 0 && (
-            <EmptyState compact icon={Gavel} title={view === 'featured' ? `Próximos jogadores às ${hours?.open_label || '08:00'}` : 'Nenhum leilão em andamento'} />
+            <EmptyState compact icon={Gavel} title={view !== 'featured' ? 'Nenhum leilão em andamento' : lists.featured.length ? 'Nenhum leilão desse tipo agora' : `Próximos jogadores às ${hours?.open_label || '08:00'}`} />
           )}
           <div className="on-aucs">
             {list.map((l) => <Auction key={l.id} lot={l} now={serverNow} busy={busy} wallet={wallet} coins={coins} closed={closed} onBid={bid} onCancel={cancel} />)}

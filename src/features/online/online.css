@@ -1068,6 +1068,8 @@ button.fut:disabled { cursor: default; }
 .on-auc.is-legend { border-color: #f5c542; background: radial-gradient(90% 100% at 0% 0%, rgba(245, 197, 66, .26), transparent 65%), #0c0a05; box-shadow: 0 0 20px rgba(245, 197, 66, .3); }
 .on-auc-tag { align-self: flex-start; display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 999px; background: #7c3aed; color: #fff; font: 800 .6rem var(--font-body); letter-spacing: .08em; text-transform: uppercase; }
 .on-auc.is-legend .on-auc-tag { background: #f5c542; color: #1a1203; }
+.on-auc-tag.is-prospect { background: #15803d; color: #fff; }
+.on-mkt-kinds { margin-top: 2px; }
 .on-auc-clock.is-locked { background: rgba(255, 255, 255, .1); color: #e2e8f0; }
 .on-auc-wait { color: #93a3c4; font: 700 .76rem var(--font-body); font-variant-numeric: tabular-nums; }
 .on-auc.is-locked .fut { filter: saturate(.75) brightness(.9); }

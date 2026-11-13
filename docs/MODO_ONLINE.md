@@ -267,3 +267,14 @@ Fonte: `supabase/online/19_bot_bidding.sql` (migração `20261114160000`). `on_b
 ## Fase 19 — lance superado devolve as moedas
 
 Fonte: `supabase/online/20_bid_coin_refund.sql` (migração `20261114170000`). O dinheiro do clube num lance fica só reservado e é liberado quando outro clube cobre. As moedas usadas para completar o lance ficam registradas em `on_bids.coins`; ao ser superado, `on_bid_refund` devolve essas moedas à conta do técnico e tira o valor correspondente do caixa do clube (até o que estiver livre). O técnico recebe uma notícia com o valor devolvido.
+
+## Fase 20 — mercado cheio a cada hora
+
+Fonte: `supabase/online/21_market_more_players.sql` (migração `20261114180000`). Um destaque e uma lenda por janela de 5 horas era pouco. Agora, toda hora com o mercado aberto, entram leilões que abrem na hora e vão até a virada da hora:
+
+- **5 cartas base** (`featured` 1 a 5, até 80), cada uma numa posição diferente: 78–80; 75–78; 72–75 com até 27 anos; promessa (até 23 anos, 66–74, potencial 6+ acima da nota); joia (até 21 anos, 60–74, potencial 10+ acima). `on_gen_base` busca no catálogo e, sem ninguém livre na faixa, gera um jogador com o mesmo perfil.
+- **5 destaques** (81+, `featured` 9) e **5 lendas** (`featured` 8), cada grupo em posições diferentes (`on_pick_pos` escolhe a posição menos ofertada). Bots continuam fora.
+- Quantidades em `on_config`: `featured_count` (base, até 5), `star_count` e `legend_count`. `special_every` deixou de ser usado.
+- Sem lances, o jogador é apagado e volta ao catálogo, então lendas e destaques não esgotam.
+- O fechamento de leilões vencidos passou de 10 para 60 por minuto. Especiais antigos ainda travados (regime de janelas) saem na migração.
+- Tela: filtro Todos / Lendas / Destaques / Base e selo "Promessa" em carta base de até 23 anos com potencial 6+ acima.
