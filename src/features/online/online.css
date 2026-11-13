@@ -507,7 +507,9 @@ button.fut:disabled { cursor: default; }
 .fut-ovr small { font: 800 .68rem var(--font-body); }
 .fut-flag { width: 18px; height: 12px; border-radius: 2px; background: radial-gradient(circle at 50% 50%, #1d3a8a 0 24%, transparent 25%), conic-gradient(from 45deg at 50% 50%, #facc15 0 25%, #facc15 0) center/72% 72% no-repeat, #16a34a; box-shadow: 0 0 0 1px rgba(0, 0, 0, .25); }
 .fut-face { justify-self: center; display: block; filter: drop-shadow(0 3px 4px rgba(0, 0, 0, .35)); }
-.fut-name { width: 100%; padding: 3px 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; border-block: 1px solid color-mix(in srgb, var(--ink) 30%, transparent); font: 900 .78rem var(--font-heading); letter-spacing: .03em; text-transform: uppercase; }
+.fut-name { display: flex; align-items: center; justify-content: center; width: 100%; min-height: calc(2.1em + 6px); padding: 3px 4px; white-space: normal; overflow-wrap: break-word; text-wrap: balance; border-block: 1px solid color-mix(in srgb, var(--ink) 30%, transparent); font: 900 .78rem/1.05 var(--font-heading); letter-spacing: .03em; text-transform: uppercase; }
+.fut-name.is-long { font-size: .7rem; letter-spacing: .01em; }
+.fut-name.is-xlong { font-size: .62rem; letter-spacing: 0; }
 .fut-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px 4px; width: 100%; padding: 2px 6px 0; }
 .fut-stats span { display: flex; align-items: baseline; justify-content: center; gap: 3px; }
 .fut-stats b { font: 900 .82rem var(--font-heading); font-variant-numeric: tabular-nums; }
@@ -516,6 +518,8 @@ button.fut:disabled { cursor: default; }
 .fut.is-sm { width: 96px; flex-shrink: 0; padding-bottom: 18px; animation: none; }
 .fut.is-sm .fut-ovr b { font-size: 1.35rem; }
 .fut.is-sm .fut-name { font-size: .64rem; }
+.fut.is-sm .fut-name.is-long { font-size: .58rem; }
+.fut.is-sm .fut-name.is-xlong { font-size: .52rem; }
 .fut.is-sm .fut-shine { display: none; }
 @keyframes fut-in { from { opacity: 0; transform: translateY(26px) rotateY(50deg) scale(.86); } }
 @keyframes fut-shine { 0%, 55% { transform: translateX(-120%); } 85%, 100% { transform: translateX(120%); } }

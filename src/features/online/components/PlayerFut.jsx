@@ -42,6 +42,9 @@ export function PlayerFace({ seed, colors, size = 72 }) {
 }
 
 
+// Nome sempre inteiro: quebra em até duas linhas e encolhe a fonte conforme o tamanho.
+const nameSize = (name = '') => (name.length > 24 ? 'is-xlong' : name.length > 14 ? 'is-long' : '')
+
 // Carta grande. `club` pinta a camisa do retrato; `footer` recebe a ação (botão, preço…).
 export function FutCard({ p, club, size = 'md', onClick, selected = false, disabled = false, footer = null, delay = 0 }) {
   const tier = cardTier(p)
@@ -61,7 +64,7 @@ export function FutCard({ p, club, size = 'md', onClick, selected = false, disab
         <span className="fut-ovr"><b>{Math.round(p.ovr)}</b><small>{p.pos}</small><i className="fut-nat">{p.nat || 'BRA'}</i></span>
         <PlayerFace seed={p.name} colors={club?.colors} size={size === 'lg' ? 96 : size === 'sm' ? 54 : 78} />
       </span>
-      <strong className="fut-name">{p.name}</strong>
+      <strong className={`fut-name ${nameSize(p.name)}`}>{p.name}</strong>
       {p.card && size !== 'sm' && (
         <span className="fut-stats">
           {cardLabels(p.pos).map(([k, label]) => (
