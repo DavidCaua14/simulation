@@ -24,6 +24,8 @@ const REASON = {
   coach_arrears: 'Salário atrasado quitado',
   coach_signing: 'Luvas do treinador',
   club_investment: 'Investimento no clube',
+  online_bid_refund: 'Lance superado: moedas devolvidas',
+  online_match_reward: 'Resultado no modo Online',
   match_reward: 'Prêmio de partida',
   match_win_energy: 'Energia por vitória',
   base_cards_compensation: 'Conversão de cartas especiais',

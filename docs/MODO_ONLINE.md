@@ -263,3 +263,7 @@ Fonte: `supabase/online/18_recovery_gate_build.sql` (migração `20261114140000`
 ## Fase 18 — bots dão lance como um técnico
 
 Fonte: `supabase/online/19_bot_bidding.sql` (migração `20261114160000`). `on_bot_limit(clube, leilão, jogador)` devolve o teto de cada bot: 0 se o jogador não melhora o elenco (nota abaixo da força do clube menos 2, ou menos 6 em posição carente) ou se aquele clube não entrou na disputa (perfil fixo por leilão e clube, 45% de chance); senão, entre 50% e 90% do valor. O bot só cobre lance até o próprio teto, e só compra jogador anunciado por técnico se tiver interesse.
+
+## Fase 19 — lance superado devolve as moedas
+
+Fonte: `supabase/online/20_bid_coin_refund.sql` (migração `20261114170000`). O dinheiro do clube num lance fica só reservado e é liberado quando outro clube cobre. As moedas usadas para completar o lance ficam registradas em `on_bids.coins`; ao ser superado, `on_bid_refund` devolve essas moedas à conta do técnico e tira o valor correspondente do caixa do clube (até o que estiver livre). O técnico recebe uma notícia com o valor devolvido.

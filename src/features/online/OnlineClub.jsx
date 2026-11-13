@@ -14,7 +14,7 @@ const BUILDINGS = [
   { id: 'medical', label: 'Departamento médico', Icon: HeartPulse, effect: (n) => `Recupera ${String(6 + 1.5 * n).replace('.', ',')} de condição por hora` },
   { id: 'youth', label: 'Categoria de base', Icon: GraduationCap, effect: (n) => `${n * 4}% revelação/dia` },
 ]
-const KIND = { buy: 'Compra', sell: 'Venda', wage: 'Salários', gate: 'Bilheteria', build: 'Obra', renew: 'Renovação', coins: 'Investimento', economy_refund: 'Estorno de investimento', prize: 'Prêmio' }
+const KIND = { buy: 'Compra', sell: 'Venda', wage: 'Salários', gate: 'Bilheteria', build: 'Obra', renew: 'Renovação', coins: 'Investimento', coins_back: 'Moedas devolvidas', economy_refund: 'Estorno de investimento', prize: 'Prêmio' }
 const GAME_ICON = { penalty: Goal, aim: Crosshair, passing: Waypoints, tackle: Shield, reaction: Hand, dribble: Footprints, timing: Timer }
 const MODES = [
   { id: 'solo', label: 'Individual', Icon: User, max: 1, bonus: '+50%' },

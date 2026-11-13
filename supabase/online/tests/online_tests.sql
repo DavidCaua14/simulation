@@ -655,6 +655,31 @@ begin
  if jsonb_array_length(public.on_status()->'bids')<1 then raise exception 'leilão em andamento fora da tela inicial';end if;
 end $$;
 reset role;
+-- Fase 19: superado, o técnico tem a reserva liberada e as moedas do lance de volta; ao cobrir de novo, paga outra vez
+do $$
+declare l bigint:=current_setting('test.lot')::bigint;o int:=current_setting('test.rival')::int;lt public.on_lots;me public.on_clubs;u uuid;w0 int;w1 int;v_used int;
+begin
+ select * into lt from public.on_lots where id=l;
+ select * into me from public.on_clubs where id=lt.best_club;
+ u:=me.user_id;
+ select coins into w0 from public.careers where id=public.on_career_of(u);
+ select coalesce(sum(coins),0) into v_used from public.on_bids where lot_id=l and club_id=me.id;
+ if v_used<=0 then raise exception 'moedas do lance não registradas';end if;
+ update public.on_clubs set cash=cash+10000000 where id=o;
+ perform public.on_bid_as(o,l,public.on_min_bid(lt),lt.opens_at+interval '1 minute');
+ select coins into w1 from public.careers where id=public.on_career_of(u);
+ if w1<>w0+v_used then raise exception 'moedas não voltaram: % -> % (usadas %)',w0,w1,v_used;end if;
+ if (select reserved from public.on_clubs where id=me.id)<>0 then raise exception 'reserva não liberada';end if;
+ if (select cash from public.on_clubs where id=me.id)<>me.cash-v_used::bigint*(select coin_bid_rate from public.on_config) then raise exception 'caixa do clube depois da devolução';end if;
+ if not exists(select 1 from public.on_news where club_id=me.id and text like '%moedas voltaram%') then raise exception 'técnico não avisado da devolução';end if;
+ -- volta ao estado anterior para os testes seguintes: o técnico cobre com caixa próprio
+ select * into lt from public.on_lots where id=l;
+ update public.on_clubs set cash=reserved+public.on_min_bid(lt) where id=me.id;
+ perform public.on_bid_as(me.id,l,public.on_min_bid(lt),lt.opens_at+interval '2 minutes');
+ if (select coins from public.careers where id=public.on_career_of(u))<>w1 then raise exception 'devolução em dobro';end if;
+ update public.on_clubs set cash=cash-10000000 where id=o;
+ raise notice 'PASS fase 19';
+end $$;
 do $$
 declare l bigint:=current_setting('test.lot')::bigint;o int:=current_setting('test.rival')::int;
 begin
