@@ -100,7 +100,8 @@ export function PitchCard({ player, pos, colors, selected, live, onClick, label,
   }
   const tier = forcedTier || cardTier({ ...player, ovr: player.ovr ?? player.overall })
   const rating = Math.round(player.ratings?.[pos] ?? player.ovr ?? player.overall ?? 0)
-  const off = pos && player.position && player.position !== pos && !(player.secondary || []).includes(pos)
+  // fora da posição de origem (nem secundária, nem aprendida): carta amarela e a posição dele embaixo
+  const off = Boolean(pos && player.position && player.position !== pos && !(player.secondary || []).includes(pos) && !(player.learned || []).includes(pos))
   const cond = player.condition ?? player.cond
   const tone = cond == null ? '' : cond >= 85 ? 'ok' : cond >= 70 ? 'warn' : 'bad'
   const injured = player.injured_days > 0 || player.injured
@@ -111,7 +112,7 @@ export function PitchCard({ player, pos, colors, selected, live, onClick, label,
       type={onClick ? 'button' : undefined}
       className={`fut-pitch t-${tier} ${selected ? 'is-sel' : ''} ${player.available === false ? 'is-out' : ''} ${off ? 'is-off' : ''}`}
       onClick={onClick}
-      aria-label={`${label || pos}: ${name}, nota ${rating} nessa posição${cond != null ? `, condição ${Math.round(cond)}%` : ''}`}
+      aria-label={`${label || pos}: ${name}, nota ${rating} nessa posição${off ? `, fora da posição (é ${player.position})` : ''}${cond != null ? `, condição ${Math.round(cond)}%` : ''}`}
     >
       <span className="fut-pitch-card">
         <span className="fut-pitch-ovr"><b>{rating}</b><small>{pos || player.position}</small></span>
@@ -126,6 +127,7 @@ export function PitchCard({ player, pos, colors, selected, live, onClick, label,
           </span>
         )}
       </span>
+      {off && <span className="fut-pitch-natpos" title={`Posição de origem: ${player.position}`}>{player.position}</span>}
       {cond != null && (
         <span className={`fut-pitch-cond ${tone}`} title={`Condição física ${Math.round(cond)}%`}>
           <i style={{ width: `${Math.max(4, Math.min(100, cond))}%` }} />
