@@ -26,3 +26,5 @@ button.spc { cursor: pointer; }
 .spc-hint { margin: -2px 0 8px; color: var(--text-secondary, #9aa7bd); font-size: .76rem; }
 .spc-selbar { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 8px 0; padding: 8px 10px; border-radius: 12px; background: rgba(34, 211, 238, .1); border: 1px solid rgba(34, 211, 238, .35); font-size: .8rem; }
 @media (max-width: 380px) { .spc { width: 54px; } .spc-cond { width: 50px; } }
+/* campo mais alto com cartas base (só Temporadas): as linhas ficam mais separadas e as cartas não se encostam */
+div.pt.has-cards:has(.spc):not(.is-compact) { aspect-ratio: 100 / 195; }
