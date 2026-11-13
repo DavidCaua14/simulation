@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { ArrowLeftRight, CircleAlert, Check, ChevronLeft, ChevronRight, ClipboardList, Dumbbell, FileClock, Flag, Frown, Sparkles, TriangleAlert, Users } from 'lucide-react'
-import Pitch, { PlayerToken } from '../components/Pitch'
+import { CircleAlert, Check, ChevronLeft, ChevronRight, ClipboardList, Dumbbell, FileClock, Flag, Frown, Sparkles, TriangleAlert, Users } from 'lucide-react'
+import Pitch from '../components/Pitch'
+import SeasonPitchCard from '../components/SeasonPitchCard'
+import { renderSeasonPitchCard } from '../components/renderSeasonPitchCard'
+import { PitchTokenContext } from '../components/pitchToken'
 import PositionFilter from '../components/PositionFilter'
-import PlayerPicker from '../components/PlayerPicker'
 import PlayerSheet from '../components/PlayerSheet'
 import TacticsPanel from '../components/TacticsPanel'
 import FreeTraining from '../components/FreeTraining'
@@ -55,7 +57,7 @@ export default function TeamTab({ hub, onSaved, notify, focusPlayerId = null, in
   const [view, setView] = useState(focusPlayerId ? 'squad' : initialView || 'lineup')
   const [draft, setDraft] = useState(null) // { formation, slots, bench, tactics }
   const [dirty, setDirty] = useState(false)
-  const [picker, setPicker] = useState(null)
+  const [sel, setSel] = useState(null) // lugar tocado: 'slot:ZAG1' | 'bench:3' | 'free:3' (vaga livre) | 'out:<id>'
   const [info, setInfo] = useState(focusPlayerId ? { id: focusPlayerId } : null)
   const [saving, setSaving] = useState(false)
   const [positionFilter, setPositionFilter] = useState('')
@@ -214,39 +216,24 @@ export default function TeamTab({ hub, onSaved, notify, focusPlayerId = null, in
     update({ formation: id, slots: remap(draft.slots, catalog.byId[id], byId) })
   }
 
-  function pick(pid) {
-    const t = picker
-    const slots = { ...draft.slots }
-    let bench = [...draft.bench]
-    if (t.kind === 'slot') {
-      const prev = slots[t.slot]
-      const fromSlot = Object.keys(slots).find((k) => slots[k] === pid)
-      if (fromSlot) {
-        if (prev) slots[fromSlot] = prev
-        else delete slots[fromSlot]
-      } else if (bench.includes(pid)) {
-        bench = prev ? bench.map((b) => (b === pid ? prev : b)) : bench.filter((b) => b !== pid)
-      }
-      slots[t.slot] = pid
-    } else {
-      if (t.index != null && bench[t.index]) bench[t.index] = pid
-      else if (!bench.includes(pid)) bench.push(pid)
+  // TOQUE: toque em um jogador (campo, banco ou não relacionados) e depois em outro lugar para trocar os dois.
+  // Tocar de novo no mesmo desfaz a seleção; num não relacionado, o segundo toque leva ele ao banco.
+  const keyOf = (k) => (k.startsWith('free:') ? 'bench:new' : k)
+  const idAt = (k) => (k.startsWith('slot:') ? draft.slots[k.slice(5)] : k.startsWith('bench:') ? draft.bench[Number(k.slice(6))] : k.startsWith('out:') ? k.slice(4) : null)
+  function tapKey(k) {
+    if (saving) return
+    if (!sel) return setSel(k)
+    if (sel === k) {
+      if (k.startsWith('out:')) onDrop(k, 'bench:new')
+      return setSel(null)
     }
-    update({ slots, bench: [...new Set(bench)].slice(0, squad.rules.bench) })
-    setPicker(null)
+    if (sel.startsWith('free:') && k.startsWith('free:')) return setSel(k)
+    // quem tem jogador vai primeiro (a troca parte de um jogador)
+    if (idAt(sel)) onDrop(keyOf(sel), keyOf(k))
+    else if (idAt(k)) onDrop(keyOf(k), keyOf(sel))
+    setSel(null)
   }
-
-  function removeFromTarget() {
-    const t = picker
-    if (t.kind === 'slot') {
-      const slots = { ...draft.slots }
-      delete slots[t.slot]
-      update({ slots })
-    } else {
-      update({ bench: draft.bench.filter((_, i) => i !== t.index) })
-    }
-    setPicker(null)
-  }
+  const selPlayer = sel ? byId[idAt(sel)] : null
 
   async function handleSave() {
     setSaving(true)
@@ -362,16 +349,18 @@ export default function TeamTab({ hub, onSaved, notify, focusPlayerId = null, in
             </div>
           )}
 
-          <Pitch
-            formation={formation}
-            slots={draft.slots}
-            playersById={byId}
-            colors={club?.colors}
-            selected={picker?.kind === 'slot' ? picker.slot : null}
-            onSlot={(s) => setPicker({ kind: 'slot', slot: s.slot, pos: s.pos, current: draft.slots[s.slot] })}
-            bind={bind}
-            drag={drag}
-          />
+          <PitchTokenContext.Provider value={renderSeasonPitchCard}>
+            <Pitch
+              formation={formation}
+              slots={draft.slots}
+              playersById={byId}
+              colors={club?.colors}
+              selected={sel?.startsWith('slot:') ? sel.slice(5) : null}
+              onSlot={(s) => tapKey(`slot:${s.slot}`)}
+              bind={bind}
+              drag={drag}
+            />
+          </PitchTokenContext.Provider>
 
           <div className="tt-cmrow">
             <button type="button" className="gx-btn-ghost" onClick={() => setView('tactics')}>
@@ -405,30 +394,32 @@ export default function TeamTab({ hub, onSaved, notify, focusPlayerId = null, in
           )}
 
 
+          {selPlayer && (
+            <div className="spc-selbar">
+              <span>Toque em outro jogador ou vaga para trocar com <b>{selPlayer.short_name || selPlayer.name}</b>.</span>
+              <button type="button" className="gx-btn-ghost" onClick={() => setInfo(selPlayer)}>Ver ficha</button>
+            </div>
+          )}
+
           <section className="sn-sec">
             <h2 className="gx-title">
               Reservas <small>{draft.bench.length}/{squad.rules.bench}</small>
             </h2>
-            <div className={`tt-bench ${drag ? 'is-dragging' : ''}`}>
+            {draft.bench.length < squad.rules.bench && notListed.length > 0 && (
+              <p className="spc-hint">Toque numa vaga livre e depois em um não relacionado para levar ele ao banco.</p>
+            )}
+            <div className={`tt-bench spc-grid ${drag ? 'is-dragging' : ''}`}>
               {draft.bench.map((pid, i) => (
                 <div key={pid} className={`tt-bslot ${drag?.over === `bench:${i}` ? 'is-drop' : ''} ${drag?.from === `bench:${i}` ? 'is-dragging' : ''}`} {...bind(`bench:${i}`, pid)}>
-                  <PlayerToken
-                    player={byId[pid]}
-                    pos={byId[pid]?.position}
-                    label={byId[pid]?.position}
-                    colors={club?.colors}
-                    onClick={() => setPicker({ kind: 'bench', index: i, pos: byId[pid]?.position, current: pid })}
-                  />
-                  <button type="button" className="tt-swap" aria-label={`Trocar ${byId[pid]?.short_name || 'reserva'}`} onClick={() => setPicker({ kind: 'bench', index: i, pos: byId[pid]?.position, current: pid })}>
-                    <ArrowLeftRight size={13} />
-                  </button>
+                  <SeasonPitchCard player={byId[pid]} pos={byId[pid]?.position} label="Reserva" colors={club?.colors} selected={sel === `bench:${i}`} onClick={() => tapKey(`bench:${i}`)} />
                 </div>
               ))}
-              {draft.bench.length < squad.rules.bench && (
-                <div className={`tt-bslot ${drag?.over === 'bench:new' ? 'is-drop' : ''}`} {...bind('bench:new', null)}>
-                  <PlayerToken player={null} label="Reserva" onClick={() => setPicker({ kind: 'bench', index: null, pos: null, current: null })} />
+              {/* o banco tem sempre o número de lugares da regra: as vagas livres aparecem vazias */}
+              {Array.from({ length: Math.max(0, squad.rules.bench - draft.bench.length) }, (_, k) => draft.bench.length + k).map((i) => (
+                <div key={`free-${i}`} className={`tt-bslot ${drag?.over === 'bench:new' ? 'is-drop' : ''}`} {...bind('bench:new', null)}>
+                  <SeasonPitchCard player={null} label="Vaga" selected={sel === `free:${i}`} onClick={() => tapKey(`free:${i}`)} />
                 </div>
-              )}
+              ))}
             </div>
           </section>
 
@@ -436,10 +427,10 @@ export default function TeamTab({ hub, onSaved, notify, focusPlayerId = null, in
             <h2 className="gx-title">
               Não relacionados <small>{notListed.length}</small>
             </h2>
-            <div className={`tt-bench tt-out ${drag ? 'is-dragging' : ''} ${drag?.over === 'out:zone' ? 'is-drop' : ''}`} {...bind('out:zone', null)}>
+            <div className={`tt-bench tt-out spc-grid ${drag ? 'is-dragging' : ''} ${drag?.over === 'out:zone' ? 'is-drop' : ''}`} {...bind('out:zone', null)}>
               {notListed.map((p) => (
                 <div key={p.id} className={`tt-bslot ${drag?.over === `out:${p.id}` ? 'is-drop' : ''} ${drag?.from === `out:${p.id}` ? 'is-dragging' : ''}`} {...bind(`out:${p.id}`, p.id)}>
-                  <PlayerToken player={p} pos={p.position} label={p.position} colors={club?.colors} onClick={() => setInfo(p)} />
+                  <SeasonPitchCard player={p} pos={p.position} label="Fora" colors={club?.colors} selected={sel === `out:${p.id}`} onClick={() => tapKey(`out:${p.id}`)} />
                 </div>
               ))}
               {notListed.length === 0 && <p className="tt-out-empty">Todo o elenco está relacionado.</p>}
@@ -631,7 +622,7 @@ export default function TeamTab({ hub, onSaved, notify, focusPlayerId = null, in
 
       {drag && ghost && (
         <div className="tt-ghost" style={{ left: drag.x, top: drag.y }} aria-hidden="true">
-          <PlayerToken player={ghost} pos={drag.over?.startsWith('slot:') ? formation?.slots.find((x) => `slot:${x.slot}` === drag.over)?.pos || ghost.position : ghost.position} colors={club?.colors} />
+          <SeasonPitchCard player={ghost} pos={drag.over?.startsWith('slot:') ? formation?.slots.find((x) => `slot:${x.slot}` === drag.over)?.pos || ghost.position : ghost.position} colors={club?.colors} />
         </div>
       )}
 
@@ -646,18 +637,6 @@ export default function TeamTab({ hub, onSaved, notify, focusPlayerId = null, in
             setEnergy((r.energy || 0) + (r.bonus_energy || 0))
             onSaved?.()
           }}
-        />
-      )}
-      {picker && (
-        <PlayerPicker
-          target={picker}
-          players={squad.players.map((p) => ({ ...p, club_id: clubId }))}
-          slots={draft.slots}
-          bench={draft.bench}
-          onPick={pick}
-          onRemove={picker.current ? removeFromTarget : null}
-          onInfo={setInfo}
-          onClose={() => setPicker(null)}
         />
       )}
       {infoPlayer && (

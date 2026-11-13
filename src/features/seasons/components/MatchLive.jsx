@@ -8,6 +8,8 @@ import ClubCrest from '../../club/components/ClubCrest'
 import { getClubById } from '../../club/data/clubs'
 import CompEmblem from '../ui/CompEmblem'
 import MatchLineupEditor, { draftFromMatch } from './MatchLineupEditor'
+import { renderSeasonPitchCard } from './renderSeasonPitchCard'
+import { PitchTokenContext } from './pitchToken'
 import FunctionsPanel from '../matchflow/FunctionsPanel'
 import useCatalog from '../hooks/useCatalog'
 import { fetchPlayer, fetchSquad, stepMatch } from '../services/managerApi'
@@ -550,6 +552,7 @@ export default function MatchLive({ initial, myClub, onFinished, notify }) {
       {playerInfo && <PlayerSheet player={playerInfo} onClose={() => setPlayerInfo(null)} />}
 
       {panel && (
+        <PitchTokenContext.Provider value={renderSeasonPitchCard}>
         <MatchLineupEditor
           initialView={panel === 'tactics' ? 'tactics' : 'lineup'}
           engineVersion={data.engine_version ?? 1}
@@ -583,6 +586,7 @@ export default function MatchLive({ initial, myClub, onFinished, notify }) {
             setPanel(false)
           }}
         />
+        </PitchTokenContext.Provider>
       )}
     </div>
   )
