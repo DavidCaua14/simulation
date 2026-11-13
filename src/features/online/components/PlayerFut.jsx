@@ -84,3 +84,52 @@ export function OvrBadge({ p, small = false }) {
     <span className={`on-ovr t-${cardTier(p)} ${small ? 'is-small' : ''}`}><b>{Math.round(p.ovr)}</b><small>{p.pos}</small></span>
   )
 }
+
+// Carta pequena para o campo (escalação, vestiário e partida). Mesmas props da ficha do campo das Temporadas
+// (PitchTokenContext): nota na posição da vaga, posição, retrato, nome e, embaixo da carta, a condição física.
+export function PitchCard({ player, pos, colors, selected, live, onClick, label }) {
+  const Tag = onClick ? 'button' : 'div'
+  if (!player) {
+    return (
+      <Tag type={onClick ? 'button' : undefined} className={`fut-pitch is-empty ${selected ? 'is-sel' : ''}`} onClick={onClick} aria-label={`${label || pos}: vaga vazia`}>
+        <span className="fut-pitch-card"><b>+</b><small>{label || pos}</small></span>
+      </Tag>
+    )
+  }
+  const tier = cardTier({ ...player, ovr: player.ovr ?? player.overall })
+  const rating = Math.round(player.ratings?.[pos] ?? player.ovr ?? player.overall ?? 0)
+  const off = pos && player.position && player.position !== pos && !(player.secondary || []).includes(pos)
+  const cond = player.condition ?? player.cond
+  const tone = cond == null ? '' : cond >= 85 ? 'ok' : cond >= 70 ? 'warn' : 'bad'
+  const injured = player.injured_days > 0 || player.injured
+  const susp = player.suspended > 0
+  const name = player.short_name || player.name || ''
+  return (
+    <Tag
+      type={onClick ? 'button' : undefined}
+      className={`fut-pitch t-${tier} ${selected ? 'is-sel' : ''} ${player.available === false ? 'is-out' : ''} ${off ? 'is-off' : ''}`}
+      onClick={onClick}
+      aria-label={`${label || pos}: ${name}, nota ${rating} nessa posição${cond != null ? `, condição ${Math.round(cond)}%` : ''}`}
+    >
+      <span className="fut-pitch-card">
+        <span className="fut-pitch-ovr"><b>{rating}</b><small>{pos || player.position}</small></span>
+        {tier === 'legend' && <Crown className="fut-pitch-crown" size={9} aria-hidden="true" />}
+        <PlayerFace seed={name} colors={colors ? { a: colors[0], b: colors[1] } : undefined} size={34} />
+        <strong className={`fut-pitch-name ${name.length > 12 ? 'is-long' : ''}`}>{name}</strong>
+        {(injured || susp || (live && player.yellow > 0)) && (
+          <span className="fut-pitch-flags">
+            {injured && <i className="inj" title="Lesionado">+</i>}
+            {!injured && susp && <i className="susp" title="Suspenso">S</i>}
+            {live && player.yellow > 0 && <i className="yel" title="Amarelo" />}
+          </span>
+        )}
+      </span>
+      {cond != null && (
+        <span className={`fut-pitch-cond ${tone}`} title={`Condição física ${Math.round(cond)}%`}>
+          <i style={{ width: `${Math.max(4, Math.min(100, cond))}%` }} />
+          <em>{Math.round(cond)}%</em>
+        </span>
+      )}
+    </Tag>
+  )
+}

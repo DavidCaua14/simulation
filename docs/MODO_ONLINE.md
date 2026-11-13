@@ -291,3 +291,7 @@ Fonte: `supabase/online/22_catalog_expansion.sql` e `23_catalog_data.sql` (migra
 ## Fase 22 — lendas caras
 
 Fonte: `supabase/online/24_legend_prices.sql` (migração `20261114200000`). `on_start_price`: lenda com pot acima de 100 começa em $ 5 milhões + $ 500 mil por ponto acima de 101 (Messi, pot 107: $ 8 milhões; Cristiano Ronaldo, 106: $ 7,5 milhões); as demais lendas em $ 800 mil + $ 120 mil por ponto de nota acima de 80. Destaque e comum não mudaram. Referência: a moeda vale $ 1 no lance, e um técnico bom junta uns $ 0,5–1 milhão por temporada entre caixa e moedas.
+
+## Fase 23 — cartas na escalação
+
+Fonte: `supabase/online/25_lineup_cards.sql` (migração `20261114210000`). No online, o campo do elenco, do vestiário ("Times") e do editor da partida (escalação e banco) mostra a carta de cada jogador (normal, especial ou lenda, com nota na vaga, posição, retrato e nome) e a condição física embaixo. O `Pitch` das Temporadas não muda: o online troca a ficha por `PitchTokenContext` (`seasons/components/pitchToken.js`) com `PitchCard` (`online/components/PlayerFut.jsx`). `on_fixture_lineups` passa a mandar `legend`, `nat` e `pot` de cada titular (`on_card_meta`).

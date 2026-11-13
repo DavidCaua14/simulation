@@ -1,6 +1,8 @@
+import { useContext } from 'react'
 import { Ambulance, Ban, BatteryLow } from 'lucide-react'
 import { POS_NAME, fitTone, posFit } from '../utils/managerUtils'
 import MoodFace from './MoodFace'
+import { PitchTokenContext } from './pitchToken'
 import './pitch-cm.css'
 
 // Campo visto de cima (ataque para cima). Cada vaga da formação fica na posição real do campo
@@ -47,6 +49,8 @@ export function Jersey({ colors, number, keeper = false }) {
 }
 
 export function PlayerToken({ player, pos, colors, selected, live, onClick, label }) {
+  const renderToken = useContext(PitchTokenContext)
+  if (renderToken) return renderToken({ player, pos, colors, selected, live, onClick, label })
   const rating = player ? Math.round(player.ratings?.[pos] ?? player.overall ?? 0) : null
   const fit = player ? (player.fit ?? posFit(player, pos)) : 1
   const unavailable = player && player.available === false
@@ -115,9 +119,10 @@ export function PlayerToken({ player, pos, colors, selected, live, onClick, labe
 const slotTop = (y, compact) => (compact ? y * 0.94 + 2 : 7 + ((Math.min(95, Math.max(10, y)) - 10) / 85) * 86)
 
 export default function Pitch({ formation, slots, playersById, colors, selected, onSlot, live = false, compact = false, bind, drag }) {
+  const cards = useContext(PitchTokenContext) != null
   if (!formation) return <div className="pt pt-empty" />
   return (
-    <div className={`pt ${compact ? 'is-compact' : ''}`}>
+    <div className={`pt ${compact ? 'is-compact' : ''} ${cards ? 'has-cards' : ''}`}>
       <PitchLines />
       {formation.slots.map((s) => {
         const pid = slots?.[s.slot]

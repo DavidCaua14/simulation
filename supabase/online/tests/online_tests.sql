@@ -1037,6 +1037,7 @@ begin
  if jsonb_array_length(j->'home'->'players')<>11 or jsonb_array_length(j->'away'->'players')<>11 or j->'home'->>'formation' is null or j->>'my_side' not in('h','a') then
   raise exception 'escalações do jogo: %',j;
  end if;
+ if exists(select 1 from jsonb_array_elements(j->'home'->'players') x where not (x ? 'legend' and x ? 'nat' and x ? 'pot')) then raise exception 'escalação sem dados da carta';end if;
  raise notice 'PASS fase 15';
 end $$;
 

@@ -49,6 +49,10 @@ const option = (step, idx) => {
 }
 const picked = []
 const players = POS.map((pos, i) => ({ id: `o${i + 1}`, name: person(i), pos, sec: [], age: 19 + (i % 13), ovr: 58 + ((i * 5) % 9), pot: 70 + (i % 9), cond: 100 - (i % 4) * 3, number: i + 1, wage: 180 + i * 7, contract_end: 2, star: false, g: [0, 0, 0, 0], injured: i === 16, value: 900 + i * 260 }))
+// cartas de cada tipo no elenco: duas lendas que já passaram de 100 e alguns especiais (81+)
+Object.assign(players.find((p) => p.pos === 'ATA') || players[0], { name: 'Lionel Messi', ovr: 103, pot: 107, age: 30, legend: true, star: true, nat: 'ARG' })
+Object.assign(players.find((p) => p.pos === 'GOL') || players[1], { name: 'Sepp Maier', ovr: 91, pot: 97, age: 30, legend: true, star: true, nat: 'GER' })
+players.filter((p) => !p.legend).slice(2, 5).forEach((p, i) => Object.assign(p, { ovr: 82 + i * 2, pot: 88, star: true, cond: [72, 64, 96][i] }))
 for (let s = 0; s < state.step; s++) addStar(s, 1)
 function addStar(step, idx) {
   const o = option(step, idx)

@@ -9,6 +9,10 @@ import OnlineHome from './OnlineHome'
 import OnlineLeague from './OnlineLeague'
 import OnlineMarket from './OnlineMarket'
 import OnlineMatchLive from './OnlineMatchLive'
+import { PitchTokenContext } from '../seasons/components/pitchToken'
+import { PitchCard } from './components/PlayerFut'
+
+const renderPitchCard = (props) => <PitchCard {...props} />
 import OnlineSquad from './OnlineSquad'
 import AuctionResults from './components/AuctionResults'
 import { fetchOnlineStatus, joinOnlineQueue, markOnlineNewsSeen } from './services/onlineApi'
@@ -128,6 +132,7 @@ export default function OnlineScreen({ onBack, params }) {
 
   return (
     <AppShell header={match != null ? <span hidden /> : header}>
+      <PitchTokenContext.Provider value={renderPitchCard}>
       <div className="on">
         <div className="on-scroll" key={`${tab}-${nav.n}`}>
           {error && <Notice kind="error" onClose={() => setError('')}>{error}</Notice>}
@@ -155,6 +160,7 @@ export default function OnlineScreen({ onBack, params }) {
           />
         )}
       </div>
+      </PitchTokenContext.Provider>
     </AppShell>
   )
 }

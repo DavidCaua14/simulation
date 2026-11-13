@@ -1186,3 +1186,38 @@ button.fut:disabled { cursor: default; }
 .on-ps-step { display: flex; flex-direction: column; gap: 8px; }
 .on-ps-step small { color: var(--gx-ink-2); font-size: .76rem; }
 .on-ps-step .on-auc-steps { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+
+/* ─── carta no campo (escalação, vestiário e partida) ─── */
+.fut-pitch { --t1: #3d4d66; --t2: #b9c6d8; --t3: #f1f5f9; --ink: #0f1b2d; display: flex; flex-direction: column; align-items: center; gap: 3px; width: 58px; padding: 0; border: 0; background: none; color: inherit; font: inherit; cursor: default; }
+button.fut-pitch { cursor: pointer; }
+.fut-pitch.t-special { --t1: #1e1b4b; --t2: #6d28d9; --t3: #22d3ee; --ink: #fff; }
+.fut-pitch.t-legend { --t1: #0a0a0a; --t2: #3b2a06; --t3: #f5c542; --ink: #fde68a; }
+.fut-pitch-card { position: relative; display: flex; flex-direction: column; align-items: center; width: 100%; padding: 4px 3px 9px; color: var(--ink); background: linear-gradient(155deg, var(--t3) 0%, var(--t2) 45%, var(--t1) 100%); clip-path: polygon(0 7%, 14% 0, 86% 0, 100% 7%, 100% 88%, 50% 100%, 0 88%); filter: drop-shadow(0 4px 6px rgba(0, 0, 0, .55)); transition: transform .15s ease; }
+.fut-pitch.t-legend .fut-pitch-card { background: linear-gradient(155deg, #f5c542 0%, #6b4a08 18%, #14110a 50%, #0a0a0a 100%); }
+.fut-pitch-ovr { position: absolute; top: 4px; left: 4px; z-index: 1; display: flex; flex-direction: column; align-items: center; line-height: .9; }
+.fut-pitch-ovr b { font: 900 .9rem/0.9 var(--font-heading); font-variant-numeric: tabular-nums; }
+.fut-pitch-ovr small { font: 800 .44rem var(--font-body); letter-spacing: .02em; }
+.fut-pitch.t-legend .fut-pitch-ovr b { color: #fff; text-shadow: 0 0 8px rgba(245, 197, 66, .85); }
+.fut-pitch-crown { position: absolute; top: 4px; right: 5px; color: #f5c542; }
+.fut-pitch-card .fut-face { margin: 6px 0 0 12px; }
+.fut-pitch-name { width: 100%; margin-top: 1px; padding-top: 2px; border-top: 1px solid color-mix(in srgb, var(--ink) 30%, transparent); font: 900 .5rem/1.05 var(--font-heading); letter-spacing: .02em; text-align: center; text-transform: uppercase; overflow-wrap: break-word; }
+.fut-pitch-name.is-long { font-size: .44rem; letter-spacing: 0; }
+.fut-pitch.t-legend .fut-pitch-name { color: #fff; border-color: rgba(245, 197, 66, .6); }
+.fut-pitch-flags { position: absolute; top: 28px; left: 3px; display: flex; flex-direction: column; gap: 2px; }
+.fut-pitch-flags i { display: grid; place-items: center; width: 11px; height: 11px; border-radius: 3px; font: 900 .5rem var(--font-body); font-style: normal; color: #fff; }
+.fut-pitch-flags .inj { background: #dc2626; }
+.fut-pitch-flags .susp { background: #7c3aed; }
+.fut-pitch-flags .yel { width: 8px; height: 11px; border-radius: 2px; background: #facc15; }
+.fut-pitch-cond { position: relative; display: block; width: 52px; height: 11px; border-radius: 6px; overflow: hidden; background: rgba(0, 0, 0, .55); box-shadow: 0 0 0 1px rgba(255, 255, 255, .15); }
+.fut-pitch-cond i { position: absolute; inset: 0 auto 0 0; border-radius: 6px; background: #22c55e; }
+.fut-pitch-cond.warn i { background: #f59e0b; }
+.fut-pitch-cond.bad i { background: #ef4444; }
+.fut-pitch-cond em { position: relative; display: block; font: 800 .5rem/11px var(--font-body); font-style: normal; color: #fff; text-align: center; text-shadow: 0 1px 2px rgba(0, 0, 0, .8); }
+.fut-pitch.is-sel .fut-pitch-card { transform: translateY(-3px) scale(1.06); filter: drop-shadow(0 0 8px #22d3ee) drop-shadow(0 4px 6px rgba(0, 0, 0, .55)); }
+.fut-pitch.is-off .fut-pitch-ovr small { color: #f87171; }
+.fut-pitch.is-out { opacity: .55; }
+.fut-pitch.is-empty .fut-pitch-card { justify-content: center; gap: 2px; height: 74px; background: rgba(255, 255, 255, .08); clip-path: none; border: 1.5px dashed rgba(255, 255, 255, .45); border-radius: 8px; color: #fff; filter: none; }
+.fut-pitch.is-empty b { font: 900 1.2rem var(--font-heading); }
+.fut-pitch.is-empty small { font: 800 .55rem var(--font-body); }
+.pt-slot.is-drop .fut-pitch-card { filter: drop-shadow(0 0 8px #ffd23f); }
+@media (max-width: 380px) { .fut-pitch { width: 52px; } .fut-pitch-cond { width: 48px; } }
