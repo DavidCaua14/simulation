@@ -287,3 +287,7 @@ Fonte: `supabase/online/22_catalog_expansion.sql` e `23_catalog_data.sql` (migra
 - **`on_catalog_extra`**: jogadores reais que faltavam no catálogo do jogo, só para o online. 100 destaques (81+) de ligas fora do catálogo (Arábia Saudita, MLS, México, Turquia, Escócia, Rússia, Grécia, Holanda, Alemanha) e 53 conhecidos do Brasileirão (`br`). Os nomes foram conferidos contra `data/squads`, `data/tier-b` e os seeds; se o mesmo nome aparecer em `sim_players`, o extra sai do `on_pool`.
 - **Brasileirão no mercado**: o catálogo já tem os elencos da Série A 2026 (~900 jogadores). As cartas base das faixas 2, 3 e 4 preferem jogadores da Série A (`on_is_br`: `sim_clubs.tier = 'serie_a'` ou extra `br`), então toda hora aparecem até 3 do Brasileirão.
 - **Carta**: lenda mostra "Lenda · POT".
+
+## Fase 22 — lendas caras
+
+Fonte: `supabase/online/24_legend_prices.sql` (migração `20261114200000`). `on_start_price`: lenda com pot acima de 100 começa em $ 5 milhões + $ 500 mil por ponto acima de 101 (Messi, pot 107: $ 8 milhões; Cristiano Ronaldo, 106: $ 7,5 milhões); as demais lendas em $ 800 mil + $ 120 mil por ponto de nota acima de 80. Destaque e comum não mudaram. Referência: a moeda vale $ 1 no lance, e um técnico bom junta uns $ 0,5–1 milhão por temporada entre caixa e moedas.

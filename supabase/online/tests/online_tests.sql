@@ -1073,6 +1073,9 @@ begin
  if (select pot from public.on_players where id=pid)<>107 then raise exception 'pot da lenda cortado: %',(select pot from public.on_players where id=pid);end if;
  if public.on_train_gain(1,30,98,107,0)<=0 then raise exception 'lenda não evolui';end if;
  if public.on_ovr(98,107,'{6,4,0,0}')<>103 then raise exception 'overall acima de 100';end if;
+ if public.on_start_price((select p from public.on_players p where p.id=pid))<>8000000 then raise exception 'preço do Messi';end if;
+ update public.on_players set pot=89,level=85 where id=pid;
+ if public.on_start_price((select p from public.on_players p where p.id=pid))<>1400000 then raise exception 'preço da lenda comum';end if;
  delete from public.on_players where id=pid;
  -- extras entram no catálogo; nome igual ao do jogo some
  select count(*) into n from public.on_pool where id like 'ex-%';
