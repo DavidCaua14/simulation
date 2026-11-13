@@ -116,11 +116,11 @@ export function PitchCard({ player, pos, colors, selected, live, onClick, label 
         {tier === 'legend' && <Crown className="fut-pitch-crown" size={9} aria-hidden="true" />}
         <PlayerFace seed={name} colors={colors ? { a: colors[0], b: colors[1] } : undefined} size={34} />
         <strong className={`fut-pitch-name ${name.length > 12 ? 'is-long' : ''}`}>{name}</strong>
-        {(injured || susp || (live && player.yellow > 0)) && (
+        {(injured || susp || (live && player.yellow > 0) || player.yellows > 0) && (
           <span className="fut-pitch-flags">
             {injured && <i className="inj" title="Lesionado">+</i>}
             {!injured && susp && <i className="susp" title="Suspenso">S</i>}
-            {live && player.yellow > 0 && <i className="yel" title="Amarelo" />}
+            {((live && player.yellow > 0) || player.yellows > 0) && <i className="yel" title={live ? 'Amarelo' : `${player.yellows} amarelo(s) acumulado(s)`} />}
           </span>
         )}
       </span>

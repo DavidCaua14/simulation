@@ -7,6 +7,7 @@ import useCatalog from '../seasons/hooks/useCatalog'
 import { POS_NAME, condTone, posFit } from '../seasons/utils/managerUtils'
 import { autoOnlineLineup, createOnlineLot, fetchOnlineMarket, fetchOnlineSquad, sellOnlinePlayer, renewOnlinePlayer, saveOnlineLineup, saveOnlineRoles } from './services/onlineApi'
 import PlayerSheet from './components/PlayerSheet'
+import { PitchCard } from './components/PlayerFut'
 import { asSeasonPlayer, cardTier, clubColors, money } from './onlineUtils'
 import '../seasons/seasons.css'
 import '../seasons/manager.css'
@@ -227,17 +228,17 @@ export default function OnlineSquad({ onOpenMatch, notify, seasonId }) {
           </div>
 
           <h3 className="on-h">Banco <small>{draft.bench.length}/12</small></h3>
-          <div className="on-cards">
+          <div className="on-bench-cards">
             {draft.bench.map((id, i) => byId[id] && (
-              <PlayerCard key={id} p={byId[id]} tag="Reserva" colors={colors} selected={sel?.kind === 'bench' && sel.key === i} onClick={() => tap({ kind: 'bench', key: i })} />
+              <PitchCard key={id} player={byId[id]} pos={byId[id].position} label="Reserva" colors={colors} selected={sel?.kind === 'bench' && sel.key === i} onClick={() => tap({ kind: 'bench', key: i })} />
             ))}
           </div>
           {out.length > 0 && (
             <>
               <h3 className="on-h">Não relacionados</h3>
-              <div className="on-cards">
+              <div className="on-bench-cards">
                 {out.map((p) => (
-                  <PlayerCard key={p.id} p={byId[p.id]} colors={colors} selected={sel?.kind === 'out' && sel.key === p.id}
+                  <PitchCard key={p.id} player={byId[p.id]} pos={byId[p.id].position} label="Fora" colors={colors} selected={sel?.kind === 'out' && sel.key === p.id}
                     onClick={() => (sel?.kind === 'out' && sel.key === p.id ? (setSel(null), addToBench(p.id)) : tap({ kind: 'out', key: p.id }))} />
                 ))}
               </div>

@@ -1223,3 +1223,4 @@ button.fut-pitch { cursor: pointer; }
 .pt-slot.is-drop .fut-pitch-card { filter: drop-shadow(0 0 8px #ffd23f); }
 @media (max-width: 380px) { .fut-pitch { width: 52px; } .fut-pitch-cond { width: 48px; } }
 .onm-lus-tab { padding: 4px 0 8px; }
+.on-bench-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(62px, 1fr)); justify-items: center; gap: 12px 6px; padding: 12px 8px; border-radius: 16px; border: 1px solid var(--gx-line); background: color-mix(in srgb, #1e3a8a 22%, var(--gx-panel)); }
