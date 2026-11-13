@@ -233,7 +233,6 @@ export default function TeamTab({ hub, onSaved, notify, focusPlayerId = null, in
     else if (idAt(k)) onDrop(keyOf(k), keyOf(sel))
     setSel(null)
   }
-  const selPlayer = sel ? byId[idAt(sel)] : null
 
   async function handleSave() {
     setSaving(true)
@@ -350,6 +349,7 @@ export default function TeamTab({ hub, onSaved, notify, focusPlayerId = null, in
           )}
 
           <PitchTokenContext.Provider value={renderSeasonPitchCard}>
+          <div className="on-pitch-wrap">
             <Pitch
               formation={formation}
               slots={draft.slots}
@@ -360,6 +360,7 @@ export default function TeamTab({ hub, onSaved, notify, focusPlayerId = null, in
               bind={bind}
               drag={drag}
             />
+          </div>
           </PitchTokenContext.Provider>
 
           <div className="tt-cmrow">
@@ -394,21 +395,14 @@ export default function TeamTab({ hub, onSaved, notify, focusPlayerId = null, in
           )}
 
 
-          {selPlayer && (
-            <div className="spc-selbar">
-              <span>Toque em outro jogador ou vaga para trocar com <b>{selPlayer.short_name || selPlayer.name}</b>.</span>
-              <button type="button" className="gx-btn-ghost" onClick={() => setInfo(selPlayer)}>Ver ficha</button>
-            </div>
-          )}
-
           <section className="sn-sec">
             <h2 className="gx-title">
               Reservas <small>{draft.bench.length}/{squad.rules.bench}</small>
             </h2>
             {draft.bench.length < squad.rules.bench && notListed.length > 0 && (
-              <p className="spc-hint">Toque numa vaga livre e depois em um não relacionado para levar ele ao banco.</p>
+              <p className="on-bench-hint">Toque numa vaga livre e depois em um não relacionado para levar ele ao banco.</p>
             )}
-            <div className={`tt-bench spc-grid ${drag ? 'is-dragging' : ''}`}>
+            <div className="on-bench-cards">
               {draft.bench.map((pid, i) => (
                 <div key={pid} className={`tt-bslot ${drag?.over === `bench:${i}` ? 'is-drop' : ''} ${drag?.from === `bench:${i}` ? 'is-dragging' : ''}`} {...bind(`bench:${i}`, pid)}>
                   <SeasonPitchCard player={byId[pid]} pos={byId[pid]?.position} label="Reserva" colors={club?.colors} selected={sel === `bench:${i}`} onClick={() => tapKey(`bench:${i}`)} />
@@ -427,7 +421,7 @@ export default function TeamTab({ hub, onSaved, notify, focusPlayerId = null, in
             <h2 className="gx-title">
               Não relacionados <small>{notListed.length}</small>
             </h2>
-            <div className={`tt-bench tt-out spc-grid ${drag ? 'is-dragging' : ''} ${drag?.over === 'out:zone' ? 'is-drop' : ''}`} {...bind('out:zone', null)}>
+            <div className={`on-bench-cards ${drag?.over === 'out:zone' ? 'is-drop' : ''}`} {...bind('out:zone', null)}>
               {notListed.map((p) => (
                 <div key={p.id} className={`tt-bslot ${drag?.over === `out:${p.id}` ? 'is-drop' : ''} ${drag?.from === `out:${p.id}` ? 'is-dragging' : ''}`} {...bind(`out:${p.id}`, p.id)}>
                   <SeasonPitchCard player={p} pos={p.position} label="Fora" colors={club?.colors} selected={sel === `out:${p.id}`} onClick={() => tapKey(`out:${p.id}`)} />

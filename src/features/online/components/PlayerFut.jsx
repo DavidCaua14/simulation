@@ -1,5 +1,6 @@
 import { Crown } from 'lucide-react'
 import { TIER_LABEL, cardLabels, cardTier } from '../onlineUtils'
+import './pitch-card.css'
 
 // Carta do jogador (retrato, nota, posição e os seis atributos) e peças menores usadas no mercado e no elenco.
 
@@ -87,7 +88,8 @@ export function OvrBadge({ p, small = false }) {
 
 // Carta pequena para o campo (escalação, vestiário e partida). Mesmas props da ficha do campo das Temporadas
 // (PitchTokenContext): nota na posição da vaga, posição, retrato, nome e, embaixo da carta, a condição física.
-export function PitchCard({ player, pos, colors, selected, live, onClick, label }) {
+// tier força o tipo da carta (as Temporadas só têm carta normal).
+export function PitchCard({ player, pos, colors, selected, live, onClick, label, tier: forcedTier }) {
   const Tag = onClick ? 'button' : 'div'
   if (!player) {
     return (
@@ -96,7 +98,7 @@ export function PitchCard({ player, pos, colors, selected, live, onClick, label 
       </Tag>
     )
   }
-  const tier = cardTier({ ...player, ovr: player.ovr ?? player.overall })
+  const tier = forcedTier || cardTier({ ...player, ovr: player.ovr ?? player.overall })
   const rating = Math.round(player.ratings?.[pos] ?? player.ovr ?? player.overall ?? 0)
   const off = pos && player.position && player.position !== pos && !(player.secondary || []).includes(pos)
   const cond = player.condition ?? player.cond
