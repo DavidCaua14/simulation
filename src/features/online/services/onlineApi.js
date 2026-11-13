@@ -73,6 +73,8 @@ export const fetchOnlineScout = (mark = true) => rpc('on_scout', { p_mark: mark 
 // Preleção do intervalo: praise, focus, demand, encourage, calm ou angry
 export const sendOnlineHalftimeTalk = (fixtureId, talk) => rpc('on_match_talk', { p_fixture: fixtureId, p_talk: talk })
 export const sendOnlineTeamTalk = (talk) => rpc('on_team_talk', { p_talk: talk })
+// Abrir a escalação pela preparação já conta como revisada.
+export const reviewOnlineLineup = () => rpc('on_lineup_review')
 
 // Escalações dos dois times de um jogo (vestiário e partida)
 export const fetchOnlineFixtureLineups = (fixtureId) => rpc('on_fixture_lineups', { p_fixture: fixtureId })

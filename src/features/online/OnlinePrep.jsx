@@ -3,7 +3,7 @@ import { Binoculars, Check, ChevronRight, Coins, Dumbbell, Flame, Megaphone, Shi
 import { Skeleton } from '../../components/ui/feedback'
 import OnlineCrest from './components/OnlineCrest'
 import { FutCard } from './components/PlayerFut'
-import { fetchOnlineScout, sendOnlineTeamTalk } from './services/onlineApi'
+import { fetchOnlineScout, reviewOnlineLineup, sendOnlineTeamTalk } from './services/onlineApi'
 
 const TALKS = [
   ['motivate', 'Motivar', 'Vamos para cima!'],
@@ -105,6 +105,11 @@ export default function OnlinePrep({ prep, go, notify, onReload }) {
         setSheet(null)
       })
   }
+  // Abrir a escalação já marca a tarefa; a tela do elenco abre mesmo se a marcação falhar.
+  const openLineup = () => {
+    if (!prep.lineup) reviewOnlineLineup().then(() => onReload?.()).catch(() => {})
+    go('squad')
+  }
   const talk = (id) => {
     setBusy(true)
     sendOnlineTeamTalk(id)
@@ -116,7 +121,7 @@ export default function OnlinePrep({ prep, go, notify, onReload }) {
       .finally(() => setBusy(false))
   }
   const tasks = [
-    { id: 'lineup', Icon: Shirt, label: 'Escalação', done: prep.lineup, value: prep.lineup ? 'Definida' : 'Revisar', run: () => go('squad') },
+    { id: 'lineup', Icon: Shirt, label: 'Escalação', done: prep.lineup, value: prep.lineup ? 'Definida' : 'Revisar', run: openLineup },
     { id: 'train', Icon: Dumbbell, label: 'Treino', done: prep.train >= prep.train_max, value: `${prep.train}/${prep.train_max}`, run: () => go('club', 'train') },
     { id: 'scout', Icon: Binoculars, label: 'Adversário', done: prep.scout, value: prep.scout ? 'Estudado' : 'Estudar', run: openScout },
     { id: 'talk', Icon: Megaphone, label: 'Preleção', done: Boolean(prep.talk), value: TALK_LABEL[prep.talk] || 'Escolher', run: () => setSheet('talk') },

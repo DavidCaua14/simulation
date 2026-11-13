@@ -1122,3 +1122,19 @@ begin
  delete from public.on_matches where fixture_id=f.id;update public.on_fixtures set status='sched' where id=f.id;
  raise notice 'PASS fase 24';
 end $$;
+
+-- ═════════════════════════════════════════════════════════════════════════════
+-- Fase 25: abrir a escalação pela preparação marca a tarefa
+-- ═════════════════════════════════════════════════════════════════════════════
+do $$
+declare c public.on_clubs;j jsonb;
+begin
+ select x.* into c from public.on_clubs x join public.on_seasons s on s.id=x.season_id and s.status='live'
+  where x.user_id is not null and (public.on_next_fixture(x.id)).id is not null order by x.id limit 1;
+ if c.id is null then raise exception 'sem clube de usuário com jogo';end if;
+ update public.on_clubs set prep='{}' where id=c.id;
+ perform set_config('request.jwt.claim.sub',c.user_id::text,true);
+ j:=public.on_lineup_review();
+ if not coalesce((j->>'lineup')::boolean,false) then raise exception 'escalação aberta não marcou a preparação: %',j;end if;
+ raise notice 'PASS fase 25';
+end $$;
