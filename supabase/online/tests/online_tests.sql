@@ -7,7 +7,7 @@ insert into public.careers(user_id,nickname) values
  ('00000000-0000-0000-0000-000000000005','Dennis'),('00000000-0000-0000-0000-000000000009','novato');
 
 -- a entrada na hora (Fase 10) fica desligada nos testes das fases anteriores e é ligada no teste dela
-update public.on_config set join_instant=false,win_coins=0,draw_coins=0,train_energy_cost=40,league_coins=array[300,200,150,100,80,60,50,40,30,20,10,10],cup_coin_prizes=array[100,0,0];
+update public.on_config set join_instant=false,prep_bonus=.03,win_coins=0,draw_coins=0,train_energy_cost=40,league_coins=array[300,200,150,100,80,60,50,40,30,20,10,10],cup_coin_prizes=array[100,0,0];
 
 select public.on_season_bootstrap(array['00000000-0000-0000-0000-000000000001','00000000-0000-0000-0000-000000000002',
  '00000000-0000-0000-0000-000000000003','00000000-0000-0000-0000-000000000004','00000000-0000-0000-0000-000000000005']::uuid[],

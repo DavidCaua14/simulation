@@ -1,0 +1,12 @@
+[{"name":"iguais 70x70","h":70,"a":70},
+ {"name":"+6  (76x70)","h":76,"a":70},
+ {"name":"+10 (80x70)","h":80,"a":70},
+ {"name":"-10 (70x80)","h":70,"a":80},
+ {"name":"cond 80 casa","h":70,"a":70,"ch":80},
+ {"name":"cond 60 casa","h":70,"a":70,"ch":60},
+ {"name":"prep 6% casa","h":70,"a":70,"fh":1.06},
+ {"name":"IA +8% iguais","h":70,"a":70,"fa":1.08},
+ {"name":"IA +8% casa +10","h":80,"a":70,"fa":1.08},
+ {"name":"direto x pressao+linha alta","h":70,"a":70,"th":{"build":"direct"},"ta":{"pressing":"high","line":"high"}},
+ {"name":"contra-ataque x ofensivo+2","h":70,"a":70,"th":{"style":"counter","mentality":-1},"ta":{"mentality":2}},
+ {"name":"lento+curto x pressao alta","h":70,"a":70,"th":{"build":"short","tempo":"slow"},"ta":{"pressing":"high"}}]
