@@ -228,9 +228,14 @@ export default function OnlineSquad({ onOpenMatch, notify, seasonId }) {
           </div>
 
           <h3 className="on-h">Banco <small>{draft.bench.length}/12</small></h3>
+          {draft.bench.length < 12 && out.length > 0 && <p className="on-bench-hint">Toque numa vaga livre e depois em um jogador não relacionado para levar ele ao banco.</p>}
           <div className="on-bench-cards">
             {draft.bench.map((id, i) => byId[id] && (
               <PitchCard key={id} player={byId[id]} pos={byId[id].position} label="Reserva" colors={colors} selected={sel?.kind === 'bench' && sel.key === i} onClick={() => tap({ kind: 'bench', key: i })} />
+            ))}
+            {/* vagas livres: o banco tem sempre 12 lugares; toque numa vaga e depois em um não relacionado (ou o contrário) */}
+            {Array.from({ length: Math.max(0, 12 - draft.bench.length) }, (_, k) => draft.bench.length + k).map((i) => (
+              <PitchCard key={`free-${i}`} player={null} label="Vaga" selected={sel?.kind === 'bench' && sel.key === i} onClick={() => tap({ kind: 'bench', key: i })} />
             ))}
           </div>
           {out.length > 0 && (

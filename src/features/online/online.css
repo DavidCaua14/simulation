@@ -1224,3 +1224,6 @@ button.fut-pitch { cursor: pointer; }
 @media (max-width: 380px) { .fut-pitch { width: 52px; } .fut-pitch-cond { width: 48px; } }
 .onm-lus-tab { padding: 4px 0 8px; }
 .on-bench-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(62px, 1fr)); justify-items: center; gap: 12px 6px; padding: 12px 8px; border-radius: 16px; border: 1px solid var(--gx-line); background: color-mix(in srgb, #1e3a8a 22%, var(--gx-panel)); }
+.on-bench-hint { margin: -4px 0 8px; color: var(--gx-ink-2); font-size: .74rem; }
+.on-bench-cards .fut-pitch.is-empty .fut-pitch-card { height: 84px; }
+.on-bench-cards .fut-pitch.is-empty.is-sel .fut-pitch-card { border-color: #22d3ee; background: rgba(34, 211, 238, .15); }
