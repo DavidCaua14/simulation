@@ -259,3 +259,7 @@ Fonte: `supabase/online/18_recovery_gate_build.sql` (migração `20261114140000`
 - Lesão: 1 ou 2 dias; com médico nível 3 ou mais, sempre 1 dia.
 - Obras: 1 hora por nível (`on_build_time`), de 1 h a 5 h. Obras em andamento foram encurtadas para o prazo novo.
 - Bilheteria por jogo em casa: $ 15 mil + $ 10 mil por nível do estádio (`on_gate_value`); copa paga 50% a mais.
+
+## Fase 18 — bots dão lance como um técnico
+
+Fonte: `supabase/online/19_bot_bidding.sql` (migração `20261114160000`). `on_bot_limit(clube, leilão, jogador)` devolve o teto de cada bot: 0 se o jogador não melhora o elenco (nota abaixo da força do clube menos 2, ou menos 6 em posição carente) ou se aquele clube não entrou na disputa (perfil fixo por leilão e clube, 45% de chance); senão, entre 50% e 90% do valor. O bot só cobre lance até o próprio teto, e só compra jogador anunciado por técnico se tiver interesse.

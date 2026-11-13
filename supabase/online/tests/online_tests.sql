@@ -469,10 +469,14 @@ begin
  perform public.on_lot_create(pid,greatest(500,round(public.on_value((select ovr from public.on_players where id=pid),(select age from public.on_players where id=pid),(select pot from public.on_players where id=pid))*.5))::bigint);
  select * into l from public.on_lots where player_id=pid and status='open';
  perform public.on_lot_settle(l.id,l.hard_end+interval '1 second');
+ -- (Fase 18) só compra o bot que tem interesse no jogador; sem interessado, ele volta ao elenco
  select * into bot from public.on_clubs where id=(select club_id from public.on_players where id=pid);
- if bot.user_id is not null then raise exception 'bot não comprou';end if;
- v:=(select best_bid from public.on_lots where id=l.id);
- if v<>l.start_price then raise exception 'bot não pagou o preço pedido: %',v;end if;
+ if (select status from public.on_lots where id=l.id)='sold' then
+  if bot.user_id is not null then raise exception 'bot não comprou';end if;
+  v:=(select best_bid from public.on_lots where id=l.id);
+  if v<>l.start_price then raise exception 'bot não pagou o preço pedido: %',v;end if;
+ elsif bot.id<>a.id then raise exception 'jogador sem comprador não voltou ao elenco';
+ end if;
  -- preço acima do justo e sem lances: o jogador volta para o elenco
  select l2.bench[1] into pid from public.on_lineups l2 where l2.club_id=a.id;
  perform public.on_lot_create(pid,(public.on_value((select ovr from public.on_players where id=pid),(select age from public.on_players where id=pid),(select pot from public.on_players where id=pid))*2)::bigint);
@@ -1007,4 +1011,23 @@ begin
   raise exception 'escalações do jogo: %',j;
  end if;
  raise notice 'PASS fase 15';
+end $$;
+
+-- Fase 18: bot só disputa jogador que melhora o elenco, e cada um tem o próprio teto
+do $$
+declare s public.on_seasons;weak text;strong text;lw bigint;ls bigint;n int;v bigint;
+begin
+ select * into s from public.on_seasons where status='live';
+ insert into public.on_players(club_id,name,pos,age,level,pot,ovr,wage,contract_end) values(null,'Fraco Teste','MC',25,45,45,45,10,s.id+1) returning id into weak;
+ insert into public.on_players(club_id,name,pos,age,level,pot,ovr,wage,contract_end) values(null,'Forte Teste','MC',25,88,88,88,10,s.id+1) returning id into strong;
+ insert into public.on_lots(season_id,player_id,start_price,opens_at,ends_at,hard_end) values(s.id,weak,500,now(),now()+interval '1 hour',now()+interval '2 hours') returning id into lw;
+ insert into public.on_lots(season_id,player_id,start_price,opens_at,ends_at,hard_end) values(s.id,strong,500,now(),now()+interval '1 hour',now()+interval '2 hours') returning id into ls;
+ if exists(select 1 from public.on_clubs c where c.season_id=s.id and c.user_id is null and public.on_bot_limit(c.id,lw,weak)>0) then raise exception 'bot interessado em jogador fraco';end if;
+ v:=public.on_value(88,25,88);
+ select count(*) into n from public.on_clubs c where c.season_id=s.id and c.user_id is null and public.on_bot_limit(c.id,ls,strong)>0;
+ if exists(select 1 from public.on_clubs c where c.season_id=s.id and c.user_id is null and public.on_bot_limit(c.id,ls,strong)>0
+   and public.on_bot_limit(c.id,ls,strong) not between round(v*.5) and round(v*.9)) then raise exception 'teto do bot fora de 50%% a 90%%';end if;
+ if n=(select count(*) from public.on_clubs c where c.season_id=s.id and c.user_id is null) and n>3 then raise exception 'todos os bots entraram na disputa';end if;
+ delete from public.on_players where id in(weak,strong);
+ raise notice 'PASS fase 18 (% bot(s) interessados no jogador forte)',n;
 end $$;
