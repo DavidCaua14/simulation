@@ -72,7 +72,7 @@ export function FutCard({ p, club, size = 'md', onClick, selected = false, disab
           ))}
         </span>
       )}
-      <span className="fut-meta">{tier === 'legend' ? 'Lenda do futebol' : <>{p.age} anos{p.pot != null && <> · POT <b>{p.pot}</b></>}</>}</span>
+      <span className="fut-meta">{tier === 'legend' ? <>Lenda{p.pot != null && <> · POT <b>{p.pot}</b></>}</> : <>{p.age} anos{p.pot != null && <> · POT <b>{p.pot}</b></>}</>}</span>
       {footer}
     </Tag>
   )

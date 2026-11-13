@@ -278,3 +278,12 @@ Fonte: `supabase/online/21_market_more_players.sql` (migração `20261114180000`
 - Sem lances, o jogador é apagado e volta ao catálogo, então lendas e destaques não esgotam.
 - O fechamento de leilões vencidos passou de 10 para 60 por minuto. Especiais antigos ainda travados (regime de janelas) saem na migração.
 - Tela: filtro Todos / Lendas / Destaques / Base e selo "Promessa" em carta base de até 23 anos com potencial 6+ acima.
+
+## Fase 21 — catálogo maior e lendas que evoluem
+
+Fonte: `supabase/online/22_catalog_expansion.sql` e `23_catalog_data.sql` (migrações `20261114190000` e `20261114190100`).
+
+- **Lendas** são lendas do futebol, em atividade ou não. 300 novas (Messi, Cristiano Ronaldo, Neymar, Benzema, Salah, Lewandowski…), total de 638. `on_legends.pot`: a lenda evolui no treino até ele, e ele pode passar de 100 (Messi 98 → 107, Pelé 97 → 106). Regra: nota + 9 (96+), + 7 (92+), + 6 (88+) ou + 5. Lendas já contratadas receberam o pot novo. `on_real_insert` aceita pot até 110 para lendas (os demais seguem até 95).
+- **`on_catalog_extra`**: jogadores reais que faltavam no catálogo do jogo, só para o online. 100 destaques (81+) de ligas fora do catálogo (Arábia Saudita, MLS, México, Turquia, Escócia, Rússia, Grécia, Holanda, Alemanha) e 53 conhecidos do Brasileirão (`br`). Os nomes foram conferidos contra `data/squads`, `data/tier-b` e os seeds; se o mesmo nome aparecer em `sim_players`, o extra sai do `on_pool`.
+- **Brasileirão no mercado**: o catálogo já tem os elencos da Série A 2026 (~900 jogadores). As cartas base das faixas 2, 3 e 4 preferem jogadores da Série A (`on_is_br`: `sim_clubs.tier = 'serie_a'` ou extra `br`), então toda hora aparecem até 3 do Brasileirão.
+- **Carta**: lenda mostra "Lenda · POT".

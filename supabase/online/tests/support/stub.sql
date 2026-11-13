@@ -968,3 +968,9 @@ insert into public.sim_players(id,full_name,short_name,position,secondary_positi
 select 'tierb-'||i,'Jogador B '||i,'B '||i,(array['GOL','LD','ZAG','LE','VOL','MC','MEI','PD','PE','ATA'])[1+i%10],'{}','ARG',20+i%15,50+i%27
 from generate_series(1,500) i;
 alter table public.careers add column if not exists diamonds int not null default 0;
+
+-- Clube atual dos reais (on_is_br): um terço do catálogo na Série A do Brasil.
+create table public.sim_clubs(id text primary key, name text, tier text not null);
+insert into public.sim_clubs values ('flamengo','Flamengo','serie_a'),('boca-juniors','Boca Juniors','foreign');
+alter table public.sim_players add column club_id text references public.sim_clubs(id);
+update public.sim_players set club_id=case when split_part(id,'-',2)::int%3=0 then 'flamengo' else 'boca-juniors' end where id like 'real-%';

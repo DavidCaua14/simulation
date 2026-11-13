@@ -1058,3 +1058,33 @@ begin
  delete from public.on_players where id in(weak,strong);
  raise notice 'PASS fase 18 (% bot(s) interessados no jogador forte)',n;
 end $$;
+
+-- ═════════════════════════════════════════════════════════════════════════════
+-- Fase 21: catálogo maior, lendas que evoluem e Brasileirão nas cartas base
+-- ═════════════════════════════════════════════════════════════════════════════
+do $$
+declare pid text;n int;i int;
+begin
+ if (select count(*) from public.on_legends)<638 then raise exception 'lendas novas: %',(select count(*) from public.on_legends);end if;
+ if (select pot from public.on_legends where id='lg-lionel-messi')<>107 or (select pot from public.on_legends where id='lg-pele')<>106 then raise exception 'pot das lendas';end if;
+ if exists(select 1 from public.on_legends where pot is null or pot<=rating) then raise exception 'lenda sem margem de evolução';end if;
+ -- lenda contratada guarda o pot acima de 95 e treina
+ pid:=public.on_real_insert('lg-lionel-messi',null,null,9);
+ if (select pot from public.on_players where id=pid)<>107 then raise exception 'pot da lenda cortado: %',(select pot from public.on_players where id=pid);end if;
+ if public.on_train_gain(1,30,98,107,0)<=0 then raise exception 'lenda não evolui';end if;
+ if public.on_ovr(98,107,'{6,4,0,0}')<>103 then raise exception 'overall acima de 100';end if;
+ delete from public.on_players where id=pid;
+ -- extras entram no catálogo; nome igual ao do jogo some
+ select count(*) into n from public.on_pool where id like 'ex-%';
+ if n<>(select count(*) from public.on_catalog_extra) or n<150 then raise exception 'extras no catálogo: %',n;end if;
+ insert into public.sim_players(id,full_name,short_name,position,nationality,age,attr_level) values('dup-veiga','Raphael Veiga','R. Veiga','MEI','BRA',30,78);
+ if exists(select 1 from public.on_pool where id='ex-raphael-veiga') then raise exception 'extra repetido no catálogo';end if;
+ delete from public.sim_players where id='dup-veiga';
+ -- faixas 2, 3 e 4 preferem o Brasileirão
+ for i in 1..6 loop
+  pid:=public.on_gen_base('teste-br-'||i,2+i%3,(array['GOL','ZAG','MC','ATA','LE','PD'])[i]);
+  if not public.on_is_br((select src from public.on_players where id=pid)) then raise exception 'carta base fora do Brasileirão (faixa %)',2+i%3;end if;
+  delete from public.on_players where id=pid;
+ end loop;
+ raise notice 'PASS fase 21';
+end $$;
