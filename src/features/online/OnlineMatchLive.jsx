@@ -432,8 +432,9 @@ export default function OnlineMatchLive({ fixtureId = null, onClose, notify }) {
           <div className="ml-stats">
             {[
               ['Posse de bola', data.stats?.poss?.[0], data.stats?.poss?.[1], '%'],
-              ['Finalizações', live.shots.h, live.shots.a],
-              ['No gol', live.sot.h, live.sot.a],
+              // Finalizações e chutes no gol vêm da súmula do servidor: nos trechos sem ninguém assistindo o motor não grava cada lance.
+              ['Finalizações', data.stats?.shots?.[0] ?? live.shots.h, data.stats?.shots?.[1] ?? live.shots.a],
+              ['No gol', data.stats?.sot?.[0] ?? live.sot.h, data.stats?.sot?.[1] ?? live.sot.a],
               ['Escanteios', data.stats?.corners?.[0], data.stats?.corners?.[1]],
               ['Faltas', data.stats?.fouls?.[0], data.stats?.fouls?.[1]],
               ['Impedimentos', data.stats?.offsides?.[0], data.stats?.offsides?.[1]],

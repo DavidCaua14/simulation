@@ -1092,3 +1092,33 @@ begin
  end loop;
  raise notice 'PASS fase 21';
 end $$;
+
+-- ═════════════════════════════════════════════════════════════════════════════
+-- Fase 24: técnico ausente mantém as táticas; estatísticas da súmula
+-- ═════════════════════════════════════════════════════════════════════════════
+do $$
+declare f public.on_fixtures;t jsonb;p jsonb;
+begin
+ select x.* into f from public.on_fixtures x join public.on_clubs c on c.id=x.home
+  where x.status='sched' and c.user_id is not null and not exists(select 1 from public.on_matches m where m.fixture_id=x.id)
+  order by x.kickoff limit 1;
+ if f.id is null then raise exception 'sem jogo de usuário para testar';end if;
+ perform public.on_match_open(f);
+ update public.on_matches set state=jsonb_set(jsonb_set(state,'{tactics,h}',
+   public.mgr_tactics_clean('{"style":"defensive","tempo":"slow","marking":"low","manage":"normal"}')),'{score}','[0,2]')
+  where fixture_id=f.id;
+ select state->'tactics'->'h' into t from public.on_matches where fixture_id=f.id;
+ perform public.on_ai_manage(f.id,'h',75);
+ if (select state->'tactics'->'h' from public.on_matches where fixture_id=f.id)<>t then
+  raise exception 'auxiliar mudou a tática do usuário: %',(select state->'tactics'->'h' from public.on_matches where fixture_id=f.id);
+ end if;
+ perform public.on_engine_run(f.id,90,null);
+ perform public.on_engine_run(f.id,90,null);
+ p:=public.on_match_payload(f.id,0,'h');
+ if p->'stats'->'shots' is null or p->'stats'->'sot' is null then raise exception 'payload sem finalizações';end if;
+ if (p->'stats'->'shots'->>0)::int+(p->'stats'->'shots'->>1)::int
+    <>(select sum(shots) from public.on_match_players where fixture_id=f.id) then raise exception 'finalizações diferentes da súmula';end if;
+ delete from public.on_match_events where fixture_id=f.id;delete from public.on_match_players where fixture_id=f.id;
+ delete from public.on_matches where fixture_id=f.id;update public.on_fixtures set status='sched' where id=f.id;
+ raise notice 'PASS fase 24';
+end $$;

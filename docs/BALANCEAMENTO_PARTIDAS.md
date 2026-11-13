@@ -36,3 +36,18 @@ Fontes: `supabase/online/17_engine_balance.sql` (migração `20261114120000`) e 
 
 - Preparação completa vale 6% de forma (antes 3%). Dois técnicos preparados se anulam; só um preparado ganha a diferença.
 - Não há bônus de IA no online: bots e técnicos usam as mesmas regras.
+
+## Fase 24 — partidas fiéis às táticas (13/11/2026)
+
+Fonte: `supabase/online/26_match_realism.sql` (migração `20261114220000`). Medido com 200 jogos por cenário no banco de produção (transação desfeita no fim) e no PGlite.
+
+- **Estatísticas**: finalizações e chutes no gol saem da súmula dos jogadores (`on_match_payload.stats.shots/sot`). Antes a tela contava lances gravados, e jogo sem ninguém assistindo não grava cada chute: um 11 x 9 aparecia como 0 x 1.
+- **Técnico ausente**: `on_ai_manage` não muda mais postura, ritmo, pressão nem gestão do jogo de clube de usuário. O motor aplica a "gestão do jogo" escolhida pelo técnico; o auxiliar só substitui por cansaço, cartão ou lesão. Bots seguem com a IA.
+- **Atacar tem custo**: cada nível de postura ofensiva dá ao adversário +5% de chances e +0,03 de qualidade de finalização; pressão alta com linha alta, mais +0,02.
+
+| Cenário (PGlite, 200 jogos) | Antes (produção) | Depois |
+|---|---|---|
+| Iguais, casa ataque total (+2, pressão alta, rápido) | 56/21/23, sofre 1,36 | 47/20/34, sofre 1,31 com mais gols dos dois lados |
+| Contra-ataque x ataque total | 42/19/39 | 56/18/27 |
+| +18 de nota, neutro | 76/17/7 | 73/17/10 |
+| +18 ataque total x retranca | 83/15/2 | 87/10/4 |
