@@ -2,7 +2,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { CircleAlert, Check, ChevronLeft, ChevronRight, ClipboardList, Dumbbell, FileClock, Flag, Frown, Sparkles, TriangleAlert, Users } from 'lucide-react'
 import Pitch from '../components/Pitch'
 import SeasonPitchCard from '../components/SeasonPitchCard'
-import SwapBar from '../../online/components/SwapBar'
 import { renderSeasonPitchCard } from '../components/renderSeasonPitchCard'
 import { PitchTokenContext } from '../components/pitchToken'
 import PositionFilter from '../components/PositionFilter'
@@ -350,13 +349,6 @@ export default function TeamTab({ hub, onSaved, notify, focusPlayerId = null, in
             </div>
           )}
 
-          {sel && (
-            <SwapBar
-              player={byId[idAt(sel)] || null}
-              pos={sel.startsWith('slot:') ? formation?.slots?.find((x) => x.slot === sel.slice(5))?.pos : null}
-              onCancel={() => setSel(null)}
-            />
-          )}
           <PitchTokenContext.Provider value={renderSeasonPitchCard}>
           <div className="on-pitch-wrap">
             <Pitch

@@ -1,5 +1,4 @@
 import { useCallback, useMemo, useState } from 'react'
-import SwapBar from '../../online/components/SwapBar'
 import { ArrowDown, ArrowUp, RotateCcw } from 'lucide-react'
 import PositionFilter from './PositionFilter'
 import Pitch, { PlayerToken } from './Pitch'
@@ -234,13 +233,6 @@ export default function MatchLineupEditor({
                 const pid = sel.startsWith('slot:') ? draft.slots[sel.slice(5)] : draft.bench[Number(sel.slice(6))]
                 return byId[pid] ? <button type="button" className="gx-btn-ghost" onClick={() => setInfo(byId[pid])}>Ver ficha de {byId[pid].short_name}</button> : null
               })()}
-              {sel && (
-                <SwapBar
-                  player={byId[sel.startsWith('slot:') ? draft.slots[sel.slice(5)] : draft.bench[Number(sel.slice(6))]] || null}
-                  pos={sel.startsWith('slot:') ? formation?.slots?.find((x) => x.slot === sel.slice(5))?.pos : null}
-                  onCancel={() => setSel(null)}
-                />
-              )}
               <div className="mle-pitch">
                 <Pitch
                   formation={formation}

@@ -54,9 +54,3 @@ button.fut-pitch { cursor: pointer; }
   50% { filter: drop-shadow(0 0 4px #67e8f9) drop-shadow(0 0 16px #22d3ee); }
 }
 @media (prefers-reduced-motion: reduce) { .fut-pitch.is-sel { animation: none; filter: drop-shadow(0 0 4px #22d3ee) drop-shadow(0 0 14px #22d3ee); } }
-.swap-bar { position: sticky; top: 8px; z-index: 20; display: flex; align-items: center; gap: 10px; margin: 0 0 10px; padding: 10px 12px; border-radius: 14px; border: 1px solid #22d3ee; background: color-mix(in srgb, #0e7490 35%, #0b1220); color: #e0f7fb; box-shadow: 0 8px 20px rgba(0, 0, 0, .45); }
-.swap-bar > svg { flex-shrink: 0; color: #22d3ee; }
-.swap-bar span { display: flex; flex-direction: column; gap: 1px; min-width: 0; flex: 1; }
-.swap-bar b { font-size: .9rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.swap-bar small { font-size: .74rem; color: #a5e8f3; }
-.swap-bar button { flex-shrink: 0; display: grid; place-items: center; width: 32px; height: 32px; border-radius: 10px; border: 1px solid rgba(34, 211, 238, .5); background: rgba(0, 0, 0, .25); color: #e0f7fb; }
