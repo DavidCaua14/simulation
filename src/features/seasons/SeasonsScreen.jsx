@@ -195,6 +195,26 @@ export default function SeasonsScreen({ career: account, onBack }) {
       if (h && mounted.current) setTimeout(() => prepareInBackground(h), 0)
     })
 
+  // Propostas e e-mails importantes que chegam enquanto o jogo é preparado esperam o fim da partida: o aviso é
+  // adiado sozinho (como "Depois") e aparece ao voltar ao Início. Só interrompe o pré-jogo o que venceria antes do
+  // dia do jogo, porque depois da partida já não daria para responder.
+  const matchDay = hub?.next_event?.kind === 'mine' ? hub.next_event.scheduled_on : null
+  const [deferredKey, setDeferredKey] = useState(null)
+  // Se o adiamento já foi tentado e o aviso continua (falha de rede), ele volta a aparecer com os botões.
+  const deferAttention = Boolean(preMatch && hub?.attention && matchDay && (!hub.attention.expires_on || hub.attention.expires_on >= matchDay)
+    && (deferredKey !== hub.attention.key || busy === 'attention'))
+  const attentionKey = hub?.attention?.key
+  useEffect(() => {
+    if (!deferAttention || busy || deferredKey === attentionKey) return undefined
+    const t = setTimeout(() => {
+      setDeferredKey(attentionKey)
+      laterAttention()
+    }, 0)
+    return () => clearTimeout(t)
+    // laterAttention é recriada a cada render; a chave do aviso já decide quando adiar.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [deferAttention, busy, deferredKey, attentionKey])
+
   const play = () =>
     run('start', async () => {
       if (hub.world && !hub.live_match) {
@@ -400,8 +420,8 @@ export default function SeasonsScreen({ career: account, onBack }) {
             myClub={ctx.myClub}
             myPos={hub.competitions.find((c) => c.id === preMatch.competition)?.table?.played ? hub.competitions.find((c) => c.id === preMatch.competition).table.pos : null}
             ready={matchReady}
-            waitingText={busy === 'prepare' ? 'Preparando a partida…' : hub.attention ? 'Veja o e-mail' : 'Aguarde…'}
-            attention={Boolean(hub.attention) && busy !== 'prepare'}
+            waitingText={busy === 'prepare' || deferAttention ? 'Preparando a partida…' : hub.attention ? 'Veja o e-mail' : 'Aguarde…'}
+            attention={Boolean(hub.attention) && !deferAttention && busy !== 'prepare'}
             canPlay={(hasEnergy || Boolean(hub.live_match)) && !finished}
             blockedText={blockedText}
             starting={busy === 'start'}
