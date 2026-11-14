@@ -8,6 +8,7 @@ import { POS_NAME, condTone, posFit } from '../seasons/utils/managerUtils'
 import { autoOnlineLineup, createOnlineLot, fetchOnlineMarket, fetchOnlineSquad, sellOnlinePlayer, renewOnlinePlayer, saveOnlineLineup, saveOnlineRoles } from './services/onlineApi'
 import PlayerSheet from './components/PlayerSheet'
 import { PitchCard } from './components/PlayerFut'
+import SwapBar from './components/SwapBar'
 import { asSeasonPlayer, cardTier, clubColors, money } from './onlineUtils'
 import '../seasons/seasons.css'
 import '../seasons/manager.css'
@@ -216,6 +217,13 @@ export default function OnlineSquad({ onOpenMatch, notify, seasonId }) {
             <span><small>Titulares</small><b>{xiOvr.length ? avg(xiOvr).toFixed(1).replace('.', ',') : '–'}</b></span>
             <span><small>Reservas</small><b>{benchOvr.length ? avg(benchOvr).toFixed(1).replace('.', ',') : '–'}</b></span>
           </div>
+          {sel && (
+            <SwapBar
+              player={byId[sel.kind === 'slot' ? draft.slots[sel.key] : sel.kind === 'bench' ? draft.bench[sel.key] : sel.key] || null}
+              pos={sel.kind === 'slot' ? formation?.slots?.find((x) => x.slot === sel.key)?.pos : null}
+              onCancel={() => setSel(null)}
+            />
+          )}
           <div className="on-pitch-wrap">
             <Pitch
               formation={formation}

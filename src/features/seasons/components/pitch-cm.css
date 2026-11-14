@@ -173,3 +173,8 @@ div.pt:not(.is-compact) { aspect-ratio: 100 / 156; }
 .tt-cmrow .gx-btn-ghost { min-height: 44px; padding: 6px 4px; justify-content: center; font-size: 0.72rem; line-height: 1.1; text-align: center; }
 .tt-confirm { min-height: 50px; justify-content: center; font-size: 1rem; text-transform: uppercase; letter-spacing: 0.06em; }
 .tt-confirm.is-dirty { animation: nm-glow 2s ease-in-out infinite; }
+
+/* Jogador tocado para troca (ficha de camisa): mesmo pulso da carta. */
+.pt-tok.is-sel .pt-shirt { animation: pt-sel-pulse 1.1s ease-in-out infinite; }
+@keyframes pt-sel-pulse { 0%, 100% { box-shadow: 0 0 0 3px #22d3ee, 0 0 10px #22d3ee; } 50% { box-shadow: 0 0 0 4px #67e8f9, 0 0 20px #22d3ee; } }
+@media (prefers-reduced-motion: reduce) { .pt-tok.is-sel .pt-shirt { animation: none; box-shadow: 0 0 0 3px #22d3ee, 0 0 14px #22d3ee; } }
