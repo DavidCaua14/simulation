@@ -9,6 +9,7 @@ import { getClubById } from '../../club/data/clubs'
 import { AdvanceHero, LiveHero, MatchdayHero, UnemployedHero } from '../components/CoachHeroes'
 import CoachStatusCard from '../components/CoachStatusCard'
 import SeasonEnd from '../components/SeasonEnd'
+import RenewalsCard from '../components/RenewalsCard'
 import CalendarRow from '../components/CalendarRow'
 import MatchRow from '../components/MatchRow'
 import CompCard from '../components/CompCard'
@@ -109,6 +110,7 @@ export default function HomeTab({ ctx, actions }) {
           <button type="button" className="sn-link" disabled={!!busy} onClick={actions.deferAttention}>Continuar sem responder</button>
         </section>
       )}
+      {!unemployed && <RenewalsCard version={hub.runtime_version} finished={finished} onOpen={() => actions.goTab('transfers', 'deals')} />}
       {hero}
       <ClubCentral embedded hub={hub} actions={actions} />
       {!unemployed && <ClubFundingCard signal={hub.world?.investment?.signal} actions={actions} disabled={!!busy} />}

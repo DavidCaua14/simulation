@@ -4,6 +4,7 @@ import { FileSignature, Tag, UserMinus } from 'lucide-react'
 import { dateLabel, money, renewOffer, requestId, wageDemand, weekly, worldRpc } from '../services/careerWorldApi'
 import { clubMoney, clubMoneyShort } from '../utils/clubMoney'
 import { isSessionError } from '../../../lib/sessionRecovery'
+import { renewalLabel, useOpenRenewals } from '../hooks/useOpenRenewals'
 
 const monthsLeft = (until, today) => (until && today ? Math.max(0, Math.ceil((Date.parse(until) - Date.parse(today)) / (30 * 86400000))) : null)
 
@@ -14,6 +15,8 @@ export default function ContractPanel({ player: p, today, maxYears = 5, notify, 
   const [years, setYears] = useState(2)
   const [padError, setPadError] = useState(null)
   const [confirmRelease, setConfirmRelease] = useState(false)
+  const [sent, setSent] = useState(0)
+  const renewing = useOpenRenewals(`${p.id}:${sent}`).find((n) => n.player_id === p.id)
   if (p.contract_expires == null && p.morale == null) return null
   const left = monthsLeft(p.contract_expires, today)
   const releaseCost = p.monthly_salary ? p.monthly_salary * Math.max(1, Math.min(6, left ?? 6)) : null
@@ -44,6 +47,7 @@ export default function ContractPanel({ player: p, today, maxYears = 5, notify, 
     try {
       await renewOffer(p.id, wage, years)
       setRenewal(null)
+      setSent((n) => n + 1)
       notify?.('Proposta de renovação enviada. O atleta responde em breve (e-mail).', 'ok')
       onChanged?.()
     } catch (e) {
@@ -74,9 +78,14 @@ export default function ContractPanel({ player: p, today, maxYears = 5, notify, 
       <dl>
         <div><dt>Contrato até</dt><dd>{dateLabel(p.contract_expires)}{left != null && left <= 6 ? ` · ${left} mês(es)` : ''}</dd></div>
         <div><dt>Salário mensal</dt><dd>{clubMoney(weekly(p.monthly_salary))}</dd></div>
-        <div><dt>Situação</dt><dd>{p.transfer_listed ? 'Na lista de transferências' : 'No elenco'}</dd></div>
+        <div><dt>Situação</dt><dd>{renewing ? 'Renovação em andamento' : p.transfer_listed ? 'Na lista de transferências' : 'No elenco'}</dd></div>
       </dl>
-      {left != null && left <= 6 && !p.precontract && <p className="ps-ending">Nos seis meses finais outros clubes podem oferecer pré-contrato. Sem renovação, ele sai de graça.</p>}
+      {renewing && (
+        <p className="ps-renewing">
+          <b>{renewalLabel(renewing).text}.</b> O contrato fica garantido até a resposta, mesmo que a data acima passe ou a temporada vire.
+        </p>
+      )}
+      {left != null && left <= 6 && !p.precontract && !renewing && <p className="ps-ending">Nos seis meses finais outros clubes podem oferecer pré-contrato. Sem renovação, ele sai de graça.</p>}
 
       {confirmRelease ? (
         <div className="ps-deal-actions">

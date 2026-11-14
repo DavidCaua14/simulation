@@ -671,3 +671,16 @@ button.ib { flex-direction: row; align-items: flex-start; }
 
 .cst-meters:has(> :nth-child(3)) { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
 @media (max-width: 380px) { .cst-meters:has(> :nth-child(3)) { grid-template-columns: 1fr 1fr; } }
+
+/* Renovações em andamento (Início) */
+.rn-card { padding: 16px 18px; margin-bottom: 18px; border: 1px solid color-mix(in srgb, var(--gx-green, #84cc16) 55%, transparent); border-radius: 16px; background: var(--surface, #172a31); }
+.rn-card header { display: flex; align-items: center; gap: 8px; color: var(--gx-green, #84cc16); }
+.rn-card h2 { font-size: 1.02rem; margin: 0; color: var(--gx-ink, #fff); }
+.rn-card ul { list-style: none; margin: 12px 0 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.rn-card li { display: flex; flex-direction: column; gap: 2px; padding: 8px 10px; border-radius: 10px; background: color-mix(in srgb, var(--gx-ink, #fff) 5%, transparent); font-size: .88rem; }
+.rn-card li span { color: var(--gx-ink-2, #b6c2d1); font-size: .82rem; }
+.rn-card li.is-mine { border: 1px solid rgba(251, 191, 36, .45); }
+.rn-card li.is-mine span { color: #fbbf24; }
+.rn-ok { display: flex; gap: 8px; align-items: flex-start; margin: 12px 0 6px; font-size: .86rem; line-height: 1.45; color: var(--gx-ink-2, #b6c2d1); }
+.rn-ok svg { flex-shrink: 0; margin-top: 2px; color: var(--gx-green, #84cc16); }
+.ps-renewing { margin: 8px 0; padding: 8px 10px; border-radius: 10px; border: 1px solid color-mix(in srgb, var(--gx-green, #84cc16) 55%, transparent); font-size: .85rem; line-height: 1.4; }
