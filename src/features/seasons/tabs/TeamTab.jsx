@@ -62,7 +62,8 @@ export default function TeamTab({ hub, onSaved, notify, focusPlayerId = null, in
   const [saving, setSaving] = useState(false)
   const [positionFilter, setPositionFilter] = useState('')
   const [issues, setIssues] = useState([])
-  const [squadCols, setSquadCols] = useState('general')
+  // Vindo do aviso de contratos vencendo: abre direto na coluna com o vencimento de cada atleta.
+  const [squadCols, setSquadCols] = useState(initialView === 'squad' && initialSection === 'contracts' ? 'finance' : 'general')
   const [clubSection, setClubSection] = useState({ id: initialSection, n: 0 })
   const [familiarity, setFamiliarity] = useState(null) // entrosamento por formação (0–100), da gestão do clube
   const [energy, setEnergy] = useState(null) // energia livre + bônus (o treino livre gasta 1)

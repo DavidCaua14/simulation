@@ -52,7 +52,7 @@ function myCompetition(hub, nextEvent) {
 export default function SeasonsScreen({ career: account, onBack }) {
   const [tab, setTab] = useState('home')
   const [compSel, setCompSel] = useState(null)
-  const { hub, byComp, loading, error, refresh } = useManagerData(tab, compSel)
+  const { hub, byComp, loading, error, refresh } = useManagerData(tab, compSel, myCompetition)
   const [careerView, setCareerView] = useState(null)
   const [busy, setBusy] = useState(null) // 'start' | 'advance' | 'next' | 'resign' | 'offer:<id>'
   const [live, setLive] = useState(null) // payload da partida ao vivo
@@ -328,7 +328,12 @@ export default function SeasonsScreen({ career: account, onBack }) {
     openAttention: () => {
       if (hub.attention?.action === 'offers') goTab('career', 'offers')
       else if (hub.attention?.action === 'contract') goTab('career', 'profile')
-      else if (hub.attention?.action === 'contracts') goTab('team')
+      // Contratos vencendo: abre o Elenco, que lista o vencimento de cada atleta (a escalação não mostra contratos).
+      else if (hub.attention?.action === 'contracts') {
+        setTeamFocus(null)
+        setTeamView((t) => ({ view: 'squad', section: 'contracts', n: t.n + 1 }))
+        setTab('team')
+      }
       // Negociações ficam em Transferências (a aba "world" agora é só Finanças).
       else goTab('transfers', 'deals')
     },

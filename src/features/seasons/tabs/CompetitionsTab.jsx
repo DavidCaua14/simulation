@@ -101,14 +101,17 @@ function RoundBrowser({ fixtures, myClub, lastKey, onOpenReport }) {
   )
 }
 
-function CompetitionView({ comp, fixtures, flat, myClub, lastKey, seasonId, onOpenReport, onCups }) {
+function CompetitionView({ comp, fixtures, flat, myClub, lastKey, seasonId, calVersion, onOpenReport, onCups }) {
   const views = useMemo(() => [...viewsFor(comp.id), { id: 'prizes', label: 'Prêmios' }], [comp.id])
   const [view, setView] = useState(views[0].id)
   const phases = COMPETITIONS[comp.id]?.phases || []
   const isGroups = phases.some((p) => p.type === 'groups')
   const [group, setGroup] = useState(() => groupOf(fixtures, myClub) || 'A')
   const groups = useMemo(() => [...new Set(fixtures.filter((f) => f.group_label).map((f) => f.group_label))].sort(), [fixtures])
-  const version = useMemo(() => fixtures.filter((f) => f.status === 'played').length, [fixtures])
+  // Versão do calendário vinda do servidor (muda a cada jogo concluído). A contagem local é só reserva: com a lista
+  // parcial de rodadas ela podia ficar igual depois de um jogo e a tabela antiga continuava no cache.
+  const played = useMemo(() => fixtures.filter((f) => f.status === 'played').length, [fixtures])
+  const version = calVersion ?? played
   const hasTable = views.some((v) => v.id === 'table')
   const { rows: dbRows } = useStandings(hasTable ? seasonId : null, comp.id, isGroups ? group : null, version)
   // Sem classificação no banco (início de temporada): monta a tabela zerada a partir dos jogos.
@@ -243,7 +246,7 @@ export default function CompetitionsTab({ ctx, selected, onSelect, onOpenReport 
         </div>
       </section>
 
-      <CompetitionView key={comp.id} comp={comp} fixtures={byComp[comp.id] || []} flat={flat} onCups={cup ? () => onSelect(cup) : null} myClub={myClub} lastKey={lastKey} seasonId={hub.season.id} onOpenReport={onOpenReport} />
+      <CompetitionView key={comp.id} comp={comp} fixtures={byComp[comp.id] || []} flat={flat} onCups={cup ? () => onSelect(cup) : null} myClub={myClub} lastKey={lastKey} seasonId={hub.season.id} calVersion={hub.calendar_versions?.[comp.id]} onOpenReport={onOpenReport} />
     </div>
   )
 }

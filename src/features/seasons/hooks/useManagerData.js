@@ -6,7 +6,8 @@ import { registerCompetitions, setSeasonCompetitions } from '../utils/seasonUtil
 // Carrega o hub e uma prévia; o calendário completo vem apenas para a competição aberta.
 // Versões por competição evitam repetir leituras de dados que não mudaram.
 // Depois de cada ação o refresh é "silencioso": a tela mantém os dados até os novos chegarem.
-export default function useManagerData(tab = 'home', selected = null) {
+// pickDefault(hub, nextEvent): competição aberta quando nenhuma foi escolhida (a mesma que a tela de Torneios mostra).
+export default function useManagerData(tab = 'home', selected = null, pickDefault = null) {
   const [hub, setHub] = useState(null)
   const [byComp, setByComp] = useState({})
   const [loading, setLoading] = useState(true)
@@ -43,7 +44,7 @@ export default function useManagerData(tab = 'home', selected = null) {
         const version = h.calendar_versions?.[c]
         const cached = fixtureCache.current.get(key)
         if (version != null && cached?.version === version) return cached.rows
-        const full = !modern || (tab === 'comps' && c === (selected || ids[0]))
+        const full = !modern || (tab === 'comps' && c === (selected || pickDefault?.(h, h.next_event) || ids[0]))
         if (!full) return preview.filter((f) => f.competition_id === c)
         const rows = modern ? await fetchCareerCalendar('competition', c) : await fetchFixtures(h.season.id, c)
         if (alive.current && mine === reqId.current) fixtureCache.current.set(key, { version, rows })
@@ -64,7 +65,7 @@ export default function useManagerData(tab = 'home', selected = null) {
     } finally {
       if (alive.current && !silent && mine === reqId.current) setLoading(false)
     }
-  }, [tab, selected])
+  }, [tab, selected, pickDefault])
 
   const refresh = useCallback((opts = {}) => load({ ...opts, reuseHub: false }), [load])
 
