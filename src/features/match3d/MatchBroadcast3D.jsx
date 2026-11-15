@@ -353,7 +353,10 @@ export default function MatchBroadcast3D({ data, catalog, clock, events, paused,
         if (tag) {
           tmp.copy(toWorld(tag.x, tag.y, 2.15)).project(camera)
           const r = wrap.current.getBoundingClientRect()
-          el.style.transform = `translate(${((tmp.x + 1) / 2) * r.width}px, ${((1 - tmp.y) / 2) * r.height}px) translate(-50%, -100%)`
+          // o rótulo nunca sai da tela (jogador na borda): a caixa fica inteira dentro do quadro
+          const half = (el.offsetWidth || 90) / 2 + 4
+          const px = Math.max(half, Math.min(r.width - half, ((tmp.x + 1) / 2) * r.width))
+          el.style.transform = `translate(${px}px, ${((1 - tmp.y) / 2) * r.height}px) translate(-50%, -100%)`
           el.style.opacity = tmp.z < 1 ? '1' : '0'
           if (el.dataset.id !== String(tag.id)) {
             el.dataset.id = String(tag.id)

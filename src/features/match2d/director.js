@@ -369,6 +369,8 @@ export function createDirector({ formations, homeId, awayId }) {
     const n = clamp(Math.ceil(total / 22), 1, 4)
     const used = new Set([s.shooter?.id])
     const steps = []
+    // o assistente já começa com a bola: ele mesmo dá o último passe (sem rodar a bola por outros antes)
+    if (s.assist && s.assist.id === b.owner) return [{ who: s.shooter, at: s.spot, final: true }]
     for (let i = 1; i < n; i += 1) {
       const k = i / n
       const wp = {
@@ -443,7 +445,9 @@ export function createDirector({ formations, homeId, awayId }) {
       owner.speed = JOG + 1
       const near = dist(step.who, step.at) < 5
       if ((near && s.t > 0.5) || s.t > 2.4) {
-        pass(owner, step.who, { lead: 0.35, speed: dist(owner, step.who) > 25 ? 22 : PASS_SPEED + 2 })
+        // o último passe é do assistente do relato: se a bola caiu com outro colega, ela volta antes para ele
+        const to = step.final && s.assist && owner !== s.assist && s.assist !== step.who ? s.assist : step.who
+        pass(owner, to, { lead: 0.35, speed: dist(owner, to) > 25 ? 22 : PASS_SPEED + 2 })
         s.t = 0
       }
       return
@@ -462,8 +466,16 @@ export function createDirector({ formations, homeId, awayId }) {
           sh.tx = s.spot.x
           sh.ty = s.spot.y
           sh.speed = SPRINT
+          // com assistente no relato, a bola passa por ele antes do finalizador (o último passe é dele)
+          const via = s.assist && owner !== s.assist && s.assist !== sh ? s.assist : null
+          if (via) {
+            via.tx = lerp(owner.x, s.spot.x, 0.6)
+            via.ty = lerp(owner.y, s.spot.y, 0.6)
+            via.speed = SPRINT
+          }
           if (dist(sh, s.spot) < 6 || s.t > 2.2) {
-            pass(owner, sh, { lead: 0.3, speed: 20, peak: dist(owner, sh) > 24 ? 3 : 0.2 })
+            const to = via || sh
+            pass(owner, to, { lead: 0.3, speed: 20, peak: dist(owner, to) > 24 ? 3 : 0.2 })
             s.t = 0
           }
         } else {
@@ -1505,6 +1517,37 @@ export function createDirector({ formations, homeId, awayId }) {
     }
   }
 
+  // Espaçamento: fora das áreas e de bola parada, só fica perto da bola (7 m) quem está na disputa — até 2 de quem
+  // defende e 1 companheiro do portador, além de quem o lance roteirizado ou o passe chamou. Os demais seguram a
+  // posição a pelo menos 10 m, como um time de verdade (sem o "bolo" em volta da bola).
+  function declutter() {
+    const b = st.ball
+    const s = st.script
+    if (s && (RESTART.test(s.phase) || s.kind === 'penalty')) return
+    const ref = b.flight ? b.flight.to : b
+    if (ref.x < 17 || ref.x > L - 17) return
+    const keep = new Set([b.owner, b.flight?.receiver, b.flight?.interceptBy, b.flight?.kicker, s?.shooter?.id, s?.assist?.id, ...(s?.steps || []).map((x) => x.who?.id)].filter(Boolean))
+    const ownerSide = b.owner ? byId(b.owner)?.side : b.flight?.side || st.poss
+    for (const side of ['h', 'a']) {
+      const allow = side === ownerSide ? 1 : 2
+      const list = outfield(side)
+        .filter((p) => !keep.has(p.id))
+        // quem o jogo corrido mandou para a bola (pressão, cobertura) tem o alvo mais perto dela: esses ficam
+        .sort((x, y) => dist({ x: x.tx, y: x.ty }, ref) - dist({ x: y.tx, y: y.ty }, ref))
+      list.forEach((p, i) => {
+        if (i < allow) return
+        const t = { x: p.tx, y: p.ty }
+        const dd = dist(t, ref)
+        if (dd >= 10) return
+        // empurra o alvo para fora do círculo, do lado em que o jogador já está (ou da posição da forma)
+        const from = dist(p, ref) > 0.5 ? p : t
+        const ang = Math.atan2(from.y - ref.y, from.x - ref.x)
+        p.tx = clamp(ref.x + Math.cos(ang) * 10, 2, L - 2)
+        p.ty = clamp(ref.y + Math.sin(ang) * 10, 2, W - 2)
+      })
+    }
+  }
+
   // ninguém atravessa ninguém: afasta quem está colado (o portador e o marcador podem encostar)
   function separate() {
     const ps = st.players
@@ -1525,6 +1568,8 @@ export function createDirector({ formations, homeId, awayId }) {
         c.y += (dy / d) * push
       }
     }
+    // o empurrão de quem encosta nunca leva o goleiro para trás da própria linha
+    for (const p of ps) if (p.gk) p.x = clamp(p.x, 0.2, L - 0.2)
   }
 
   // ---------- ciclo ----------
@@ -1612,6 +1657,7 @@ export function createDirector({ formations, homeId, awayId }) {
         st.script = null
       }
     } else openPlay(dt)
+    declutter()
 
     // bola em voo
     if (b.flight?.delay > 0) {

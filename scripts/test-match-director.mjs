@@ -85,7 +85,7 @@ function runMatch(speed, seed) {
   let lastOwnerSide = null
   let half = 1
   const revealedAll = new Set()
-  Object.assign(res, { footGapMax: 0, behind: 0, carryN: 0, kicks: 0, kickFar: 0, saves: 0, saveMiss: 0, goalThroughGk: 0, gkOut: 0, shooterWrong: 0, assistWrong: 0, assists: 0, cardWrong: 0, passes: 0, passCtrl: 0 })
+  Object.assign(res, { footGapMax: 0, behind: 0, carryN: 0, kicks: 0, kickFar: 0, saves: 0, saveMiss: 0, goalThroughGk: 0, gkOut: 0, shooterWrong: 0, assistWrong: 0, assists: 0, cardWrong: 0, passes: 0, passCtrl: 0, crowdN: 0, crowd3: 0, crowdMax: 0 })
   let ownerSince = { id: null, t: 0 }
   let prevFlight = null
   let prevDelay = 0
@@ -123,6 +123,13 @@ function runMatch(speed, seed) {
     }
     // goleiro: dentro do campo e sem atravessar o próprio gol
     for (const g of gks()) if (g.x < -0.35 || g.x > L + 0.35) res.gkOut += 1
+    // bolo em volta da bola (bola dominada fora das áreas, sem bola parada): jogadores de linha dos dois times a menos de 7 m
+    if (o && !f && b.x > 17 && b.x < L - 17 && !(st.script && /setup|runup|celebrate|reset|c_out|c_place|whistle|card|freekick|free|goalkick|keeper/.test(st.script.phase))) {
+      const n = st.players.filter((p) => p.id !== o.id && !p.gk && Math.hypot(p.x - b.x, p.y - b.y) < 7).length
+      res.crowdN += 1
+      if (n >= 4) res.crowd3 += 1
+      res.crowdMax = Math.max(res.crowdMax, n)
+    }
   }
   while (clock < 90 && wall < 3600) {
     // relógio da tela (MatchLive): anda msPerMin por minuto, mas não passa do lance em andamento
@@ -232,6 +239,7 @@ function runMatch(speed, seed) {
   res.finished = clock >= 90
   res.press = +(res.pressSum / Math.max(1, res.pressN)).toFixed(2)
   res.pressedPct = +(((res.closeN || 0) / Math.max(1, res.pressN)) * 100).toFixed(1)
+  res.crowdPct = +((res.crowd3 / Math.max(1, res.crowdN)) * 100).toFixed(1)
   delete res.closeN
   res.closedPct = +(((res.closedN || 0) / Math.max(1, res.recvN || 0)) * 100).toFixed(1)
   delete res.closedN
@@ -266,6 +274,8 @@ for (const speed of SPEEDS) {
     check(r.closedPct >= 70, `defesa passiva: só ${r.closedPct}% das recepções livres foram encurtadas em 1,5 s`)
     check(r.press < 7.5 && r.pressedPct > 55, `marcador médio a ${r.press} m, colado (< 5 m) ${r.pressedPct}% do tempo`)
     check(r.idle < 20, `jogadores parados demais: ${r.idle}%`)
+    // sem bolo: fora das áreas, 4 ou mais jogadores de linha a menos de 7 m da bola é raro
+    check(r.crowdPct < 9, `bolo em volta da bola em ${r.crowdPct}% do tempo (4+ jogadores a menos de 7 m)`)
     check(r.holdStuck < 40, `relógio preso num lance por ${r.holdStuck.toFixed(0)} s`)
     // bola e corpo
     check(r.kickFar === 0, `${r.kickFar} de ${r.kicks} chutes saíram longe do pé (> 0,9 m)`)
