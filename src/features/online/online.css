@@ -1189,3 +1189,14 @@ button.fut:disabled { cursor: default; }
 .on-ps-step .on-auc-steps { grid-template-columns: repeat(5, minmax(0, 1fr)); }
 
 .onm-lus-tab { padding: 4px 0 8px; }
+/* confirmação do lance no mercado */
+.on-bidc-who { display: grid; grid-template-columns: 96px minmax(0, 1fr); align-items: center; gap: 12px; }
+.on-bidc-who > div { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.on-bidc-who strong { font: 900 1.1rem/1.15 var(--font-heading); text-transform: uppercase; overflow-wrap: break-word; }
+.on-bidc-who span { color: #93a3c4; font-size: .78rem; }
+.on-bidc-who em { align-self: flex-start; padding: 2px 8px; border-radius: 999px; background: rgba(124, 58, 237, .25); color: #ddd6fe; font: 800 .62rem var(--font-body); font-style: normal; letter-spacing: .06em; text-transform: uppercase; }
+.on-bidc-rows { display: flex; flex-direction: column; gap: 0; margin: 0; padding: 0; list-style: none; border-radius: 12px; border: 1px solid var(--gx-line); overflow: hidden; }
+.on-bidc-rows li { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 8px 12px; font-size: .8rem; }
+.on-bidc-rows li + li { border-top: 1px solid var(--gx-line); }
+.on-bidc-rows span { color: #93a3c4; }
+.on-bidc-rows b { display: inline-flex; align-items: center; gap: 4px; font-variant-numeric: tabular-nums; }
