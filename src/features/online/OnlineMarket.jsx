@@ -63,7 +63,7 @@ function Auction({ lot, now, busy, wallet, coins, closed, onBid, onCancel }) {
             <div className="on-auc-steps" role="group" aria-label="Valor do lance">
               {STEPS.map(([v, label]) => <button key={v} type="button" className={step === v ? 'is-on' : ''} onClick={() => setStep(v)}>{label}</button>)}
             </div>
-            <button type="button" className={`gx-btn on-auc-bid ${coinCost > 0 ? 'is-coins' : ''}`} disabled={busy || blocked || left <= 0} onClick={() => onBid(lot, amount, coinCost > 0)}>
+            <button type="button" className={`gx-btn on-auc-bid ${coinCost > 0 ? 'is-coins' : ''}`} disabled={busy || blocked || left <= 0} onClick={() => onBid(lot, amount, coinCost)}>
               <Gavel size={16} /> {money(amount)}
               {coinCost > 0 && <em><Coins size={12} /> {coinCost}</em>}
             </button>
@@ -72,6 +72,48 @@ function Auction({ lot, now, busy, wallet, coins, closed, onBid, onCancel }) {
         )}
       </div>
     </article>
+  )
+}
+
+// Confirmação do lance: carta do jogador, valores dele e de onde sai o dinheiro.
+function BidConfirm({ ask, wallet, coins, busy, onCancel, onConfirm }) {
+  const { lot, amount, coinCost } = ask
+  const p = lot.player
+  const extra = amount - (lot.leading ? lot.best_bid : 0)
+  const fromCoins = coinCost > 0 ? Math.min(extra, coinCost * coins.bid_rate) : 0
+  const fromCash = extra - fromCoins
+  const kind = lot.featured >= 8 ? (p.legend ? 'Lenda' : 'Destaque') : lot.seller ? `Anunciado por ${lot.seller.name}` : 'Mercado'
+  return (
+    <div className="on-modal" role="dialog" aria-modal="true" aria-label={`Confirmar lance em ${p.name}`}>
+      <div className="on-sheet on-confirm on-bidc">
+        <small className="on-sheet-kicker"><Gavel size={13} /> Confirmar proposta</small>
+        <div className="on-bidc-who">
+          <FutCard p={p} club={lot.seller} size="sm" />
+          <div>
+            <strong>{p.name}</strong>
+            <span>{p.pos} · {p.legend ? 'Lenda' : `${p.age} anos`} · nota {Math.round(p.ovr)}{p.pot != null ? ` · POT ${p.pot}` : ''}</span>
+            <em>{kind}</em>
+          </div>
+        </div>
+        <div className="on-confirm-swap">
+          <span><b>{money(amount)}</b><small>sua proposta</small></span>
+          <i>→</i>
+          <span><b>{money(p.value)}</b><small>valor de mercado</small></span>
+        </div>
+        <ul className="on-bidc-rows">
+          <li><span>{lot.best_bid ? 'Maior lance agora' : 'Lance inicial'}</span><b>{money(lot.best_bid || lot.start_price)}</b></li>
+          <li><span>Salário</span><b>{money(p.wage)} por dia</b></li>
+          <li><span>Sai do caixa (reservado)</span><b>{money(fromCash)}</b></li>
+          {coinCost > 0 && <li><span>Moedas usadas</span><b><Coins size={12} /> {coinCost}</b></li>}
+          <li><span>Caixa livre depois</span><b>{money(wallet.free - fromCash)}</b></li>
+        </ul>
+        <p>O valor fica reservado até o fim do leilão. Se outro clube cobrir, ele volta para o caixa{coinCost > 0 ? ' e as moedas voltam para a sua conta' : ''}.</p>
+        <div className="on-modal-actions">
+          <button type="button" className="gx-btn-ghost" onClick={onCancel}>Cancelar</button>
+          <button type="button" className="gx-btn" disabled={busy} onClick={onConfirm}><Gavel size={15} /> Confirmar</button>
+        </div>
+      </div>
+    </div>
   )
 }
 
@@ -91,6 +133,7 @@ export default function OnlineMarket({ notify, onChanged }) {
   const [now, setNow] = useState(() => Date.now())
   const [view, setView] = useState('featured')
   const [kind, setKind] = useState('all')
+  const [ask, setAsk] = useState(null) // lance esperando confirmação: { lot, amount, coinCost }
 
   const apply = useCallback((d) => {
     setOffset(new Date(d.server_now).getTime() - Date.now())
@@ -139,7 +182,13 @@ export default function OnlineMarket({ notify, onChanged }) {
   const closed = hours ? !hours.open : false
   const hh = (n) => `${String(n % 24).padStart(2, '0')}:00`
   const cancel = (lot) => run(cancelOnlineLot(lot.id), `${lot.player.name} voltou ao elenco`)
-  const bid = (lot, v, useCoins) => run(bidOnline(lot.id, v, useCoins), `Lance de ${money(v)} em ${lot.player.name}`)
+  // o lance só sai depois da confirmação (janela com o jogador e os valores)
+  const bid = (lot, amount, coinCost) => setAsk({ lot, amount, coinCost })
+  const confirmBid = () => {
+    const { lot, amount, coinCost } = ask
+    setAsk(null)
+    run(bidOnline(lot.id, amount, coinCost > 0), `Lance de ${money(amount)} em ${lot.player.name}`)
+  }
   const kindTest = (KINDS.find(([k]) => k === kind) || KINDS[0])[2]
   const list = view === 'featured' ? lists.featured.filter(kindTest) : lists[view] || []
   return (
@@ -193,6 +242,7 @@ export default function OnlineMarket({ notify, onChanged }) {
           ))}
         </ul>
       )}
+      {ask && <BidConfirm ask={ask} wallet={wallet} coins={coins} busy={busy} onCancel={() => setAsk(null)} onConfirm={confirmBid} />}
     </section>
   )
 }
