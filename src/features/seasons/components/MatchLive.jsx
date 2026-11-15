@@ -1,6 +1,6 @@
 import { OpponentTactics } from './OpponentScout'
 import { isSessionError } from '../../../lib/sessionRecovery'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Ambulance, ChevronsRight, ClipboardList, FastForward, Flag, Pause, Play, Repeat2, Settings2, Square, Tv, Users } from 'lucide-react'
 import BasePlayerCard from '../../cards/components/BasePlayerCard'
 import PlayerSheet from './PlayerSheet'
@@ -16,7 +16,10 @@ import { fetchPlayer, fetchSquad, stepMatch } from '../services/managerApi'
 import { MAJOR_EVENTS, condTone, eventText, isGoal } from '../utils/managerUtils'
 import { COMP_NAME, describeMatch } from '../utils/seasonUtils'
 import useMatchAudio from '../../audio/useMatchAudio'
-import MatchTactical2D from '../../match2d/MatchTactical2D'
+import { HOLD_KINDS } from '../../match2d/director'
+
+// Transmissão 3D: carregada só quando ligada, para o Three.js não pesar na abertura do jogo
+const MatchBroadcast3D = lazy(() => import('../../match3d/MatchBroadcast3D'))
 
 const SPEEDS = [
   { id: 1, label: '1x', ms: 700 },
@@ -36,8 +39,10 @@ function nextTarget(minute, et) {
 
 // PARTIDA AO VIVO: o motor simula em etapas de 5 minutos no servidor; a tela revela os lances com o relógio.
 // Mudanças (substituições, postura, formação) entram na PRÓXIMA etapa — e só afetam o que vem depois.
-export default function MatchLive({ initial, myClub, onFinished, notify }) {
-  const { catalog } = useCatalog()
+// api / catalog (opcionais): substituem o servidor e as formações do banco — usados pelo laboratório local (#lab3d).
+export default function MatchLive({ initial, myClub, onFinished, notify, api, catalog: catalogProp }) {
+  const { catalog: loadedCatalog } = useCatalog()
+  const catalog = catalogProp || loadedCatalog
   const [data, setData] = useState(initial)
   const [events, setEvents] = useState(initial.events || [])
   const [clock, setClock] = useState(initial.minute > 0 ? initial.minute : 0)
@@ -57,7 +62,8 @@ export default function MatchLive({ initial, myClub, onFinished, notify }) {
   const [holdAt, setHoldAt] = useState(null) // minuto de um lance que a transmissão ainda está mostrando
   // lances que o campo já mostrou (gol na rede, defesa, cartão): entram no placar e no relato na hora,
   // mesmo com o relógio esperando outro lance do mesmo minuto
-  const [revealed, setRevealed] = useState(() => new Set())
+  // lances que já estavam no relato ao abrir a partida (retomada) não são reencenados nem esperados
+  const [revealed, setRevealed] = useState(() => new Set((initial.events || []).filter((e) => e.minute < (initial.minute > 0 ? initial.minute : 0) - 0.5).map((e) => e.seq)))
   const onReveal = useCallback((seqs) => {
     setRevealed((prev) => {
       const next = new Set(prev)
@@ -65,7 +71,7 @@ export default function MatchLive({ initial, myClub, onFinished, notify }) {
       return next
     })
   }, [])
-  // Campo 2D tático (pode ser desligado em aparelhos mais simples; preferência só deste navegador)
+  // Campo 3D (padrão) ou só placar — preferência só deste navegador
   const [broadcast, setBroadcast] = useState(() => {
     try {
       return window.localStorage.getItem('sim.broadcast') !== 'off'
@@ -73,7 +79,9 @@ export default function MatchLive({ initial, myClub, onFinished, notify }) {
       return true
     }
   })
-  const toggleBroadcast = () =>
+  const toggleBroadcast = () => {
+    // ao ligar o campo no meio do jogo, o que já passou no relógio fica como mostrado (o campo não reencena)
+    if (!broadcast) onReveal(events.filter((e) => e.minute < clock - 0.5).map((e) => e.seq))
     setBroadcast((b) => {
       try {
         window.localStorage.setItem('sim.broadcast', b ? 'off' : 'on')
@@ -82,6 +90,9 @@ export default function MatchLive({ initial, myClub, onFinished, notify }) {
       }
       return !b
     })
+  }
+  // o aparelho não abriu o 3D (sem WebGL): a partida segue só no placar
+  const [fieldFailed, setFieldFailed] = useState(false)
   const lastSeq = useRef(Math.max(0, ...(initial.events || []).map((e) => e.seq)))
   const flashed = useRef(new Set())
   const stopRef = useRef(null)
@@ -97,21 +108,42 @@ export default function MatchLive({ initial, myClub, onFinished, notify }) {
   // ---- relógio ----
   const msPerMin = turbo ? 35 : SPEEDS.find((s) => s.id === speed).ms
   const waitingDecision = overlay || panel || playerInfo
+  // UMA fonte de lances (events) e UM relógio (clock). Com o campo na tela, finalização, cartão e impedimento só
+  // entram no relato, no placar e no som quando o campo os MOSTRA (revealed); o relógio espera por eles.
+  const fieldOn = broadcast && !turbo && !fieldFailed && Boolean(catalog)
+  const pendingHold = useMemo(() => {
+    if (!fieldOn) return null
+    let m = null
+    for (const e of events) if (HOLD_KINDS.has(e.kind) && !revealed.has(e.seq)) m = m == null ? e.minute : Math.min(m, e.minute)
+    return m
+  }, [fieldOn, events, revealed])
+  const capMinute = fieldOn ? [holdAt, pendingHold].filter((v) => v != null).reduce((a, b) => Math.min(a, b), Infinity) : Infinity
   useEffect(() => {
     if (paused || waitingDecision || clock >= serverMin) return undefined
-    // com a transmissão ligada, o relógio não passa do lance que ainda está sendo mostrado em campo
-    const cap = broadcast && !turbo && holdAt != null ? Math.max(clock, holdAt - 0.01) : Infinity
+    // o relógio não passa do lance que o campo ainda vai mostrar (nem do que está mostrando)
+    const cap = Number.isFinite(capMinute) ? Math.max(clock, capMinute - 0.01) : Infinity
     if (clock >= cap) return undefined
     const id = setInterval(() => setClock((c) => Math.min(serverMin, cap, c + 100 / msPerMin)), 100)
     return () => clearInterval(id)
-  }, [paused, waitingDecision, clock, serverMin, msPerMin, broadcast, turbo, holdAt])
+  }, [paused, waitingDecision, clock, serverMin, msPerMin, capMinute])
+  // segurança: se o campo não mostrar um lance em 40 s (aba em segundo plano, aparelho lento), o relato segue
+  useEffect(() => {
+    if (!fieldOn || paused || waitingDecision || pendingHold == null || clock < pendingHold - 0.02) return undefined
+    const t = setTimeout(() => onReveal(events.filter((e) => HOLD_KINDS.has(e.kind) && e.minute <= pendingHold).map((e) => e.seq)), 40000)
+    return () => clearTimeout(t)
+  }, [fieldOn, paused, waitingDecision, pendingHold, clock, events, onReveal])
   // a transmissão recebe os lances 1 minuto antes, para montar a jogada desde onde a bola está
   const upcoming = useMemo(() => events.filter((e) => e.minute <= Math.floor(clock) + 1), [events, clock])
 
   const shownMinute = Math.floor(clock)
   const visible = useMemo(
-    () => events.filter((e) => e.minute <= shownMinute || revealed.has(e.seq) || (finished && clock >= serverMin)),
-    [events, shownMinute, revealed, finished, clock, serverMin],
+    () =>
+      events.filter((e) => {
+        if (revealed.has(e.seq) || (finished && clock >= serverMin)) return true
+        if (fieldOn && HOLD_KINDS.has(e.kind)) return false // só depois de aparecer em campo
+        return e.minute <= shownMinute
+      }),
+    [events, shownMinute, revealed, finished, clock, serverMin, fieldOn],
   )
 
   // placar e números a partir dos lances JÁ mostrados (sem spoiler)
@@ -137,7 +169,8 @@ export default function MatchLive({ initial, myClub, onFinished, notify }) {
   }, [visible])
 
   // som sincronizado com os lances revelados (apitos, gols, cartões, torcida)
-  useMatchAudio({ visible, userSide: side, score: live.sc, minute: shownMinute })
+  // com o campo ligado (e sem pular para o fim), contatos e apitos saem do campo no instante visual
+  useMatchAudio({ visible, userSide: side, score: live.sc, minute: shownMinute, field: fieldOn })
 
   // GOL! (efeito ao revelar)
   useEffect(() => {
@@ -145,11 +178,11 @@ export default function MatchLive({ initial, myClub, onFinished, notify }) {
     if (!g) return undefined
     flashed.current.add(g.seq)
     if (clock - g.minute > 2) return undefined // retomando partida: sem animação dos gols antigos
-    if (broadcast) return undefined // a transmissão mostra o gol em campo
+    if (fieldOn) return undefined // a transmissão mostra o gol em campo
     setFlash({ side: g.side, name: g.player_name })
     const t = setTimeout(() => setFlash(null), 1800)
     return () => clearTimeout(t)
-  }, [visible, clock, broadcast])
+  }, [visible, clock, fieldOn])
 
   // ---- etapa no servidor ----
   const requestNext = useCallback(
@@ -162,7 +195,7 @@ export default function MatchLive({ initial, myClub, onFinished, notify }) {
       if (pending.formation) changes.formation = pending.formation
       if (pending.slots) changes.slots = pending.slots
       try {
-        const r = await stepMatch({
+        const r = await (api?.stepMatch || stepMatch)({
           fixtureId: data.fixture_id,
           from: serverMin,
           to: auto ? 120 : nextTarget(serverMin, et),
@@ -189,7 +222,7 @@ export default function MatchLive({ initial, myClub, onFinished, notify }) {
         setBusy(false)
       }
     },
-    [busy, finished, pending, data.fixture_id, serverMin, et, notify],
+    [busy, finished, pending, data.fixture_id, serverMin, et, notify, api],
   )
 
   // quando o relógio alcança o servidor: para nas decisões (intervalo, lesão, expulsão) ou pede a próxima etapa
@@ -221,10 +254,11 @@ export default function MatchLive({ initial, myClub, onFinished, notify }) {
   // notas por posição do elenco (para o campo do painel mostrar quanto cada um rende em cada vaga)
   useEffect(() => {
     if (!panel || squadById) return
-    fetchSquad()
+    const load = api?.fetchSquad || fetchSquad
+    load()
       .then((sq) => setSquadById(Object.fromEntries(sq.players.map((p) => [p.id, p]))))
       .catch(() => setSquadById({}))
-  }, [panel, squadById])
+  }, [panel, squadById, api])
 
   // ---- jogadores ----
   const players = data.players || []
@@ -240,24 +274,27 @@ export default function MatchLive({ initial, myClub, onFinished, notify }) {
   const feed = [...visible].reverse()
 
   return (
-    <div className={`ml ${broadcast ? 'has-broadcast' : ''}`} role="dialog" aria-modal="true" aria-label="Partida ao vivo">
-      {broadcast && catalog && (
+    <div className={`ml ${fieldOn ? 'has-broadcast' : ''}`} role="dialog" aria-modal="true" aria-label="Partida ao vivo">
+      {broadcast && !fieldFailed && catalog && (
         <div className="ml-stage">
-          <MatchTactical2D
-            data={data}
-            catalog={catalog}
-            clock={clock}
-            minute={shownMinute}
-            events={upcoming}
-            onHold={setHoldAt}
-            onReveal={onReveal}
-            paused={paused || Boolean(waitingDecision) || clock >= serverMin}
-            speed={turbo ? 4 : speed}
-            score={live.sc}
-            finished={finished && clock >= serverMin}
-            clockLabel={clockLabel}
-            userSide={side}
-          />
+          <Suspense fallback={<div className="m3d-boot">Carregando o estádio…</div>}>
+            <MatchBroadcast3D
+              data={data}
+              catalog={catalog}
+              clock={clock}
+              minute={shownMinute}
+              events={upcoming}
+              onHold={setHoldAt}
+              onReveal={onReveal}
+              onUnavailable={() => setFieldFailed(true)}
+              paused={paused || Boolean(waitingDecision) || clock >= serverMin}
+              speed={turbo ? 4 : speed}
+              score={live.sc}
+              finished={finished && clock >= serverMin}
+              clockLabel={clockLabel}
+              userSide={side}
+            />
+          </Suspense>
         </div>
       )}
       <header className="ml-top" style={{ '--hc': home?.colors?.[0] || '#1b3566', '--ac': away?.colors?.[0] || '#5a1b1b' }}>
@@ -477,7 +514,15 @@ export default function MatchLive({ initial, myClub, onFinished, notify }) {
             <button type="button" className="ml-ic" onClick={simulateToEnd} disabled={busy || finished} aria-label="Simular até o fim" title="Simular até o fim (o auxiliar decide)">
               <FastForward size={18} />
             </button>
-            <button type="button" className={`ml-ic ${broadcast ? 'is-on' : ''}`} onClick={toggleBroadcast} aria-pressed={broadcast} aria-label="Campo 2D" title={broadcast ? 'Ocultar o campo' : 'Mostrar o campo'}>
+            <button
+              type="button"
+              className={`ml-ic ${fieldOn ? 'is-on' : ''}`}
+              onClick={toggleBroadcast}
+              disabled={fieldFailed}
+              aria-pressed={broadcast}
+              aria-label={broadcast ? 'Ver só o placar' : 'Ver o jogo em 3D'}
+              title={fieldFailed ? 'Este aparelho não abre o 3D: só placar' : broadcast ? 'Só placar' : 'Jogo em 3D'}
+            >
               <Tv size={18} />
             </button>
           </>

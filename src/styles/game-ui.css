@@ -355,3 +355,20 @@
   .club-name[data-size='xl'] .cn-full { display: none; }
   .club-name[data-size='xl'] .cn-short { display: inline; }
 }
+
+/* Espaço do campo 3D enquanto o estádio carrega (o CSS do 3D vem junto com o código, depois) */
+.m3d-boot {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  max-height: 62vh;
+  background: #050b17;
+  color: #cbd5e1;
+  font-size: 0.85rem;
+}
+@media (max-width: 640px) {
+  .m3d-boot {
+    aspect-ratio: 4 / 3;
+  }
+}

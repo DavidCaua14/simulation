@@ -18,8 +18,13 @@ export function soundFor(e, userSide) {
   }
 }
 
+// Com o campo na tela, apito de impedimento e "uhh" das chances saem do próprio campo, no quadro do lance
+// (fieldSounds.js): aqui ficam só os sons da revelação (gol, cartão, intervalo, fim) para não tocar em dobro.
+const FIELD_OWNED = new Set(['offside', 'save', 'shot_off', 'pen_miss'])
+
 // visible: lances já mostrados · userSide: 'h'|'a' · score: {h, a} · minute: relógio da tela · active: partida na tela
-export default function useMatchAudio({ visible, userSide, score, minute, active = true }) {
+// field: o campo 2D/3D está na tela e toca os sons de contato/apito no instante visual
+export default function useMatchAudio({ visible, userSide, score, minute, active = true, field = false }) {
   const { startMatch, stopMatch, playSfx, matchIntensity } = useAudio()
   const seen = useRef(null)
   const boostUntil = useRef(0)
@@ -40,11 +45,12 @@ export default function useMatchAudio({ visible, userSide, score, minute, active
     for (const e of visible) {
       if (seen.current.has(e.seq)) continue
       seen.current.add(e.seq)
+      if (field && FIELD_OWNED.has(e.kind)) continue
       const id = soundFor(e, userSide)
       if (id) playSfx(id)
       if (id === 'goal_for' || id === 'goal_against' || id === 'chance') boostUntil.current = performance.now() + 4000
     }
-  }, [visible, userSide, minute, active, playSfx])
+  }, [visible, userSide, minute, active, playSfx, field])
 
   // intensidade da torcida: mais alta depois de lances fortes e nos minutos finais de jogo apertado
   useEffect(() => {

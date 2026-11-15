@@ -8,8 +8,14 @@ export const W = 68
 const GOAL_HALF = 3.66
 const SPRINT = 7.6 // m/s
 const JOG = 4.6
-const ACCEL = 10 // m/s²
+const ACCEL = 10 // m/s² (arrancada a partir de parado; cai perto da velocidade máxima)
+const DECEL = 15 // m/s² (frear é mais rápido que acelerar)
+const TURN = 9 // rad/s de giro parado; em velocidade o giro fica mais lento
 const PASS_SPEED = 17
+const KICK_DELAY = 0.1 // s entre o início do movimento da perna e o contato com a bola
+const ROLL_FRICTION = 3.2 // m/s² de desaceleração da bola rolando no gramado
+// fases de bola parada / roteiro em que a marcação e os desmarques do jogo corrido não valem
+const RESTART = /setup|runup|celebrate|reset|c_out|c_place|whistle|card|freekick|free|goalkick|keeper/
 export const DIRS = ['S', 'SE', 'E', 'NE', 'N', 'NW', 'W', 'SW']
 // octante na TELA (0 = leste, sentido horário porque o y da tela cresce para baixo) → índice em DIRS
 const OCT_TO_DIR = [2, 1, 0, 7, 6, 5, 4, 3]
@@ -47,6 +53,10 @@ export const BANNER_KINDS = {
   injury: { img: 'injury', ms: 1500 },
   sub: { img: 'sub', ms: 1500 },
   foul: { img: 'referee', ms: 1200 },
+  // finalizações sem gol também têm a faixa do lance (mesmo texto do relato)
+  save: { img: null, ms: 1800 },
+  shot_off: { img: null, ms: 1600 },
+  pen_miss: { img: null, ms: 1800 },
 }
 
 export function createDirector({ formations, homeId, awayId }) {
@@ -55,7 +65,7 @@ export function createDirector({ formations, homeId, awayId }) {
     half: 1,
     pendingHalf: null,
     players: [],
-    ball: { x: L / 2, y: W / 2, z: 0, owner: null, flight: null, hidden: false, spin: 0 },
+    ball: { x: L / 2, y: W / 2, z: 0, vx: 0, vy: 0, owner: null, flight: null, hidden: false, held: false, spin: 0 },
     poss: 'h',
     hold: 1,
     script: null,
@@ -66,6 +76,9 @@ export function createDirector({ formations, homeId, awayId }) {
     netShake: null,
     released: new Set(), // eventos já mostrados (o relógio pode seguir)
     revealed: [], // lances que a transmissão acabou de mostrar (gol na rede, defesa, cartão): o placar e o relato atualizam na hora
+    fx: [], // sons do instante visual (chute, contato, apito, rede, reação da torcida): a tela toca e esvazia
+    possSide: null, // time com a bola no quadro anterior (detecta a transição)
+    turnoverAt: -99,
     homeId,
     awayId,
   }
@@ -114,6 +127,13 @@ export function createDirector({ formations, homeId, awayId }) {
         anim: null,
         tx: base.x,
         ty: base.y,
+        // alvo percebido: segue o alvo real com o tempo de reação de cada um (sem giros instantâneos)
+        rtx: fresh ? L / 2 : base.x,
+        rty: fresh ? W + 1 : base.y,
+        react: 0.16 + rnd() * 0.14,
+        pace: 0.94 + rnd() * 0.12,
+        run: null,
+        runCd: 2 + rnd() * 6,
         speed: JOG,
       }
     })
@@ -126,6 +146,10 @@ export function createDirector({ formations, homeId, awayId }) {
   const keeper = (side) => team(side).find((p) => p.gk) || team(side)[0]
   const nearest = (list, pt, except = null) => list.filter((p) => p !== except).sort((a, b) => dist(a, pt) - dist(b, pt))[0] || null
   const play = (p, name, dur, opts = {}) => p && (p.anim = { name, t: 0, dur, hold: Boolean(opts.hold) })
+  // som/efeito no instante visual (a tela consome com takeFx)
+  const fx = (type, extra = {}) => {
+    if (st.fx.length < 24) st.fx.push({ type, t: st.t, x: st.ball.x, y: st.ball.y, ...extra })
+  }
 
   function kickoffPositions(side) {
     for (const p of st.players) {
@@ -146,33 +170,69 @@ export function createDirector({ formations, homeId, awayId }) {
   }
   function kickoff(side, { snap = true } = {}) {
     const taker = kickoffPositions(side)
-    if (snap) for (const p of st.players) Object.assign(p, { x: p.tx, y: p.ty, vx: 0, vy: 0, anim: null })
-    Object.assign(st.ball, { x: L / 2, y: W / 2, z: 0, flight: null, owner: taker?.id || null, hidden: false })
+    // snap: início de tempo (todos na posição). Sem snap (reinício após gol), quem ainda está voltando segue correndo.
+    if (snap) for (const p of st.players) Object.assign(p, { x: p.tx, y: p.ty, rtx: p.tx, rty: p.ty, vx: 0, vy: 0, anim: null, run: null })
+    Object.assign(st.ball, { x: L / 2, y: W / 2, z: 0, vx: 0, vy: 0, flight: null, owner: taker?.id || null, hidden: false, held: false })
+    if (taker) taker.dribA = dirOf(side) === 1 ? 0 : Math.PI
     st.poss = side
+    st.possSide = side
     st.hold = 0.8
+    if (!snap) fx('whistle')
   }
 
   // ---------- bola ----------
+  // Chute/passe. Com batedor, a bola só sai no CONTATO: o movimento da perna começa agora e a bola parte
+  // KICK_DELAY depois, do pé dele (até lá ela segue no pé). Sem batedor (rebote, desvio), sai na hora.
   function kick(from, to, opts = {}) {
     const b = st.ball
     const d = Math.max(1, dist(from, to))
     const speed = opts.speed ?? PASS_SPEED
     const dur = opts.dur ?? d / speed
     const peak = opts.peak ?? (d > 28 ? Math.min(7, d / 8) : 0.2)
-    b.flight = { from: { x: from.x, y: from.y }, to: { x: to.x, y: to.y }, t: 0, dur, peak, z0: b.z, z1: opts.z1 ?? 0, onEnd: opts.onEnd || null, receiver: opts.receiver ?? null, ground: peak < 0.5 }
+    const kicker = opts.kicker || null
+    b.flight = {
+      from: { x: from.x, y: from.y },
+      to: { x: to.x, y: to.y },
+      t: 0,
+      dur,
+      peak,
+      z0: b.z,
+      z1: opts.z1 ?? 0,
+      onEnd: opts.onEnd || null,
+      receiver: opts.receiver ?? null,
+      ground: peak < 0.5,
+      side: kicker?.side ?? null,
+      kicker: kicker?.id ?? null,
+      delay: kicker ? KICK_DELAY : 0,
+    }
     b.owner = null
-    if (opts.kicker) {
-      play(opts.kicker, 'kick', 0.32)
-      opts.kicker.face = faceIndex(to.x - from.x, to.y - from.y)
+    b.held = false
+    b.vx = 0
+    b.vy = 0
+    if (kicker) {
+      play(kicker, opts.anim || 'kick', opts.animDur || 0.32)
+      kicker.face = faceIndex(to.x - from.x, to.y - from.y)
+      kicker.dribA = Math.atan2(to.y - kicker.y, to.x - kicker.x)
     }
   }
-  // passe para um colega: mira na frente dele (ele corre para o ponto de encontro)
+  // bola solta (desarme, rebote, dividida): rola alguns metros sem dono, e quem chegar primeiro domina
+  function loose(to, speed = 9) {
+    const b = st.ball
+    kick({ x: b.x, y: b.y }, { x: clamp(to.x, 0.5, L - 0.5), y: clamp(to.y, 0.5, W - 0.5) }, { speed, peak: 0.1 })
+  }
+  // passe para um colega: mira na frente dele e dosa a força para a bola chegar quando ELE chega
+  // (nem o receptor espera parado, nem volta para buscar uma bola que ficou para trás)
   function pass(owner, target, opts = {}) {
     const lead = opts.lead ?? 0.5
     const to = { x: clamp(target.x + target.vx * lead, 1, L - 1), y: clamp(target.y + target.vy * lead, 1, W - 1) }
     target.tx = to.x
     target.ty = to.y
-    kick(owner, to, { ...opts, kicker: owner, receiver: target.id })
+    const d = Math.max(1, dist(owner, to))
+    const run = dist(target, to) / (SPRINT * 0.85) + (target.react || 0.2)
+    const speed = opts.speed ?? PASS_SPEED
+    // o tempo da bola é o da corrida dele, sem ficar lenta demais (mínimo ~8 m/s)
+    const dur = clamp(Math.max(d / speed, run), d / 30, d / 8)
+    kick(owner, to, { ...opts, dur, kicker: owner, receiver: target.id })
   }
 
   function chooseReceiver(owner) {
@@ -239,7 +299,10 @@ export function createDirector({ formations, homeId, awayId }) {
       const scored = ev.kind === 'goal'
       const range = scored ? 8 + rnd() * 9 : ev.detail === 'grande chance' ? 7 + rnd() * 7 : 11 + rnd() * 15
       const spot = pen ? { x: gx - d * 11, y: W / 2 } : { x: gx - d * range, y: clamp(laneY + (rnd() - 0.5) * 10, W / 2 - (scored ? 10 : 15), W / 2 + (scored ? 10 : 15)) }
-      st.script = { ev, kind: pen ? 'penalty' : 'attack', phase: 'win', t: 0, side, opp: other(side), shooter, spot, steps: null }
+      const a2 = scored ? byId(ev.player2) : null
+      const assist = a2 && a2.side === side && !a2.gk && a2 !== shooter ? a2 : null
+      // com assistente, sem tabela improvisada no fim: o último passe é dele
+      st.script = { ev, kind: pen ? 'penalty' : 'attack', phase: 'win', t: 0, side, opp: other(side), shooter, spot, steps: null, assist, oneTwo: Boolean(assist) }
       if (pen) {
         st.script.phase = 'setup'
         st.ball.owner = null
@@ -251,7 +314,7 @@ export function createDirector({ formations, homeId, awayId }) {
     if (CARD_KINDS.has(ev.kind)) {
       const named = byId(ev.player)
       const culprit = named && named.side === side && !named.gk ? named : nearest(outfield(side), st.ball)
-      st.script = { ev, kind: 'foul', phase: 'setup', t: 0, side, opp: other(side), culprit, win: { side: other(side), t: 0 } }
+      st.script = { ev, kind: 'foul', phase: 'setup', t: 0, side, opp: other(side), culprit, named: culprit === named, win: { side: other(side), t: 0 } }
       return
     }
     if (ev.kind === 'offside') {
@@ -273,8 +336,9 @@ export function createDirector({ formations, homeId, awayId }) {
     if (owner && owner.side === s.side) return true
     const hunter = nearest(outfield(s.side), b)
     if (!hunter) return true
-    hunter.tx = b.x
-    hunter.ty = b.y
+    const pt = owner ? b : ballStop()
+    hunter.tx = pt.x
+    hunter.ty = pt.y
     hunter.speed = SPRINT
     if (owner) {
       owner.speed = 3
@@ -282,7 +346,10 @@ export function createDirector({ formations, homeId, awayId }) {
     if (dist(hunter, b) < 1.3) {
       b.owner = hunter.id
       st.poss = s.side
-      if (owner) play(owner, 'stumble', 0.4)
+      if (owner) {
+        play(owner, 'stumble', 0.4)
+        fx('tackle')
+      }
       return true
     }
     // demorou: desarme/rebote empurra a bola na direção de quem caça, que domina quando ela chega
@@ -308,10 +375,15 @@ export function createDirector({ formations, homeId, awayId }) {
         x: clamp(lerp(b.x, s.spot.x, k) + d * 2, 4, L - 4),
         y: clamp(lerp(b.y, s.spot.y, k) + (rnd() - 0.5) * 24, 6, W - 6),
       }
-      const mate = outfield(s.side).filter((p) => !used.has(p.id) && p.id !== b.owner).sort((a, c) => dist(a, wp) - dist(c, wp))[0]
+      const mate = outfield(s.side).filter((p) => !used.has(p.id) && p.id !== b.owner && p !== s.assist).sort((a, c) => dist(a, wp) - dist(c, wp))[0]
       if (!mate) continue
       used.add(mate.id)
       steps.push({ who: mate, at: wp })
+    }
+    // gol com assistência: quem o relato cita como assistente dá o ÚLTIMO passe para o finalizador
+    if (s.assist && s.assist.id !== b.owner) {
+      const at = { x: clamp(s.spot.x - d * (9 + rnd() * 6), 4, L - 4), y: clamp(s.spot.y + (s.spot.y < W / 2 ? 1 : -1) * (6 + rnd() * 8), 4, W - 4) }
+      steps.push({ who: s.assist, at })
     }
     steps.push({ who: s.shooter, at: s.spot, final: true })
     return steps
@@ -438,9 +510,24 @@ export function createDirector({ formations, homeId, awayId }) {
     const k = s.ev.kind
     const gk = keeper(s.opp)
     const saved = k === 'save' || (k === 'pen_miss' && s.ev.detail === 'defendido')
-    const sideY = rnd() < 0.5 ? -1 : 1
+    const scored = k === 'goal' || k === 'pen_goal'
+    const pen = s.kind === 'penalty'
+    const speed = pen ? 24 : 27
+    const from = { x: st.ball.x, y: st.ball.y }
+    const postLo = W / 2 - GOAL_HALF + 0.3
+    const postHi = W / 2 + GOAL_HALF - 0.3
+    // ---- o goleiro e o tempo que ele tem: reação depois do contato + mergulho limitado pelo corpo ----
+    const gy0 = gk ? clamp(gk.y, W / 2 - GOAL_HALF - 0.5, W / 2 + GOAL_HALF + 0.5) : W / 2
+    const gkX = gk ? gk.x : gx - d * 0.8
+    const arrive = KICK_DELAY + Math.abs(gkX - from.x) / speed // quando a bola chega à linha do goleiro
+    const react = pen ? 0.04 + rnd() * 0.05 : 0.16 + rnd() * 0.08 // no pênalti ele sai no chute (aposta num lado)
+    const move = Math.max(0, arrive - KICK_DELAY - react)
+    // alcance lateral das mãos: passo/impulso (~5 m/s) + braço estendido; nunca mais que ~2,7 m
+    const reach = clamp(0.85 + 5 * move, 0.85, 2.7)
+    const awayFromGk = Math.sign(W / 2 - gy0) || (rnd() < 0.5 ? -1 : 1)
     let to
     let z1
+    let plan = null // { y: centro do corpo no fim do lance, anim, h }
     const blocker = k === 'shot_off' && s.ev.detail === 'bloqueado' ? nearest(outfield(s.opp), { x: lerp(sh.x, gx, 0.35), y: lerp(sh.y, W / 2, 0.35) }) : null
     if (blocker) {
       // o zagueiro entra na frente do chute
@@ -451,31 +538,72 @@ export function createDirector({ formations, homeId, awayId }) {
       blocker.ty = to.y
       z1 = 0.4
       s.blocked = blocker
-    } else if (k === 'goal' || k === 'pen_goal') {
-      to = { x: gx + d * 0.6, y: W / 2 + sideY * (1.2 + rnd() * (GOAL_HALF - 1.6)) }
-      z1 = rnd() < 0.5 ? 0.25 + rnd() * 0.5 : 1.2 + rnd() * 1
+    } else if (scored) {
+      // gol: no canto que o goleiro NÃO alcança (ou no ângulo, acima da mão, quando o canto está ao alcance);
+      // a bola termina no fundo da rede (1,6 m além da linha) e o gol é anunciado quando cruza a linha
+      const side = pen && rnd() < 0.5 ? -awayFromGk : awayFromGk
+      let y = clamp(gy0 + side * (reach + 0.4 + rnd() * 0.6), postLo, postHi)
+      z1 = rnd() < 0.55 ? 0.2 + rnd() * 0.5 : 1.3 + rnd() * 0.6
+      if (Math.abs(y - gy0) < reach + 0.3) {
+        y = side > 0 ? postHi : postLo
+        z1 = 2.05 + rnd() * 0.2 // no ângulo: acima da mão do mergulho
+      }
+      to = { x: gx + d * 1.6, y }
+      // o goleiro vai na bola e fica curto (ponta dos dedos a ~0,4 m)
+      const dy = y - gy0
+      const bodyY = gy0 + Math.sign(dy) * Math.max(0, Math.min(reach, Math.abs(dy) - 0.4) - 0.75)
+      plan = { y: bodyY, anim: Math.abs(dy) < 1 ? 'catch' : 'dive', h: Math.min(z1, 1.8), miss: true }
     } else if (saved) {
-      to = { x: gx - d * 0.9, y: W / 2 + sideY * (0.6 + rnd() * 2.4) }
-      z1 = 0.3 + rnd() * 1.6
+      // defesa: a bola vai exatamente onde as mãos chegam a tempo
+      const off = (rnd() < 0.5 ? -1 : 1) * (0.15 + rnd() * (reach - 0.15))
+      const y = clamp(gy0 + off, postLo - 0.2, postHi + 0.2)
+      const lateral = Math.abs(y - gy0)
+      z1 = lateral < 0.9 ? 0.4 + rnd() * 1.3 : 0.25 + rnd() * 1.4
+      to = { x: gkX - d * 0.35, y } // as mãos ficam um pouco à frente do corpo
+      plan = { y: lateral < 0.9 ? y : y - Math.sign(y - gy0) * 0.75, anim: lateral < 0.9 ? 'catch' : 'dive', h: z1 }
     } else {
       const wide = rnd() < 0.55
+      const sideY = rnd() < 0.5 ? -1 : 1
       to = wide ? { x: gx + d * 2, y: W / 2 + sideY * (GOAL_HALF + 0.8 + rnd() * 3) } : { x: gx + d * 2, y: W / 2 + sideY * rnd() * GOAL_HALF }
       z1 = wide ? 0.3 + rnd() : 2.9 + rnd() * 1.3
+      // para fora: só se estica se a bola passar perto; por cima, acompanha com um pulo curto
+      const dy = to.y - gy0
+      if (wide && Math.abs(dy) < reach + 1.2) plan = { y: gy0 + Math.sign(dy) * Math.max(0, Math.min(reach, Math.abs(dy)) - 1.1), anim: 'dive', h: Math.min(z1, 1.2), miss: true }
+      else if (!wide) plan = { y: gy0 + clamp(dy, -0.8, 0.8), anim: 'jump', h: 2.2, miss: true }
     }
     const far = dist(sh, to)
-    const from = { x: st.ball.x, y: st.ball.y }
-    kick(from, to, { speed: s.kind === 'penalty' ? 24 : 27, peak: Math.max(z1 * 0.6, far > 20 ? 1.4 : 0.6), z1, kicker: sh })
+    kick(from, to, { speed, peak: Math.max(z1 * 0.6, far > 20 ? 1.4 : 0.6), z1, kicker: sh })
     s.target = to
     s.saved = saved
     s.phase = 'flight'
     s.t = 0
-    // goleiro reage ao chute
-    if (gk) {
-      const dy = (to.y - gk.y) * (dirOf(s.opp) === 1 ? 1 : -1)
-      s.gkDy = to.y - gk.y
-      if (saved && Math.abs(to.y - gk.y) < 1.2) play(gk, z1 > 1.3 ? 'catch_high' : 'catch_low', 0.9, { hold: true })
-      else play(gk, dy > 0 ? 'dive_right' : 'dive_left', 1.15, { hold: true })
+    s.gk = gk && plan ? { ...plan, y0: gy0, at: KICK_DELAY + react, arrive, started: false } : null
+  }
+
+  // Goleiro durante o voo da bola: espera a reação, então mergulha/encaixa/pula e chega ao ponto planejado junto com a bola.
+  // Limites: não passa da trave (com folga do corpo), não entra no gol, não desliza depois de cair.
+  function keeperFlight(s, gk, dt, gx, d) {
+    const g = s.gk
+    if (!g || !gk) return
+    if (!g.started && s.t >= g.at) {
+      g.started = true
+      const left = Math.max(0.18, g.arrive - g.at)
+      g.speedY = Math.abs(g.y - gk.y) / left
+      const dyS = Math.sign(g.y - gk.y) || 1
+      if (g.anim === 'dive') gk.anim = { name: dyS > 0 ? 'dive_right' : 'dive_left', t: 0, dur: left + 0.15, hold: true, dy: dyS, h: g.h }
+      else if (g.anim === 'jump') gk.anim = { name: 'catch_high', t: 0, dur: left + 0.25, hold: false, h: g.h }
+      else gk.anim = { name: g.h > 1.3 ? 'catch_high' : 'catch_low', t: 0, dur: left + 0.3, hold: true, h: g.h }
     }
+    if (g.started) {
+      const step = clamp(g.y - gk.y, -g.speedY * dt, g.speedY * dt)
+      gk.y = clamp(gk.y + step, W / 2 - GOAL_HALF - 0.6, W / 2 + GOAL_HALF + 0.6)
+      // nunca atrás da linha do gol
+      if ((gk.x - gx) * d > -0.3) gk.x = gx - d * 0.3
+    }
+    gk.vx = 0
+    gk.vy = 0
+    gk.tx = gk.rtx = gk.x
+    gk.ty = gk.rty = gk.y
   }
 
   function stepFinish(s, dt, gx, d) {
@@ -483,39 +611,51 @@ export function createDirector({ formations, homeId, awayId }) {
     const gk = keeper(s.opp)
     const k = s.ev.kind
     if (s.phase === 'flight') {
-      if (gk && gk.anim?.name?.startsWith('dive')) {
-        // o mergulho leva o goleiro até a linha da bola
-        const reach = s.saved ? s.target.y : s.target.y - Math.sign(s.gkDy || 1) * 1.1
-        gk.y += clamp(reach - gk.y, -6 * dt, 6 * dt)
-        gk.tx = gk.x
-        gk.ty = gk.y
-      }
-      if (b.flight) return
-      if (k === 'goal' || k === 'pen_goal') {
-        // a bola entra e estufa a rede
-        Object.assign(b, { x: gx + d * 1.3, z: Math.min(b.z, 1.6) })
-        st.netShake = { side: gx === L ? 1 : 0, t: 0 }
+      keeperFlight(s, gk, dt, gx, d)
+      const isGoal = k === 'goal' || k === 'pen_goal'
+      // GOL só quando a bola inteira passa a linha (raio ~0,11 m): placar, narração e torcida neste instante
+      if (isGoal && !s.crossed && (b.x - gx) * d > 0.11) {
+        s.crossed = true
         banner('goal', s.ev)
         release(s.ev)
+        fx('net')
+      }
+      if (b.flight) return
+      if (isGoal) {
+        // a bola estufa a rede
+        Object.assign(b, { z: Math.min(b.z, 1.6) })
+        st.netShake = { side: gx === L ? 1 : 0, t: 0 }
+        if (!s.crossed) {
+          s.crossed = true
+          banner('goal', s.ev)
+          release(s.ev)
+          fx('net')
+        }
         s.phase = 'celebrate'
         s.t = 0
         s.corner = { x: gx - d * 2, y: s.shooter.y < W / 2 ? 2 : W - 2 }
         return
       }
       const calm = st.queue.length < 2 // com lances na fila, sem lance extra
+      if (!s.saved) fx('ooh')
       if (s.saved && gk) {
+        fx('save')
+        banner(s.ev.kind, s.ev)
         release(s.ev)
         if (s.kind === 'attack' && calm && rnd() < (s.ev.detail === 'grande chance' ? 0.6 : 0.3)) {
-          // espalma para fora: escanteio
+          // espalma para fora: escanteio (a bola sai das mãos dele)
           startCorner(s, { x: gk.x, y: gk.y })
           return
         }
+        // encaixa: a bola fica nas mãos (visível), não some
         b.owner = gk.id
-        b.hidden = true
+        b.held = true
+        b.hidden = false
         s.phase = 'keeper'
         s.t = 0
         return
       }
+      banner(s.ev.kind, s.ev)
       release(s.ev)
       if (s.blocked) {
         if (calm && rnd() < 0.55) startCorner(s, { x: b.x, y: b.y })
@@ -550,23 +690,25 @@ export function createDirector({ formations, homeId, awayId }) {
         }
       }
       if (dist(sh, s.corner) < 2 && !sh.anim) play(sh, 'celebrate', 1.4)
-      if (s.t > 3.6) {
+      if (s.t > 2.6) {
         s.phase = 'reset'
         s.t = 0
         kickoffPositions(s.opp)
-        for (const p of st.players) p.speed = JOG + 1
         // a bola volta ao centro com o árbitro (fora de cena) até a nova saída
         Object.assign(b, { x: L / 2, y: W / 2, z: 0, owner: null, flight: null, hidden: true })
       }
       return
     }
     if (s.phase === 'reset') {
-      // os times voltam às posições de saída; quem está longe acelera para não "pular" no apito
-      kickoffPositions(s.opp)
-      for (const p of st.players) p.speed = s.t > 2 || dist(p, { x: p.tx, y: p.ty }) > 12 ? SPRINT : JOG + 1
-      // até ~70 m de volta (comemoração no escanteio oposto) cabem em 11 s de corrida
-      if (s.t > 11 || st.players.every((p) => dist(p, { x: p.tx, y: p.ty }) < 1.2)) {
-        kickoff(s.opp)
+      // os times voltam trotando/correndo às posições de saída; o apito sai quando o batedor e quase todos estão no lugar
+      const taker = kickoffPositions(s.opp)
+      for (const p of st.players) p.speed = dist(p, { x: p.tx, y: p.ty }) > 8 ? SPRINT : JOG + 1
+      const placed = st.players.filter((p) => dist(p, { x: p.tx, y: p.ty }) < 3).length
+      const takerSet = !taker || dist(taker, { x: taker.tx, y: taker.ty }) < 1.5
+      if ((takerSet && placed >= st.players.length - 4 && s.t > 1.2) || s.t > 4.2) {
+        // sem teletransporte: quem ainda não chegou termina a volta com o jogo rolando
+        kickoff(s.opp, { snap: false })
+        if (taker) Object.assign(st.ball, { x: taker.x + dirOf(s.opp) * 0.6, y: taker.y })
         st.script = null
       }
       return
@@ -574,13 +716,20 @@ export function createDirector({ formations, homeId, awayId }) {
     if (s.phase === 'keeper') {
       if (gk) {
         gk.speed = 2
-        if (s.t > 1.1 && !s.thrown) {
+        // o goleiro levanta antes de repor (mergulho → de pé → lançamento)
+        const down = gk.anim && (gk.anim.name.startsWith('dive') || (gk.anim.name === 'getup' && gk.anim.t < gk.anim.dur * 0.7))
+        if (((s.t > 1.1 && !down) || s.t > 3.2) && !s.thrown) {
           s.thrown = true
           b.hidden = false
-          const mate = outfield(s.opp).sort((a, c) => Math.abs(a.x - gk.x) - Math.abs(c.x - gk.x))[1] || outfield(s.opp)[0]
-          Object.assign(b, { x: gk.x, y: gk.y, z: 1.2 })
-          play(gk, 'throw', 0.7)
-          if (mate) pass(gk, mate, { lead: 0.2, speed: 16, peak: 1.2 })
+          // repõe para o colega mais livre perto dele
+          const opp = outfield(s.side)
+          const mate =
+            outfield(s.opp)
+              .filter((m) => dist(m, gk) < 40)
+              .sort((a, c) => dist(c, nearest(opp, c) || c) - dist(a, nearest(opp, a) || a))[0] || outfield(s.opp)[0]
+          // a bola sai da mão dele (já está com ele): lançamento com o braço, sem saltar de lugar
+          if (mate) pass(gk, mate, { lead: 0.2, speed: 16, peak: 1.2, anim: 'throw', animDur: 0.7 })
+          else play(gk, 'throw', 0.7)
           st.poss = s.opp
         }
       }
@@ -720,15 +869,18 @@ export function createDirector({ formations, homeId, awayId }) {
       }
       const ready = !s.taker || dist(s.taker, { x: s.taker.tx, y: s.taker.ty }) < 1
       if ((ready && s.t > 3) || s.t > 6.5) {
-        s.crossTo = { x: gx - d * (5.5 + rnd() * 5), y: W / 2 + (rnd() - 0.5) * 9 }
-        kick({ x: b.x, y: b.y }, s.crossTo, { speed: 19, peak: 5.5, z1: 1.6, kicker: s.taker })
+        // a saída do goleiro é decidida no cruzamento (ele só sai se a bola cai perto do gol)
+        const close = rnd() < 0.5
+        s.crossTo = { x: gx - d * (close ? 4.5 + rnd() * 2 : 7.5 + rnd() * 4), y: W / 2 + (rnd() - 0.5) * 9 }
+        s.claim = close && gk ? rnd() < 0.6 : false
+        kick({ x: b.x, y: b.y }, s.crossTo, { speed: 19, peak: 5.5, z1: s.claim ? 2.3 : 1.6, kicker: s.taker })
         s.phase = 'c_cross'
         s.t = 0
       }
       return
     }
     if (s.phase === 'c_cross') {
-      // todos atacam a bola
+      // todos atacam a bola; o goleiro que vai sair corre para o ponto e salta no tempo da bola
       const header = nearest(outfield(s.side).filter((p) => p !== s.taker), s.crossTo)
       const clearer = nearest(outfield(s.opp), s.crossTo)
       for (const p of [header, clearer]) {
@@ -737,18 +889,29 @@ export function createDirector({ formations, homeId, awayId }) {
         p.ty = s.crossTo.y
         p.speed = SPRINT
       }
+      if (s.claim && gk) {
+        gk.tx = s.crossTo.x
+        gk.ty = s.crossTo.y
+        gk.speed = SPRINT
+        const left = b.flight ? b.flight.dur - b.flight.t : 0
+        if (left < 0.45 && !s.leapt) {
+          s.leapt = true
+          play(gk, 'catch_high', 0.9, { hold: true })
+          gk.anim.h = 2.3
+        }
+      }
       if (b.flight) return
       const r = rnd()
-      if (r < 0.3 && gk) {
-        // o goleiro sai e fica com a bola
-        gk.x = lerp(gk.x, s.crossTo.x, 0.6)
-        gk.y = lerp(gk.y, s.crossTo.y, 0.6)
+      if (s.claim && gk && dist(gk, b) < 1.8) {
+        // o goleiro sobe e encaixa no alto: a bola fica nas mãos
         b.owner = gk.id
-        b.hidden = true
+        b.held = true
+        b.hidden = false
         s.thrown = false
         s.phase = 'keeper'
         s.t = 0
-      } else if (r < 0.45 && header) {
+        fx('save')
+      } else if (r < 0.25 && header && !s.claim) {
         // cabeçada por cima: tiro de meta
         s.target = { x: gx + d * 2, y: W / 2 + (rnd() - 0.5) * 9 }
         kick({ x: b.x, y: b.y }, s.target, { speed: 20, peak: 1.5, z1: 3.4, kicker: header })
@@ -785,7 +948,8 @@ export function createDirector({ formations, homeId, awayId }) {
       const owner = b.owner ? byId(b.owner) : null
       if ((owner && owner.side === s.opp && !owner.gk) || (s.t > 5 && owner)) {
         s.victim = owner.side === s.opp ? owner : nearest(outfield(s.opp), b)
-        if (!s.culprit || s.culprit.gk || dist(s.culprit, s.victim) > 26) s.culprit = nearest(outfield(s.side), s.victim)
+        // o infrator é quem o relato cita; só sem nome (ou fora de campo) vale o marcador mais próximo
+        if (!s.named && (!s.culprit || s.culprit.gk || dist(s.culprit, s.victim) > 26)) s.culprit = nearest(outfield(s.side), s.victim)
         s.phase = 'approach'
         s.t = 0
         return
@@ -814,14 +978,18 @@ export function createDirector({ formations, homeId, awayId }) {
       c.tx = v.x
       c.ty = v.y
       c.speed = SPRINT + 0.6
-      if (dist(c, v) < 1.2 || s.t > 4.5) {
-        if (dist(c, v) > 1.2) {
+      // infrator citado longe: quem tem a bola segura o passo e ele chega no bote (até ~10 s)
+      if (s.named && dist(c, v) > 8) v.speed = 3.2
+      if (dist(c, v) < 1.2 || s.t > (s.named ? 10 : 4.5)) {
+        if (dist(c, v) > 1.2 && !s.named) {
           // não alcançou a tempo: o marcador mais próximo comete a falta no lance
           const close = nearest(outfield(s.side), v)
           if (close) s.culprit = close
         }
         play(v, 'stumble', 1.1)
         play(s.culprit, 'stumble', 0.5)
+        fx('tackle', { hard: true })
+        fx('whistle')
         v.vx = 0
         v.vy = 0
         s.culprit.vx *= 0.2
@@ -966,6 +1134,7 @@ export function createDirector({ formations, homeId, awayId }) {
         s.runner.speed = SPRINT
       }
       if (b.flight && s.t < 3) return
+      fx('whistle')
       banner('offside', s.ev)
       release(s.ev)
       b.flight = null
@@ -997,61 +1166,225 @@ export function createDirector({ formations, homeId, awayId }) {
   }
 
   // ---------- jogo corrido ----------
+  // onde a bola rolando vai parar (atrito constante): v² / 2a à frente
+  function ballStop() {
+    const b = st.ball
+    const sp = Math.hypot(b.vx || 0, b.vy || 0)
+    if (sp < 0.2) return { x: b.x, y: b.y }
+    const s = (sp * sp) / (2 * ROLL_FRICTION)
+    return { x: clamp(b.x + (b.vx / sp) * s, 0.3, L - 0.3), y: clamp(b.y + (b.vy / sp) * s, 0.3, W - 0.3) }
+  }
+
   function openPlay(dt) {
     const b = st.ball
     if (b.flight) return
     let owner = b.owner ? byId(b.owner) : null
     if (!owner) {
-      // bola solta: os dois mais próximos disputam
-      const h = nearest(outfield('h'), b)
-      const a = nearest(outfield('a'), b)
+      // bola solta: os dois mais próximos disputam, correndo para onde ela VAI parar (não para onde estava)
+      const pt = ballStop()
+      const h = nearest(outfield('h'), pt)
+      const a = nearest(outfield('a'), pt)
       for (const p of [h, a]) {
         if (!p) continue
-        p.tx = b.x
-        p.ty = b.y
+        // perto da bola, vai na bola; longe, no ponto onde ela vai estar quando ele chegar
+        const k = clamp(dist(p, b) / 10, 0, 1)
+        p.tx = lerp(b.x, pt.x, k)
+        p.ty = lerp(b.y, pt.y, k)
         p.speed = SPRINT
       }
       const win = [h, a].filter(Boolean).sort((x, y) => dist(x, b) - dist(y, b))[0]
       if (win && dist(win, b) < 1) {
+        // dividida: os dois chegam juntos → contato, e a bola espirra para quem estava melhor posicionado
+        const rival = win === h ? a : h
+        if (rival && dist(rival, b) < 1.1 && rnd() < 0.45) {
+          fx('tackle')
+          const ang = Math.atan2(b.y - rival.y, b.x - rival.x) + (rnd() - 0.5) * 0.8
+          loose({ x: b.x + Math.cos(ang) * 3, y: b.y + Math.sin(ang) * 3 }, 8)
+          return
+        }
         b.owner = win.id
         st.poss = win.side
         st.hold = 0.6 + rnd() * 0.8
+        fx('touch')
       }
       return
     }
     st.poss = owner.side
-    st.hold -= dt
     const d = dirOf(owner.side)
+    const opp = outfield(other(owner.side))
+    const share = owner.side === 'h' ? st.possShare : 1 - st.possShare
     // conduz para a frente, desviando do marcador; não entra na área (finalização só vem de evento real)
     const limit = goalX(owner.side) - d * 24
-    const marker = nearest(outfield(other(owner.side)), owner)
-    const away = marker && dist(marker, owner) < 4 ? Math.sign(owner.y - marker.y || 1) * 3 : 0
-    owner.tx = d === 1 ? Math.min(owner.x + 5, limit) : Math.max(owner.x - 5, limit)
+    const marker = nearest(opp, owner)
+    const md = marker ? dist(marker, owner) : 99
+    // pressão: quanto mais perto o marcador, mais rápido o portador decide
+    const pressure = clamp(1 - (md - 0.8) / 5, 0, 1)
+    st.hold -= dt * (1 + pressure * 2)
+    // protege a bola: gira para o lado oposto ao do marcador e reduz o passo
+    const away = md < 5 ? Math.sign(owner.y - marker.y || 1) * (2 + pressure * 3) : 0
+    const back = md < 2.2 && (marker.x - owner.x) * d > 0 ? -d * 2 : 0
+    owner.tx = clamp((d === 1 ? Math.min(owner.x + 5, limit) : Math.max(owner.x - 5, limit)) + back, 2, L - 2)
     owner.ty = clamp(owner.y + away + (W / 2 - owner.y) * 0.04, 3, W - 3)
-    owner.speed = JOG + 0.6
+    owner.speed = md < 2.5 ? JOG - 0.6 : JOG + 0.6
+    // duelo: marcador colado tenta o desarme; a chance depende do domínio real do jogo (posse do motor)
+    if (marker && md < 1.15 && !marker.anim) {
+      const rate = 0.35 + 1.0 * (1 - share)
+      if (rnd() < rate * dt) {
+        fx('tackle')
+        play(owner, 'stumble', 0.45)
+        st.turnoverAt = st.t
+        if (rnd() < 0.55) {
+          // desarme limpo: o marcador sai com a bola
+          b.owner = marker.id
+          st.poss = marker.side
+          st.hold = 0.5 + rnd() * 0.6
+        } else {
+          // a bola espirra: dividida para quem chegar antes
+          const ang = Math.atan2(marker.y - owner.y, marker.x - owner.x) + (rnd() - 0.5) * 1.6
+          loose({ x: b.x + Math.cos(ang) * (2.5 + rnd() * 3), y: b.y + Math.sin(ang) * (2.5 + rnd() * 3) }, 8)
+        }
+        return
+      }
+    }
     const stuck = Math.abs(owner.x - limit) < 2
     if (st.hold <= 0 || stuck) {
       const r = chooseReceiver(owner)
-      // desarme cosmético quando o time tem menos posse no jogo real
-      const share = owner.side === 'h' ? st.possShare : 1 - st.possShare
-      if (marker && dist(marker, owner) < 1.4 && rnd() < 0.35 * (1 - share)) {
-        b.owner = marker.id
-        st.poss = marker.side
-        play(owner, 'stumble', 0.4)
-        st.hold = 0.8 + rnd()
-        return
-      }
       if (r) {
         const long = dist(owner, r) > 26
         pass(owner, r, { lead: 0.5, speed: long ? 21 : PASS_SPEED, peak: long ? 3.5 : 0.2 })
-        // interceptação ocasional ao fim do passe
-        const opp = outfield(other(owner.side))
-        if (rnd() < 0.14 + 0.16 * (1 - share) && opp.length) {
-          const cutter = nearest(opp, { x: (owner.x + r.x) / 2, y: (owner.y + r.y) / 2 })
-          if (cutter) st.ball.flight.interceptBy = cutter.id
-        }
+        // quem lê o passe corre para a linha dele; só intercepta se ALCANÇAR a bola (ver voo da bola)
+        const cutter = nearest(opp, { x: (owner.x + r.x) / 2, y: (owner.y + r.y) / 2 })
+        if (cutter && rnd() < 0.3 + 0.3 * (1 - share)) st.ball.flight.interceptBy = cutter.id
       }
-      st.hold = 1 + rnd() * 1.6
+      // livre, o portador conduz mais; pressionado, solta antes (o tempo cai mais rápido sob pressão)
+      st.hold = 1.5 + rnd() * 2.2
+    }
+  }
+
+  // linha mais recuada (fora o goleiro) de um time: referência de compactação e de impedimento
+  function lastLine(side) {
+    const list = outfield(side)
+    if (!list.length) return goalX(other(side))
+    const own = goalX(other(side)) // gol que o time defende
+    return list.reduce((m, p) => (Math.abs(p.x - own) < Math.abs(m - own) ? p.x : m), list[0].x)
+  }
+
+  // Comportamento sem bola dos dois times: pressão ao portador, cobertura, marcação por zona, compactação,
+  // recomposição na transição e desmarques/apoios de quem ataca. Os roteiros dos lances ajustam por cima.
+  function teamPlay(dt) {
+    const b = st.ball
+    const s = st.script
+    if (s && RESTART.test(s.phase)) return
+    const owner = b.owner ? byId(b.owner) : null
+    const att = owner ? owner.side : b.flight?.side || st.poss
+    const def = other(att)
+    if (att !== st.possSide) {
+      st.possSide = att
+      st.turnoverAt = st.t
+    }
+    const trans = st.t - st.turnoverAt < 2.6
+    const ref = owner || (b.flight ? { x: b.flight.to.x, y: b.flight.to.y } : b) // defende onde a bola VAI estar
+    const own = { x: goalX(att), y: W / 2 } // gol que a defesa protege
+    const goalSide = (p, k) => {
+      const gx = own.x - p.x
+      const gy = own.y - p.y
+      const gl = Math.hypot(gx, gy) || 1
+      return { x: p.x + (gx / gl) * k, y: p.y + (gy / gl) * k }
+    }
+
+    // ---- defesa ----
+    // quem sai na pressão é, de preferência, quem está entre a bola e o gol (correr atrás de quem já passou não marca)
+    const behindBall = (p) => Math.abs(p.x - own.x) > Math.abs(ref.x - own.x) + 1.5
+    const cost = (p) => dist(p, ref) + (behindBall(p) ? 9 : 0)
+    const defs = outfield(def).sort((a, c) => cost(a) - cost(c))
+    const presser = defs[0]
+    const cover = defs[1]
+    if (presser && dist(presser, ref) < 30) {
+      const close = dist(presser, ref)
+      // bola viajando: ataca o ponto de chegada para pegar o receptor no domínio
+      const spot = goalSide(ref, b.flight ? 2.2 : close < 3 ? 0.9 : 1.6)
+      presser.tx = spot.x
+      presser.ty = spot.y
+      presser.speed = close > 3 || trans || b.flight ? SPRINT : JOG + 2
+    }
+    if (cover) {
+      const spot = goalSide(ref, 7)
+      cover.tx = lerp(cover.tx, spot.x, 0.75)
+      cover.ty = lerp(cover.ty, (spot.y + W / 2) / 2, 0.75)
+      cover.speed = Math.max(cover.speed, JOG + 1.4)
+    }
+    // contra-pressão: logo após perder a bola, o segundo mais próximo também vai em cima
+    if (trans && defs[2] && dist(defs[2], ref) < 14) {
+      defs[2].tx = ref.x
+      defs[2].ty = ref.y
+      defs[2].speed = SPRINT
+    }
+    // marcação por zona: cada um encaixa no atacante mais próximo da sua zona, sempre entre ele e o gol;
+    // quem ficou à frente da bola na transição recompõe em velocidade
+    const atts = outfield(att).filter((p) => p !== owner)
+    const taken = new Set()
+    const ballToGoal = Math.abs(ref.x - own.x)
+    for (const p of defs.slice(trans ? 3 : 2)) {
+      const zone = { x: p.tx, y: p.ty }
+      const m = atts.filter((a) => !taken.has(a.id)).sort((a, c) => dist(a, zone) - dist(c, zone))[0]
+      if (m && dist(m, zone) < 11) {
+        taken.add(m.id)
+        const spot = goalSide(m, 1.6)
+        const k = Math.abs(m.x - own.x) < 30 ? 0.75 : 0.5 // perto da área, marcação mais justa
+        p.tx = lerp(p.tx, spot.x, k)
+        p.ty = lerp(p.ty, spot.y, k)
+      }
+      // fora de posição, o bloco sobe/recompõe com intensidade proporcional à distância
+      const gap = dist(p, { x: p.tx, y: p.ty })
+      if (Math.abs(p.x - own.x) > ballToGoal + 3) p.speed = trans ? SPRINT : Math.max(p.speed, JOG + 1.6)
+      if (gap > 14) p.speed = Math.max(p.speed, SPRINT - 0.4)
+      else if (gap > 6) p.speed = Math.max(p.speed, JOG + 1.4)
+    }
+    // quem ataca também ocupa os espaços rápido quando está longe da sua posição
+    for (const p of outfield(att)) {
+      if (p === owner) continue
+      if (dist(p, { x: p.tx, y: p.ty }) > 14) p.speed = Math.max(p.speed, SPRINT - 1)
+    }
+
+    // ---- ataque ----
+    const da = dirOf(att)
+    if (owner) {
+      const mates = outfield(att)
+        .filter((p) => p !== owner)
+        .sort((a, c) => dist(a, owner) - dist(c, owner))
+      // apoio: um oferece linha ao lado (um pouco atrás), outro na diagonal à frente
+      const open = owner.y < W / 2 ? 1 : -1
+      const sup = [
+        { x: owner.x - da * 3, y: owner.y + open * 11 },
+        { x: owner.x + da * 11, y: owner.y - open * 9 },
+      ]
+      mates.slice(0, 2).forEach((m, i) => {
+        if (m.run) return
+        m.tx = clamp(lerp(m.tx, sup[i].x, 0.7), 3, L - 3)
+        m.ty = clamp(lerp(m.ty, sup[i].y, 0.7), 3, W - 3)
+        m.speed = Math.max(m.speed, JOG + 0.8)
+      })
+    }
+    // desmarques: os mais avançados atacam o espaço às costas da última linha, em diagonal
+    const line = lastLine(def)
+    for (const m of outfield(att)) {
+      if (m === owner) continue
+      if (m.run && (st.t > m.run.until || !owner)) {
+        m.run = null
+        m.runCd = st.t + 2.5 + rnd() * 4
+      }
+      if (!m.run && owner && m.depth > 0.62 && st.t > m.runCd && rnd() < dt * 0.45) {
+        m.run = { until: st.t + 2 + rnd() * 1.2, tx: clamp(line + da * (3 + rnd() * 7), 6, L - 6), ty: clamp(m.y + (W / 2 - m.y) * 0.4 + (rnd() - 0.5) * 14, 5, W - 5) }
+      }
+      if (m.run) {
+        m.tx = m.run.tx
+        m.ty = m.run.ty
+        m.speed = SPRINT - 0.3
+      } else if (trans && m.depth > 0.5) {
+        // transição ofensiva: os da frente saem em velocidade
+        m.tx = clamp(m.tx + da * 6, 3, L - 3)
+        m.speed = Math.max(m.speed, SPRINT - 1)
+      }
     }
   }
 
@@ -1063,33 +1396,84 @@ export function createDirector({ formations, homeId, awayId }) {
     const progress = d === 1 ? b.x / L : 1 - b.x / L
     const inPoss = st.poss === p.side
     if (p.gk) {
+      // na bissetriz entre a bola e o centro do gol; a referência é sempre um ponto DENTRO do campo
+      // (bola na rede ou fora não puxa o goleiro para trás da linha)
       const gx = d === 1 ? 0 : L
-      const toBall = Math.hypot(b.x - gx, b.y - W / 2) || 1
+      const bx = clamp(b.x, 1, L - 1)
+      const by = clamp(b.y, 0, W)
+      const toBall = Math.hypot(bx - gx, by - W / 2) || 1
       const off = clamp(1 + (1 - progress) * 4, 1, 6)
-      return { x: gx + ((b.x - gx) / toBall) * off, y: W / 2 + ((b.y - W / 2) / toBall) * off * 0.9, speed: JOG }
+      const x = gx + ((bx - gx) / toBall) * off
+      // com a bola perto, ele fecha o ângulo sem sair da largura do gol (+ um passo)
+      const y = clamp(W / 2 + ((by - W / 2) / toBall) * off * 0.9, W / 2 - GOAL_HALF - 1, W / 2 + GOAL_HALF + 1)
+      return { x: d === 1 ? Math.max(0.6, x) : Math.min(L - 0.6, x), y, speed: JOG }
     }
-    let x = base.x + d * ((progress - 0.45) * 36 + (inPoss ? 8 : -2) + (st.lineShift[p.side] || 0) * (0.4 + 0.6 * p.depth))
-    // compacta o bloco na largura conforme o lado da bola
+    const shift = (st.lineShift[p.side] || 0) * (0.4 + 0.6 * p.depth)
+    let x = base.x + d * ((progress - 0.45) * 36 + (inPoss ? 8 : -2) + shift)
     let y = base.y + (b.y - base.y) * (inPoss ? 0.1 : 0.32)
     if (inPoss) y = W / 2 + (y - W / 2) * 1.12
+    else {
+      // sem a bola: bloco compacto (~28 m de profundidade) atrás da linha da bola, fechado no lado dela
+      const ref = b.flight ? b.flight.to : b
+      const ownX = d === 1 ? 0 : L
+      const behind = -2 + (1 - p.depth) * 27 - shift * 0.5
+      const bx = ref.x - d * behind
+      const floor = 4 + (1 - p.depth) * 3 + p.depth * 14 // ninguém se enfia dentro do próprio gol
+      const xc = d === 1 ? Math.max(bx, ownX + floor) : Math.min(bx, ownX - floor)
+      x = lerp(x, xc, 0.7)
+      y = ref.y + (base.y - W / 2) * 0.72 + (W / 2 - ref.y) * 0.25
+      y = lerp(base.y, y, 0.75)
+    }
     x = clamp(x, 2, L - 2)
-    return { x, y: clamp(y, 2, W - 2), speed: inPoss ? JOG + 0.4 : JOG }
+    return { x, y: clamp(y, 2, W - 2), speed: inPoss ? JOG + 0.4 : JOG + 0.6 }
   }
 
   function steer(p, dt) {
-    const dx = p.tx - p.x
-    const dy = p.ty - p.y
+    // tempo de reação: o alvo percebido persegue o alvo real (mudanças bruscas viram curvas)
+    if (p.rtx == null) {
+      p.rtx = p.tx
+      p.rty = p.ty
+    }
+    const urgent = p.id === st.ball.owner || p.id === st.ball.flight?.receiver
+    const kr = 1 - Math.exp(-dt / (urgent ? p.react * 0.5 : p.react || 0.2))
+    p.rtx += (p.tx - p.rtx) * kr
+    p.rty += (p.ty - p.rty) * kr
+    const dx = p.rtx - p.x
+    const dy = p.rty - p.y
     const dd = Math.hypot(dx, dy)
-    const want = dd < 0.25 ? 0 : Math.min(p.speed, dd * 1.6) // chega desacelerando
-    const vxT = dd > 0.01 ? (dx / dd) * want : 0
-    const vyT = dd > 0.01 ? (dy / dd) * want : 0
+    const top = p.speed * (p.pace || 1)
+    // chega freando de forma física (v² = 2·a·d), sem parar de estalo
+    const want = dd < 0.2 ? 0 : Math.min(top, Math.sqrt(2 * DECEL * 0.55 * dd))
+    let vxT = dd > 0.01 ? (dx / dd) * want : 0
+    let vyT = dd > 0.01 ? (dy / dd) * want : 0
+    const sp0 = Math.hypot(p.vx, p.vy)
+    // giro: em velocidade o corpo não muda de direção na hora — limita o ângulo por quadro e perde velocidade na curva
+    if (sp0 > 1 && want > 0.5) {
+      const cur = Math.atan2(p.vy, p.vx)
+      let da = Math.atan2(vyT, vxT) - cur
+      da = Math.atan2(Math.sin(da), Math.cos(da))
+      const maxTurn = (TURN / (1 + sp0 * 0.32)) * dt
+      if (Math.abs(da) > maxTurn) {
+        const ang = cur + Math.sign(da) * maxTurn
+        const sp2 = want * clamp(Math.cos(da) * 0.5 + 0.5, 0.35, 1)
+        vxT = Math.cos(ang) * sp2
+        vyT = Math.sin(ang) * sp2
+      }
+    }
     const ax = vxT - p.vx
     const ay = vyT - p.vy
     const a = Math.hypot(ax, ay)
-    const maxA = ACCEL * dt
+    // arrancada forte parado, fraca perto da velocidade máxima; frear é sempre mais rápido
+    const braking = Math.hypot(vxT, vyT) < sp0
+    const maxA = (braking ? DECEL : ACCEL * clamp(1.25 - sp0 / (SPRINT * 1.3), 0.35, 1.25)) * dt
     const k = a > maxA ? maxA / a : 1
     p.vx += ax * k
     p.vy += ay * k
+    // caído (mergulho) ou levantando: o corpo não corre
+    if (p.anim && (p.anim.name.startsWith('dive') || p.anim.name === 'getup') && st.ball.owner !== p.id) {
+      p.vx *= 0.85
+      p.vy *= 0.85
+    }
     // em mergulho/comemoração o corpo não desliza
     if (p.anim && ['celebrate', 'catch_high', 'catch_low', 'throw', 'kick'].includes(p.anim.name) && p.gk) {
       p.vx *= 0.5
@@ -1112,7 +1496,33 @@ export function createDirector({ formations, homeId, awayId }) {
     } else p.faceHold = 0
     if (p.anim) {
       p.anim.t += dt
-      if (p.anim.t >= p.anim.dur && !p.anim.hold) p.anim = null
+      if (p.anim.t >= p.anim.dur) {
+        if (!p.anim.hold) p.anim = null
+        // poses que "seguram" (mergulho, encaixe) duram só um instante depois do lance; do chão, o goleiro levanta
+        else if (p.anim.t >= p.anim.dur + 0.35) p.anim = p.anim.name.startsWith('dive') ? { name: 'getup', t: 0, dur: 0.6, from: p.anim.name, dy: p.anim.dy, hold: false } : null
+      }
+    }
+  }
+
+  // ninguém atravessa ninguém: afasta quem está colado (o portador e o marcador podem encostar)
+  function separate() {
+    const ps = st.players
+    for (let i = 0; i < ps.length; i += 1) {
+      for (let j = i + 1; j < ps.length; j += 1) {
+        const a = ps[i]
+        const c = ps[j]
+        const dx = c.x - a.x
+        const dy = c.y - a.y
+        const d2 = dx * dx + dy * dy
+        const min = a.id === st.ball.owner || c.id === st.ball.owner ? 0.75 : 1.05
+        if (d2 > min * min || d2 < 1e-6) continue
+        const d = Math.sqrt(d2)
+        const push = (min - d) / 2
+        a.x -= (dx / d) * push
+        a.y -= (dy / d) * push
+        c.x += (dx / d) * push
+        c.y += (dy / d) * push
+      }
     }
   }
 
@@ -1148,22 +1558,10 @@ export function createDirector({ formations, homeId, awayId }) {
       p.ty = s.y
       p.speed = s.speed
     }
-    // pressão: o mais próximo marca quem tem a bola, o segundo cobre
+    // pressão, cobertura, marcação, compactação, desmarques e transição
     const b = st.ball
     const ownerNow = b.owner ? byId(b.owner) : null
-    if (ownerNow && !st.script?.phase?.match(/setup|runup|celebrate|reset|c_out|c_place|whistle|card|freekick|free/)) {
-      const defs = outfield(other(ownerNow.side)).sort((x, y) => dist(x, ownerNow) - dist(y, ownerNow))
-      const dd = dirOf(defs[0]?.side || 'h')
-      if (defs[0]) {
-        defs[0].tx = ownerNow.x - dd * 1.4
-        defs[0].ty = ownerNow.y
-        defs[0].speed = JOG + 1.6
-      }
-      if (defs[1]) {
-        defs[1].tx = ownerNow.x - dd * 6
-        defs[1].ty = (ownerNow.y + W / 2) / 2
-      }
-    }
+    teamPlay(dt)
     // quem vai receber o passe corre para o ponto de encontro
     if (b.flight?.receiver) {
       const r = byId(b.flight.receiver)
@@ -1184,6 +1582,20 @@ export function createDirector({ formations, homeId, awayId }) {
 
     // roteiro do evento atual
     const s = st.script
+    // dentro da jogada roteirizada o resultado é do motor, mas a marcação é de verdade: o marcador colado
+    // tenta o bote e o portador escapa (drible/proteção), com contato e desequilíbrio de quem perdeu o duelo
+    if (s && s.kind === 'attack' && ['build', 'carry', 'win'].includes(s.phase) && ownerNow && ownerNow.side === s.side) {
+      const m = nearest(outfield(s.opp), ownerNow)
+      if (m && !m.anim && dist(m, ownerNow) < 1.2 && rnd() < dt * 1.1) {
+        fx('tackle')
+        play(m, 'stumble', 0.5)
+        m.vx *= 0.3
+        m.vy *= 0.3
+        const side = Math.sign(ownerNow.y - m.y || 1)
+        ownerNow.vx += dirOf(s.side) * 1.5
+        ownerNow.vy += side * 2.2
+      }
+    }
     if (s) {
       s.t += dt
       if (s.timers) {
@@ -1201,7 +1613,25 @@ export function createDirector({ formations, homeId, awayId }) {
     } else openPlay(dt)
 
     // bola em voo
-    if (b.flight) {
+    if (b.flight?.delay > 0) {
+      // perna em movimento: a bola continua no pé do batedor até o contato
+      const f = b.flight
+      f.delay -= dt
+      const kp = f.kicker ? byId(f.kicker) : null
+      if (kp) {
+        const a = Math.atan2(f.to.y - kp.y, f.to.x - kp.x)
+        const reachK = 1 - Math.exp(-dt / 0.04)
+        b.x += (kp.x + Math.cos(a) * 0.45 - b.x) * reachK
+        b.y += (kp.y + Math.sin(a) * 0.45 - b.y) * reachK
+      }
+      if (f.delay <= 0) {
+        // contato: a trajetória parte daqui, com o mesmo tempo de chegada planejado
+        f.from = { x: b.x, y: b.y }
+        f.z0 = b.z
+        f.delay = 0
+        fx(dist(f.from, f.to) / f.dur >= 23 ? 'shot' : f.kicker && byId(f.kicker)?.gk && b.z > 0.8 ? 'touch' : 'kick', { power: dist(f.from, f.to) / f.dur })
+      }
+    } else if (b.flight) {
       const f = b.flight
       f.t += dt
       // passe rasteiro desacelera; chute e lançamento seguem a parábola
@@ -1211,50 +1641,118 @@ export function createDirector({ formations, homeId, awayId }) {
       b.y = f.from.y + (f.to.y - f.from.y) * k
       b.z = f.z0 + (f.z1 - f.z0) * lin + f.peak * 4 * lin * (1 - lin)
       b.spin += dt * 14
-      // interceptação no caminho (só no jogo corrido)
-      if (!st.script && f.interceptBy) {
-        const c = byId(f.interceptBy)
-        if (c && dist(c, b) < 1.1 && b.z < 1.2) {
-          b.flight = null
-          b.owner = c.id
-          st.poss = c.side
-          st.hold = 0.7 + rnd()
-          b.z = 0
+      // interceptação no caminho (só no jogo corrido): qualquer adversário que ALCANCE a bola baixa a corta;
+      // às vezes só desvia (bola solta)
+      if (!st.script && f.side && f.t > 0.12 && b.z < 1.3) {
+        for (const c of outfield(other(f.side))) {
+          if (dist(c, b) > 1.0) continue
+          fx('touch')
+          if (rnd() < 0.7) {
+            b.flight = null
+            b.owner = c.id
+            st.poss = c.side
+            st.hold = 0.6 + rnd() * 0.8
+            b.z = 0
+          } else {
+            const ang = Math.atan2(f.to.y - f.from.y, f.to.x - f.from.x) + (rnd() < 0.5 ? 1 : -1) * (0.6 + rnd() * 0.8)
+            b.flight = null
+            loose({ x: b.x + Math.cos(ang) * 6, y: b.y + Math.sin(ang) * 6 }, 10)
+          }
+          break
         }
+      }
+      // domínio: o receptor que alcança a bola baixa a controla no caminho (não espera ela parar)
+      const r = b.flight && f.receiver ? byId(f.receiver) : null
+      if (r && lin > 0.4 && lin < 1 && b.z < 1.0 && dist(r, b) < 0.9) {
+        b.flight = null
+        b.owner = r.id
+        b.z = 0
+        fx('touch')
+        if (!st.script) st.hold = 0.8 + rnd() * 1.4
+        if (f.onEnd) f.onEnd()
       }
       if (b.flight && lin >= 1) {
         b.flight = null
         b.z = f.z1
-        const r = f.receiver ? byId(f.receiver) : null
-        if (r && dist(r, b) < 1.6) b.owner = r.id
+        if (r && dist(r, b) < 1.6) {
+          b.owner = r.id
+          fx('touch')
+        } else if (!st.script || (f.ground && !st.script.phase.match(/flight|c_/))) {
+          // ninguém dominou: a bola SEGUE rolando com a velocidade que chegou (rasteira) ou do quique (alta)
+          const sp = dist(f.from, f.to) / f.dur
+          const keep = f.ground ? 0.65 : 0.4
+          const ux = (f.to.x - f.from.x) / Math.max(0.01, dist(f.from, f.to))
+          const uy = (f.to.y - f.from.y) / Math.max(0.01, dist(f.from, f.to))
+          b.vx = ux * sp * keep
+          b.vy = uy * sp * keep
+          b.z = 0
+        }
         if (r && !st.script) st.hold = 0.8 + rnd() * 1.4
         if (f.onEnd) f.onEnd()
+      }
+    } else if (!b.owner && (b.vx || b.vy)) {
+      // bola solta rolando: atrito do gramado até parar (nada de parar de estalo)
+      const sp = Math.hypot(b.vx, b.vy)
+      const nsp = Math.max(0, sp - ROLL_FRICTION * dt)
+      if (nsp < 0.15) {
+        b.vx = 0
+        b.vy = 0
+      } else {
+        b.vx *= nsp / sp
+        b.vy *= nsp / sp
+        b.x = clamp(b.x + b.vx * dt, 0.3, L - 0.3)
+        b.y = clamp(b.y + b.vy * dt, 0.3, W - 0.3)
+        b.spin += dt * nsp * 3
       }
     }
 
     for (const p of st.players) steer(p, dt)
+    separate()
+    // torcida sobe quando o ataque chega perto da área (com intervalo, para não repetir)
+    {
+      const o = b.owner ? byId(b.owner) : null
+      if (o && !o.gk && Math.abs(goalX(o.side) - b.x) < 24 && Math.abs(b.y - W / 2) < 22 && st.t - (st.swellAt ?? -99) > 8) {
+        st.swellAt = st.t
+        fx('swell', { side: o.side })
+      }
+    }
 
-    // bola nos pés de quem conduz: pequenos toques à frente do corpo
+    // Condução: a bola vai À FRENTE do corpo, na direção em que ele corre (suavizada junto com o giro do corpo).
+    // Parado, fica no pé, na direção em que ele estava indo — nunca troca de lado de estalo nem fica para trás.
     if (b.owner && !b.flight) {
       const o = byId(b.owner)
       if (o) {
+        b.vx = 0
+        b.vy = 0
         const sp = Math.hypot(o.vx, o.vy)
-        const ux = sp > 0.3 ? o.vx / sp : dirOf(o.side)
-        const uy = sp > 0.3 ? o.vy / sp : 0
-        const touch = 0.55 + (sp > 1 ? 0.35 * Math.abs(Math.sin(o.stride * Math.PI / 4)) : 0)
-        // a bola vai até o pé com velocidade limitada (domínio): sem saltos quando a posse muda
-        const fx = o.x + ux * touch
-        const fy = o.y + uy * touch * 0.8
-        const gap = Math.hypot(fx - b.x, fy - b.y)
-        const step = (sp + 9) * dt
-        if (b.hidden || gap <= step) {
-          b.x = fx
-          b.y = fy
+        const want = sp > 0.5 ? Math.atan2(o.vy, o.vx) : o.dribA ?? (dirOf(o.side) === 1 ? 0 : Math.PI)
+        if (o.dribA == null) o.dribA = Math.atan2(b.y - o.y, b.x - o.x)
+        let da = want - o.dribA
+        da = Math.atan2(Math.sin(da), Math.cos(da))
+        o.dribA += da * Math.min(1, dt * 11)
+        const ux = Math.cos(o.dribA)
+        const uy = Math.sin(o.dribA)
+        let tx
+        let ty
+        let tz
+        if (o.gk && b.held) {
+          // nas mãos, na altura do peito
+          tx = o.x + ux * 0.3
+          ty = o.y + uy * 0.3
+          tz = 1.05
         } else {
-          b.x += ((fx - b.x) / gap) * step
-          b.y += ((fy - b.y) / gap) * step
+          // toque a cada passada: a bola se afasta um pouco e o corpo a alcança
+          const touch = 0.5 + (sp > 1.2 ? 0.45 * Math.abs(Math.sin((o.stride * Math.PI) / 4)) * Math.min(1, sp / 5) : 0)
+          tx = o.x + ux * touch
+          ty = o.y + uy * touch
+          tz = 0
         }
-        b.z = o.gk && b.hidden ? 1 : 0
+        // recepção (bola longe do pé): vem rolando até ele; depois acompanha sem atraso perceptível
+        const gap = Math.hypot(tx - b.x, ty - b.y)
+        const k = gap > 1.1 ? Math.min(1, ((sp + 8) * dt) / gap) : 1 - Math.exp(-dt / 0.04)
+        b.x += (tx - b.x) * k
+        b.y += (ty - b.y) * k
+        b.z += (tz - b.z) * Math.min(1, dt * 12)
         if (sp > 0.3) b.spin += dt * sp * 2
       }
     }
@@ -1285,9 +1783,17 @@ export function createDirector({ formations, homeId, awayId }) {
       st.revealed = []
       return out
     },
+    // sons do instante visual desde a última chamada (chute, contato, apito, rede, defesa, torcida)
+    takeFx() {
+      if (!st.fx.length) return null
+      const out = st.fx
+      st.fx = []
+      return out
+    },
+    // libera tudo o que está pendente (campo indisponível): também conta como mostrado, para o relato seguir
     releaseAll() {
-      for (const ev of st.queue) st.released.add(ev.seq)
-      if (st.script?.ev) st.released.add(st.script.ev.seq)
+      for (const ev of st.queue) release(ev)
+      if (st.script?.ev) release(st.script.ev)
     },
     setHalf(h) {
       if (h === st.half || st.pendingHalf === h) return
@@ -1305,5 +1811,6 @@ export function createDirector({ formations, homeId, awayId }) {
       st.possShare = Number.isFinite(share) ? share : 0.5
     },
     teamOf: team,
+    goalX, // gol que o time ataca (muda no intervalo)
   }
 }

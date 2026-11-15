@@ -1,9 +1,11 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Ambulance, ArrowLeft, ClipboardList, MapPin, Megaphone, Radio, Repeat2, Shield, Swords, Scale, Trophy, Tv, Users, Wifi, WifiOff, Zap } from 'lucide-react'
 import { isSessionError } from '../../lib/sessionRecovery'
-import MatchTactical2D from '../match2d/MatchTactical2D'
+// Transmissão 3D (carregada só quando o campo está ligado)
+const MatchBroadcast3D = lazy(() => import('../match3d/MatchBroadcast3D'))
 import MatchLineupEditor, { draftFromMatch } from '../seasons/components/MatchLineupEditor'
 import useCatalog from '../seasons/hooks/useCatalog'
+import { HOLD_KINDS } from '../match2d/director'
 import { MAJOR_EVENTS, condTone, eventText, isGoal, posFit } from '../seasons/utils/managerUtils'
 import useMatchAudio from '../audio/useMatchAudio'
 import LineupsSheet, { LineupsView } from './components/LineupsSheet'
@@ -18,6 +20,8 @@ import '../seasons/matchflow/matchflow.css'
 
 const POLL_MS = 20000
 const SHOT_KINDS = new Set(['goal', 'pen_goal', 'save', 'shot_off', 'pen_miss'])
+// campo 3D atrasado mais que isto (minutos de jogo): o relato mostra o lance sem esperar a imagem
+const FIELD_LAG_MAX = 4
 // Postura do time: muda na hora, sem abrir o painel de instruções.
 const STYLES = [
   ['defensive', 'Defensivo', Shield],
@@ -165,8 +169,29 @@ export default function OnlineMatchLive({ fixtureId = null, onClose, notify }) {
       return next
     })
   }, [])
-  const visible = useMemo(() => events.filter((e) => ended || e.minute <= shownMinute || revealed.has(e.seq)), [events, shownMinute, revealed, ended])
+  // Mesma regra das temporadas: UMA lista de lances, e finalização/cartão/impedimento só entram no relato, no placar
+  // e no som quando o campo 3D os mostra. Aqui o relógio é em tempo real (não espera): quando o campo fica para trás,
+  // ele acelera (ver fieldSpeed) e, se ainda assim atrasar mais de FIELD_LAG_MAX minutos, o relato segue sem ele.
+  const [fieldFailed, setFieldFailed] = useState(false)
+  const fieldOn = broadcast && !fieldFailed && Boolean(catalog) && status !== 'sched'
+  const visible = useMemo(
+    () =>
+      events.filter((e) => {
+        if (ended || revealed.has(e.seq)) return true
+        if (fieldOn && HOLD_KINDS.has(e.kind)) return e.minute < shownMinute - FIELD_LAG_MAX
+        return e.minute <= shownMinute
+      }),
+    [events, shownMinute, revealed, ended, fieldOn],
+  )
   const upcoming = useMemo(() => events.filter((e) => e.minute <= shownMinute + 1), [events, shownMinute])
+  // atraso do campo em minutos de jogo: o lance mais antigo que ele ainda não mostrou
+  const fieldBehind = useMemo(() => {
+    if (!fieldOn) return 0
+    let m = null
+    for (const e of events) if (HOLD_KINDS.has(e.kind) && !revealed.has(e.seq) && e.minute <= shownMinute) m = m == null ? e.minute : Math.min(m, e.minute)
+    return m == null ? 0 : shownMinute - m
+  }, [fieldOn, events, revealed, shownMinute])
+  const fieldSpeed = fieldBehind >= 2 ? 3 : fieldBehind >= 1 ? 2 : 1
 
   const live = useMemo(() => {
     const sc = { h: 0, a: 0 }
@@ -190,7 +215,7 @@ export default function OnlineMatchLive({ fixtureId = null, onClose, notify }) {
   }, [visible])
 
   const side = data?.my_side || null
-  useMatchAudio({ visible, userSide: side || 'h', score: live.sc, minute: shownMinute, active: Boolean(data) && status !== 'sched' })
+  useMatchAudio({ visible, userSide: side || 'h', score: live.sc, minute: shownMinute, active: Boolean(data) && status !== 'sched', field: fieldOn })
 
   // notas por posição do elenco para o editor do time
   useEffect(() => {
@@ -333,25 +358,28 @@ export default function OnlineMatchLive({ fixtureId = null, onClose, notify }) {
   }
 
   return (
-    <div className={`onm ml ${broadcast ? 'has-broadcast' : ''}`} role="dialog" aria-modal="true" aria-label="Partida ao vivo">
-      {broadcast && catalog && (
+    <div className={`onm ml ${fieldOn ? 'has-broadcast' : ''}`} role="dialog" aria-modal="true" aria-label="Partida ao vivo">
+      {broadcast && !fieldFailed && catalog && (
         <div className="ml-stage">
-          <MatchTactical2D
-            data={{ ...data, home: data.home.id, away: data.away.id }}
-            clubs={clubs}
-            catalog={catalog}
-            clock={Math.max(0, clock)}
-            minute={shownMinute}
-            events={upcoming}
-            onHold={() => {}}
-            onReveal={onReveal}
-            paused={phase === 'ht' || ended}
-            speed={1}
-            score={live.sc}
-            finished={ended}
-            clockLabel={clockLabel}
-            userSide={side || 'h'}
-          />
+          <Suspense fallback={<div className="m3d-boot">Carregando o estádio…</div>}>
+            <MatchBroadcast3D
+              data={{ ...data, home: data.home.id, away: data.away.id }}
+              clubs={clubs}
+              catalog={catalog}
+              clock={Math.max(0, clock)}
+              minute={shownMinute}
+              events={upcoming}
+              onHold={() => {}}
+              onReveal={onReveal}
+              onUnavailable={() => setFieldFailed(true)}
+              paused={phase === 'ht' || ended}
+              speed={fieldSpeed}
+              score={live.sc}
+              finished={ended}
+              clockLabel={clockLabel}
+              userSide={side || 'h'}
+            />
+          </Suspense>
         </div>
       )}
       <header className="ml-top onm-top" style={{ '--hc': home.colors[0], '--ac': away.colors[0] }}>
@@ -517,7 +545,8 @@ export default function OnlineMatchLive({ fixtureId = null, onClose, notify }) {
                 return !b
               })}
               aria-pressed={broadcast}
-              aria-label="Campo 2D"
+              aria-label={broadcast ? 'Ver só o placar' : 'Ver o jogo em 3D'}
+              title={broadcast ? 'Só placar' : 'Jogo em 3D'}
             >
               <Tv size={18} />
             </button>

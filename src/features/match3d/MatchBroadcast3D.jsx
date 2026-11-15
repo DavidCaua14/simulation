@@ -1,0 +1,420 @@
+import { useEffect, useMemo, useRef, useState } from 'react'
+import ClubCrest from '../club/components/ClubCrest'
+import { getClubById } from '../club/data/clubs'
+import { createDirector, L, W } from '../match2d/director'
+import { createFieldAudio, dangerOf } from '../audio/fieldSounds'
+import { eventText } from '../seasons/utils/managerUtils'
+import { THREE, colorDist, createAthlete, createKitMaterials, createScene, poseAthlete, toWorld } from './scene3d'
+import './match3d.css'
+
+// Transmissão 3D (protótipo). Mesmas props do campo 2D (MatchTactical2D): o diretor é o mesmo,
+// só muda o desenho — estádio, atletas articulados e uma câmera de TV que acompanha a jogada.
+// onHold(minuto|null): o relógio da partida não passa do lance que ainda está em campo.
+// onReveal(seqs): lances que o campo acabou de mostrar (o placar conta na hora).
+
+const KEEPER_COLORS = ['#22c55e', '#f472b6', '#f97316', '#eab308', '#a855f7', '#06b6d4']
+const REF_COLORS = ['#111827', '#facc15', '#ec4899', '#14b8a6']
+
+function farthest(list, avoid) {
+  return [...list].sort((a, b) => Math.min(...avoid.map((c) => colorDist(b, c))) - Math.min(...avoid.map((c) => colorDist(a, c))))[0]
+}
+
+function kitsFor(hc, ac) {
+  const h0 = hc[0] || '#c8102e'
+  const h1 = hc[1] || '#ffffff'
+  let a0 = ac[0] || '#1d4ed8'
+  let a1 = ac[1] || '#ffffff'
+  if (colorDist(h0, a0) < 120) {
+    if (ac[1] && colorDist(h0, ac[1]) > 120) [a0, a1] = [ac[1], ac[0]]
+    else [a0, a1] = [colorDist(h0, '#f4f4f4') > 120 ? '#f4f4f4' : '#111827', a0]
+  }
+  const gkH = farthest(KEEPER_COLORS, [h0, a0, h1, a1])
+  const gkA = farthest(KEEPER_COLORS.filter((c) => c !== gkH), [h0, a0, h1, a1, gkH])
+  const ref = farthest(REF_COLORS, [h0, a0, gkH, gkA])
+  return { h: [h0, h1, h0], a: [a0, a1, a0], gkH, gkA, ref }
+}
+
+// onUnavailable(): o aparelho não abriu o WebGL — a tela segue só com o placar
+export default function MatchBroadcast3D({ data, catalog, clock, events, paused, speed = 1, minute, score, finished, clockLabel, userSide, onHold, onReveal, onUnavailable, clubs }) {
+  const wrap = useRef(null)
+  const canvas = useRef(null)
+  const labelRef = useRef(null)
+  const seen = useRef(new Set())
+  const [ready, setReady] = useState(false)
+  const [failed, setFailed] = useState(false)
+  const [caption, setCaption] = useState(null)
+  const live = useRef({ paused, speed })
+  useEffect(() => {
+    live.current = { paused, speed }
+  }, [paused, speed])
+
+  const home = clubs?.home || getClubById(data.home)
+  const away = clubs?.away || getClubById(data.away)
+  const hc = (clubs?.home?.colors || getClubById(data.home)?.colors || []).join()
+  const ac = (clubs?.away?.colors || getClubById(data.away)?.colors || []).join()
+  const kits = useMemo(() => kitsFor(hc ? hc.split(',') : [], ac ? ac.split(',') : []), [hc, ac])
+  const names = useMemo(() => ({ h: home?.short || home?.name || 'Casa', a: away?.short || away?.name || 'Visitante' }), [home?.short, home?.name, away?.short, away?.name])
+  const view = useRef({ userSide })
+  useEffect(() => {
+    view.current = { userSide }
+  }, [userSide])
+
+  // diretor (só apresentação): criado uma vez por partida — o mesmo do campo 2D
+  const [dir] = useState(() => {
+    const d = createDirector({ formations: catalog?.byId, homeId: data.home, awayId: data.away })
+    d.sync(data.players || [], data.formation)
+    d.kickoff('h')
+    return d
+  })
+  const director = useRef(dir)
+  useEffect(() => {
+    if (import.meta.env.DEV) window.__campo3d = dir
+  }, [dir])
+  useEffect(() => {
+    director.current?.sync(data.players || [], data.formation)
+  }, [data.players, data.formation])
+  useEffect(() => {
+    const poss = data.stats?.poss?.[0]
+    director.current?.setPossession(poss ? poss / 100 : 0.5)
+  }, [data.stats])
+  const styleH = data.tactics?.h?.style
+  const styleA = data.tactics?.a?.style
+  useEffect(() => {
+    director.current?.setStyle('h', styleH)
+    director.current?.setStyle('a', styleA)
+  }, [styleH, styleA])
+  useEffect(() => {
+    const m = minute ?? 0
+    director.current?.setHalf(m < 45 ? 1 : m < 90 ? 2 : m < 105 ? 1 : 2)
+  }, [minute])
+
+  const holdRef = useRef(onHold)
+  const revealRef = useRef(onReveal)
+  const failRef = useRef(onUnavailable)
+  useEffect(() => {
+    holdRef.current = onHold
+    revealRef.current = onReveal
+    failRef.current = onUnavailable
+  }, [onHold, onReveal, onUnavailable])
+
+  const startClock = useRef(clock)
+  useEffect(() => {
+    const d = director.current
+    if (!d) return
+    const old = []
+    for (const e of events) {
+      if (seen.current.has(e.seq)) continue
+      seen.current.add(e.seq)
+      // lance anterior à abertura do campo (partida retomada / campo ligado no meio do jogo): não é reencenado,
+      // e a tela é avisada para mostrá-lo no relato sem esperar a imagem
+      if (e.minute < startClock.current - 0.5) {
+        old.push(e.seq)
+        continue
+      }
+      d.enqueue(e)
+    }
+    if (old.length) revealRef.current?.(old)
+  }, [events])
+
+  useEffect(() => {
+    if (failed) {
+      // nada fica preso: os lances pendentes entram no relato e a tela passa para "só placar"
+      const d = director.current
+      d?.releaseAll()
+      const shown = d?.takeRevealed()
+      if (shown) revealRef.current?.(shown)
+      holdRef.current?.(null)
+      failRef.current?.()
+    }
+    return () => holdRef.current?.(null)
+  }, [failed])
+
+  // cena 3D + laço. Criados uma vez por partida; o resto chega por refs.
+  useEffect(() => {
+    let ctx
+    try {
+      ctx = createScene(canvas.current, {
+        crowdColors: [kits.h[0], kits.h[1], kits.a[0]],
+        ads: [names.h.toUpperCase(), 'AO VIVO', names.a.toUpperCase(), 'FUTEBOL'],
+      })
+    } catch (err) {
+      console.error('[campo 3D]', err)
+      // sem WebGL: avisa fora do efeito (o relógio é liberado pelo efeito de `failed`)
+      Promise.resolve().then(() => setFailed(true))
+      return undefined
+    }
+    const { renderer, scene, camera, stadium, goals, ball } = ctx
+    const kitMats = {
+      h: createKitMaterials(kits.h[0], kits.h[1], kits.h[2]),
+      a: createKitMaterials(kits.a[0], kits.a[1], kits.a[2]),
+      gk_h: createKitMaterials(kits.gkH, '#1f2937', kits.gkH),
+      gk_a: createKitMaterials(kits.gkA, '#1f2937', kits.gkA),
+      ref: createKitMaterials(kits.ref, '#111827', '#111827'),
+    }
+    const rigs = new Map()
+    const referee = { x: L / 2 - 6, y: W / 2 + 8, vx: 0, vy: 0, stride: 0, anim: null }
+    const refRig = createAthlete(kitMats.ref, { id: 'referee', number: null })
+    scene.add(refRig.root)
+
+    let raf = 0
+    let last = performance.now()
+    let lastHold
+    let reported = false
+    let lastCaption = null
+    let cheer = 0
+    const fieldAudio = createFieldAudio()
+    const cam = { x: 0, z: 0, fov: 20, ox: 0 }
+    const ballPrev = new THREE.Vector3()
+    const tmp = new THREE.Vector3()
+    const axis = new THREE.Vector3()
+
+    const resize = () => {
+      const r = wrap.current.getBoundingClientRect()
+      const dpr = Math.min(1.75, window.devicePixelRatio || 1)
+      renderer.setPixelRatio(dpr)
+      renderer.setSize(Math.max(1, r.width), Math.max(1, r.height), false)
+      camera.aspect = Math.max(0.3, r.width / Math.max(1, r.height))
+      camera.updateProjectionMatrix()
+    }
+    resize()
+    const ro = new ResizeObserver(resize)
+    ro.observe(wrap.current)
+
+    const syncRigs = (players) => {
+      const alive = new Set()
+      for (const p of players) {
+        alive.add(p.id)
+        let r = rigs.get(p.id)
+        const kitKey = p.gk ? `gk_${p.side}` : p.side
+        if (r && r.kitKey !== kitKey) {
+          scene.remove(r.root)
+          r = null
+        }
+        if (!r) {
+          r = createAthlete(kitMats[kitKey], { id: p.id, number: p.number })
+          r.kitKey = kitKey
+          r.yaw = p.side === 'h' ? Math.PI / 2 : -Math.PI / 2
+          scene.add(r.root)
+          rigs.set(p.id, r)
+        }
+      }
+      for (const [id, r] of rigs) {
+        if (!alive.has(id)) {
+          scene.remove(r.root)
+          rigs.delete(id)
+        }
+      }
+    }
+
+    const draw = (now) => {
+      const dtReal = Math.min(0.05, (now - last) / 1000)
+      last = now
+      const d = director.current
+      if (!d) return
+      const { paused: isPaused, speed: sp } = live.current
+      const step = isPaused ? 0 : dtReal * Math.max(1, Number(sp) || 1)
+      if (step > 0) {
+        let rest = step
+        while (rest > 1e-4) {
+          const s = Math.min(rest, 1 / 60)
+          d.update(s)
+          rest -= s
+        }
+      }
+      const st = d.state
+      const b = st.ball
+      const t = now / 1000
+
+      // atletas
+      syncRigs(st.players)
+      for (const p of st.players) {
+        const r = rigs.get(p.id)
+        r.root.position.set(p.x - L / 2, 0, p.y - W / 2)
+        poseAthlete(r, p, b, step || dtReal * 0.0001, t)
+      }
+
+      // árbitro: acompanha a jogada em diagonal, sem entrar na linha da bola
+      {
+        const tx = Math.max(4, Math.min(L - 4, b.x - 7))
+        const ty = Math.max(3, Math.min(W - 3, b.y + (b.y < W / 2 ? 9 : -9)))
+        const dx = tx - referee.x
+        const dy = ty - referee.y
+        const dd = Math.hypot(dx, dy)
+        const want = dd > 2 ? Math.min(6.5, dd * 0.9) : 0
+        const k = Math.min(1, step * 3)
+        referee.vx += ((dd ? (dx / dd) * want : 0) - referee.vx) * k
+        referee.vy += ((dd ? (dy / dd) * want : 0) - referee.vy) * k
+        referee.x += referee.vx * step
+        referee.y += referee.vy * step
+        referee.stride = (referee.stride + (Math.hypot(referee.vx, referee.vy) * step * 8) / 2.6) % 8
+        refRig.root.position.set(referee.x - L / 2, 0, referee.y - W / 2)
+        poseAthlete(refRig, referee, b, step, t)
+      }
+
+      // bola: rola de acordo com a distância percorrida
+      ball.visible = !b.hidden
+      tmp.set(b.x - L / 2, (b.z || 0) + 0.16, b.y - W / 2)
+      const mx = tmp.x - ballPrev.x
+      const mz = tmp.z - ballPrev.z
+      const md = Math.hypot(mx, mz)
+      if (md > 1e-4 && md < 5) {
+        axis.set(mz, 0, -mx).normalize()
+        ball.rotateOnWorldAxis(axis, md / 0.16)
+      }
+      ball.position.copy(tmp)
+      ballPrev.copy(tmp)
+
+      // rede balança no gol
+      for (const gl of goals) {
+        const ns = st.netShake
+        const k = ns && ns.side === gl.side ? Math.sin(ns.t * 28) * Math.max(0, 1 - ns.t) * 0.35 : 0
+        gl.net.scale.set(1 + k, 1, 1 + k * 0.2)
+      }
+
+      // câmera de TV: segue a bola com atraso; no ataque fecha e gira para o gol; no gol, close no artilheiro
+      const script = st.script
+      const celebrating = script?.phase === 'celebrate' && script.shooter
+      const attacking = script && ['attack', 'penalty'].includes(script.kind) && ['build', 'aim', 'flight', 'runup', 'carry', 'through'].includes(script.phase)
+      const focus = celebrating ? script.shooter : b
+      const fx = focus.x - L / 2
+      const fz = focus.y - W / 2
+      const narrow = camera.aspect < 1.3
+      const wantFov = (celebrating ? 11 : attacking ? 17 : 20) * (narrow ? 1.5 : 1)
+      const kc = Math.min(1, dtReal * (celebrating ? 1.4 : 2.2))
+      cam.x += (Math.max(-L / 2 + 8, Math.min(L / 2 - 8, fx)) - cam.x) * kc
+      cam.z += (fz - cam.z) * Math.min(1, dtReal * 1.6)
+      cam.fov += (wantFov - cam.fov) * Math.min(1, dtReal * 1.5)
+      // perto do gol a câmera fica mais para o meio: vê a área em diagonal, como na TV
+      const wantOx = Math.abs(cam.x) > 28 ? -Math.sign(cam.x) * Math.min(9, (Math.abs(cam.x) - 28) * 0.6) : 0
+      cam.ox += (wantOx - cam.ox) * Math.min(1, dtReal * 1.2)
+      camera.fov = cam.fov
+      camera.updateProjectionMatrix()
+      camera.position.set(cam.x * 0.82 + cam.ox, celebrating ? 15 : 20, W / 2 + 30)
+      camera.lookAt(cam.x, 0, cam.z * 0.7)
+
+      // torcida pula no gol
+      const goalNow = script?.phase === 'celebrate' && script.kind === 'attack'
+      cheer += ((goalNow ? 1 : 0) - cheer) * Math.min(1, dtReal * (goalNow ? 3 : 1))
+      stadium.bounce(t, cheer)
+
+      renderer.render(scene, camera)
+
+      // nome sobre quem tem a bola (ou o artilheiro comemorando)
+      const owner = b.owner ? st.players.find((p) => p.id === b.owner) : null
+      const tag = celebrating ? script.shooter : owner
+      const el = labelRef.current
+      if (el) {
+        if (tag) {
+          tmp.copy(toWorld(tag.x, tag.y, 2.15)).project(camera)
+          const r = wrap.current.getBoundingClientRect()
+          el.style.transform = `translate(${((tmp.x + 1) / 2) * r.width}px, ${((1 - tmp.y) / 2) * r.height}px) translate(-50%, -100%)`
+          el.style.opacity = tmp.z < 1 ? '1' : '0'
+          if (el.dataset.id !== String(tag.id)) {
+            el.dataset.id = String(tag.id)
+            el.textContent = tag.name || ''
+            el.className = `m3d-tag ${tag.side === view.current.userSide ? 'is-mine' : ''}`
+          }
+        } else el.style.opacity = '0'
+      }
+
+      // relógio espera o lance; placar conta quando a bola entra
+      const hold = d.holdMinute()
+      if (hold !== lastHold) {
+        lastHold = hold
+        holdRef.current?.(hold)
+      }
+      const shown = d.takeRevealed()
+      if (shown) revealRef.current?.(shown)
+      // sons de campo no mesmo quadro do desenho (chute, bote, defesa, rede, apito, expectativa da torcida)
+      fieldAudio.play(d.takeFx(), now)
+      fieldAudio.tick(dtReal, step > 0 ? dangerOf(st, d.goalX) : 0)
+
+      // faixa de narração: lance em destaque, senão quem conduz a bola
+      const top = st.banners[0] || null
+      let cap = null
+      if (top) cap = { id: top.id, kind: top.kind, ev: top.ev, text: top.text }
+      else if (owner) cap = { id: `own-${owner.id}`, kind: 'owner', name: owner.name, side: owner.side }
+      const key = cap ? cap.id : null
+      if (key !== lastCaption) {
+        lastCaption = key
+        setCaption(cap)
+      }
+    }
+
+    let shownFirst = false
+    const frame = (now) => {
+      raf = requestAnimationFrame(frame)
+      try {
+        draw(now)
+        if (!shownFirst) {
+          shownFirst = true
+          setReady(true)
+        }
+      } catch (err) {
+        if (!reported) {
+          reported = true
+          console.error('[campo 3D]', err)
+        }
+      }
+    }
+    raf = requestAnimationFrame(frame)
+    return () => {
+      cancelAnimationFrame(raf)
+      ro.disconnect()
+      fieldAudio.stop()
+      scene.traverse((o) => {
+        o.geometry?.dispose?.()
+        const mats = Array.isArray(o.material) ? o.material : o.material ? [o.material] : []
+        for (const m of mats) {
+          m.map?.dispose?.()
+          m.dispose?.()
+        }
+      })
+      renderer.dispose()
+    }
+    // a cena é montada uma vez por partida (cores e nomes não mudam no meio do jogo)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // Lance revelado: o MESMO texto do relato (eventText), do mesmo evento, no quadro em que o campo o mostra.
+  // Faixas de transição (Falta, Pênalti!, Escanteio, Intervalo) usam o texto do diretor.
+  const captionText = (c) => {
+    if (c.kind === 'owner') return { who: c.name, rest: 'conduz a bola' }
+    const e = c.ev
+    if (!e || c.kind === 'foul' || c.kind === 'text') return { who: '', rest: c.text || '' }
+    return { who: '', rest: eventText(e) }
+  }
+  const cap = caption ? captionText(caption) : null
+  const capMine = caption && (caption.side || caption.ev?.side) === userSide
+
+  return (
+    <div className="m3d">
+      <div className="m3d-view" ref={wrap}>
+        <canvas ref={canvas} className="m3d-canvas" aria-label="Transmissão 3D da partida" role="img" />
+        <div className="m3d-bug">
+          <span className={`m3d-clock ${finished ? 'is-done' : ''}`}>{clockLabel}</span>
+          <span className="m3d-team">
+            {clubs?.crest ? clubs.crest('h') : <ClubCrest clubId={data.home} size={16} />}
+            <b>{names.h}</b>
+          </span>
+          <span className="m3d-goals">
+            <b>{score.h}</b>
+            <b>{score.a}</b>
+          </span>
+          <span className="m3d-team">
+            <b>{names.a}</b>
+            {clubs?.crest ? clubs.crest('a') : <ClubCrest clubId={data.away} size={16} />}
+          </span>
+        </div>
+        <div ref={labelRef} className="m3d-tag" style={{ opacity: 0 }} />
+        {cap && (cap.who || cap.rest) && (
+          <div key={caption.id} className={`m3d-caption k-${caption.kind} ${capMine ? 'is-mine' : ''}`}>
+            {cap.who && <b>{cap.who}</b>} <span>{cap.rest}</span>
+          </div>
+        )}
+        {!ready && !failed && <div className="m3d-loading">Montando o estádio…</div>}
+        {failed && <div className="m3d-loading">Este aparelho não conseguiu abrir o 3D. Os lances seguem no relato.</div>}
+      </div>
+    </div>
+  )
+}
