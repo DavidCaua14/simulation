@@ -244,6 +244,8 @@ export function createDirector({ formations, homeId, awayId }) {
       if (m === owner) continue
       const dd = dist(owner, m)
       if (dd < 6 || dd > 34) continue
+      // no jogo corrido ninguém recebe dentro da área adversária: lá só entra o lance do motor (finalização)
+      if (Math.abs(goalX(owner.side) - m.x) < 17) continue
       const forward = (m.x - owner.x) * d
       // linha de passe livre: distância do adversário mais próximo ao segmento
       let lane = 99
@@ -365,6 +367,13 @@ export function createDirector({ formations, homeId, awayId }) {
   function planSteps(s) {
     const b = st.ball
     const d = dirOf(s.side)
+    // a bola já está mais perto do gol que o ponto de finalização: o ponto vem para o lado dela (mesma
+    // profundidade), e o último passe sai rolado para o lado em vez de voltar para a entrada da área
+    const gxP = goalX(s.side)
+    if (Math.abs(gxP - b.x) < Math.abs(gxP - s.spot.x) - 3) {
+      s.spot = { x: clamp(b.x - d * 1.5, 6, L - 6), y: clamp(b.y + (b.y < W / 2 ? 9 : -9), W / 2 - 14, W / 2 + 14) }
+      if (Math.abs(gxP - s.spot.x) < 7) s.spot.x = gxP - d * 7
+    }
     const total = Math.abs(s.spot.x - b.x)
     const n = clamp(Math.ceil(total / 22), 1, 4)
     const used = new Set([s.shooter?.id])
@@ -384,11 +393,33 @@ export function createDirector({ formations, homeId, awayId }) {
     }
     // gol com assistência: quem o relato cita como assistente dá o ÚLTIMO passe para o finalizador
     if (s.assist && s.assist.id !== b.owner) {
-      const at = { x: clamp(s.spot.x - d * (9 + rnd() * 6), 4, L - 4), y: clamp(s.spot.y + (s.spot.y < W / 2 ? 1 : -1) * (6 + rnd() * 8), 4, W - 4) }
+      // ao lado do ponto de finalização (quase a mesma distância do gol): o último passe sai rolado para o lado,
+      // nunca um toque para trás na cara do goleiro
+      const at = { x: clamp(s.spot.x - d * (1 + rnd() * 2), 4, L - 4), y: clamp(s.spot.y + (s.spot.y < W / 2 ? 1 : -1) * (8 + rnd() * 4), 4, W - 4) }
+      s.assistAt = at
       steps.push({ who: s.assist, at })
     }
     steps.push({ who: s.shooter, at: s.spot, final: true })
     return steps
+  }
+
+  // A bola volta ao assistente no ponto AO LADO do finalizador (s.assistAt), não onde ele está agora (que pode
+  // ser lá atrás): ela chega no tempo da corrida dele, com folga para não parar antes e virar bola solta.
+  // Passe do roteiro para o ponto combinado (não para onde o colega está agora), no tempo da corrida dele.
+  function passTo(owner, who, at) {
+    const run = (dist(who, at) / (SPRINT * 0.85) + (who.react || 0.2)) * 1.2 + 0.15
+    who.tx = at.x
+    who.ty = at.y
+    const dd = dist(owner, at)
+    kick(owner, at, { dur: Math.max(dd / (dd > 25 ? 22 : PASS_SPEED + 2), run), kicker: owner, receiver: who.id, peak: dd > 25 ? 3 : 0.2 })
+  }
+  function toAssist(s, owner) {
+    const a = s.assist
+    const spot = s.assistAt || { x: s.spot.x - dirOf(s.side) * 2, y: clamp(s.spot.y + (s.spot.y < W / 2 ? 10 : -10), 4, W - 4) }
+    const run = (dist(a, spot) / (SPRINT * 0.85) + (a.react || 0.2)) * 1.35 + 0.3
+    a.tx = spot.x
+    a.ty = spot.y
+    kick(owner, spot, { dur: Math.max(dist(owner, spot) / (PASS_SPEED + 2), run), kicker: owner, receiver: a.id, peak: dist(owner, spot) > 24 ? 3 : 0.2 })
   }
 
   function stepAttack(s, dt) {
@@ -430,6 +461,22 @@ export function createDirector({ formations, homeId, awayId }) {
         }
         return
       }
+      // o finalizador pegou a bola antes da hora: sem assistente, vai direto para a finalização (não devolve para trás)
+      if (owner === s.shooter && !s.assist) {
+        s.steps = [s.steps[s.steps.length - 1]]
+        s.phase = 'carry'
+        s.t = 0
+        return
+      }
+      // alguém mais à frente na fila (assistente, finalizador) pegou a bola antes da vez: as etapas anteriores caem
+      // (não devolve para quem ficou para trás). O finalizador com assistente ainda recebe dele o último passe.
+      const idx = s.steps.findIndex((x) => x.who === owner)
+      const aIdx = s.steps.findIndex((x) => x.who === s.assist)
+      const from = idx > 0 ? (owner === s.shooter && aIdx >= 0 && aIdx < idx ? aIdx : idx) : 0
+      if (from > 0) {
+        s.steps = s.steps.slice(from)
+        return
+      }
       if (owner === step.who) {
         s.steps.shift()
         s.t = 0
@@ -439,15 +486,18 @@ export function createDirector({ formations, homeId, awayId }) {
         }
         return
       }
-      // conduz em direção ao alvo e passa quando o colega chega (ou o tempo aperta)
-      owner.tx = owner.x + d * 4
+      // conduz em direção ao alvo e passa quando o colega chega (ou o tempo aperta); quem não vai finalizar
+      // não entra na área: para a 20 m do gol (assim ninguém toca para trás na cara do goleiro)
+      const stopX = gx - d * 20
+      owner.tx = d === 1 ? Math.min(owner.x + 4, Math.max(owner.x, stopX)) : Math.max(owner.x - 4, Math.min(owner.x, stopX))
       owner.ty = owner.y + (step.at.y - owner.y) * 0.1
       owner.speed = JOG + 1
       const near = dist(step.who, step.at) < 5
       if ((near && s.t > 0.5) || s.t > 2.4) {
         // o último passe é do assistente do relato: se a bola caiu com outro colega, ela volta antes para ele
         const to = step.final && s.assist && owner !== s.assist && s.assist !== step.who ? s.assist : step.who
-        pass(owner, to, { lead: 0.35, speed: dist(owner, to) > 25 ? 22 : PASS_SPEED + 2 })
+        if (to === s.assist) toAssist(s, owner)
+        else passTo(owner, to, step.at)
         s.t = 0
       }
       return
@@ -459,8 +509,9 @@ export function createDirector({ formations, homeId, awayId }) {
       if (b.flight) return
       if (owner !== sh) {
         if (owner && owner.side === s.side) {
-          // o colega da tabela avança e devolve na frente
-          owner.tx = owner.x + d * 4
+          // o colega da tabela avança (até 20 m do gol) e devolve na frente
+          const stopX = gx - d * 20
+          owner.tx = d === 1 ? Math.min(owner.x + 4, Math.max(owner.x, stopX)) : Math.max(owner.x - 4, Math.min(owner.x, stopX))
           owner.ty = owner.y
           owner.speed = JOG + 1.5
           sh.tx = s.spot.x
@@ -474,8 +525,8 @@ export function createDirector({ formations, homeId, awayId }) {
             via.speed = SPRINT
           }
           if (dist(sh, s.spot) < 6 || s.t > 2.2) {
-            const to = via || sh
-            pass(owner, to, { lead: 0.3, speed: 20, peak: dist(owner, to) > 24 ? 3 : 0.2 })
+            if (via) toAssist(s, owner)
+            else pass(owner, sh, { lead: 0.3, speed: 20, peak: dist(owner, sh) > 24 ? 3 : 0.2 })
             s.t = 0
           }
         } else {
@@ -574,17 +625,27 @@ export function createDirector({ formations, homeId, awayId }) {
       to = { x: gkX - d * 0.35, y } // as mãos ficam um pouco à frente do corpo
       plan = { y: lateral < 0.9 ? y : y - Math.sign(y - gy0) * 0.75, anim: lateral < 0.9 ? 'catch' : 'dive', h: z1 }
     } else {
+      // para fora tem de PARECER para fora: pelo lado, a bola passa a 1,6 m ou mais da trave; por cima, cruza a
+      // linha bem acima do travessão. Nos dois casos ela termina atrás do gol, nunca dentro da rede.
       const wide = rnd() < 0.55
       const sideY = rnd() < 0.5 ? -1 : 1
-      to = wide ? { x: gx + d * 2, y: W / 2 + sideY * (GOAL_HALF + 0.8 + rnd() * 3) } : { x: gx + d * 2, y: W / 2 + sideY * rnd() * GOAL_HALF }
-      z1 = wide ? 0.3 + rnd() : 2.9 + rnd() * 1.3
+      // o ponto que importa é onde a bola CRUZA a linha do gol; o alvo fica atrás dele, na mesma reta do chute
+      // (num chute cruzado, mirar só atrás do gol faria a bola passar entre as traves)
+      const cross = wide ? { x: gx, y: W / 2 + sideY * (GOAL_HALF + 1.6 + rnd() * 3.5) } : { x: gx, y: W / 2 + sideY * rnd() * (GOAL_HALF - 0.5) }
+      const ux = cross.x - from.x
+      const uy = cross.y - from.y
+      const ul = Math.hypot(ux, uy) || 1
+      const beyond = wide ? 4 : 6
+      to = { x: cross.x + (ux / ul) * beyond, y: clamp(cross.y + (uy / ul) * beyond, -3, W + 3) }
+      z1 = wide ? 0.3 + rnd() : 4 + rnd() * 1.5
       // para fora: só se estica se a bola passar perto; por cima, acompanha com um pulo curto
       const dy = to.y - gy0
       if (wide && Math.abs(dy) < reach + 1.2) plan = { y: gy0 + Math.sign(dy) * Math.max(0, Math.min(reach, Math.abs(dy)) - 1.1), anim: 'dive', h: Math.min(z1, 1.2), miss: true }
       else if (!wide) plan = { y: gy0 + clamp(dy, -0.8, 0.8), anim: 'jump', h: 2.2, miss: true }
     }
     const far = dist(sh, to)
-    kick(from, to, { speed, peak: Math.max(z1 * 0.6, far > 20 ? 1.4 : 0.6), z1, kicker: sh })
+    const over = !scored && !saved && !blocker && Math.abs(to.y - W / 2) < GOAL_HALF
+    kick(from, to, { speed, peak: over ? Math.max(2.5, z1 * 0.7) : Math.max(z1 * 0.6, far > 20 ? 1.4 : 0.6), z1, kicker: sh })
     s.target = to
     s.saved = saved
     s.phase = 'flight'
@@ -1009,7 +1070,10 @@ export function createDirector({ formations, homeId, awayId }) {
         b.flight = null
         b.owner = null
         s.spot = { x: v.x, y: v.y }
-        Object.assign(b, { x: v.x + dv * 0.6, y: v.y, z: 0 })
+        // falta (não pênalti) nunca é cobrada dentro da área: o lance foi na entrada da área
+        const gxF = goalX(s.opp)
+        if (Math.abs(gxF - s.spot.x) < 18.5) s.spot.x = gxF - dirOf(s.opp) * 18.5
+        Object.assign(b, { x: s.spot.x + dv * 0.6, y: s.spot.y, z: 0 })
         banner('foul', s.ev, { text: 'Falta' })
         s.phase = 'whistle'
         s.t = 0
@@ -1224,6 +1288,36 @@ export function createDirector({ formations, homeId, awayId }) {
     st.poss = owner.side
     const d = dirOf(owner.side)
     const opp = outfield(other(owner.side))
+    // dentro da área adversária sem lance do motor não há finalização: em vez de tocar para trás na cara do
+    // goleiro, ele perde a bola em até 1 s — o goleiro sai e pega (perto e pelo meio) ou o zagueiro desarma
+    if (!owner.gk && Math.abs(goalX(owner.side) - owner.x) < 17) {
+      if (st.boxOwner !== owner.id) {
+        st.boxOwner = owner.id
+        st.boxAt = st.t
+      }
+      const gkO = keeper(other(owner.side))
+      const close = Math.abs(goalX(owner.side) - owner.x) < 11 && Math.abs(owner.y - W / 2) < 12
+      const taker = close && gkO ? gkO : nearest(opp, owner)
+      if (taker) {
+        taker.tx = owner.x
+        taker.ty = owner.y
+        taker.speed = SPRINT
+      }
+      owner.tx = owner.x
+      owner.ty = owner.y
+      owner.speed = 2
+      if (taker && (dist(taker, owner) < 1.4 || st.t - st.boxAt > 1)) {
+        fx(taker.gk ? 'touch' : 'tackle')
+        play(owner, 'stumble', 0.4)
+        if (taker.gk) play(taker, 'catch_low', 0.5)
+        b.owner = taker.id
+        st.poss = taker.side
+        st.turnoverAt = st.t
+        st.hold = 0.8 + rnd() * 0.6
+        st.boxOwner = null
+      }
+      return
+    }
     const share = owner.side === 'h' ? st.possShare : 1 - st.possShare
     // conduz para a frente, desviando do marcador; não entra na área (finalização só vem de evento real)
     const limit = goalX(owner.side) - d * 24
@@ -1387,7 +1481,9 @@ export function createDirector({ formations, homeId, awayId }) {
         m.runCd = st.t + 2.5 + rnd() * 4
       }
       if (!m.run && owner && m.depth > 0.62 && st.t > m.runCd && rnd() < dt * 0.45) {
-        m.run = { until: st.t + 2 + rnd() * 1.2, tx: clamp(line + da * (3 + rnd() * 7), 6, L - 6), ty: clamp(m.y + (W / 2 - m.y) * 0.4 + (rnd() - 0.5) * 14, 5, W - 5) }
+        const runX = clamp(line + da * (3 + rnd() * 7), 6, L - 6)
+        const gxR = goalX(att)
+        m.run = { until: st.t + 2 + rnd() * 1.2, tx: da === 1 ? Math.min(runX, gxR - 17) : Math.max(runX, gxR + 17), ty: clamp(m.y + (W / 2 - m.y) * 0.4 + (rnd() - 0.5) * 14, 5, W - 5) }
       }
       if (m.run) {
         m.tx = m.run.tx
@@ -1524,6 +1620,8 @@ export function createDirector({ formations, homeId, awayId }) {
     const b = st.ball
     const s = st.script
     if (s && (RESTART.test(s.phase) || s.kind === 'penalty')) return
+    // bola solta: quem vai buscá-la não pode ser afastado
+    if (!b.owner && !b.flight) return
     const ref = b.flight ? b.flight.to : b
     if (ref.x < 17 || ref.x > L - 17) return
     const keep = new Set([b.owner, b.flight?.receiver, b.flight?.interceptBy, b.flight?.kicker, s?.shooter?.id, s?.assist?.id, ...(s?.steps || []).map((x) => x.who?.id)].filter(Boolean))

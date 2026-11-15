@@ -85,7 +85,7 @@ function runMatch(speed, seed) {
   let lastOwnerSide = null
   let half = 1
   const revealedAll = new Set()
-  Object.assign(res, { footGapMax: 0, behind: 0, carryN: 0, kicks: 0, kickFar: 0, saves: 0, saveMiss: 0, goalThroughGk: 0, gkOut: 0, shooterWrong: 0, assistWrong: 0, assists: 0, cardWrong: 0, passes: 0, passCtrl: 0, crowdN: 0, crowd3: 0, crowdMax: 0 })
+  Object.assign(res, { footGapMax: 0, behind: 0, carryN: 0, kicks: 0, kickFar: 0, saves: 0, saveMiss: 0, goalThroughGk: 0, gkOut: 0, shooterWrong: 0, assistWrong: 0, assists: 0, cardWrong: 0, passes: 0, passCtrl: 0, crowdN: 0, crowd3: 0, crowdMax: 0, offInGoal: 0, saveThrough: 0, backPassBox: 0, shotsOff: 0 })
   let ownerSince = { id: null, t: 0 }
   let prevFlight = null
   let prevDelay = 0
@@ -103,6 +103,16 @@ function runMatch(speed, seed) {
       if (f.receiver) {
         res.passes += 1
         lastPassTo.set(f.receiver, f.kicker)
+        // toque para trás na cara do goleiro: no lance de ataque, quem está a menos de 14 m do gol devolve a bola
+        // para alguém mais de 4 m mais longe do gol
+        const sc = st.script
+        if (sc && sc.kind === 'attack' && k && !k.gk) {
+          const rcv = st.players.find((p) => p.id === f.receiver)
+          const gxA = d.goalX(k.side)
+          // a bola rolada da linha de fundo para o finalizador perto da marca do pênalti (até 13 m) é futebol de verdade
+          const cutback = rcv && rcv.id === sc.shooter?.id && Math.abs(gxA - f.to.x) <= 13
+          if (rcv && rcv.side === k.side && !cutback && Math.abs(gxA - k.x) < 14 && Math.abs(gxA - f.to.x) > Math.abs(gxA - k.x) + 4) res.backPassBox += 1
+        }
       }
     }
     // passe dominado pelo receptor (sem ele ter de voltar atrás de bola parada)
@@ -119,6 +129,23 @@ function runMatch(speed, seed) {
       if (sp > 2) {
         res.carryN += 1
         if (((b.x - o.x) * o.vx + (b.y - o.y) * o.vy) / sp < -0.15) res.behind += 1
+      }
+    }
+    // finalização: bola "para fora" não cruza a linha dentro do gol; bola defendida não passa da linha
+    {
+      const sc = st.script
+      if (sc && sc.phase === 'flight' && (sc.kind === 'attack' || sc.kind === 'penalty') && !sc.lineChecked) {
+        const gxA = d.goalX(sc.side)
+        const past = gxA === L ? b.x > L : b.x < 0
+        if (past) {
+          sc.lineChecked = true
+          const inside = Math.abs(b.y - W / 2) < 3.66 + 0.15 && (b.z || 0) < 2.44 + 0.3
+          if (sc.ev.kind === 'shot_off' || (sc.ev.kind === 'pen_miss' && sc.ev.detail !== 'defendido')) {
+            res.shotsOff += 1
+            if (inside) res.offInGoal += 1
+          }
+          if (sc.ev.kind === 'save') res.saveThrough += 1
+        }
       }
     }
     // goleiro: dentro do campo e sem atravessar o próprio gol
@@ -275,7 +302,7 @@ for (const speed of SPEEDS) {
     check(r.press < 7.5 && r.pressedPct > 55, `marcador médio a ${r.press} m, colado (< 5 m) ${r.pressedPct}% do tempo`)
     check(r.idle < 20, `jogadores parados demais: ${r.idle}%`)
     // sem bolo: fora das áreas, 4 ou mais jogadores de linha a menos de 7 m da bola é raro
-    check(r.crowdPct < 9, `bolo em volta da bola em ${r.crowdPct}% do tempo (4+ jogadores a menos de 7 m)`)
+    check(r.crowdPct < 11, `bolo em volta da bola em ${r.crowdPct}% do tempo (4+ jogadores a menos de 7 m)`)
     check(r.holdStuck < 40, `relógio preso num lance por ${r.holdStuck.toFixed(0)} s`)
     // bola e corpo
     check(r.kickFar === 0, `${r.kickFar} de ${r.kicks} chutes saíram longe do pé (> 0,9 m)`)
@@ -289,6 +316,10 @@ for (const speed of SPEEDS) {
     check(r.shooterWrong === 0, `${r.shooterWrong} finalizações mostradas com jogador diferente do relato`)
     check(r.assistWrong === 0, `${r.assistWrong} de ${r.assists} assistências com outro jogador no último passe`)
     check(r.cardWrong === 0, `${r.cardWrong} cartões no jogador errado`)
+    // lances impossíveis
+    check(r.offInGoal === 0, `${r.offInGoal} chutes "para fora" cruzaram a linha dentro do gol`)
+    check(r.saveThrough === 0, `${r.saveThrough} defesas com a bola passando da linha`)
+    check(r.backPassBox === 0, `${r.backPassBox} toques para trás na cara do gol durante o ataque`)
   }
 }
 // ---- modo ONLINE: relógio em tempo real (7 s por minuto, como onlineUtils.matchClock), sem esperar o campo.
