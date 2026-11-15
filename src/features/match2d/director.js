@@ -1354,9 +1354,10 @@ export function createDirector({ formations, homeId, awayId }) {
         .sort((a, c) => dist(a, owner) - dist(c, owner))
       // apoio: um oferece linha ao lado (um pouco atrás), outro na diagonal à frente
       const open = owner.y < W / 2 ? 1 : -1
+      // os apoios ficam a uma distância de passe (13–15 m), não em cima do portador: o time se abre com a bola
       const sup = [
-        { x: owner.x - da * 3, y: owner.y + open * 11 },
-        { x: owner.x + da * 11, y: owner.y - open * 9 },
+        { x: owner.x - da * 4, y: owner.y + open * 14 },
+        { x: owner.x + da * 14, y: owner.y - open * 11 },
       ]
       mates.slice(0, 2).forEach((m, i) => {
         if (m.run) return

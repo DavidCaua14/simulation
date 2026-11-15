@@ -193,6 +193,19 @@ export function eventText(e, name) {
     default: return e.kind
   }
 }
+// Relato (do mais novo para o mais antigo): ajustes táticos do mesmo time em menos de 10 minutos viram um só
+// (fica o mais recente), para não empurrar os lances para fora da tela.
+export function collapseTactics(feed) {
+  const lastShown = {}
+  return feed.filter((e) => {
+    if (e.kind !== 'tactic') return true
+    const prev = lastShown[e.side]
+    if (prev != null && prev - e.minute < 10) return false
+    lastShown[e.side] = e.minute
+    return true
+  })
+}
+
 export const MAJOR_EVENTS = new Set(['goal', 'pen_goal', 'pen_miss', 'second_yellow', 'red', 'injury', 'ht', 'ft', 'et'])
 export const isGoal = (e) => e.kind === 'goal' || e.kind === 'pen_goal'
 

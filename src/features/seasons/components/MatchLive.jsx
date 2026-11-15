@@ -13,7 +13,7 @@ import { PitchTokenContext } from './pitchToken'
 import FunctionsPanel from '../matchflow/FunctionsPanel'
 import useCatalog from '../hooks/useCatalog'
 import { fetchPlayer, fetchSquad, stepMatch } from '../services/managerApi'
-import { MAJOR_EVENTS, condTone, eventText, isGoal } from '../utils/managerUtils'
+import { MAJOR_EVENTS, collapseTactics, condTone, eventText, isGoal } from '../utils/managerUtils'
 import { COMP_NAME, describeMatch } from '../utils/seasonUtils'
 import useMatchAudio from '../../audio/useMatchAudio'
 import { HOLD_KINDS } from '../../match2d/director'
@@ -271,7 +271,7 @@ export default function MatchLive({ initial, myClub, onFinished, notify, api, ca
 
   const homeIsMine = side === 'h'
   const clockLabel = finished && clock >= serverMin ? 'FIM' : overlay?.kind === 'ht' ? 'INT' : `${Math.min(shownMinute, et ? 120 : 90)}'`
-  const feed = [...visible].reverse()
+  const feed = collapseTactics([...visible].reverse())
 
   return (
     <div className={`ml ${fieldOn ? 'has-broadcast' : ''}`} role="dialog" aria-modal="true" aria-label="Partida ao vivo">

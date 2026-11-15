@@ -6,7 +6,7 @@ const MatchBroadcast3D = lazy(() => import('../match3d/MatchBroadcast3D'))
 import MatchLineupEditor, { draftFromMatch } from '../seasons/components/MatchLineupEditor'
 import useCatalog from '../seasons/hooks/useCatalog'
 import { HOLD_KINDS } from '../match2d/director'
-import { MAJOR_EVENTS, condTone, eventText, isGoal, posFit } from '../seasons/utils/managerUtils'
+import { MAJOR_EVENTS, collapseTactics, condTone, eventText, isGoal, posFit } from '../seasons/utils/managerUtils'
 import useMatchAudio from '../audio/useMatchAudio'
 import LineupsSheet, { LineupsView } from './components/LineupsSheet'
 import OnlineCrest from './components/OnlineCrest'
@@ -268,7 +268,7 @@ export default function OnlineMatchLive({ fixtureId = null, onClose, notify }) {
   const injuredOff = side ? players.filter((p) => p.side === side && p.status === 'injured_off' && p.slot) : []
   const fixes = (data.fixes || []).map((f) => ({ ...f, inName: players.find((p) => p.id === f.in)?.name }))
   const clockLabel = phase === 'pre' || clock < 0 ? '0\'' : ended ? 'FIM' : phase === 'ht' ? 'INT' : phase === 'et_wait' ? 'PRO' : `${Math.min(shownMinute, endMin)}'`
-  const feed = [...visible].reverse()
+  const feed = collapseTactics([...visible].reverse())
   const name = (sd) => (sd === 'h' ? data.home : data.away)?.name
 
   // ---- antes do pontapé ----

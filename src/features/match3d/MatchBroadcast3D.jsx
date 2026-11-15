@@ -19,15 +19,28 @@ function farthest(list, avoid) {
   return [...list].sort((a, b) => Math.min(...avoid.map((c) => colorDist(b, c))) - Math.min(...avoid.map((c) => colorDist(a, c))))[0]
 }
 
+// Distância de cor perceptual ("redmean"): 0 a ~765. Vermelho e vinho ficam perto; vermelho e preto, longe.
+function kitDist(a, b) {
+  const ca = new THREE.Color(a)
+  const cb = new THREE.Color(b)
+  const r = ((ca.r + cb.r) / 2) * 255
+  const dr = (ca.r - cb.r) * 255
+  const dg = (ca.g - cb.g) * 255
+  const db = (ca.b - cb.b) * 255
+  return Math.sqrt((2 + r / 256) * dr * dr + 4 * dg * dg + (2 + (255 - r) / 256) * db * db)
+}
+const KIT_OK = 200 // abaixo disso, na câmera aberta do celular, os dois times se confundem
+// Uniformes que se distinguem na TV: compara camisa com camisa E camisa com calção do outro (vermelho/preto
+// contra preto/vermelho também confunde). Se o visitante não se distinguir, usa o segundo uniforme ou um reserva.
 function kitsFor(hc, ac) {
   const h0 = hc[0] || '#c8102e'
   const h1 = hc[1] || '#ffffff'
-  let a0 = ac[0] || '#1d4ed8'
-  let a1 = ac[1] || '#ffffff'
-  if (colorDist(h0, a0) < 120) {
-    if (ac[1] && colorDist(h0, ac[1]) > 120) [a0, a1] = [ac[1], ac[0]]
-    else [a0, a1] = [colorDist(h0, '#f4f4f4') > 120 ? '#f4f4f4' : '#111827', a0]
-  }
+  // camisa contra camisa; e o uniforme invertido (camisa ≈ calção do outro E calção ≈ camisa do outro)
+  const score = ([s0, s1]) => Math.min(kitDist(s0, h0), Math.max(kitDist(s0, h1), kitDist(s1, h0)) * 2)
+  const own = [ac[0] || '#1d4ed8', ac[1] || '#ffffff']
+  const options = [own, [own[1], own[0]], ['#f4f4f4', '#f4f4f4'], ['#f4f4f4', '#111827'], ['#1e3a8a', '#ffffff'], ['#111827', '#111827'], ['#facc15', '#111827'], ['#0ea5e9', '#ffffff']]
+  const pick = options.find((o) => score(o) >= KIT_OK) || [...options].sort((x, y) => score(y) - score(x))[0]
+  const [a0, a1] = pick
   const gkH = farthest(KEEPER_COLORS, [h0, a0, h1, a1])
   const gkA = farthest(KEEPER_COLORS.filter((c) => c !== gkH), [h0, a0, h1, a1, gkH])
   const ref = farthest(REF_COLORS, [h0, a0, gkH, gkA])
@@ -144,6 +157,12 @@ export default function MatchBroadcast3D({ data, catalog, clock, events, paused,
       return undefined
     }
     const { renderer, scene, camera, stadium, goals, ball } = ctx
+    // bola mais visível no celular (o tamanho físico do diretor não muda) e sombra no chão que mostra a altura
+    ball.scale.setScalar(1.55)
+    ball.material.emissive = new THREE.Color('#2a2a2a')
+    const ballShadow = new THREE.Mesh(new THREE.CircleGeometry(0.34, 20), new THREE.MeshBasicMaterial({ color: '#000000', transparent: true, opacity: 0.45, depthWrite: false }))
+    ballShadow.rotation.x = -Math.PI / 2
+    scene.add(ballShadow)
     const kitMats = {
       h: createKitMaterials(kits.h[0], kits.h[1], kits.h[2]),
       a: createKitMaterials(kits.a[0], kits.a[1], kits.a[2]),
@@ -161,6 +180,8 @@ export default function MatchBroadcast3D({ data, catalog, clock, events, paused,
     let lastHold
     let reported = false
     let lastCaption = null
+    let tagHold = { id: null, at: 0 }
+    let ownerSeen = { id: null, at: 0 }
     let cheer = 0
     const fieldAudio = createFieldAudio()
     const cam = { x: 0, z: 0, fov: 20, ox: 0 }
@@ -212,7 +233,10 @@ export default function MatchBroadcast3D({ data, catalog, clock, events, paused,
       const d = director.current
       if (!d) return
       const { paused: isPaused, speed: sp } = live.current
-      const step = isPaused ? 0 : dtReal * Math.max(1, Number(sp) || 1)
+      // câmera lenta no chute: do toque até a bola chegar (gol, defesa ou fora), o lance passa a 45%
+      const sc0 = d.state.script
+      const slowMo = sc0 && ['attack', 'penalty'].includes(sc0.kind) && sc0.phase === 'flight'
+      const step = isPaused ? 0 : dtReal * Math.max(1, Number(sp) || 1) * (slowMo ? 0.45 : 1)
       if (step > 0) {
         let rest = step
         while (rest > 1e-4) {
@@ -263,6 +287,13 @@ export default function MatchBroadcast3D({ data, catalog, clock, events, paused,
       }
       ball.position.copy(tmp)
       ballPrev.copy(tmp)
+      ballShadow.visible = !b.hidden
+      ballShadow.position.set(tmp.x, 0.02, tmp.z)
+      {
+        const hgt = b.z || 0
+        ballShadow.scale.setScalar(1 + hgt * 0.12)
+        ballShadow.material.opacity = Math.max(0.12, 0.45 - hgt * 0.05)
+      }
 
       // rede balança no gol
       for (const gl of goals) {
@@ -276,14 +307,23 @@ export default function MatchBroadcast3D({ data, catalog, clock, events, paused,
       const celebrating = script?.phase === 'celebrate' && script.shooter
       const attacking = script && ['attack', 'penalty'].includes(script.kind) && ['build', 'aim', 'flight', 'runup', 'carry', 'through'].includes(script.phase)
       const focus = celebrating ? script.shooter : b
-      const fx = focus.x - L / 2
+      // câmera de TV: um pouco à frente da bola, no sentido de quem ataca, e com zona morta — a bola anda
+      // dentro do quadro sem a câmera corrigir a cada passe; a câmera nunca corre mais que ~13 m/s
+      const atkDir = (st.poss === 'h') === (st.half !== 2) ? 1 : -1
+      const lead = celebrating ? 0 : atkDir * (attacking ? 7 : 5)
+      const fx = focus.x - L / 2 + lead
       const fz = focus.y - W / 2
       const narrow = camera.aspect < 1.3
-      const wantFov = (celebrating ? 11 : attacking ? 17 : 20) * (narrow ? 1.5 : 1)
-      const kc = Math.min(1, dtReal * (celebrating ? 1.4 : 2.2))
-      cam.x += (Math.max(-L / 2 + 8, Math.min(L / 2 - 8, fx)) - cam.x) * kc
-      cam.z += (fz - cam.z) * Math.min(1, dtReal * 1.6)
-      cam.fov += (wantFov - cam.fov) * Math.min(1, dtReal * 1.5)
+      const wantFov = (celebrating ? 11 : slowMo ? 13 : attacking ? 16 : 19) * (narrow ? 1.5 : 1)
+      const tx = Math.max(-L / 2 + 8, Math.min(L / 2 - 8, fx))
+      const dead = celebrating || attacking ? 2 : 7
+      const gapX = tx - cam.x
+      const pushX = Math.abs(gapX) > dead ? gapX - Math.sign(gapX) * dead : 0
+      const kc = Math.min(1, dtReal * (celebrating ? 1.4 : attacking ? 1.5 : 0.9))
+      const maxV = (celebrating || attacking ? 20 : 13) * dtReal
+      cam.x += Math.max(-maxV, Math.min(maxV, pushX * kc))
+      cam.z += (fz - cam.z) * Math.min(1, dtReal * 0.9)
+      cam.fov += (wantFov - cam.fov) * Math.min(1, dtReal * 1.2)
       // perto do gol a câmera fica mais para o meio: vê a área em diagonal, como na TV
       const wantOx = Math.abs(cam.x) > 28 ? -Math.sign(cam.x) * Math.min(9, (Math.abs(cam.x) - 28) * 0.6) : 0
       cam.ox += (wantOx - cam.ox) * Math.min(1, dtReal * 1.2)
@@ -301,7 +341,13 @@ export default function MatchBroadcast3D({ data, catalog, clock, events, paused,
 
       // nome sobre quem tem a bola (ou o artilheiro comemorando)
       const owner = b.owner ? st.players.find((p) => p.id === b.owner) : null
-      const tag = celebrating ? script.shooter : owner
+      // o nome fica pelo menos 1,5 s em quem recebeu (não pisca a cada toque); sem dono, some depois de 1,5 s
+      if (owner && owner.id !== ownerSeen.id) ownerSeen = { id: owner.id, at: now }
+      const want = celebrating ? script.shooter : owner
+      if (celebrating || (want && want.id !== tagHold.id && now - tagHold.at > 1500)) tagHold = { id: want.id, at: now }
+      else if (want && want.id === tagHold.id) tagHold.last = now
+      const held = tagHold.id ? st.players.find((p) => p.id === tagHold.id) : null
+      const tag = held && (want || now - (tagHold.last || tagHold.at) < 1500) ? held : null
       const el = labelRef.current
       if (el) {
         if (tag) {
@@ -333,7 +379,8 @@ export default function MatchBroadcast3D({ data, catalog, clock, events, paused,
       const top = st.banners[0] || null
       let cap = null
       if (top) cap = { id: top.id, kind: top.kind, ev: top.ev, text: top.text }
-      else if (owner) cap = { id: `own-${owner.id}`, kind: 'owner', name: owner.name, side: owner.side }
+      // "conduz a bola" só para quem fica com ela (1,2 s ou mais), não a cada passe
+      else if (owner && now - ownerSeen.at > 1200) cap = { id: `own-${owner.id}`, kind: 'owner', name: owner.name, side: owner.side }
       const key = cap ? cap.id : null
       if (key !== lastCaption) {
         lastCaption = key
