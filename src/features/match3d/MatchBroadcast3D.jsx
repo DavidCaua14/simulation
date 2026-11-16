@@ -52,14 +52,20 @@ export default function MatchBroadcast3D({ data, catalog, clock, events, paused,
   const wrap = useRef(null)
   const canvas = useRef(null)
   const labelRef = useRef(null)
+  const clockRef = useRef(null)
+  // MELHORES MOMENTOS: o campo só aparece nos lances (roteiro do diretor), em tempo real e com relógio em segundos;
+  // entre um lance e outro uma tela cobre o campo e o jogo avança rápido por baixo
+  const [cut, setCut] = useState(false)
+  const [hlKey, setHlKey] = useState(0)
+  const introUntil = useRef(Infinity) // definido no efeito do tempo (abaixo), ao montar
   const seen = useRef(new Set())
   const [ready, setReady] = useState(false)
   const [failed, setFailed] = useState(false)
   const [caption, setCaption] = useState(null)
-  const live = useRef({ paused, speed })
+  const live = useRef({ paused, speed, minute, clockLabel })
   useEffect(() => {
-    live.current = { paused, speed }
-  }, [paused, speed])
+    live.current = { paused, speed, minute, clockLabel }
+  }, [paused, speed, minute, clockLabel])
 
   const home = clubs?.home || getClubById(data.home)
   const away = clubs?.away || getClubById(data.away)
@@ -96,10 +102,12 @@ export default function MatchBroadcast3D({ data, catalog, clock, events, paused,
     director.current?.setStyle('h', styleH)
     director.current?.setStyle('a', styleA)
   }, [styleH, styleA])
+  const halfNow = (minute ?? 0) < 45 ? 1 : (minute ?? 0) < 90 ? 2 : (minute ?? 0) < 105 ? 1 : 2
   useEffect(() => {
-    const m = minute ?? 0
-    director.current?.setHalf(m < 45 ? 1 : m < 90 ? 2 : m < 105 ? 1 : 2)
-  }, [minute])
+    director.current?.setHalf(halfNow)
+    // saída de bola do tempo: mostra o campo por alguns segundos
+    introUntil.current = performance.now() + 10000
+  }, [halfNow])
 
   const holdRef = useRef(onHold)
   const revealRef = useRef(onReveal)
@@ -180,6 +188,11 @@ export default function MatchBroadcast3D({ data, catalog, clock, events, paused,
     let lastHold
     let reported = false
     let lastCaption = null
+    let wasHl = true
+    let snapCam = false
+    let hlSec = 0
+    let lastSec = 0
+    let introSynced = false
     let tagHold = { id: null, at: 0 }
     let ownerSeen = { id: null, at: 0 }
     let cheer = 0
@@ -236,7 +249,26 @@ export default function MatchBroadcast3D({ data, catalog, clock, events, paused,
       // câmera lenta no chute: do toque até a bola chegar (gol, defesa ou fora), o lance passa a 45%
       const sc0 = d.state.script
       const slowMo = sc0 && ['attack', 'penalty'].includes(sc0.kind) && sc0.phase === 'flight'
-      const step = isPaused ? 0 : dtReal * Math.max(1, Number(sp) || 1) * (slowMo ? 0.45 : 1)
+      // melhor momento = lance em andamento (ou a saída de bola do tempo): tempo real. Fora dele, o jogo
+      // avança rápido por baixo da tela de transição (no mínimo 6x, ou mais se a partida estiver atrasada)
+      const hl = Boolean(sc0) || now < introUntil.current
+      if (hl !== wasHl) {
+        wasHl = hl
+        if (hl) {
+          snapCam = true
+          hlSec = sc0?.ev ? Math.max(lastSec, sc0.ev.minute * 60 - 14) : Math.max(lastSec, (live.current.minute ?? 0) * 60)
+          setHlKey((k) => k + 1)
+        }
+        setCut(!hl)
+      }
+      const step = isPaused ? 0 : hl ? dtReal * (slowMo ? 0.45 : 1) : dtReal * Math.max(6, Number(sp) || 1)
+      if (hl) hlSec += step
+      // fora de lance roteirizado (saída de bola), o relógio parte do minuto atual da partida
+      if (hl && !sc0 && !introSynced) {
+        introSynced = true
+        hlSec = Math.max(hlSec, (live.current.minute ?? 0) * 60)
+      }
+      if (!hl) introSynced = false
       if (step > 0) {
         let rest = step
         while (rest > 1e-4) {
@@ -323,6 +355,12 @@ export default function MatchBroadcast3D({ data, catalog, clock, events, paused,
       const maxV = (celebrating || attacking ? 20 : 13) * dtReal
       cam.x += Math.max(-maxV, Math.min(maxV, pushX * kc))
       cam.z += (fz - cam.z) * Math.min(1, dtReal * 0.9)
+      // entrada de um lance: a câmera já começa na jogada (sem atravessar o campo)
+      if (snapCam) {
+        snapCam = false
+        cam.x = tx
+        cam.z = fz
+      }
       cam.fov += (wantFov - cam.fov) * Math.min(1, dtReal * 1.2)
       // perto do gol a câmera fica mais para o meio: vê a área em diagonal, como na TV
       const wantOx = Math.abs(cam.x) > 28 ? -Math.sign(cam.x) * Math.min(9, (Math.abs(cam.x) - 28) * 0.6) : 0
@@ -366,6 +404,13 @@ export default function MatchBroadcast3D({ data, catalog, clock, events, paused,
         } else el.style.opacity = '0'
       }
 
+      // relógio do lance em minutos e segundos (tempo real); fora do lance, o relógio da partida
+      if (clockRef.current) {
+        const txt = hl && !isPaused ? `${Math.floor(hlSec / 60)}:${String(Math.floor(hlSec % 60)).padStart(2, '0')}` : null
+        if (txt) lastSec = hlSec
+        const want = txt || live.current.clockLabel
+        if (clockRef.current.textContent !== want) clockRef.current.textContent = want
+      }
       // relógio espera o lance; placar conta quando a bola entra
       const hold = d.holdMinute()
       if (hold !== lastHold) {
@@ -375,8 +420,9 @@ export default function MatchBroadcast3D({ data, catalog, clock, events, paused,
       const shown = d.takeRevealed()
       if (shown) revealRef.current?.(shown)
       // sons de campo no mesmo quadro do desenho (chute, bote, defesa, rede, apito, expectativa da torcida)
-      fieldAudio.play(d.takeFx(), now)
-      fieldAudio.tick(dtReal, step > 0 ? dangerOf(st, d.goalX) : 0)
+      const fxs = d.takeFx()
+      if (hl) fieldAudio.play(fxs, now)
+      fieldAudio.tick(dtReal, step > 0 && hl ? dangerOf(st, d.goalX) : 0)
 
       // faixa de narração: lance em destaque, senão quem conduz a bola
       const top = st.banners[0] || null
@@ -442,7 +488,7 @@ export default function MatchBroadcast3D({ data, catalog, clock, events, paused,
       <div className="m3d-view" ref={wrap}>
         <canvas ref={canvas} className="m3d-canvas" aria-label="Transmissão 3D da partida" role="img" />
         <div className="m3d-bug">
-          <span className={`m3d-clock ${finished ? 'is-done' : ''}`}>{clockLabel}</span>
+          <span ref={clockRef} className={`m3d-clock ${finished ? 'is-done' : ''}`}>{clockLabel}</span>
           <span className="m3d-team">
             {clubs?.crest ? clubs.crest('h') : <ClubCrest clubId={data.home} size={16} />}
             <b>{names.h}</b>
@@ -462,6 +508,12 @@ export default function MatchBroadcast3D({ data, catalog, clock, events, paused,
             {cap.who && <b>{cap.who}</b>} <span>{cap.rest}</span>
           </div>
         )}
+        <div className={`m3d-cut ${cut && !finished ? 'is-on' : ''}`} aria-hidden={!cut}>
+          <small>Melhores momentos</small>
+          <b>{clockLabel}</b>
+          <span>{paused ? 'Bola parada' : 'O jogo segue · próximo lance a qualquer momento'}</span>
+        </div>
+        {hlKey > 0 && <div key={hlKey} className="m3d-wipe" aria-hidden="true" />}
         {!ready && !failed && <div className="m3d-loading">Montando o estádio…</div>}
         {failed && <div className="m3d-loading">Este aparelho não conseguiu abrir o 3D. Os lances seguem no relato.</div>}
       </div>

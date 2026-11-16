@@ -143,3 +143,16 @@
   background: #050b17;
   font-size: 0.85rem;
 }
+
+/* melhores momentos: tela entre um lance e outro e a varredura de luz na entrada do lance */
+.m3d-cut { position: absolute; inset: 0; z-index: 4; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; background: radial-gradient(120% 90% at 50% 40%, rgba(12, 26, 56, .78), rgba(3, 8, 20, .94)); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); color: #fff; text-align: center; opacity: 0; pointer-events: none; transition: opacity .35s ease; }
+.m3d-cut.is-on { opacity: 1; }
+.m3d-cut small { font: 800 .7rem var(--font-body, sans-serif); letter-spacing: .18em; text-transform: uppercase; color: #86efac; }
+.m3d-cut b { font: 900 2.4rem/1 var(--font-heading, sans-serif); font-variant-numeric: tabular-nums; }
+.m3d-cut span { max-width: 80%; font-size: .78rem; color: #c7d2fe; }
+.m3d-wipe { position: absolute; inset: 0; z-index: 5; pointer-events: none; overflow: hidden; }
+.m3d-wipe::before { content: ''; position: absolute; top: -20%; bottom: -20%; left: -60%; width: 45%; transform: skewX(-18deg); background: linear-gradient(90deg, transparent, rgba(134, 239, 172, .55), rgba(255, 255, 255, .85), rgba(167, 139, 250, .55), transparent); animation: m3d-wipe .55s ease-out forwards; }
+@keyframes m3d-wipe { to { left: 130%; } }
+@media (prefers-reduced-motion: reduce) { .m3d-wipe::before { animation: none; display: none; } .m3d-cut { transition: none; } }
+/* o placar fica sempre por cima da tela de transição */
+.m3d-bug { z-index: 6; }
