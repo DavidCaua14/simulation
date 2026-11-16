@@ -528,8 +528,19 @@ export default function MatchBroadcast3D({ data, catalog, clock, events, paused,
     if (!e || c.kind === 'foul' || c.kind === 'text') return { who: '', rest: c.text || '' }
     return { who: '', rest: eventText(e) }
   }
-  const cap = caption ? captionText(caption) : null
+  const cap = caption && !finished ? captionText(caption) : null
   const capMine = caption && (caption.side || caption.ev?.side) === userSide
+
+  // APITO FINAL: placar, resultado do meu time, gols com minuto e posse/finalizações
+  const crestOf = (sd, size) => (clubs?.crest ? clubs.crest(sd, size) : <ClubCrest clubId={sd === 'h' ? data.home : data.away} size={size} />)
+  const nameOf = (id) => (data.players || []).find((p) => p.id === id)?.name || ''
+  const goals = finished ? (events || []).filter((e) => e.kind === 'goal' || e.kind === 'pen_goal').sort((x, y) => x.minute - y.minute) : []
+  const result = !finished || !userSide ? null : score[userSide] > score[userSide === 'h' ? 'a' : 'h'] ? 'win' : score[userSide] < score[userSide === 'h' ? 'a' : 'h'] ? 'loss' : 'draw'
+  const RESULT_TEXT = { win: 'Vitória', loss: 'Derrota', draw: 'Empate' }
+  const ftStats = [
+    ['Posse de bola', data.stats?.poss?.[0], data.stats?.poss?.[1], '%'],
+    ['Finalizações', data.stats?.shots?.[0], data.stats?.shots?.[1], ''],
+  ].filter(([, h, a]) => h != null && a != null)
 
   return (
     <div className="m3d">
@@ -562,6 +573,47 @@ export default function MatchBroadcast3D({ data, catalog, clock, events, paused,
           <span>{paused ? 'Bola parada' : 'O jogo segue · próximo lance a qualquer momento'}</span>
         </div>
         {hlKey > 0 && <div key={hlKey} className="m3d-wipe" aria-hidden="true" />}
+        {finished && (
+          <div className={`m3d-ft ${result ? `is-${result}` : ''}`} role="status" aria-label={`Fim de jogo: ${names.h} ${score.h} × ${score.a} ${names.a}`}>
+            <div className="m3d-ft-card">
+              <small className="m3d-ft-kicker"><i className="m3d-ft-whistle" aria-hidden="true" /> Fim de jogo</small>
+              <div className="m3d-ft-score">
+                <span className="m3d-ft-team">{crestOf('h', 34)}<b>{names.h}</b></span>
+                <strong>{score.h}<i>×</i>{score.a}</strong>
+                <span className="m3d-ft-team">{crestOf('a', 34)}<b>{names.a}</b></span>
+              </div>
+              {result && <em className="m3d-ft-result">{RESULT_TEXT[result]}</em>}
+              {goals.length > 0 && (
+                <div className="m3d-ft-goals">
+                  {['h', 'a'].map((sd) => (
+                    <ul key={sd} className={sd === 'a' ? 'is-away' : ''}>
+                      {/* um jogador por linha, com todos os minutos dos gols dele */}
+                      {Object.values(goals.filter((g) => g.side === sd).reduce((acc, g) => {
+                        const n = nameOf(g.player) || 'Gol'
+                        acc[n] = acc[n] || { n, mins: [] }
+                        acc[n].mins.push(`${g.minute}'${g.kind === 'pen_goal' ? ' (p)' : ''}`)
+                        return acc
+                      }, {})).map((x) => (
+                        <li key={x.n}><span>{x.n}</span><b>{x.mins.join(' ')}</b></li>
+                      ))}
+                    </ul>
+                  ))}
+                </div>
+              )}
+              {ftStats.length > 0 && (
+                <div className="m3d-ft-stats">
+                  {ftStats.map(([label, h, a, unit]) => (
+                    <div key={label}>
+                      <b>{h}{unit}</b>
+                      <span><small>{label}</small><i><em style={{ width: `${Number(h) + Number(a) ? (Number(h) / (Number(h) + Number(a))) * 100 : 50}%` }} /></i></span>
+                      <b>{a}{unit}</b>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
         {!ready && !failed && <div className="m3d-loading">Montando o estádio…</div>}
         {failed && <div className="m3d-loading">Este aparelho não conseguiu abrir o 3D. Os lances seguem no relato.</div>}
       </div>

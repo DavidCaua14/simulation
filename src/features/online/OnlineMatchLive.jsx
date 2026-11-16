@@ -252,7 +252,7 @@ export default function OnlineMatchLive({ fixtureId = null, onClose, notify }) {
 
   const home = { ...data.home, colors: clubColors(data.home) }
   const away = { ...data.away, colors: clubColors(data.away) }
-  const clubs = { home, away, crest: (sd) => <OnlineCrest club={sd === 'h' ? data.home : data.away} size={18} /> }
+  const clubs = { home, away, crest: (sd, size = 18) => <OnlineCrest club={sd === 'h' ? data.home : data.away} size={size} /> }
   const players = data.players || []
   const mine = side ? (side === 'h' ? data.home : data.away) : null
   const opp = side ? (side === 'h' ? data.away : data.home) : null
@@ -508,12 +508,17 @@ export default function OnlineMatchLive({ fixtureId = null, onClose, notify }) {
 
       {ended ? (
         <div className={`onm-final ${side ? (myGoals > oppGoals ? 'is-win' : myGoals < oppGoals ? 'is-loss' : 'is-draw') : ''}`}>
-          <small><Trophy size={13} /> {side ? (myGoals > oppGoals ? 'Vitória' : myGoals < oppGoals ? 'Derrota' : 'Empate') : 'Fim de jogo'}</small>
-          <div className="onm-final-score">
-            <span><OnlineCrest club={data.home} size={42} /><em>{data.home.short}</em></span>
-            <b>{finalH}<i>×</i>{finalA}</b>
-            <span><OnlineCrest club={data.away} size={42} /><em>{data.away.short}</em></span>
-          </div>
+          {/* com o campo 3D, o placar final já está na tela de apito final em cima: aqui ficam só os destaques */}
+          {!fieldOn && (
+            <>
+              <small><Trophy size={13} /> {side ? (myGoals > oppGoals ? 'Vitória' : myGoals < oppGoals ? 'Derrota' : 'Empate') : 'Fim de jogo'}</small>
+              <div className="onm-final-score">
+                <span><OnlineCrest club={data.home} size={42} /><em>{data.home.short}</em></span>
+                <b>{finalH}<i>×</i>{finalA}</b>
+                <span><OnlineCrest club={data.away} size={42} /><em>{data.away.short}</em></span>
+              </div>
+            </>
+          )}
           {data.summary?.pens && <span className="onm-final-pens">Pênaltis {data.summary.pens[0]} – {data.summary.pens[1]}</span>}
           {data.summary?.motm && <span className="onm-final-motm">Melhor em campo · <strong>{data.summary.motm.name}</strong> {Number(data.summary.motm.rating).toFixed(1)}</span>}
           <button type="button" className="gx-btn" onClick={onClose}>Continuar</button>
