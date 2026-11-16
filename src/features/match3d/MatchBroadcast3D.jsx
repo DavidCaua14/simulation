@@ -8,15 +8,15 @@ import { THREE, colorDist, createAthlete, createKitMaterials, createScene, poseA
 import { createPlayerRig, loadPlayerAssets, poseKayPlayer } from './players3d'
 import './match3d.css'
 
-// Protótipo dos atletas com animação capturada: liga com ?bonecos=kaykit na URL (fica salvo no aparelho);
-// ?bonecos=antigo volta ao boneco atual
+// Atletas com animação capturada (KayKit): padrão no online e nas Temporadas. ?bonecos=antigo na URL volta ao boneco
+// anterior (fica salvo no aparelho); ?bonecos=kaykit liga de novo
 function wantKayPlayers() {
   try {
     const q = new URLSearchParams(window.location.search).get('bonecos')
     if (q) window.localStorage.setItem('sim.bonecos', q)
-    return (q || window.localStorage.getItem('sim.bonecos')) === 'kaykit'
+    return (q || window.localStorage.getItem('sim.bonecos')) !== 'antigo'
   } catch {
-    return false
+    return true
   }
 }
 
