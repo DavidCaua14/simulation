@@ -1725,6 +1725,26 @@ export function createDirector({ formations, homeId, awayId, highlights = false 
     }
   }
 
+  // Ponto do caminho da bola em voo que o jogador alcança primeiro (tempo de corrida ≤ tempo da bola até lá).
+  // Sem nenhum a tempo, o ponto final. Usa a mesma curva de desaceleração do voo.
+  function meetPoint(f, p) {
+    const pos = (lin) => {
+      const k = f.ground ? 1 - (1 - lin) * (1 - lin) * 0.35 - (1 - lin) * 0.65 : lin
+      return { x: f.from.x + (f.to.x - f.from.x) * k, y: f.from.y + (f.to.y - f.from.y) * k }
+    }
+    const now = f.delay > 0 ? 0 : clamp(f.t / f.dur, 0, 1)
+    const left = f.delay > 0 ? f.delay : 0
+    for (let i = 1; i <= 10; i += 1) {
+      const lin = now + ((1 - now) * i) / 10
+      if (!f.ground && lin < 0.8) continue // bola alta: domina na descida
+      const q = pos(lin)
+      const tBall = left + (lin - now) * f.dur
+      const tRun = dist(p, q) / (SPRINT * (p.pace || 1) * 0.72) + (p.react || 0.2) + 0.25
+      if (tRun <= tBall) return q
+    }
+    return f.to
+  }
+
   // ninguém atravessa ninguém: afasta quem está colado (o portador e o marcador podem encostar)
   function separate() {
     const ps = st.players
@@ -1785,12 +1805,14 @@ export function createDirector({ formations, homeId, awayId, highlights = false 
     const b = st.ball
     const ownerNow = b.owner ? byId(b.owner) : null
     teamPlay(dt)
-    // quem vai receber o passe corre para o ponto de encontro
+    // quem vai receber o passe vai AO ENCONTRO da bola: o primeiro ponto do caminho dela que ele alcança a tempo
+    // (não espera no ponto final nem deixa a bola passar e voltar atrás dela)
     if (b.flight?.receiver) {
       const r = byId(b.flight.receiver)
       if (r) {
-        r.tx = b.flight.to.x
-        r.ty = b.flight.to.y
+        const meet = meetPoint(b.flight, r)
+        r.tx = meet.x
+        r.ty = meet.y
         r.speed = SPRINT
       }
       if (b.flight.interceptBy) {
@@ -1887,7 +1909,7 @@ export function createDirector({ formations, homeId, awayId, highlights = false 
       }
       // domínio: o receptor que alcança a bola baixa a controla no caminho (não espera ela parar)
       const r = b.flight && f.receiver ? byId(f.receiver) : null
-      if (r && lin > 0.4 && lin < 1 && b.z < 1.0 && dist(r, b) < 0.9) {
+      if (r && lin > 0.15 && lin < 1 && b.z < 1.0 && dist(r, b) < 1.1) {
         b.flight = null
         b.owner = r.id
         b.z = 0
@@ -1904,7 +1926,7 @@ export function createDirector({ formations, homeId, awayId, highlights = false 
         } else if (!st.script || (f.ground && !st.script.phase.match(/flight|c_/))) {
           // ninguém dominou: a bola SEGUE rolando com a velocidade que chegou (rasteira) ou do quique (alta)
           const sp = dist(f.from, f.to) / f.dur
-          const keep = f.ground ? 0.65 : 0.4
+          const keep = f.ground ? 0.35 : 0.3
           const ux = (f.to.x - f.from.x) / Math.max(0.01, dist(f.from, f.to))
           const uy = (f.to.y - f.from.y) / Math.max(0.01, dist(f.from, f.to))
           b.vx = ux * sp * keep

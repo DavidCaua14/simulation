@@ -219,6 +219,7 @@ export default function MatchBroadcast3D({ data, catalog, clock, events, paused,
     let lastSec = 0
     let introSynced = false
     let lastSeq = null
+    let postSince = null
     let tagHold = { id: null, at: 0 }
     let ownerSeen = { id: null, at: 0 }
     let cheer = 0
@@ -277,7 +278,12 @@ export default function MatchBroadcast3D({ data, catalog, clock, events, paused,
       const slowMo = sc0 && ['attack', 'penalty'].includes(sc0.kind) && sc0.phase === 'flight'
       // melhor momento = lance em andamento (ou a saída de bola do tempo): tempo real. Fora dele, o jogo
       // avança rápido por baixo da tela de transição (no mínimo 6x, ou mais se a partida estiver atrasada)
-      const hl = Boolean(sc0) || now < introUntil.current
+      // depois do desfecho (tiro de meta, bola com o goleiro, volta ao meio-campo) o lance acabou: mais ~1,2 s
+      // de imagem e a tela de transição entra (não mostra a bola parada nem os jogadores voltando)
+      const post = sc0 && /goalkick|keeper|reset/.test(sc0.phase)
+      if (post && postSince == null) postSince = now
+      if (!post) postSince = null
+      const hl = (Boolean(sc0) && (!post || now - postSince < 1200)) || now < introUntil.current
       // um ataque montado logo depois do outro (sem tela entre eles): varredura de luz e câmera na nova jogada
       const seqNow = sc0?.ev?.seq ?? null
       if (hl && wasHl && sc0?.staged && seqNow !== lastSeq) {
@@ -295,7 +301,9 @@ export default function MatchBroadcast3D({ data, catalog, clock, events, paused,
         }
         setCut(!hl)
       }
-      const step = isPaused ? 0 : hl ? dtReal * (slowMo ? 0.45 : 1) : dtReal * Math.max(6, Number(sp) || 1)
+      // no lance: a velocidade escolhida (1x, 2x, 4x nas Temporadas; o online acelera quando atrasa)
+      const mult = Math.max(1, Number(sp) || 1)
+      const step = isPaused ? 0 : hl ? dtReal * mult * (slowMo ? 0.45 : 1) : dtReal * Math.max(6, mult * 3)
       if (hl) hlSec += step
       // fora de lance roteirizado (saída de bola), o relógio parte do minuto atual da partida
       if (hl && !sc0 && !introSynced) {
