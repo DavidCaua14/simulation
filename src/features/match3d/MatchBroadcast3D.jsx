@@ -8,18 +8,6 @@ import { THREE, colorDist, createAthlete, createKitMaterials, createScene, poseA
 import { createPlayerRig, loadPlayerAssets, poseKayPlayer } from './players3d'
 import './match3d.css'
 
-// Atletas com animação capturada (KayKit): padrão no online e nas Temporadas. ?bonecos=antigo na URL volta ao boneco
-// anterior (fica salvo no aparelho); ?bonecos=kaykit liga de novo
-function wantKayPlayers() {
-  try {
-    const q = new URLSearchParams(window.location.search).get('bonecos')
-    if (q) window.localStorage.setItem('sim.bonecos', q)
-    return (q || window.localStorage.getItem('sim.bonecos')) !== 'antigo'
-  } catch {
-    return true
-  }
-}
-
 // Transmissão 3D (protótipo). Mesmas props do campo 2D (MatchTactical2D): o diretor é o mesmo,
 // só muda o desenho — estádio, atletas articulados e uma câmera de TV que acompanha a jogada.
 // onHold(minuto|null): o relógio da partida não passa do lance que ainda está em campo.
@@ -206,7 +194,8 @@ export default function MatchBroadcast3D({ data, catalog, clock, events, paused,
       gk_a: { shirt: kits.gkA, shorts: '#1f2937', socks: kits.gkA },
       ref: { shirt: kits.ref, shorts: '#111827', socks: '#111827' },
     }
-    if (wantKayPlayers()) {
+    // atletas com animação capturada (KayKit) em todas as partidas; o boneco antigo só fica se os arquivos não carregarem
+    {
       loadPlayerAssets().then((a) => {
         if (!a || disposed) return
         kay = a

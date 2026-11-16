@@ -14,9 +14,12 @@ const HAIR = '#1f1712'
 const BOOTS = '#15171c'
 
 let assets = null
-// Carrega o boneco e as animações uma vez por sessão. Devolve null se falhar (a transmissão segue com o boneco antigo).
+let tries = 0
+// Carrega o boneco e as animações uma vez por sessão (tenta de novo uma vez se a rede falhar). Devolve null se não
+// der: a transmissão segue com o boneco antigo.
 export function loadPlayerAssets() {
   if (!assets) {
+    tries += 1
     const base = `${import.meta.env.BASE_URL || '/'}models/kaykit/`
     const loader = new GLTFLoader()
     assets = Promise.all([loader.loadAsync(`${base}mannequin.glb`), loader.loadAsync(`${base}anims.glb`)])
@@ -29,7 +32,8 @@ export function loadPlayerAssets() {
       })
       .catch((err) => {
         console.error('[atletas 3D]', err)
-        return null
+        assets = null
+        return tries < 2 ? new Promise((r) => setTimeout(r, 1500)).then(loadPlayerAssets) : null
       })
   }
   return assets
