@@ -1038,6 +1038,7 @@ begin
   raise exception 'escalações do jogo: %',j;
  end if;
  if exists(select 1 from jsonb_array_elements(j->'home'->'players') x where not (x ? 'legend' and x ? 'nat' and x ? 'pot')) then raise exception 'escalação sem dados da carta';end if;
+ if (public.on_match_payload(f.id,0,'h')->'home') ? 'coach' is not true then raise exception 'payload sem técnico';end if;
  raise notice 'PASS fase 15';
 end $$;
 

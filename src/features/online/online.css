@@ -213,8 +213,12 @@
 @keyframes onm-spin { to { transform: rotate(360deg); } }
 .onm-x { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 8px; border: 1px solid rgba(255, 255, 255, .2); background: rgba(0, 0, 0, .3); color: #fff; cursor: pointer; }
 .onm .pm-live { display: inline-flex; align-items: center; gap: 4px; }
-.onm-presence { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px; padding: 6px 12px; font: 700 .72rem var(--font-body); color: var(--gx-ink-2); }
-.onm-presence span { display: inline-flex; align-items: center; gap: 5px; }
+.onm-presence { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: 8px; padding: 6px 12px; font: 700 .72rem var(--font-body); color: var(--gx-ink-2); }
+.onm-presence span { display: inline-flex; align-items: center; gap: 5px; min-width: 0; white-space: nowrap; }
+.onm-presence span:last-child { justify-content: flex-end; }
+.onm-presence b { overflow: hidden; text-overflow: ellipsis; }
+.onm-presence > i { font-style: normal; color: var(--gx-ink-2); opacity: .7; }
+.onm-presence .is-off { color: #94a3b8; }
 .onm-presence .is-me, .onm-presence .is-on { color: var(--gx-green); }
 .onm-warn { margin: 0 12px; display: flex; align-items: center; gap: 6px; padding: 8px 10px; border-radius: 10px; background: color-mix(in srgb, #f59e0b 16%, var(--gx-panel)); font-size: .8rem; }
 .onm-alert { margin: 0 12px; display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-radius: 12px; border: 1px solid #e11d48; background: color-mix(in srgb, #e11d48 22%, var(--gx-panel)); color: var(--gx-ink); text-align: left; font: 700 .82rem var(--font-body); cursor: pointer; animation: on-pulse 1.4s ease-in-out infinite; }

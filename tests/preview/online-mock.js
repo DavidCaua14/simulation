@@ -8,7 +8,7 @@ const state = { access: params.get('access') || 'playing', step: Number(params.g
 const NAMES = ['FC davidcaua', 'FC Edson', 'FC Jeff', 'FC brunomartins', 'FC Dennis', 'Aurora FC', 'Real Maré', 'Estrela do Norte', 'União Serrana', 'Porto Vila', 'Ferroviário Central', 'Guarani do Vale']
 const PAL = ['#e63946', '#1d3557', '#2a9d8f', '#f4a261', '#6a4c93', '#118ab2', '#ef476f', '#06d6a0', '#ffd166', '#8d99ae', '#bc6c25', '#3a86ff']
 const PATTERNS = ['stripes', 'hoops', 'plain', 'sash', 'halves', 'chevron']
-const clubs = NAMES.map((name, i) => ({ id: i + 1, name, short: name.replace(/^FC /, '').replace(/[^A-Za-z]/g, '').slice(0, 3).toUpperCase(), colors: { a: PAL[i], b: i % 3 === 2 ? '#111827' : '#ffffff', pattern: PATTERNS[i % 6], shape: ['shield', 'round', 'shield', 'diamond'][i % 4], stadium: `Arena ${name.replace(/^FC /, '')}` }, bot: i > 4 }))
+const clubs = NAMES.map((name, i) => ({ id: i + 1, name, short: name.replace(/^FC /, '').replace(/[^A-Za-z]/g, '').slice(0, 3).toUpperCase(), colors: { a: PAL[i], b: i % 3 === 2 ? '#111827' : '#ffffff', pattern: PATTERNS[i % 6], shape: ['shield', 'round', 'shield', 'diamond'][i % 4], stadium: `Arena ${name.replace(/^FC /, '')}` }, bot: i > 4, coach: i > 4 ? null : name.replace(/^FC /, '') }))
 const myClub = () => ({ ...clubs[0], name: state.name, cash: 150000, reserved: 12000, debt: 0, draft_step: state.step, roster: players.length, strength: 71.4, levels: { stadium: 1, training: 2, medical: 0, youth: 0 } })
 
 const SLOTS = ['09:00', '10:00', '11:00', '14:00', '15:30', '17:00']
