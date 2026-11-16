@@ -5,7 +5,20 @@ import { createDirector, L, W } from '../match2d/director'
 import { createFieldAudio, dangerOf } from '../audio/fieldSounds'
 import { eventText } from '../seasons/utils/managerUtils'
 import { THREE, colorDist, createAthlete, createKitMaterials, createScene, poseAthlete, toWorld } from './scene3d'
+import { createPlayerRig, loadPlayerAssets, poseKayPlayer } from './players3d'
 import './match3d.css'
+
+// Protótipo dos atletas com animação capturada: liga com ?bonecos=kaykit na URL (fica salvo no aparelho);
+// ?bonecos=antigo volta ao boneco atual
+function wantKayPlayers() {
+  try {
+    const q = new URLSearchParams(window.location.search).get('bonecos')
+    if (q) window.localStorage.setItem('sim.bonecos', q)
+    return (q || window.localStorage.getItem('sim.bonecos')) === 'kaykit'
+  } catch {
+    return false
+  }
+}
 
 // Transmissão 3D (protótipo). Mesmas props do campo 2D (MatchTactical2D): o diretor é o mesmo,
 // só muda o desenho — estádio, atletas articulados e uma câmera de TV que acompanha a jogada.
@@ -182,8 +195,29 @@ export default function MatchBroadcast3D({ data, catalog, clock, events, paused,
     }
     const rigs = new Map()
     const referee = { x: L / 2 - 6, y: W / 2 + 8, vx: 0, vy: 0, stride: 0, anim: null }
-    const refRig = createAthlete(kitMats.ref, { id: 'referee', number: null })
+    let refRig = createAthlete(kitMats.ref, { id: 'referee', number: null })
     scene.add(refRig.root)
+    // atletas novos (protótipo): quando o boneco e as animações chegam, todos são refeitos com eles
+    let kay = null
+    const kayKits = {
+      h: { shirt: kits.h[0], shorts: kits.h[1], socks: kits.h[2] },
+      a: { shirt: kits.a[0], shorts: kits.a[1], socks: kits.a[2] },
+      gk_h: { shirt: kits.gkH, shorts: '#1f2937', socks: kits.gkH },
+      gk_a: { shirt: kits.gkA, shorts: '#1f2937', socks: kits.gkA },
+      ref: { shirt: kits.ref, shorts: '#111827', socks: '#111827' },
+    }
+    if (wantKayPlayers()) {
+      loadPlayerAssets().then((a) => {
+        if (!a || disposed) return
+        kay = a
+        for (const [, r] of rigs) scene.remove(r.root)
+        rigs.clear()
+        scene.remove(refRig.root)
+        refRig = createPlayerRig(kay, kayKits.ref, 'referee')
+        scene.add(refRig.root)
+      })
+    }
+    let disposed = false
 
     let raf = 0
     let last = performance.now()
@@ -228,7 +262,7 @@ export default function MatchBroadcast3D({ data, catalog, clock, events, paused,
           r = null
         }
         if (!r) {
-          r = createAthlete(kitMats[kitKey], { id: p.id, number: p.number })
+          r = kay ? createPlayerRig(kay, kayKits[kitKey], p.id) : createAthlete(kitMats[kitKey], { id: p.id, number: p.number })
           r.kitKey = kitKey
           r.yaw = p.side === 'h' ? Math.PI / 2 : -Math.PI / 2
           scene.add(r.root)
@@ -297,7 +331,8 @@ export default function MatchBroadcast3D({ data, catalog, clock, events, paused,
       for (const p of st.players) {
         const r = rigs.get(p.id)
         r.root.position.set(p.x - L / 2, 0, p.y - W / 2)
-        poseAthlete(r, p, b, step || dtReal * 0.0001, t)
+        if (r.kay) poseKayPlayer(r, p, b, step)
+        else poseAthlete(r, p, b, step || dtReal * 0.0001, t)
       }
 
       // árbitro: acompanha a jogada em diagonal, sem entrar na linha da bola
@@ -315,7 +350,8 @@ export default function MatchBroadcast3D({ data, catalog, clock, events, paused,
         referee.y += referee.vy * step
         referee.stride = (referee.stride + (Math.hypot(referee.vx, referee.vy) * step * 8) / 2.6) % 8
         refRig.root.position.set(referee.x - L / 2, 0, referee.y - W / 2)
-        poseAthlete(refRig, referee, b, step, t)
+        if (refRig.kay) poseKayPlayer(refRig, referee, b, step)
+        else poseAthlete(refRig, referee, b, step, t)
       }
 
       // bola: rola de acordo com a distância percorrida
@@ -469,6 +505,7 @@ export default function MatchBroadcast3D({ data, catalog, clock, events, paused,
     }
     raf = requestAnimationFrame(frame)
     return () => {
+      disposed = true
       cancelAnimationFrame(raf)
       ro.disconnect()
       fieldAudio.stop()

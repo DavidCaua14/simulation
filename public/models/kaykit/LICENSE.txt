@@ -1,0 +1,10 @@
+Boneco (mannequin.glb) e animações (anims.glb) do jogo em 3D:
+
+KayKit : Character Animations (1.1)
+Created/distributed by Kay Lousberg (www.kaylousberg.com)
+License: Creative Commons Zero (CC0) — http://creativecommons.org/publicdomain/zero/1.0/
+"This content is free to use in personal, educational and commercial projects."
+
+anims.glb reúne só as animações usadas pelo futebol (Idle_A, Idle_B, Walking_A, Running_A, Running_B, Jump_Full_Short,
+Dodge_Left, Dodge_Right, Crouching, Melee_Unarmed_Attack_Kick, Throw, Hit_A, Cheering, Lie_Down, Lie_StandUp), geradas com
+scripts/build-kaykit-anims.mjs a partir dos arquivos Rig_Medium_*.glb do pacote.
