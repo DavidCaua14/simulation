@@ -59,7 +59,9 @@ export const BANNER_KINDS = {
   pen_miss: { img: null, ms: 1800 },
 }
 
-export function createDirector({ formations, homeId, awayId }) {
+// highlights: modo "melhores momentos" da transmissão 3D — só finalizações viram jogada no campo (cartão e
+// impedimento só aparecem na faixa) e cada ataque é montado na hora, com a tela coberta, a 35–45 m do gol
+export function createDirector({ formations, homeId, awayId, highlights = false }) {
   const st = {
     t: 0,
     half: 1,
@@ -288,6 +290,42 @@ export function createDirector({ formations, homeId, awayId }) {
     st.banners.push({ id: `${ev?.seq ?? st.t}-${kind}`, kind, img: meta?.img, ms: meta?.ms ?? extra.ms ?? 1600, ev, ...extra })
   }
 
+  // Monta o ataque na hora (a tela da transmissão está coberta): bola com um meio-campista do time que ataca a
+  // 35–45 m do gol, todos na forma tática a partir dessa bola, parados. O lance começa direto na construção.
+  function stageAttack(s) {
+    const b = st.ball
+    const d = dirOf(s.side)
+    const gx = goalX(s.side)
+    const start = { x: clamp(gx - d * (36 + rnd() * 9), 8, L - 8), y: clamp(W / 2 + (rnd() - 0.5) * 34, 8, W - 8) }
+    Object.assign(b, { x: start.x, y: start.y, z: 0, flight: null, owner: null, held: false, hidden: false, vx: 0, vy: 0 })
+    st.poss = s.side
+    st.possSide = s.side
+    st.turnoverAt = -99
+    for (const p of st.players) {
+      const t = shape(p)
+      p.x = t.x
+      p.y = t.y
+      p.tx = t.x
+      p.ty = t.y
+      p.rtx = t.x
+      p.rty = t.y
+      p.vx = 0
+      p.vy = 0
+      p.anim = null
+      p.run = null
+    }
+    const carrier = outfield(s.side).filter((p) => p !== s.shooter && p !== s.assist).sort((a, c) => dist(a, start) - dist(c, start))[0] || nearest(outfield(s.side), start)
+    if (carrier) {
+      carrier.x = start.x - d * 0.6
+      carrier.y = start.y
+      b.owner = carrier.id
+    }
+    s.steps = planSteps(s)
+    s.phase = 'build'
+    s.t = 0
+    s.staged = true
+  }
+
   function startScript(ev) {
     const side = ev.side || st.poss
     if (SHOT_KINDS.has(ev.kind)) {
@@ -305,12 +343,19 @@ export function createDirector({ formations, homeId, awayId }) {
       const assist = a2 && a2.side === side && !a2.gk && a2 !== shooter ? a2 : null
       // com assistente, sem tabela improvisada no fim: o último passe é dele
       st.script = { ev, kind: pen ? 'penalty' : 'attack', phase: 'win', t: 0, side, opp: other(side), shooter, spot, steps: null, assist, oneTwo: Boolean(assist) }
+      if (highlights && !pen) stageAttack(st.script)
       if (pen) {
         st.script.phase = 'setup'
         st.ball.owner = null
         st.ball.flight = null
         banner('foul', ev, { text: 'Pênalti!' })
       }
+      return
+    }
+    // melhores momentos: cartão e impedimento não viram jogada no campo, só a faixa e o relato
+    if (highlights && (CARD_KINDS.has(ev.kind) || ev.kind === 'offside')) {
+      banner(ev.kind, ev)
+      release(ev)
       return
     }
     if (CARD_KINDS.has(ev.kind)) {
@@ -415,7 +460,16 @@ export function createDirector({ formations, homeId, awayId }) {
   }
   function toAssist(s, owner) {
     const a = s.assist
-    const spot = s.assistAt || { x: s.spot.x - dirOf(s.side) * 2, y: clamp(s.spot.y + (s.spot.y < W / 2 ? 10 : -10), 4, W - 4) }
+    let spot = s.assistAt || { x: s.spot.x - dirOf(s.side) * 2, y: clamp(s.spot.y + (s.spot.y < W / 2 ? 10 : -10), 4, W - 4) }
+    // assistente longe: o passe vai para o caminho dele (no máximo ~2,2 s de corrida), não para um ponto que ele
+    // levaria muitos segundos para alcançar (a bola não fica rolando esperando)
+    const reach = 2.2 * SPRINT * 0.85
+    const da = dist(a, spot)
+    if (da > reach) spot = { x: a.x + ((spot.x - a.x) * reach) / da, y: a.y + ((spot.y - a.y) * reach) / da }
+    // e nunca para trás de quem passa: no máximo 3 m mais longe do gol do que ele
+    const gxA = goalX(s.side)
+    const dA = dirOf(s.side)
+    if (Math.abs(gxA - spot.x) > Math.abs(gxA - owner.x) + 3) spot = { x: gxA - dA * (Math.abs(gxA - owner.x) + 3), y: spot.y }
     const run = (dist(a, spot) / (SPRINT * 0.85) + (a.react || 0.2)) * 1.35 + 0.3
     a.tx = spot.x
     a.ty = spot.y
@@ -1624,7 +1678,7 @@ export function createDirector({ formations, homeId, awayId }) {
     if (!b.owner && !b.flight) return
     const ref = b.flight ? b.flight.to : b
     if (ref.x < 17 || ref.x > L - 17) return
-    const keep = new Set([b.owner, b.flight?.receiver, b.flight?.interceptBy, b.flight?.kicker, s?.shooter?.id, s?.assist?.id, ...(s?.steps || []).map((x) => x.who?.id)].filter(Boolean))
+    const keep = new Set([b.owner, b.flight?.receiver, b.flight?.interceptBy, b.flight?.kicker, s?.shooter?.id, s?.assist?.id, s?.steps?.[0]?.who?.id].filter(Boolean))
     const ownerSide = b.owner ? byId(b.owner)?.side : b.flight?.side || st.poss
     for (const side of ['h', 'a']) {
       const allow = side === ownerSide ? 1 : 2
@@ -1643,6 +1697,31 @@ export function createDirector({ formations, homeId, awayId }) {
         p.tx = clamp(ref.x + Math.cos(ang) * 10, 2, L - 2)
         p.ty = clamp(ref.y + Math.sin(ang) * 10, 2, W - 2)
       })
+    }
+  }
+
+  // A bola não atravessa ninguém. No jogo corrido, o adversário em quem a bola rasteira encosta fica com ela.
+  // No lance do motor o resultado é fixo: o adversário sai da frente da bola (desvia o corpo).
+  function ballContact() {
+    const b = st.ball
+    const f = b.flight
+    if (!f || f.delay > 0 || (b.z || 0) > 1.1 || f.t < 0.08) return
+    for (const p of st.players) {
+      if (p.side === f.side || p.gk) continue
+      const dd = Math.hypot(p.x - b.x, p.y - b.y)
+      if (dd > 0.45) continue
+      if (!st.script && f.receiver) {
+        b.flight = null
+        b.owner = p.id
+        st.poss = p.side
+        st.turnoverAt = st.t
+        st.hold = 0.6 + rnd() * 0.6
+        fx('touch')
+        return
+      }
+      const k = (0.75 - dd) / Math.max(dd, 0.05)
+      p.x += (p.x - b.x) * k
+      p.y += (p.y - b.y) * k
     }
   }
 
@@ -1853,6 +1932,7 @@ export function createDirector({ formations, homeId, awayId }) {
 
     for (const p of st.players) steer(p, dt)
     separate()
+    ballContact()
     // torcida sobe quando o ataque chega perto da área (com intervalo, para não repetir)
     {
       const o = b.owner ? byId(b.owner) : null

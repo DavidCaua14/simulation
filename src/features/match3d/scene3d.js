@@ -530,7 +530,10 @@ export function poseAthlete(rig, p, ballPos, dt, time) {
   const moving = sp > 0.35
   const ph = (p.stride || 0) * (Math.PI / 4)
   const s = Math.sin(ph)
-  const amp = moving ? 0.25 + 0.75 * k : 0
+  // a passada ganha e perde força aos poucos (sem trocar de parado para correndo de um quadro para o outro)
+  const ampWant = moving ? 0.25 + 0.75 * k : 0
+  rig.amp = (rig.amp ?? 0) + (ampWant - (rig.amp ?? 0)) * Math.min(1, dt * 7)
+  const amp = rig.amp
   const a = p.anim
   const { body, armL, armR, legL, legR } = rig
 
@@ -541,18 +544,22 @@ export function poseAthlete(rig, p, ballPos, dt, time) {
     else if (ballPos) want = Math.atan2(ballPos.x - p.x, ballPos.y - p.y)
     let d = want - rig.yaw
     d = Math.atan2(Math.sin(d), Math.cos(d))
-    rig.yaw += d * Math.min(1, dt * (moving ? 9 : 4))
+    // giro do corpo suave (em velocidade, curva mais aberta); a inclinação lateral acompanha a curva
+    const turn = d * Math.min(1, dt * (moving ? 5.5 - k * 1.5 : 3))
+    rig.yaw += turn
+    rig.bank = (rig.bank ?? 0) + (clamp((turn / Math.max(dt, 1e-3)) * k * -0.06, -0.22, 0.22) - (rig.bank ?? 0)) * Math.min(1, dt * 6)
   }
   rig.root.rotation.y = rig.yaw
 
   // base: corrida / parado
   let lean = moving ? 0.04 + k * 0.2 : 0.02
   let bob = moving ? Math.abs(Math.cos(ph)) * 0.06 * k : Math.sin(time * 2 + rig.yaw) * 0.006
-  let roll = 0
+  let roll = rig.bank || 0
   legL.hip.rotation.x = -s * amp * 0.85
   legR.hip.rotation.x = s * amp * 0.85
-  legL.knee.rotation.x = 0.06 + Math.max(0, s) * amp * 1.35
-  legR.knee.rotation.x = 0.06 + Math.max(0, -s) * amp * 1.35
+  // parado, joelhos levemente dobrados (postura de jogo); correndo, o joelho de trás dobra mais
+  legL.knee.rotation.x = (moving ? 0.06 : 0.16) + Math.max(0, s) * amp * 1.35
+  legR.knee.rotation.x = (moving ? 0.06 : 0.16) + Math.max(0, -s) * amp * 1.35
   armL.sh.rotation.set(s * amp * 0.75, 0, 0.1)
   armR.sh.rotation.set(-s * amp * 0.75, 0, -0.1)
   armL.elbow.rotation.x = -0.25 - amp * 0.9
@@ -653,7 +660,9 @@ export function poseAthlete(rig, p, ballPos, dt, time) {
         break
     }
   }
-  body.rotation.set(lean, 0, roll)
+  // tronco gira contra as pernas na passada (como na corrida de verdade) e respira de leve parado
+  const twist = a ? 0 : -s * amp * 0.16 + (moving ? 0 : Math.sin(time * 1.3 + rig.yaw * 3) * 0.04)
+  body.rotation.set(lean, twist, roll)
   body.position.y = bob
 }
 

@@ -15,6 +15,8 @@ import './match3d.css'
 const KEEPER_COLORS = ['#22c55e', '#f472b6', '#f97316', '#eab308', '#a855f7', '#06b6d4']
 const REF_COLORS = ['#111827', '#facc15', '#ec4899', '#14b8a6']
 
+const lerp = (a, b, k) => a + (b - a) * k
+
 function farthest(list, avoid) {
   return [...list].sort((a, b) => Math.min(...avoid.map((c) => colorDist(b, c))) - Math.min(...avoid.map((c) => colorDist(a, c))))[0]
 }
@@ -80,7 +82,7 @@ export default function MatchBroadcast3D({ data, catalog, clock, events, paused,
 
   // diretor (só apresentação): criado uma vez por partida — o mesmo do campo 2D
   const [dir] = useState(() => {
-    const d = createDirector({ formations: catalog?.byId, homeId: data.home, awayId: data.away })
+    const d = createDirector({ formations: catalog?.byId, homeId: data.home, awayId: data.away, highlights: true })
     d.sync(data.players || [], data.formation)
     d.kickoff('h')
     return d
@@ -166,7 +168,7 @@ export default function MatchBroadcast3D({ data, catalog, clock, events, paused,
     }
     const { renderer, scene, camera, stadium, goals, ball } = ctx
     // bola mais visível no celular (o tamanho físico do diretor não muda) e sombra no chão que mostra a altura
-    ball.scale.setScalar(1.55)
+    ball.scale.setScalar(1.12)
     ball.material.emissive = new THREE.Color('#2a2a2a')
     const ballShadow = new THREE.Mesh(new THREE.CircleGeometry(0.34, 20), new THREE.MeshBasicMaterial({ color: '#000000', transparent: true, opacity: 0.45, depthWrite: false }))
     ballShadow.rotation.x = -Math.PI / 2
@@ -193,6 +195,7 @@ export default function MatchBroadcast3D({ data, catalog, clock, events, paused,
     let hlSec = 0
     let lastSec = 0
     let introSynced = false
+    let lastSeq = null
     let tagHold = { id: null, at: 0 }
     let ownerSeen = { id: null, at: 0 }
     let cheer = 0
@@ -252,6 +255,14 @@ export default function MatchBroadcast3D({ data, catalog, clock, events, paused,
       // melhor momento = lance em andamento (ou a saída de bola do tempo): tempo real. Fora dele, o jogo
       // avança rápido por baixo da tela de transição (no mínimo 6x, ou mais se a partida estiver atrasada)
       const hl = Boolean(sc0) || now < introUntil.current
+      // um ataque montado logo depois do outro (sem tela entre eles): varredura de luz e câmera na nova jogada
+      const seqNow = sc0?.ev?.seq ?? null
+      if (hl && wasHl && sc0?.staged && seqNow !== lastSeq) {
+        snapCam = true
+        hlSec = Math.max(lastSec, sc0.ev.minute * 60 - 14)
+        setHlKey((k) => k + 1)
+      }
+      if (seqNow != null) lastSeq = seqNow
       if (hl !== wasHl) {
         wasHl = hl
         if (hl) {
@@ -338,15 +349,18 @@ export default function MatchBroadcast3D({ data, catalog, clock, events, paused,
       const script = st.script
       const celebrating = script?.phase === 'celebrate' && script.shooter
       const attacking = script && ['attack', 'penalty'].includes(script.kind) && ['build', 'aim', 'flight', 'runup', 'carry', 'through'].includes(script.phase)
-      const focus = celebrating ? script.shooter : b
+      // perto do gol, no ataque: o foco fica entre a bola e o gol (finalizador, goleiro e gol no quadro)
+      const gxAtk = script?.side ? d.goalX(script.side) : null
+      const nearGoal = attacking && gxAtk != null && Math.abs(gxAtk - b.x) < 34
+      const focus = celebrating ? script.shooter : nearGoal ? { x: lerp(b.x, gxAtk, 0.42), y: lerp(b.y, W / 2, 0.35) } : b
       // câmera de TV: um pouco à frente da bola, no sentido de quem ataca, e com zona morta — a bola anda
       // dentro do quadro sem a câmera corrigir a cada passe; a câmera nunca corre mais que ~13 m/s
       const atkDir = (st.poss === 'h') === (st.half !== 2) ? 1 : -1
-      const lead = celebrating ? 0 : atkDir * (attacking ? 7 : 5)
+      const lead = celebrating || nearGoal ? 0 : atkDir * (attacking ? 7 : 5)
       const fx = focus.x - L / 2 + lead
       const fz = focus.y - W / 2
       const narrow = camera.aspect < 1.3
-      const wantFov = (celebrating ? 11 : slowMo ? 13 : attacking ? 16 : 19) * (narrow ? 1.5 : 1)
+      const wantFov = (celebrating ? 11 : nearGoal ? (slowMo ? 18 : 20) : slowMo ? 13 : attacking ? 16 : 19) * (narrow ? 1.5 : 1)
       const tx = Math.max(-L / 2 + 8, Math.min(L / 2 - 8, fx))
       const dead = celebrating || attacking ? 2 : 7
       const gapX = tx - cam.x
