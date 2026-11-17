@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { ArrowLeft, Bell, Gift, Inbox, Megaphone, Shield, TrendingUp, Wallet } from 'lucide-react'
 import GameIcon from '../../components/ui/GameIcon'
 import { EmptyState, Notice, Skeleton } from '../../components/ui/feedback'
+import GoldenWhistle from '../online/components/GoldenWhistle'
 import { claimItem, fetchInbox, markSeen, notifyInboxChanged, REWARD_ICON, REWARD_LABEL, rewardEntries } from './inboxApi'
 import './inbox.css'
 
@@ -15,7 +16,7 @@ export function RewardChips({ reward }) {
   if (!list.length) return null
   return (
     <span className="gi-rewards">
-      {list.map(([k, v]) => <span key={k}><GameIcon name={REWARD_ICON[k]} size={16} /> {Number(v).toLocaleString('pt-BR')} {REWARD_LABEL[k]}</span>)}
+      {list.map(([k, v]) => <span key={k}>{k === 'golden_whistle' ? <GoldenWhistle size={18} /> : <GameIcon name={REWARD_ICON[k]} size={16} />} {Number(v).toLocaleString('pt-BR')} {REWARD_LABEL[k]}</span>)}
     </span>
   )
 }

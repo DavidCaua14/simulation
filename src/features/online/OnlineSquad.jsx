@@ -85,7 +85,7 @@ export default function OnlineSquad({ onOpenMatch, notify, seasonId }) {
   const [saved, setSaved] = useState('')
   const [listed, setListed] = useState(() => new Set())
   const [sheet, setSheet] = useState(null) // id do jogador com a ficha aberta
-  const [items, setItems] = useState(null) // Apito de Ouro (só o administrador recebe enabled)
+  const [items, setItems] = useState(null) // Apito de Ouro (online_items)
 
   const load = (sq) => {
     setSquad(sq)

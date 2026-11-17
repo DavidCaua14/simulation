@@ -6,7 +6,7 @@ import { buyOnlineItem, fetchOnlineItems } from '../../online/services/onlineApi
 import GoldenWhistle from '../../online/components/GoldenWhistle'
 import { fmt } from './storeUtils'
 
-// Itens do modo Online pagos com diamantes. Por enquanto só o Apito de Ouro (e só para o administrador).
+// Itens do modo Online pagos com diamantes. Por enquanto só o Apito de Ouro.
 export default function ItemsTab({ onChanged }) {
   const [data, setData] = useState(null)
   const [error, setError] = useState('')

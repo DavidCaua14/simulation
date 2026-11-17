@@ -44,3 +44,4 @@
 @keyframes pn-fade { from { opacity: 0; } }
 @keyframes pn-pop { from { opacity: 0; transform: translateY(16px) scale(.96); } }
 @media (prefers-reduced-motion: reduce) { .pn-overlay, .pn-card { animation: none; } }
+.pn-card p.is-long { text-align: left; }

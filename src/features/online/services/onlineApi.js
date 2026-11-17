@@ -81,7 +81,7 @@ export const fetchOnlineFixtureLineups = (fixtureId) => rpc('on_fixture_lineups'
 
 // Copa e histórico (Fase 5)
 export const fetchOnlineCup = () => rpc('on_cup')
-// Itens com diamantes (Fase 28): Apito de Ouro leva o jogador à nota máxima. Por ora só o administrador vê.
+// Itens com diamantes (Fase 28): Apito de Ouro leva o jogador à nota máxima. Liberado para todos (Fase 29).
 export const fetchOnlineItems = () => rpc('online_items')
 export const buyOnlineItem = (item = 'golden_whistle') => rpc('online_item_buy', { p_item: item })
 export const applyOnlineItem = (playerId, item = 'golden_whistle') => rpc('online_item_use', { p_player: playerId, p_item: item })

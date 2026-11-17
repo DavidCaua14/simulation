@@ -49,7 +49,7 @@ export default function NoticeModal({ onWalletChange }) {
         <span className="pn-badge"><Icon size={26} /></span>
         <small className="pn-kind">{KIND_TITLE[kind] || 'Comunicado'}{queue.length > 1 ? ` · 1 de ${queue.length}` : ''}</small>
         <h2 id="pn-title">{item.title}</h2>
-        <p>{item.body}</p>
+        <p className={String(item.body || '').includes('\n') ? 'is-long' : undefined}>{item.body}</p>
         <RewardChips reward={item.reward} />
         {error && <p className="pn-error">{error}</p>}
         <div className="pn-actions">

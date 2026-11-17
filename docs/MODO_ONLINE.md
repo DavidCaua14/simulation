@@ -305,3 +305,9 @@ do jogador: leva o jogador na hora à nota máxima (potencial), sem gastar condi
   (`on_items`), usos registrados em `on_item_uses`.
 - RPCs: `online_items()`, `online_item_buy(p_item)`, `online_item_use(p_player, p_item)`.
 - Liberado só para o administrador (`on_item_gate()` → `is_admin()`). Para abrir a todos, troque `on_item_gate()`.
+
+## Fase 29 — Apito de Ouro para todos
+
+`supabase/online/31_items_for_all.sql`: `on_item_gate()` aceita qualquer usuário logado.
+`supabase/evolution/76_inbox_item_rewards.sql`: a premiação de avisos aceita `golden_whistle` (vai para `on_items` no
+resgate, uma vez por conta) e cria o aviso de lançamento com 7 Apitos de Ouro, tutorial de uso e de como conseguir mais.

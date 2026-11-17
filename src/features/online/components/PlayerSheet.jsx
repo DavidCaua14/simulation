@@ -11,7 +11,7 @@ const round100 = (n) => Math.ceil(n / 100) * 100
 const wageFor = (ovr, age) => Math.ceil((Math.max(1, ovr - 45) ** 2 * 0.65 + Math.max(0, ovr - 75) ** 2 * 12) * (age < 24 ? 1.1 : age >= 31 ? 0.9 : 1))
 
 // FICHA DO JOGADOR do elenco: carta, nota atual e até onde pode chegar, contrato e as ações (leiloar, dispensar, renovar).
-// items: resposta de online_items (só vem habilitado para o administrador); onUseItem(p) devolve a promessa do uso.
+// items: resposta de online_items (enabled quando o item está liberado); onUseItem(p) devolve a promessa do uso.
 export default function PlayerSheet({ p, club, seasonId, busy, listed, onClose, onSell, onRenew, onAuction, items, onUseItem }) {
   const [mode, setMode] = useState(null)
   const [step, setStep] = useState(1)

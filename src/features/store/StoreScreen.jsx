@@ -30,7 +30,7 @@ export default function StoreScreen({ career, params, onBack }) {
   const [exchange, setExchange] = useState(false)
   // Energia de treino: só para quem tem clube no modo Online
   const [online, setOnline] = useState(false)
-  // Itens (Apito de Ouro): o servidor só libera para o administrador
+  // Itens (Apito de Ouro): aparece quando o servidor libera (online_items.enabled)
   const [items, setItems] = useState(false)
   useEffect(() => {
     fetchOnlineStatus().then((s) => setOnline(s?.access === 'playing' && s.club?.draft_step >= 3)).catch(() => {})
