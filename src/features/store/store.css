@@ -467,3 +467,23 @@ button.mk-row:active { transform: scale(0.99); }
 .te-pack.is-coin em { background: linear-gradient(180deg, #fde68a, #ca8a04); }
 .te-pack.is-best { border-color: #facc15; box-shadow: 0 0 16px rgba(250, 204, 21, .25); }
 .te-pack:disabled { opacity: .45; cursor: default; }
+
+/* Itens (Apito de Ouro) */
+.it { display: flex; flex-direction: column; gap: 12px; }
+.it-card { display: grid; grid-template-columns: 96px minmax(0, 1fr); align-items: center; gap: 12px; padding: 14px; border-radius: 18px; border: 1px solid rgba(250, 204, 21, .55); background: radial-gradient(120% 90% at 0% 0%, rgba(250, 204, 21, .28), transparent 60%), linear-gradient(160deg, #1d1a10, #0b1426 75%); color: #fff; box-shadow: 0 0 22px rgba(250, 204, 21, .18); }
+.it-art { display: grid; place-items: center; width: 96px; height: 96px; border-radius: 22px; background: radial-gradient(circle at 50% 40%, rgba(255, 236, 153, .35), rgba(120, 80, 0, .25) 70%); animation: it-glow 2.6s ease-in-out infinite; }
+.it-art svg { filter: drop-shadow(0 4px 10px rgba(0, 0, 0, .5)); }
+@keyframes it-glow { 50% { box-shadow: 0 0 26px rgba(250, 204, 21, .45); } }
+.it-info { min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.it-info small { display: inline-flex; align-items: center; gap: 4px; color: #fde047; font: 800 .6rem var(--font-body); letter-spacing: .1em; text-transform: uppercase; }
+.it-info strong { font: 900 1.25rem var(--font-heading); text-transform: uppercase; letter-spacing: .03em; color: #fff3b0; }
+.it-info p { margin: 0; color: #d6deee; font-size: .78rem; line-height: 1.35; }
+.it-info p b { color: #4ade80; }
+.it-stock { display: inline-flex; align-items: center; gap: 4px; align-self: flex-start; margin-top: 2px; padding: 3px 9px; border-radius: 999px; background: rgba(255, 255, 255, .08); color: #e2e8f0; font-size: .7rem; font-weight: 700; }
+.it-buy { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 13px; border: 0; border-radius: 14px; background: linear-gradient(180deg, #67e8f9, #0e7490); color: #031018; font: 900 .95rem var(--font-body); cursor: pointer; }
+.it-buy:disabled { opacity: .5; cursor: default; }
+.it-ask { display: flex; flex-direction: column; gap: 8px; padding: 12px; border-radius: 14px; background: rgba(11, 20, 38, .85); border: 1px solid rgba(103, 232, 249, .35); color: #fff; }
+.it-ask p { margin: 0; font-size: .86rem; }
+.it-ask p b { display: inline-flex; align-items: center; gap: 3px; color: #67e8f9; }
+.it-ask div { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.it-how { margin: 0; color: #c4d0ea; font-size: .74rem; text-align: center; }

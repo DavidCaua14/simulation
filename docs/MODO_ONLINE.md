@@ -295,3 +295,13 @@ Fonte: `supabase/online/24_legend_prices.sql` (migração `20261114200000`). `on
 ## Fase 23 — cartas na escalação
 
 Fonte: `supabase/online/25_lineup_cards.sql` (migração `20261114210000`). No online, o campo do elenco, do vestiário ("Times") e do editor da partida (escalação e banco) mostra a carta de cada jogador (normal, especial ou lenda, com nota na vaga, posição, retrato e nome) e a condição física embaixo. O `Pitch` das Temporadas não muda: o online troca a ficha por `PitchTokenContext` (`seasons/components/pitchToken.js`) com `PitchCard` (`online/components/PlayerFut.jsx`). `on_fixture_lineups` passa a mandar `legend`, `nat` e `pot` de cada titular (`on_card_meta`).
+
+## Fase 28 — Apito de Ouro (item de treino de elite)
+
+`supabase/online/30_training_item.sql`. Item comprado com diamantes na Loja (aba **Itens**) e usado no Elenco, na ficha
+do jogador: leva o jogador na hora à nota máxima (potencial), sem gastar condição nem os treinos do dia.
+
+- Preço 300 diamantes, uma unidade por compra, até 3 guardadas (`on_config.item_price`, `item_max`). Estoque por conta
+  (`on_items`), usos registrados em `on_item_uses`.
+- RPCs: `online_items()`, `online_item_buy(p_item)`, `online_item_use(p_player, p_item)`.
+- Liberado só para o administrador (`on_item_gate()` → `is_admin()`). Para abrir a todos, troque `on_item_gate()`.

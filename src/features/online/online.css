@@ -1204,3 +1204,30 @@ button.fut:disabled { cursor: default; }
 .on-bidc-rows li + li { border-top: 1px solid var(--gx-line); }
 .on-bidc-rows span { color: #93a3c4; }
 .on-bidc-rows b { display: inline-flex; align-items: center; gap: 4px; font-variant-numeric: tabular-nums; }
+
+/* Apito de Ouro na ficha do jogador */
+.on-ps-item { grid-column: 1 / -1; position: relative; display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 11px; border-radius: 14px; border: 1px solid #facc15; background: linear-gradient(180deg, #fde68a, #ca8a04); color: #2a1803; font: 900 .9rem var(--font-body); cursor: pointer; box-shadow: 0 0 16px rgba(250, 204, 21, .3); }
+.on-ps-item:disabled { opacity: .5; cursor: default; box-shadow: none; }
+.on-ps-item em { position: absolute; top: -7px; right: -5px; min-width: 20px; padding: 1px 6px; border-radius: 999px; background: #0b1426; color: #fde047; border: 1px solid #facc15; font: 800 .7rem var(--font-body); font-style: normal; }
+.on-ps-itemhead { display: flex; align-items: center; gap: 10px; padding: 10px; border-radius: 14px; background: linear-gradient(150deg, rgba(250, 204, 21, .2), transparent 70%); border: 1px solid rgba(250, 204, 21, .4); }
+.on-ps-itemhead span { display: flex; flex-direction: column; }
+.on-ps-itemhead b { font: 900 1rem var(--font-display, var(--font-body)); text-transform: uppercase; color: #fde68a; }
+.on-ps-step small.on-ps-err { color: #fca5a5; }
+.on-ps-maxed { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 14px; background: linear-gradient(120deg, rgba(250, 204, 21, .3), rgba(74, 222, 128, .18)); border: 1px solid #facc15; animation: on-maxed-in .5s ease-out; }
+.on-ps-maxed span { display: flex; flex-direction: column; }
+.on-ps-maxed b { color: #fde68a; font: 900 .95rem var(--font-display, var(--font-body)); text-transform: uppercase; }
+.on-ps-maxed small { color: var(--gx-ink-2); font-size: .74rem; }
+.on-ps-grow.is-maxed { border-color: #facc15; box-shadow: 0 0 18px rgba(250, 204, 21, .25); }
+.on-ps-grow.is-maxed > span:first-child b { color: #fde047; }
+@keyframes on-maxed-in { from { opacity: 0; transform: scale(.94); } }
+
+/* Treino de elite (carregamento) */
+.on-elite-card { width: min(340px, 100%); display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 26px 20px 22px; text-align: center; border: 1px solid rgba(250, 204, 21, .55); background: radial-gradient(100% 70% at 50% 0%, rgba(250, 204, 21, .25), transparent 65%), var(--gx-panel-solid, #0b1426); }
+.on-elite-art { display: grid; place-items: center; width: 120px; height: 120px; border-radius: 50%; background: radial-gradient(circle, rgba(255, 236, 153, .35), transparent 70%); animation: on-elite-blow .7s ease-in-out infinite alternate; }
+@keyframes on-elite-blow { from { transform: rotate(-8deg) scale(.96); } to { transform: rotate(6deg) scale(1.05); } }
+.on-elite-card > small { color: #fde047; font: 800 .66rem var(--font-body); letter-spacing: .16em; text-transform: uppercase; }
+.on-elite-card h3 { margin: 0; font: 900 1.15rem var(--font-display, var(--font-body)); text-transform: uppercase; }
+.on-elite-ovr { font: 900 3.2rem/1 var(--font-display, var(--font-body)); color: #fde68a; text-shadow: 0 0 18px rgba(250, 204, 21, .55); }
+.on-elite-bar { position: relative; display: block; width: 100%; height: 10px; border-radius: 999px; background: rgba(255, 255, 255, .08); overflow: hidden; }
+.on-elite-bar i { position: absolute; inset: 0 auto 0 0; border-radius: 999px; background: linear-gradient(90deg, #ca8a04, #fde047, #4ade80); }
+.on-elite-card em { font-style: normal; color: var(--gx-ink-2); font-size: .82rem; font-weight: 700; }

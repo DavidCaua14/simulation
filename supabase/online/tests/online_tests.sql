@@ -1139,3 +1139,42 @@ begin
  if not coalesce((j->>'lineup')::boolean,false) then raise exception 'escalação aberta não marcou a preparação: %',j;end if;
  raise notice 'PASS fase 25';
 end $$;
+
+-- ═════════════════════════════════════════════════════════════════════════════
+-- Fase 28: Apito de Ouro (só o administrador)
+-- ═════════════════════════════════════════════════════════════════════════════
+do $$
+declare c public.on_clubs;p public.on_players;j jsonb;d0 int;
+begin
+ select x.* into c from public.on_clubs x join public.on_seasons s on s.id=x.season_id and s.status='live'
+  where x.user_id is not null order by x.id limit 1;
+ select x.* into p from public.on_players x where x.club_id=c.id and x.pot>x.ovr+3 and not public.on_in_live(x.id) order by x.pot-x.ovr desc limit 1;
+ if p.id is null then raise exception 'sem jogador com margem';end if;
+ perform set_config('request.jwt.claim.sub',c.user_id::text,true);
+ -- não administrador: não vê nem compra
+ perform set_config('request.jwt.claims','{"email":"outro@example.com"}',true);
+ if (public.online_items()->>'enabled')::boolean then raise exception 'item visível para quem não é admin';end if;
+ begin perform public.online_item_buy();raise exception 'comprou sem ser admin';
+ exception when others then if sqlerrm not like 'Item indisponível%' then raise;end if;end;
+ -- administrador
+ insert into public.admins values(c.user_id) on conflict do nothing;
+ perform set_config('request.jwt.claims','{"email":"contatodavidcaua@gmail.com"}',true);
+ update public.careers set diamonds=650 where user_id=c.user_id;
+ begin perform public.online_item_use(p.id);raise exception 'usou sem ter';
+ exception when others then if sqlerrm not like 'Você não tem Apito%' then raise;end if;end;
+ j:=public.online_item_buy();
+ if (j->'items'->'golden_whistle'->>'qty')::int<>1 or (j->>'diamonds')::int<>350 then raise exception 'compra: %',j;end if;
+ j:=public.online_item_buy();
+ begin perform public.online_item_buy();raise exception 'comprou sem diamantes';
+ exception when others then if sqlerrm not like 'Diamantes insuficientes%' then raise;end if;end;
+ select diamonds into d0 from public.careers where user_id=c.user_id;
+ if d0<>50 then raise exception 'saldo após 2 compras: %',d0;end if;
+ j:=public.online_item_use(p.id);
+ if (select ovr from public.on_players where id=p.id)<>p.pot then raise exception 'não chegou ao potencial: %',j;end if;
+ if (select cond from public.on_players where id=p.id)<>p.cond then raise exception 'item gastou condição';end if;
+ if (j->'items'->'golden_whistle'->>'qty')::int<>1 then raise exception 'estoque após uso: %',j;end if;
+ begin perform public.online_item_use(p.id);raise exception 'usou em quem já está no máximo';
+ exception when others then if sqlerrm not like '%nota máxima%' then raise;end if;end;
+ delete from public.admins where user_id=c.user_id;
+ raise notice 'PASS fase 28';
+end $$;

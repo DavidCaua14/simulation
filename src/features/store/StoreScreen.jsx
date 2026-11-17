@@ -7,7 +7,8 @@ import DiamondsSoon from './components/DiamondsSoon'
 import EnergyTab from './components/EnergyTab'
 import VisualTab from './components/VisualTab'
 import TrainEnergyTab from './components/TrainEnergyTab'
-import { fetchOnlineStatus } from '../online/services/onlineApi'
+import ItemsTab from './components/ItemsTab'
+import { fetchOnlineItems, fetchOnlineStatus } from '../online/services/onlineApi'
 import WalletHistory from './components/WalletHistory'
 import DiamondExchange from '../cards/components/DiamondExchange'
 import '../cards/cards.css'
@@ -24,15 +25,18 @@ const fmt = (n) => Number(n ?? 0).toLocaleString('pt-BR')
 export default function StoreScreen({ career, params, onBack }) {
   const { player } = career
   const wallet = useWallet({ coins: player.coins, energy: player.energy, diamonds: player.diamonds })
-  const [tab, setTab] = useState(TABS.some((t) => t.id === params?.tab) || params?.tab === 'training' ? params.tab : 'energy')
+  const [tab, setTab] = useState(TABS.some((t) => t.id === params?.tab) || ['training', 'items'].includes(params?.tab) ? params.tab : 'energy')
   const [history, setHistory] = useState(false)
   const [exchange, setExchange] = useState(false)
   // Energia de treino: só para quem tem clube no modo Online
   const [online, setOnline] = useState(false)
+  // Itens (Apito de Ouro): o servidor só libera para o administrador
+  const [items, setItems] = useState(false)
   useEffect(() => {
     fetchOnlineStatus().then((s) => setOnline(s?.access === 'playing' && s.club?.draft_step >= 3)).catch(() => {})
+    fetchOnlineItems().then((d) => setItems(Boolean(d?.enabled))).catch(() => {})
   }, [])
-  const tabs = online ? [TABS[0], { id: 'training', label: 'Treino', icon: 'energy' }, ...TABS.slice(1)] : TABS
+  const tabs = [TABS[0], ...(online ? [{ id: 'training', label: 'Treino', icon: 'energy' }] : []), ...(online && items ? [{ id: 'items', label: 'Itens', icon: 'diamond' }] : []), ...TABS.slice(1)]
   return (
     <AppShell left={<button type="button" className="icon-btn" onClick={onBack} aria-label="Voltar ao menu"><BackIcon /></button>} title="Loja">
       <div className="cx-screen sh-screen" style={{ '--store-bg': `url(${storeBg})` }}>
@@ -48,7 +52,7 @@ export default function StoreScreen({ career, params, onBack }) {
           <span className="cx-pill energy"><GameIcon name="energy" size={14} /> {fmt(wallet.energy)}</span>
           <button type="button" className="cx-pill wh-open" onClick={() => setHistory(true)} aria-label="Ver extrato"><GameIcon name="statement" size={14} /> Extrato</button>
         </div>
-        <nav className="sh-tabs" role="tablist" aria-label="Seções da loja">
+        <nav className="sh-tabs" role="tablist" aria-label="Seções da loja" style={{ gridTemplateColumns: `repeat(${tabs.length}, minmax(0, 1fr))` }}>
           {tabs.map(({ id, label, icon, soon }) => (
             <button key={id} type="button" role="tab" aria-selected={tab === id} className={tab === id ? 'is-on' : ''} onClick={() => setTab(id)}>
               <GameIcon name={icon} size={18} /> {label}{soon && <GameIcon name="lock" size={12} title="em breve" />}
@@ -58,6 +62,7 @@ export default function StoreScreen({ career, params, onBack }) {
         <div className="cx-scroll">
           {tab === 'energy' && <><EnergyTab onChanged={wallet.refresh} /><button type="button" className="gx-btn-ghost" onClick={() => setExchange(true)}>Trocar diamantes por energia</button></>}
           {tab === 'training' && online && <TrainEnergyTab onChanged={wallet.refresh} />}
+          {tab === 'items' && online && items && <ItemsTab onChanged={wallet.refresh} />}
           {tab === 'visual' && <VisualTab onChanged={wallet.refresh} />}
           {tab === 'diamonds' && <DiamondsSoon />}
         </div>

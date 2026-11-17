@@ -974,3 +974,10 @@ create table public.sim_clubs(id text primary key, name text, tier text not null
 insert into public.sim_clubs values ('flamengo','Flamengo','serie_a'),('boca-juniors','Boca Juniors','foreign');
 alter table public.sim_players add column club_id text references public.sim_clubs(id);
 update public.sim_players set club_id=case when split_part(id,'-',2)::int%3=0 then 'flamengo' else 'boca-juniors' end where id like 'real-%';
+
+-- Administrador (como em produção: tabela admins e o e-mail do dono do jogo).
+create table public.admins(user_id uuid primary key);
+create function public.is_admin() returns boolean language sql stable security definer set search_path=public as $$
+ select exists(select 1 from public.admins where user_id=auth.uid())
+  and lower(trim(coalesce(auth.jwt()->>'email','')))='contatodavidcaua@gmail.com'
+$$;

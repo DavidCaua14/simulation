@@ -313,7 +313,23 @@ const RPC = {
   on_finance: () => ({ cash: 150000, reserved: 12000, debt: 0, wages: players.reduce((a, p) => a + p.wage, 0), ledger: [{ kind: 'gate', amount: 8200, note: 'Bilheteria', at: new Date().toISOString() }, { kind: 'wage', amount: -5400, note: 'Salários do dia', at: new Date().toISOString() }], news: [{ kind: 'market', text: 'Rafael Santos foi vendido por $ 6.500.', at: new Date().toISOString() }] }),
   on_match_act: act,
   on_roles_save: ({ p_roles }) => { lineup = { ...lineup, roles: p_roles }; return squad() },
+  online_items: () => ({ enabled: true, diamonds: itemState.diamonds, items: { golden_whistle: { qty: itemState.qty, price: 300, max: 3 } } }),
+  online_item_buy: () => {
+    if (itemState.diamonds < 300) return { error: 'Diamantes insuficientes' }
+    itemState.diamonds -= 300
+    itemState.qty += 1
+    return RPC.online_items()
+  },
+  online_item_use: ({ p_player }) => {
+    const p = players.find((x) => x.id === p_player)
+    if (itemState.qty <= 0) return { error: 'Você não tem Apito de Ouro. Compre na Loja' }
+    const before = p.ovr
+    p.ovr = p.pot
+    itemState.qty -= 1
+    return { player: { id: p.id, name: p.name, before, ovr: p.ovr, pot: p.pot }, items: RPC.online_items().items }
+  },
 }
+const itemState = { diamonds: 645, qty: 1 }
 
 const json = (body, status = 200) => new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } })
 const realFetch = window.fetch.bind(window)

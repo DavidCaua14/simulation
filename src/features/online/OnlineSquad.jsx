@@ -5,7 +5,7 @@ import Pitch from '../seasons/components/Pitch'
 import TacticsPanel from '../seasons/components/TacticsPanel'
 import useCatalog from '../seasons/hooks/useCatalog'
 import { POS_NAME, condTone, posFit } from '../seasons/utils/managerUtils'
-import { autoOnlineLineup, createOnlineLot, fetchOnlineMarket, fetchOnlineSquad, sellOnlinePlayer, renewOnlinePlayer, saveOnlineLineup, saveOnlineRoles } from './services/onlineApi'
+import { applyOnlineItem, autoOnlineLineup, createOnlineLot, fetchOnlineItems, fetchOnlineMarket, fetchOnlineSquad, sellOnlinePlayer, renewOnlinePlayer, saveOnlineLineup, saveOnlineRoles } from './services/onlineApi'
 import PlayerSheet from './components/PlayerSheet'
 import { PitchCard } from './components/PlayerFut'
 import { asSeasonPlayer, cardTier, clubColors, money } from './onlineUtils'
@@ -85,6 +85,7 @@ export default function OnlineSquad({ onOpenMatch, notify, seasonId }) {
   const [saved, setSaved] = useState('')
   const [listed, setListed] = useState(() => new Set())
   const [sheet, setSheet] = useState(null) // id do jogador com a ficha aberta
+  const [items, setItems] = useState(null) // Apito de Ouro (só o administrador recebe enabled)
 
   const load = (sq) => {
     setSquad(sq)
@@ -94,6 +95,7 @@ export default function OnlineSquad({ onOpenMatch, notify, seasonId }) {
   useEffect(() => {
     fetchOnlineSquad().then(load).catch((e) => setError(e.message))
     fetchOnlineMarket().then(markListed).catch(() => {})
+    fetchOnlineItems().then(setItems).catch(() => {})
   }, [])
 
   const byId = useMemo(() => Object.fromEntries((squad?.players || []).map((p) => [p.id, asSeasonPlayer(p, posFit)])), [squad])
@@ -291,6 +293,15 @@ export default function OnlineSquad({ onOpenMatch, notify, seasonId }) {
 
       {sheet && byId[sheet] && (
         <PlayerSheet p={byId[sheet]} club={squad.club} seasonId={seasonId} busy={busy} listed={listed.has(sheet)} onClose={() => setSheet(null)}
+          items={items}
+          onUseItem={(pl) =>
+            applyOnlineItem(pl.id).then(async (r) => {
+              setItems((it) => (it ? { ...it, items: r.items } : it))
+              // só a ficha dos jogadores muda: a escalação em edição fica como está
+              const sq = await fetchOnlineSquad().catch(() => null)
+              if (sq) setSquad(sq)
+              return r
+            })}
           onAuction={(pl, price) => {
             setBusy(true)
             createOnlineLot(pl.id, price).then((m) => { markListed(m); setSheet(null); notify?.(`${pl.name} em leilão por 1 hora`, 'success') }).catch((e) => notify?.(e.message, 'alert')).finally(() => setBusy(false))
