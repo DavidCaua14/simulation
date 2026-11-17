@@ -67,9 +67,10 @@ export default function PlayerSheet({ p, club, seasonId, busy, listed, onClose, 
           <i aria-hidden="true"><TrendingUp size={18} /></i>
           <span className="is-pot"><small>Pode chegar a</small><b>{pot}</b></span>
           <em>{room > 0 ? `+${room} de evolução` : 'No auge'}</em>
-          <span className="on-ps-bar" role="progressbar" aria-valuemin={40} aria-valuemax={99} aria-valuenow={ovr}>
-            <i className="is-pot" style={{ width: `${Math.min(100, ((pot - 40) / 59) * 100)}%` }} />
-            <i style={{ width: `${Math.min(100, ((ovr - 40) / 59) * 100)}%` }} />
+          {/* barra até o potencial: cheia quando o jogador chega ao auge */}
+          <span className="on-ps-bar" role="progressbar" aria-valuemin={40} aria-valuemax={pot} aria-valuenow={ovr}>
+            <i className="is-pot" style={{ width: '100%' }} />
+            <i style={{ width: `${pot > 40 ? Math.min(100, Math.max(0, ((ovr - 40) / (pot - 40)) * 100)) : 100}%` }} />
           </span>
         </div>
         <dl className="on-ps-stats">
