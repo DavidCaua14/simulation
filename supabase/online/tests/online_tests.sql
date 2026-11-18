@@ -1284,3 +1284,31 @@ begin
  if j::text ~ '"en"' then raise exception 'ficha mostra nome em inglês';end if;
  raise notice 'PASS fase 33';
 end $$;
+
+-- ═════════════════════════════════════════════════════════════════════════════
+-- Fase 34: especialidades e perfil das lendas
+-- ═════════════════════════════════════════════════════════════════════════════
+do $$
+declare bad int;p public.on_players;j jsonb;k int;
+begin
+ if (select count(*) from public.on_legend_profiles)<>(select count(*) from public.on_legends) then raise exception 'lenda sem perfil';end if;
+ -- estilos das lendas existem na posição delas; especialidades existem
+ select count(*) into bad from public.on_legend_profiles lp join public.on_legends l on l.id=lp.id
+  where not exists(select 1 from public.on_styles s where s.code=lp.style_def and l.pos=any(s.pos))
+   or lp.style_off is not null and not exists(select 1 from public.on_styles s where s.code=lp.style_off and l.pos=any(s.pos))
+   or exists(select 1 from unnest(lp.traits) t where not exists(select 1 from public.on_traits x where x.code=t))
+   or cardinality(lp.traits)>3;
+ if bad>0 then raise exception '% perfil(is) de lenda incoerente(s)',bad;end if;
+ -- lenda que entra num clube recebe o perfil escrito à mão
+ select c.id into k from public.on_clubs c join public.on_seasons s on s.id=c.season_id and s.status='live' order by c.id limit 1;
+ insert into public.on_players(club_id,src,name,pos,sec,nat,age,level,pot,ovr,number,wage,contract_end,legend)
+  values(k,'lg-zico','Zico','MEI','{}','BRA',30,93,93,93,99,1000,99,true) returning * into p;
+ if p.style_off<>'classic10' or not ('falta'=any(p.traits)) or p.form<>'B' or p.arrow<3 then raise exception 'perfil da lenda: %',to_jsonb(p);end if;
+ -- coerência: quem bate falta tem Chute colocado e Curva acima do próprio Cabeceio
+ j:=public.on_sheet(p);
+ if (select (e->>'value')::int from jsonb_array_elements(j->'attrs') e where e->>'k'='place')<=(select (e->>'value')::int from jsonb_array_elements(j->'attrs') e where e->>'k'='head')
+  then raise exception 'falta sem chute colocado: %',j;end if;
+ if jsonb_array_length(j->'traits')<>3 then raise exception 'especialidades na ficha: %',j->'traits';end if;
+ delete from public.on_players where id=p.id;
+ raise notice 'PASS fase 34';
+end $$;

@@ -311,10 +311,10 @@ do $$ begin
  end if;');
 end $$;
 
--- Os estilos aumentam o peso de ataque do time em média (gols subiram de 2,8 para 3,0 por jogo no laboratório):
+-- Estilos e setas aumentam o ataque em média (gols subiram de 2,8 para 3,0 por jogo no laboratório):
 -- a chance base de cada jogada virar ataque cai um pouco para manter a média.
 do $$ begin
- perform public.on_patch('public.on_engine_run(bigint,integer,text)','v_pa := 0.335 * (v_form[s] / v_form[d])','v_pa := 0.31 * (v_form[s] / v_form[d])');
+ perform public.on_patch('public.on_engine_run(bigint,integer,text)','v_pa := 0.335 * (v_form[s] / v_form[d])','v_pa := 0.285 * (v_form[s] / v_form[d])');
 end $$;
 
 -- Elenco: seta, regularidade e estilos de cada jogador (as cartas do campo mostram a seta)

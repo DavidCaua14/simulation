@@ -380,3 +380,19 @@ Pelas pontas finaliza um pouco melhor, vantagem de casa 1,10 → 1,07 (mandante 
   com regras de coerência (Chute colocado e Curva vêm de finalização e criação; Impulsão de cabeceio e força; e assim por diante).
   A tela mostra só nomes em português (`on_styles.en` guarda o original do eFootball, para referência).
 - Tela: seta na carta do campo, linha "Condição" na ficha e "Detalhes do jogador" (estilos e Qualidade).
+
+## Fase 34 — Especialidades e perfil das lendas
+
+`supabase/online/36_legend_traits.sql` e `37_legend_profiles_data.sql` (gerado por `scripts/build-legend-profiles.py`).
+
+- **Especialidades** (`on_traits`, `on_players.traits`): o que o jogador fazia de melhor na vida real (cobrança de falta,
+  cabeceio, drible, chute de longe, passe, lançamento, velocidade, finalização, desarme, marcação, força, fôlego, pênalti,
+  pegador de pênalti, reflexos, cruzamento). Somam pontos na ficha (`sheet`) e nos atributos do motor (`bump`), então a
+  ficha e a partida contam a mesma história. Exemplo: Zico tem falta, Chute colocado e Curva no topo.
+- **Lendas** (638): estilo com a bola, sem a bola, da IA e até 3 especialidades escritos à mão (`on_legend_profiles`).
+  O gatilho de `on_players` aplica o perfil quando a lenda entra num clube. Para mudar, edite o script e gere de novo.
+- Os demais jogadores ainda não têm especialidades (dependem de uma fonte de dados real).
+- Gols: a chance base de cada jogada virar ataque caiu de 0,335 para 0,285 (estilos e setas aumentavam o ataque).
+- Bot × usuário: com o mesmo elenco duplicado, ser bot não dá vantagem na partida (A fez 43,6% dos pontos com os dois
+  usuários, 46,6% como bot e 47,6% quando o outro era bot). A diferença que o laboratório mostra em temporadas
+  (média de +0,05 ponto por jogo em 9 rodadas) é variação; quem perde de verdade é o usuário que nunca mexe no time.

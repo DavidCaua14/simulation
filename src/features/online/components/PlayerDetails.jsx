@@ -49,6 +49,12 @@ export default function PlayerDetails({ playerId }) {
           <ul>{styleRow(sheet.styles.off, 'off') || <li className="pd-none">Sem estilo ofensivo</li>}</ul>
           <h5>Sem a bola</h5>
           <ul>{styleRow(sheet.styles.def, 'def') || <li className="pd-none">Sem estilo defensivo</li>}</ul>
+          {sheet.traits?.length > 0 && (
+            <>
+              <h5>Especialidades</h5>
+              <ul>{sheet.traits.map((t) => styleRow(t, 'tr'))}</ul>
+            </>
+          )}
           <h5>Estilos de jogo da IA</h5>
           <ul>{sheet.styles.ai.length ? sheet.styles.ai.map((s) => styleRow(s, 'ai')) : <li className="pd-none">Nenhum</li>}</ul>
         </div>
