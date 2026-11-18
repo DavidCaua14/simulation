@@ -58,6 +58,7 @@ export default function MatchLineupEditor({
   onApply,
   onClose,
   initialView = 'lineup',
+  renderTactics = null, // modo online: painel de planos no lugar das instruções do modo Temporadas
 }) {
   const [draft, setDraft] = useState(initialDraft)
   const [tactics, setTactics] = useState(initialTactics)
@@ -295,7 +296,7 @@ export default function MatchLineupEditor({
               )}
             </div>
           )}
-          {view === 'tactics' && <TacticsPanel compact tactics={tactics} onChange={setTactics} />}
+          {view === 'tactics' && (renderTactics ? renderTactics(tactics, setTactics) : <TacticsPanel compact tactics={tactics} onChange={setTactics} />)}
         </div>
 
         {info && <PlayerSheet player={info} onClose={() => setInfo(null)} />}

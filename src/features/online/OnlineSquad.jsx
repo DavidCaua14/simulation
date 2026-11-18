@@ -2,10 +2,10 @@ import { useEffect, useMemo, useState } from 'react'
 import { AlertTriangle, Ambulance, Ban, ClipboardList, Crown, Gauge, Radio, RotateCcw, Save, Shirt, Star, Target, Users, Wand2 } from 'lucide-react'
 import { Notice, Skeleton } from '../../components/ui/feedback'
 import Pitch from '../seasons/components/Pitch'
-import TacticsPanel from '../seasons/components/TacticsPanel'
+import PlanPanel from './components/PlanPanel'
 import useCatalog from '../seasons/hooks/useCatalog'
 import { POS_NAME, condTone, posFit } from '../seasons/utils/managerUtils'
-import { applyOnlineItem, autoOnlineLineup, createOnlineLot, fetchOnlineItems, fetchOnlineMarket, fetchOnlineSquad, sellOnlinePlayer, renewOnlinePlayer, saveOnlineLineup, saveOnlineRoles } from './services/onlineApi'
+import { applyOnlineItem, autoOnlineLineup, createOnlineLot, fetchOnlineItems, fetchOnlineMarket, fetchOnlineSquad, fetchPlanFit, sellOnlinePlayer, renewOnlinePlayer, saveOnlineLineup, saveOnlineRoles } from './services/onlineApi'
 import PlayerSheet from './components/PlayerSheet'
 import { PitchCard } from './components/PlayerFut'
 import { asSeasonPlayer, cardTier, clubColors, money } from './onlineUtils'
@@ -86,6 +86,7 @@ export default function OnlineSquad({ onOpenMatch, notify, seasonId }) {
   const [listed, setListed] = useState(() => new Set())
   const [sheet, setSheet] = useState(null) // id do jogador com a ficha aberta
   const [items, setItems] = useState(null) // Apito de Ouro (online_items)
+  const [planFit, setPlanFit] = useState(null) // aderência dos planos contra o próximo adversário (escalação salva)
 
   const load = (sq) => {
     setSquad(sq)
@@ -97,6 +98,9 @@ export default function OnlineSquad({ onOpenMatch, notify, seasonId }) {
     fetchOnlineMarket().then(markListed).catch(() => {})
     fetchOnlineItems().then(setItems).catch(() => {})
   }, [])
+  useEffect(() => {
+    if (view === 'tactics') fetchPlanFit().then(setPlanFit).catch(() => setPlanFit(null))
+  }, [view, squad])
 
   const byId = useMemo(() => Object.fromEntries((squad?.players || []).map((p) => [p.id, asSeasonPlayer(p, posFit)])), [squad])
   const colors = clubColors(squad?.club)
@@ -256,7 +260,7 @@ export default function OnlineSquad({ onOpenMatch, notify, seasonId }) {
 
       {view === 'tactics' && (
         <div className="on-panel-dark">
-          <TacticsPanel tactics={draft.tactics} onChange={(t) => setDraft({ ...draft, tactics: t })} />
+          <PlanPanel tactics={draft.tactics} fit={planFit} onChange={(t) => setDraft({ ...draft, tactics: t })} />
         </div>
       )}
 

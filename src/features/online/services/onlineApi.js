@@ -70,6 +70,8 @@ export const buyOnlineTrainEnergy = (pack = 'coin') => rpc('online_train_energy_
 
 // Preparação para o jogo (Fase 8): relatório do adversário e preleção
 export const fetchOnlineScout = (mark = true) => rpc('on_scout', { p_mark: mark })
+// Aderência de cada plano de jogo contra o adversário (próximo jogo, ou a partida ao vivo)
+export const fetchPlanFit = (fixtureId = null) => rpc('on_plan_fit', { p_fixture: fixtureId })
 // Preleção do intervalo: praise, focus, demand, encourage, calm ou angry
 export const sendOnlineHalftimeTalk = (fixtureId, talk) => rpc('on_match_talk', { p_fixture: fixtureId, p_talk: talk })
 export const sendOnlineTeamTalk = (talk) => rpc('on_team_talk', { p_talk: talk })

@@ -326,3 +326,32 @@ resgate, uma vez por conta) e cria o aviso de lançamento com 7 Apitos de Ouro, 
 - Primeiro campeão: +$ 1 mi, +300 diamantes e 1 Apito de Ouro (`prize_first`).
 - Comemoração de título (`ChampionCelebration`): abre ao fim do jogo do título e na caixa de entrada.
 - Lances iniciais: lenda $ 2,5 a 3,5 mi; destaque a partir de $ 700 mil; nível Messi a partir de $ 5 mi.
+
+## Fase 31 — Planos de jogo e motor que obedece à tática e aos jogadores
+
+`supabase/online/33_tactical_plans.sql`. Medido com o laboratório `scripts/online-lab.mjs` (temporadas inteiras de 12
+clubes com elencos gerados, PGlite, nada em produção):
+
+```bash
+PGLITE_DIR=<pasta com @electric-sql/pglite> node scripts/online-lab.mjs --seasons 40 --duels 120 --out r.json
+PGLITE_DIR=<pasta> node scripts/online-lab.mjs --seasons 40 --upto 32   # motor antes desta fase, para comparar
+```
+
+O laboratório tem quatro técnicos: bot, usuário ativo (escala o melhor time e escolhe o plano pelo elenco),
+usuário passivo (escalou uma vez e nunca mexeu) e usuário que escolhe o plano ao acaso. Ele mede vitórias do favorito
+por diferença de força, pontos acima do esperado por perfil, posição do mais forte no fim da liga e a matriz de planos
+(dois elencos idênticos, só o plano muda).
+
+- **Planos** (`tactics.plan`): equilibrado, posse, pressao, contra, retranca, direto (bola longa), pontas, total.
+  Cada um tem um jeito de jogar (`on_plan_effect`), confrontos (`on_plan_vs`, antissimétrica) e aderência
+  (`on_plan_edge`: atributo-chave do meu time contra o mesmo atributo do rival, −1,5 a +1,5).
+- **Instruções** por cima do plano: resultado (segurar, padrão, buscar), entrada, chutes de fora, bola parada e
+  marcar o craque (`mark`: o jogador marcado finaliza pior).
+- **O plano do adversário nunca é mostrado**, nem no olheiro nem ao vivo. A tela mostra só a aderência, que compara
+  os jogadores (`on_plan_fit`).
+- Formato antigo vira o plano mais próximo (`on_tactics_clean`, `on_plan_legacy`); as escalações salvas são convertidas.
+- Força pesa mais (expoente 0,65 → 1,20), o atributo do finalizador contra a defesa pesa mais (0,0025 → 0,0055) e a
+  vantagem de casa cai (1,16 → 1,10).
+- Bot e usuário ausente jogam com as mesmas regras: durante o jogo a IA só substitui. O bot escolhe o plano pelo
+  elenco e pela força (`on_ai_plan`), sem saber o plano do usuário.
+- Tela: `PlanPanel` (Elenco → Táticas e no editor da partida) e a barra de planos na partida ao vivo.

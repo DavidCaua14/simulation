@@ -1,5 +1,5 @@
 import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Ambulance, ArrowLeft, ClipboardList, MapPin, Megaphone, Radio, Repeat2, Shield, Swords, Scale, Trophy, Tv, Users, Wifi, WifiOff, Zap } from 'lucide-react'
+import { Ambulance, ArrowLeft, ClipboardList, MapPin, Megaphone, Radio, Repeat2, Shield, Trophy, Tv, Users, Wifi, WifiOff } from 'lucide-react'
 import { isSessionError } from '../../lib/sessionRecovery'
 // Transmissão 3D (carregada só quando o campo está ligado)
 const MatchBroadcast3D = lazy(() => import('../match3d/MatchBroadcast3D'))
@@ -11,7 +11,9 @@ import useMatchAudio from '../audio/useMatchAudio'
 import LineupsSheet, { LineupsView } from './components/LineupsSheet'
 import OnlineCrest from './components/OnlineCrest'
 import { OvrBadge } from './components/PlayerFut'
-import { actOnlineMatch, fetchOnlineScout, fetchOnlineSquad, pollOnlineMatch, sendOnlineHalftimeTalk } from './services/onlineApi'
+import { actOnlineMatch, fetchOnlineScout, fetchOnlineSquad, fetchPlanFit, pollOnlineMatch, sendOnlineHalftimeTalk } from './services/onlineApi'
+import PlanPanel from './components/PlanPanel'
+import { PLANS, planOf } from './plans'
 import { kickoffState } from './kickoffState'
 import ChampionCelebration from './components/ChampionCelebration'
 import { honorOf } from './honors'
@@ -25,13 +27,6 @@ const POLL_MS = 20000
 const SHOT_KINDS = new Set(['goal', 'pen_goal', 'save', 'shot_off', 'pen_miss'])
 // campo 3D atrasado mais que isto (minutos de jogo): o relato mostra o lance sem esperar a imagem
 const FIELD_LAG_MAX = 4
-// Postura do time: muda na hora, sem abrir o painel de instruções.
-const STYLES = [
-  ['defensive', 'Defensivo', Shield],
-  ['neutral', 'Equilibrado', Scale],
-  ['attacking', 'Ofensivo', Swords],
-  ['counter', 'Contra-ataque', Zap],
-]
 // Preleção do intervalo: o efeito depende do placar e de quem é o favorito (pode ajudar ou atrapalhar).
 const HT_TALKS = [
   ['praise', 'Elogiar', 'Estou satisfeito. Continuem assim.'],
@@ -66,6 +61,7 @@ export default function OnlineMatchLive({ fixtureId = null, onClose, notify }) {
   const [busy, setBusy] = useState(false)
   const [applied, setApplied] = useState(null) // {minute, until} aviso "vale a partir de X'"
   const [squadById, setSquadById] = useState(null)
+  const [planFit, setPlanFit] = useState(null)
   const [scout, setScout] = useState(null) // vestiário: comparação dos times (só no jogo do próprio técnico)
   const [revealed, setRevealed] = useState(() => new Set())
   const [online, setOnline] = useState(true)
@@ -242,6 +238,15 @@ export default function OnlineMatchLive({ fixtureId = null, onClose, notify }) {
   }, [visible])
 
   const side = data?.my_side || null
+  // aderência dos planos e plano do adversário: atualiza quando alguém muda tática, formação ou faz substituição
+  const fitKey = side && data && !data.summary ? `${data.fixture_id}:${JSON.stringify(data.tactics || {})}:${JSON.stringify(data.formation || [])}:${JSON.stringify(data.subs || {})}` : null
+  const fitFixture = data?.fixture_id
+  useEffect(() => {
+    if (!fitKey) return
+    let alive = true
+    fetchPlanFit(fitFixture).then((f) => alive && setPlanFit(f)).catch(() => {})
+    return () => { alive = false }
+  }, [fitKey, fitFixture])
   useMatchAudio({ visible, userSide: side || 'h', score: live.sc, minute: shownMinute, active: Boolean(data) && status !== 'sched', field: fieldOn })
 
   // notas por posição do elenco para o editor do time
@@ -290,7 +295,7 @@ export default function OnlineMatchLive({ fixtureId = null, onClose, notify }) {
   const myGoals = side === 'h' ? finalH : finalA
   const oppGoals = side === 'h' ? finalA : finalH
   const myTactics = side ? data.tactics?.[side] || {} : {}
-  const myStyle = myTactics.style || (Number(myTactics.mentality || 0) < 0 ? 'defensive' : Number(myTactics.mentality || 0) > 0 ? 'attacking' : 'neutral')
+  const myPlan = planOf(myTactics)
   const injuredOff = side ? players.filter((p) => p.side === side && p.status === 'injured_off' && p.slot) : []
   const fixes = (data.fixes || []).map((f) => ({ ...f, inName: players.find((p) => p.id === f.in)?.name }))
   const clockLabel = phase === 'pre' || clock < 0 ? '0\'' : ended ? 'FIM' : phase === 'ht' ? 'INT' : phase === 'et_wait' ? 'PRO' : `${Math.min(shownMinute, endMin)}'`
@@ -553,12 +558,17 @@ export default function OnlineMatchLive({ fixtureId = null, onClose, notify }) {
       ) : (
         <>
           {side && (
-            <div className="onm-styles" role="group" aria-label="Postura do time">
-              {STYLES.map(([id, label, Icon]) => (
-                <button key={id} type="button" className={myStyle === id ? 'is-on' : ''} disabled={busy || myStyle === id} onClick={() => apply({ tactics: { style: id } })}>
-                  <Icon size={15} /><small>{label}</small>
-                </button>
-              ))}
+            <div className="onm-plan-bar">
+              <p className="onm-plan-opp">Plano de jogo · toque para mudar na hora</p>
+              <div className="onm-plans" role="group" aria-label="Plano de jogo">
+                {PLANS.map(({ id, label, Icon }) => {
+                  return (
+                    <button key={id} type="button" className={myPlan === id ? 'is-on' : ''} disabled={busy || myPlan === id} onClick={() => apply({ tactics: { plan: id } })}>
+                      <Icon size={15} /><small>{label}</small>
+                    </button>
+                  )
+                })}
+              </div>
             </div>
           )}
           {side && (
@@ -610,6 +620,7 @@ export default function OnlineMatchLive({ fixtureId = null, onClose, notify }) {
         <MatchLineupEditor
           initialView={panel === 'tactics' ? 'tactics' : 'lineup'}
           engineVersion={2}
+          renderTactics={(t, setT) => <PlanPanel compact tactics={t} fit={planFit} onChange={setT} />}
           catalog={catalog}
           players={players}
           squadById={squadById}
