@@ -1279,10 +1279,8 @@ begin
  -- ficha: geral Normal/Atual e atributos de linha (ou de goleiro)
  select x.* into p from public.on_players x where x.pos='ATA' limit 1;
  j:=public.on_sheet(p);
- if jsonb_array_length(j->'attrs')<20 or j->'overall'->>'normal' is null then raise exception 'ficha: %',j;end if;
+ if jsonb_array_length(j->'attrs')<20 or (j->>'overall')::numeric<>round(p.ovr) then raise exception 'ficha: %',j;end if;
  if exists(select 1 from jsonb_array_elements(j->'attrs') e where e->>'group'='gk') then raise exception 'atacante com atributo de goleiro';end if;
- -- seta muda a ficha "Atual" no sentido certo
- p.arrow:=5;
- if (public.on_sheet(p)->'overall'->>'atual')::numeric<=(j->'overall'->>'atual')::numeric and j->>'arrow'<>'5' then raise exception 'seta azul não melhora';end if;
+ if j::text ~ '"en"' then raise exception 'ficha mostra nome em inglês';end if;
  raise notice 'PASS fase 33';
 end $$;

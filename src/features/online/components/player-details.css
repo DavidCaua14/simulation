@@ -17,21 +17,15 @@
 .pd-styles li button { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 6px 2px; background: none; border: 0; color: #e6ecf8; cursor: pointer; text-align: left; }
 .pd-styles li button span { display: flex; flex-direction: column; }
 .pd-styles li button b { font-size: 0.86rem; }
-.pd-styles li button small { font-size: 0.66rem; color: #8a98b8; }
 .pd-styles li button svg { color: #3d9bff; flex: 0 0 auto; }
 .pd-styles li p { margin: 0 0 6px; font-size: 0.74rem; line-height: 1.35; color: #c8d3ea; }
 .pd-styles .pd-none { padding: 6px 2px; font-size: 0.76rem; color: #8a98b8; border: 0; }
 .pd-attrs { display: flex; flex-direction: column; }
-.pd-row { display: grid; grid-template-columns: 1fr 40px 14px 40px; align-items: center; gap: 4px; padding: 5px 2px; border-bottom: 1px solid rgba(255, 255, 255, 0.07); font-size: 0.8rem; }
+.pd-row { display: grid; grid-template-columns: 1fr 44px; align-items: center; gap: 4px; padding: 5px 2px; border-bottom: 1px solid rgba(255, 255, 255, 0.07); font-size: 0.8rem; }
 .pd-row span { color: #e6ecf8; }
 .pd-row b { position: relative; text-align: right; font-weight: 900; font-variant-numeric: tabular-nums; }
-.pd-row i { color: #5b6886; font-style: normal; text-align: center; font-size: 0.7rem; }
-.pd-head small { text-align: right; font-size: 0.66rem; color: #8a98b8; font-weight: 800; }
 .pd-overall { font-size: 0.9rem; }
 .pd-overall b { color: #fff; }
-.pd-row em { position: absolute; right: -8px; top: 50%; width: 5px; height: 5px; margin-top: -2px; border-radius: 50%; }
-.pd-row em.up { background: #3ddc4a; }
-.pd-row em.down { background: #ff5b6e; }
 .pd .t-top { color: #2fe0c8; }
 .pd .t-good { color: #3ddc4a; }
 .pd .t-ok { color: #b5e61d; }

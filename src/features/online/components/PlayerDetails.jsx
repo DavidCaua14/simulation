@@ -9,7 +9,7 @@ const GROUPS = [['atk', 'Ataque'], ['tec', 'Técnica'], ['pas', 'Passe'], ['fis'
 // cor do número como no eFootball: verde-água alto, verde bom, amarelo médio, laranja e vermelho baixos
 const tone = (v) => (v >= 90 ? 't-top' : v >= 80 ? 't-good' : v >= 70 ? 't-ok' : v >= 60 ? 't-mid' : 't-low')
 
-// DETALHES DO JOGADOR (modo online): condição, estilos de jogo e a ficha completa "Normal → Atual".
+// DETALHES DO JOGADOR (modo online): condição, estilos de jogo e a ficha completa (um valor por atributo).
 export default function PlayerDetails({ playerId }) {
   const [sheet, setSheet] = useState(null)
   const [error, setError] = useState('')
@@ -26,7 +26,7 @@ export default function PlayerDetails({ playerId }) {
   const styleRow = (s, kind) => s && (
     <li key={`${kind}-${s.code}`}>
       <button type="button" onClick={() => setOpen(open === s.code ? null : s.code)} aria-expanded={open === s.code}>
-        <span><b>{s.name}</b><small>{s.en}</small></span><Info size={15} />
+        <span><b>{s.name}</b></span><Info size={15} />
       </button>
       {open === s.code && <p>{s.descr}</p>}
     </li>
@@ -54,9 +54,8 @@ export default function PlayerDetails({ playerId }) {
         </div>
       ) : (
         <div className="pd-attrs">
-          <div className="pd-row pd-head"><span /><small>Normal</small><i /><small>Atual</small></div>
           <div className="pd-row pd-overall">
-            <span>Pontuação geral</span><b>{sheet.overall.normal}</b><i>▸</i><b>{sheet.overall.atual}</b>
+            <span>Pontuação geral</span><b>{sheet.overall}</b>
           </div>
           {GROUPS.map(([g, label]) => {
             const rows = sheet.attrs.filter((x) => x.group === g)
@@ -67,15 +66,13 @@ export default function PlayerDetails({ playerId }) {
                 {rows.map((x) => (
                   <div key={x.k} className="pd-row">
                     <span>{x.label}</span>
-                    <b className={tone(x.normal)}>{x.normal}</b>
-                    <i>▸</i>
-                    <b className={tone(x.atual)}>{x.atual}{x.atual !== x.normal && <em className={x.atual > x.normal ? 'up' : 'down'} aria-hidden="true" />}</b>
+                    <b className={tone(x.value)}>{x.value}</b>
                   </div>
                 ))}
               </section>
             )
           })}
-          <p className="pd-note">Normal: o jogador sem treino e em condição normal. Atual: com o treino feito e a condição desta rodada.</p>
+          <p className="pd-note">Valores de hoje, com o treino já feito. A condição (seta) muda o rendimento só na partida.</p>
         </div>
       )}
     </div>

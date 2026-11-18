@@ -10,7 +10,7 @@
 --  • ESTILOS DE JOGO: estilo ofensivo + estilo defensivo + até dois estilos da IA, escolhidos pela posição e pelos
 --    atributos do próprio jogador (on_style_pick). No motor mudam o peso do jogador no ataque, na defesa e na criação
 --    (on_styles.aw/dw/cw/drain) e somam aderência ao plano de jogo quando combinam com ele (on_styles.plans).
---  • FICHA: ~25 atributos derivados dos 11 do motor (on_sheet), "Normal" (base) e "Atual" (treino + condição).
+--  • FICHA: 26 atributos derivados dos 11 do motor (on_sheet), um valor por atributo (nível com o treino feito).
 --    Coerência: Chute colocado e Curva saem de finalização e criação; Salto de cabeceio e força; e assim por diante.
 
 alter table public.on_players add column if not exists form char(1) not null default 'C' check (form in('A','B','C','D','E'));
@@ -25,7 +25,7 @@ alter table public.on_match_players add column if not exists s_cw numeric(4,2) n
 alter table public.on_match_players add column if not exists s_dr numeric(4,2) not null default 1;
 
 -- ─────────────────────────────────────────────────────────────────────────────
--- Catálogo de estilos (nome em português; o original do eFootball em en)
+-- Catálogo de estilos (nome em português na tela; en guarda o original do eFootball, só para referência)
 -- kind: off (com a bola), def (sem a bola), ai (tendência da IA). pos: posições em que o estilo existe.
 -- aw/dw/cw/drain: multiplicam o peso do jogador no ataque, na defesa, na criação e o desgaste.
 -- plans: planos de jogo que o estilo ajuda a executar (aderência).
@@ -61,7 +61,7 @@ insert into public.on_styles(code,kind,name,en,descr,pos,aw,dw,cw,drain,plans,bu
 -- meio-campo (com a bola)
 ('orchestrator','off','Organizador','Orchestrator','Controla o ritmo do jogo com passes e distribuição.','{VOL,MC}',0.95,1,1.18,1,'{posse}','{}'),
 ('box_to_box','off','Meia de área a área','Box-to-Box','Percorre o campo todo, ajudando no ataque e na defesa.','{VOL,MC}',1.12,1.08,1,1.1,'{pressao,total}','{}'),
-('hole_player','off','Infiltrador','Hole Player','Infiltra nos espaços vazios e chega à área para finalizar.','{MC,MEI,PD,PE,ATA}',1.18,0.9,1,1.02,'{contra,total}','{}'),
+('hole_player','off','Infiltração','Hole Player','Infiltra nos espaços vazios e chega à área para finalizar.','{MC,MEI,PD,PE,ATA}',1.18,0.9,1,1.02,'{contra,total}','{}'),
 ('creative','off','Armador criativo','Creative Playmaker','Se movimenta para receber e cria chances para os companheiros.','{MEI,PD,PE}',1.05,1,1.12,1,'{posse}','{}'),
 ('classic10','off','Camisa 10 clássico','Classic No. 10','Organiza o ataque com visão de jogo e passe, e corre pouco sem a bola.','{MEI}',1,0.88,1.18,0.95,'{posse}','{}'),
 ('dummy_runner','off','Abre-espaços','Dummy Runner','Corre sem a bola para arrastar marcadores e abrir espaço para os outros.','{MEI,ATA}',1,1,1.08,1.03,'{total,contra}','{}'),
@@ -205,12 +205,12 @@ begin
 end $$;
 
 -- ─────────────────────────────────────────────────────────────────────────────
--- Ficha completa (tela do jogador): Normal = só o nível base; Atual = com treino e condição.
+-- Ficha completa (tela do jogador): um valor por atributo, o de hoje (nível com o treino feito, igual à nota da carta).
+-- A condição (seta) não entra aqui: ela vale só na partida e aparece à parte.
 -- ─────────────────────────────────────────────────────────────────────────────
 create or replace function public.on_sheet(p public.on_players) returns jsonb language sql stable set search_path=public as $$
- with b as(select public.on_comp(p.id,p.pos,p.level,'{0,0,0,0}'::smallint[]) c),
-  a as(select public.on_comp_now(p) c),
-  -- [rótulo, fórmula sobre c (att1 cre2 def3 ctl4 gk5 fin6 head7 pace8 stam9 tack10 str11), grupo]
+ with b as(select public.on_comp(p.id,p.pos,p.level,p.g) x),
+  -- [chave, rótulo, grupo]; fórmulas sobre os atributos do motor (att1 cre2 def3 ctl4 gk5 fin6 head7 pace8 stam9 tack10 str11)
   f(ord,k,lbl,grp) as(values
    (1,'off_aw','Talento ofensivo','atk'),(2,'ball','Controle de bola','tec'),(3,'drib','Drible','tec'),(4,'tight','Condução firme','tec'),
    (5,'lpass','Passe rasteiro','pas'),(6,'hpass','Passe pelo alto','pas'),(7,'fin','Finalização','atk'),(8,'head','Cabeceio','atk'),
@@ -220,7 +220,7 @@ create or replace function public.on_sheet(p public.on_players) returns jsonb la
    (21,'engage','Empenho defensivo','def'),(22,'gk_aw','Talento do goleiro','gk'),(23,'gk_catch','Agarrar','gk'),(24,'gk_clear','Afastar','gk'),
    (25,'gk_refl','Reflexos','gk'),(26,'gk_reach','Alcance','gk')),
   calc as(select f.*,
-   (select v from(select case f.k
+   case f.k
      when 'off_aw' then x[1] when 'ball' then .6*x[4]+.4*x[1] when 'drib' then .5*x[1]+.3*x[4]+.2*x[8] when 'tight' then .7*x[4]+.3*x[11]
      when 'lpass' then .7*x[2]+.3*x[4] when 'hpass' then .8*x[2]+.2*x[11] when 'fin' then x[6] when 'head' then x[7]
      when 'place' then .55*x[6]+.45*x[2] when 'curl' then .6*x[2]+.4*x[6] when 'speed' then x[8] when 'acc' then .8*x[8]+.2*x[4]
@@ -228,26 +228,15 @@ create or replace function public.on_sheet(p public.on_players) returns jsonb la
      when 'stam' then x[9] when 'def_aw' then x[3] when 'tackle' then x[10] when 'aggr' then .5*x[10]+.5*x[11]
      when 'engage' then .6*x[3]+.4*x[9] when 'gk_aw' then x[5] when 'gk_catch' then x[5] when 'gk_clear' then .7*x[5]+.3*x[11]
      when 'gk_refl' then x[5] when 'gk_reach' then .8*x[5]+.2*x[7] end
-     +(public.sim_hash01(p.id||':sh:'||f.k)-.5)*6 v from(select b.c x) q) z) normal,
-   (select v from(select case f.k
-     when 'off_aw' then x[1] when 'ball' then .6*x[4]+.4*x[1] when 'drib' then .5*x[1]+.3*x[4]+.2*x[8] when 'tight' then .7*x[4]+.3*x[11]
-     when 'lpass' then .7*x[2]+.3*x[4] when 'hpass' then .8*x[2]+.2*x[11] when 'fin' then x[6] when 'head' then x[7]
-     when 'place' then .55*x[6]+.45*x[2] when 'curl' then .6*x[2]+.4*x[6] when 'speed' then x[8] when 'acc' then .8*x[8]+.2*x[4]
-     when 'kick' then .5*x[6]+.5*x[11] when 'jump' then .6*x[7]+.4*x[11] when 'contact' then x[11] when 'bal' then .5*x[4]+.5*x[11]
-     when 'stam' then x[9] when 'def_aw' then x[3] when 'tackle' then x[10] when 'aggr' then .5*x[10]+.5*x[11]
-     when 'engage' then .6*x[3]+.4*x[9] when 'gk_aw' then x[5] when 'gk_catch' then x[5] when 'gk_clear' then .7*x[5]+.3*x[11]
-     when 'gk_refl' then x[5] when 'gk_reach' then .8*x[5]+.2*x[7] end
-     +(public.sim_hash01(p.id||':sh:'||f.k)-.5)*6 v from(select a.c x) q) z) atual
-   from f,b,a where (f.grp='gk')=(p.pos='GOL') or f.grp in('fis'))
+   +(public.sim_hash01(p.id||':sh:'||f.k)-.5)*6 v
+   from f,b where (f.grp='gk')=(p.pos='GOL') or f.grp='fis')
  select jsonb_build_object(
-  'overall',jsonb_build_object('normal',p.level,'atual',round(p.ovr+public.on_arrow_delta(p.arrow))),
-  'arrow',p.arrow,'form',p.form,
+  'overall',round(p.ovr),'arrow',p.arrow,'form',p.form,
   'styles',jsonb_build_object(
-    'off',(select jsonb_build_object('code',s.code,'name',s.name,'en',s.en,'descr',s.descr) from public.on_styles s where s.code=p.style_off),
-    'def',(select jsonb_build_object('code',s.code,'name',s.name,'en',s.en,'descr',s.descr) from public.on_styles s where s.code=p.style_def),
-    'ai',coalesce((select jsonb_agg(jsonb_build_object('code',s.code,'name',s.name,'en',s.en,'descr',s.descr)) from public.on_styles s where s.code=any(p.ai_styles)),'[]')),
-  'attrs',(select jsonb_agg(jsonb_build_object('k',k,'label',lbl,'group',grp,
-     'normal',greatest(30,least(99,round(normal)))::int,'atual',greatest(30,least(99,round(atual)))::int) order by ord) from calc))
+    'off',(select jsonb_build_object('code',s.code,'name',s.name,'descr',s.descr) from public.on_styles s where s.code=p.style_off),
+    'def',(select jsonb_build_object('code',s.code,'name',s.name,'descr',s.descr) from public.on_styles s where s.code=p.style_def),
+    'ai',coalesce((select jsonb_agg(jsonb_build_object('code',s.code,'name',s.name,'descr',s.descr)) from public.on_styles s where s.code=any(p.ai_styles)),'[]')),
+  'attrs',(select jsonb_agg(jsonb_build_object('k',k,'label',lbl,'group',grp,'value',greatest(30,least(99,round(v)))::int) order by ord) from calc))
 $$;
 
 -- RPC da tela: ficha de um jogador do meu clube ou do adversário (qualquer jogador da temporada ao vivo)

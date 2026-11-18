@@ -370,12 +370,13 @@ Pelas pontas finaliza um pouco melhor, vantagem de casa 1,10 → 1,07 (mandante 
   os atributos do motor naquela partida (`on_arrow_delta`). Muda ao fim de cada jogo do clube, para o próximo
   (`on_arrow_next`, chamado em `on_match_finish`). Regularidade (`form`): lendas B (só amarela ou melhor), demais C
   (qualquer seta). Nota ≥ 7,5 e vitória puxam para cima; nota < 5,8 puxa para baixo; extremos voltam ao meio.
-- **Estilos** (`on_styles`, nomes em português e o original do eFootball): um com a bola (`style_off`), um sem a bola
+- **Estilos** (`on_styles`, nomes em português): um com a bola (`style_off`), um sem a bola
   (`style_def`) e até dois da IA (`ai_styles`), escolhidos pela posição e pelos pontos fortes próprios do jogador
   (`on_style_pick`; gatilho em `on_players`). No motor mudam o peso no ataque, na defesa, na criação e o desgaste
   (`on_match_players.s_aw/s_dw/s_cw/s_dr`). Estilos que combinam com o plano de jogo dão bônus (`on_style_synergy`:
   5 titulares compatíveis valem tanto quanto vencer o confronto de planos).
-- **Ficha** (`on_sheet`, RPC `on_player_sheet`): 26 atributos no formato eFootball, "Normal" (nível base) e "Atual"
-  (treino e condição), derivados dos 11 atributos do motor com regras de coerência (Chute colocado e Curva vêm de
-  finalização e criação; Impulsão de cabeceio e força; e assim por diante).
+- **Ficha** (`on_sheet`, RPC `on_player_sheet`): 26 atributos no formato eFootball, um valor por atributo (nível com o
+  treino feito, igual à nota da carta; a seta vale só na partida e aparece à parte), derivados dos 11 atributos do motor
+  com regras de coerência (Chute colocado e Curva vêm de finalização e criação; Impulsão de cabeceio e força; e assim por diante).
+  A tela mostra só nomes em português (`on_styles.en` guarda o original do eFootball, para referência).
 - Tela: seta na carta do campo, linha "Condição" na ficha e "Detalhes do jogador" (estilos e Qualidade).
