@@ -355,3 +355,9 @@ por diferença de força, pontos acima do esperado por perfil, posição do mais
 - Bot e usuário ausente jogam com as mesmas regras: durante o jogo a IA só substitui. O bot escolhe o plano pelo
   elenco e pela força (`on_ai_plan`), sem saber o plano do usuário.
 - Tela: `PlanPanel` (Elenco → Táticas e no editor da partida) e a barra de planos na partida ao vivo.
+
+## Fase 32 — Ajuste fino dos planos
+
+`supabase/online/34_plan_tuning.sql` (medido com `scripts/online-lab.mjs`, 40 temporadas e 160 jogos por confronto):
+Ataque total sem bônus de criação próprio (a postura +2 já cria muito), Pressão alta cansa mais e não cria a mais por si só,
+Pelas pontas finaliza um pouco melhor, vantagem de casa 1,10 → 1,07 (mandante vence ~43%).
