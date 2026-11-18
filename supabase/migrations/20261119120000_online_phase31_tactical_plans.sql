@@ -285,3 +285,9 @@ revoke all on function public.on_plans(),public.on_plan_vs(text,text),public.on_
  public.on_plan_effect(bigint,int,jsonb,jsonb,numeric,numeric,numeric,numeric),public.on_ai_plan(int,int,numeric,boolean) from public,anon,authenticated;
 revoke all on function public.on_plan_fit(bigint) from public,anon;
 grant execute on function public.on_plan_fit(bigint) to authenticated;
+
+-- Rodadas com vários jogos no mesmo horário: o cron abre e avança até 8 partidas por minuto (antes 3).
+do $$ begin
+ perform public.on_patch('public.on_tick(timestamp with time zone)',
+  'and x.kickoff<=p_now order by x.kickoff limit 3 loop','and x.kickoff<=p_now order by x.kickoff limit 8 loop');
+end $$;
