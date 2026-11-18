@@ -53,6 +53,9 @@ const players = POS.map((pos, i) => ({ id: `o${i + 1}`, name: person(i), pos, se
 Object.assign(players.find((p) => p.pos === 'ATA') || players[0], { name: 'Lionel Messi', ovr: 103, pot: 107, age: 30, legend: true, star: true, nat: 'ARG' })
 Object.assign(players.find((p) => p.pos === 'GOL') || players[1], { name: 'Sepp Maier', ovr: 91, pot: 97, age: 30, legend: true, star: true, nat: 'GER' })
 players.filter((p) => !p.legend).slice(2, 5).forEach((p, i) => Object.assign(p, { ovr: 82 + i * 2, pot: 88, star: true, cond: [72, 64, 96][i] }))
+// condição (seta) e estilos de jogo (fase 33)
+const STY = { GOL: ['gk_build', 'gk_sweeper'], ZAG: ['build_up', 'destroyer'], LD: ['off_fullback', 'covering'], LE: ['off_fullback', 'def_fullback'], VOL: ['orchestrator', 'anchor'], MC: ['box_to_box', 'all_action'], MEI: ['classic10', 'attack_outlet'], PD: ['prolific_winger', 'front_pressure'], PE: ['roaming_flank', 'attack_outlet'], ATA: ['goal_poacher', 'front_pressure'] }
+players.forEach((p, i) => Object.assign(p, { arrow: p.legend ? 4 + (i % 2) : 1 + ((i * 3) % 5), form: p.legend ? 'B' : 'C', style_off: STY[p.pos]?.[0], style_def: STY[p.pos]?.[1] }))
 for (let s = 0; s < state.step; s++) addStar(s, 1)
 function addStar(step, idx) {
   const o = option(step, idx)

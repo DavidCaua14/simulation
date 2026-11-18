@@ -1,0 +1,98 @@
+/* ELENCO no estilo eFootball: topo com formação, plano e força coletiva; campo com cartas quadradas; reservas; gaveta. */
+.ef-board { display: flex; flex-direction: column; gap: 10px; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+.ef-top { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 8px; }
+.ef-form select {
+  appearance: none; min-height: 40px; padding: 0 12px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.18);
+  background: #0b1222; color: #fff; font: 900 1rem var(--font-heading, inherit); letter-spacing: 0.02em;
+}
+.ef-plan {
+  min-height: 40px; padding: 0 10px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.14); background: rgba(255, 255, 255, 0.05);
+  color: #fff; font: 800 0.86rem var(--font-body, inherit); text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer;
+}
+.ef-power { display: flex; flex-direction: column; align-items: flex-end; line-height: 1; }
+.ef-power small { font-size: 0.64rem; color: #9fb0d2; }
+.ef-power b { font: 900 1.6rem/1 var(--font-heading, inherit); color: #f5e33a; text-shadow: 0 2px 0 rgba(0, 0, 0, 0.45); }
+
+.ef-swap {
+  display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 10px; background: rgba(61, 155, 255, 0.16);
+  border: 1px solid rgba(61, 155, 255, 0.5); font-size: 0.78rem; color: #e6ecf8;
+}
+.ef-swap span { flex: 1; min-width: 0; }
+.ef-swap button { flex: 0 0 auto; min-height: 30px; padding: 0 10px; border-radius: 8px; border: 0; background: #1d4ed8; color: #fff; font-weight: 800; font-size: 0.72rem; cursor: pointer; }
+.ef-swap button:last-child { background: rgba(255, 255, 255, 0.12); }
+
+/* campo: grama listrada e cartas quadradas (o Pitch posiciona as vagas). A grama fica no contêiner com margem
+   dos lados, para as cartas das pontas não saírem do campo. */
+.ef-pitch {
+  padding: 4px 30px; border-radius: 14px; background: repeating-linear-gradient(180deg, #1d5a2a 0 9%, #22662f 9% 18%);
+  box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.45);
+}
+.ef-pitch .pt { background: none; box-shadow: none; overflow: visible; }
+.ef-pitch .pt-slot { width: 64px; margin-left: -32px; }
+
+.ef-tile {
+  position: relative; display: flex; flex-direction: column; align-items: center; gap: 2px; width: 62px; padding: 0; border: 0;
+  background: none; color: #fff; cursor: pointer;
+}
+.ef-tile-box {
+  position: relative; display: block; width: 62px; height: 62px; border-radius: 9px; overflow: hidden;
+  background: linear-gradient(160deg, #3a4660, #1a2133 70%); box-shadow: 0 3px 8px rgba(0, 0, 0, 0.45), inset 0 0 0 1.5px rgba(255, 255, 255, 0.22);
+}
+.ef-tile.t-special .ef-tile-box { background: linear-gradient(160deg, #7b3fe4, #3b1d8f 70%); box-shadow: 0 3px 8px rgba(0, 0, 0, 0.45), inset 0 0 0 1.5px rgba(196, 160, 255, 0.55); }
+.ef-tile.t-legend .ef-tile-box { background: linear-gradient(160deg, #4a3a18, #16120a 70%); box-shadow: 0 3px 8px rgba(0, 0, 0, 0.45), inset 0 0 0 2px #d4a93c; }
+.ef-tile-ovr { position: absolute; top: 3px; left: 4px; z-index: 2; display: flex; flex-direction: column; line-height: 0.95; text-align: left; }
+.ef-tile-ovr small { font: 900 0.6rem var(--font-heading, inherit); color: #fff; letter-spacing: 0.02em; }
+.ef-tile-ovr b { font: 900 1.05rem var(--font-heading, inherit); color: #f5e33a; text-shadow: 0 1px 0 rgba(0, 0, 0, 0.6); font-variant-numeric: tabular-nums; }
+.ef-tile-arrow { position: absolute; top: 3px; right: 3px; z-index: 2; border-radius: 3px; }
+.ef-tile-face { position: absolute; right: -2px; bottom: -4px; z-index: 1; }
+.ef-tile-flag { position: absolute; left: 4px; bottom: 4px; z-index: 2; width: 15px; height: 15px; display: grid; place-items: center; border-radius: 4px; font-style: normal; font-size: 0.66rem; font-weight: 900; }
+.ef-tile-flag.inj { background: #ff3b3b; color: #fff; }
+.ef-tile-flag.susp { background: #ffc61a; color: #111; }
+.ef-tile-badge { position: absolute; left: 4px; bottom: 4px; z-index: 2; padding: 1px 4px; border-radius: 4px; background: rgba(0, 0, 0, 0.6); font-style: normal; font-size: 0.58rem; font-weight: 900; color: #fff; }
+.ef-tile-name {
+  max-width: 70px; padding: 1px 4px; border-radius: 4px; background: rgba(0, 0, 0, 0.55); font-size: 0.6rem; font-weight: 800;
+  line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.ef-tile.is-sel .ef-tile-box { box-shadow: 0 0 0 3px #3d9bff, 0 0 16px rgba(61, 155, 255, 0.7); }
+.ef-tile.is-off .ef-tile-ovr b { color: #ffb020; }
+.ef-tile.is-dim { opacity: 0.55; }
+.ef-tile.is-empty .ef-tile-box { display: grid; place-items: center; background: rgba(255, 255, 255, 0.06); box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, 0.25); border: 1.5px dashed transparent; }
+.ef-tile.is-empty .ef-tile-box b { font-size: 1.3rem; color: rgba(255, 255, 255, 0.6); line-height: 1; }
+.ef-tile.is-empty .ef-tile-box small { position: absolute; bottom: 4px; left: 0; right: 0; font-size: 0.56rem; color: rgba(255, 255, 255, 0.6); text-align: center; }
+
+.ef-tools { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.ef-tool {
+  display: flex; align-items: center; justify-content: center; gap: 6px; min-height: 42px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.05); color: #e6ecf8; font-weight: 800; font-size: 0.8rem; cursor: pointer;
+}
+.ef-tool small { padding: 1px 6px; border-radius: 999px; background: rgba(255, 255, 255, 0.12); font-size: 0.66rem; }
+.ef-h { margin: 2px 0 0; display: flex; align-items: baseline; gap: 6px; font: 900 0.86rem var(--font-heading, inherit); letter-spacing: 0.04em; text-transform: uppercase; color: #e6ecf8; }
+.ef-h small { font-size: 0.7rem; color: #9fb0d2; }
+.ef-bench { display: flex; gap: 8px; overflow-x: auto; padding: 2px 2px 8px; scrollbar-width: none; }
+.ef-bench::-webkit-scrollbar { display: none; }
+.ef-bench .ef-tile { flex: 0 0 auto; }
+.ef-note { margin: 0; font-size: 0.72rem; color: #9fb0d2; }
+
+/* gaveta da esquerda com todos os jogadores */
+.ef-drawer-veil { position: fixed; inset: 0; z-index: 60; background: rgba(0, 0, 0, 0.55); animation: efFade 0.15s ease-out; }
+.ef-drawer {
+  position: absolute; top: 0; left: 0; bottom: 0; width: min(420px, 92vw); display: flex; flex-direction: column; gap: 8px; padding: 12px 12px 16px;
+  background: #fff; color: #111827; box-shadow: 8px 0 30px rgba(0, 0, 0, 0.5); animation: efSlide 0.2s ease-out; overflow-y: auto;
+}
+.ef-drawer header { display: flex; align-items: center; gap: 8px; }
+.ef-drawer-filters { flex: 1; display: flex; gap: 4px; }
+.ef-drawer-filters button, .ef-drawer-sort button {
+  min-height: 32px; padding: 0 10px; border-radius: 8px; border: 1px solid #d1d5db; background: #fff; color: #1d6fe0; font-weight: 800; font-size: 0.74rem; cursor: pointer;
+}
+.ef-drawer-filters button.is-on, .ef-drawer-sort button.is-on { background: #1d6fe0; border-color: #1d6fe0; color: #fff; }
+.ef-drawer-x { flex: 0 0 auto; width: 34px; height: 34px; display: grid; place-items: center; border-radius: 50%; border: 0; background: #dbeafe; color: #1d4ed8; cursor: pointer; }
+.ef-drawer-sort { display: flex; align-items: center; gap: 4px; padding-bottom: 6px; border-bottom: 1px solid #e5e7eb; }
+.ef-drawer-sort small { margin-right: 4px; font-size: 0.72rem; font-weight: 800; color: #1d6fe0; }
+.ef-drawer-hint { margin: 0; padding: 6px 8px; border-radius: 8px; background: #dbeafe; color: #1e3a8a; font-size: 0.76rem; }
+.ef-drawer-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(66px, 1fr)); gap: 10px 6px; justify-items: center; }
+.ef-drawer .ef-tile-name { background: none; color: #111827; text-shadow: none; }
+.ef-drawer-legend { margin: 4px 0 0; font-size: 0.68rem; color: #6b7280; }
+@keyframes efSlide { from { transform: translateX(-100%); } to { transform: none; } }
+@keyframes efFade { from { opacity: 0; } to { opacity: 1; } }
