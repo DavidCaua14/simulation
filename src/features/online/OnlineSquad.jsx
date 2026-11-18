@@ -21,8 +21,10 @@ import '../seasons/matchflow/matchflow.css'
 // carta quadrada do eFootball no campo do Elenco (as outras telas do online continuam com a carta de sempre)
 const renderTile = ({ player, pos, colors, selected, onClick, label }) => <EfTile player={player} pos={pos} colors={colors} selected={selected} onClick={onClick} label={label} size={58} />
 
-// Campo do Elenco: as vagas com alturas próximas viram uma linha só e as linhas se espalham por igual de cima a baixo,
-// para o nome de uma carta não encostar na carta de baixo (a formação real continua a mesma no motor).
+// Campo do Elenco (organização parecida com a do eFootball): as vagas com alturas próximas formam uma linha, as linhas
+// se espalham por igual de cima a baixo e, dentro de cada linha, a forma da formação continua (laterais um pouco à
+// frente dos zagueiros, pontas um pouco atrás do centroavante). Cartas só se afastam na horizontal se fossem se
+// encostar. A formação real continua a mesma no motor.
 function spreadRows(formation, tol = 6) {
   if (!formation?.slots?.length) return formation
   const ys = [...new Set(formation.slots.map((s) => s.y))].sort((a, b) => a - b)
@@ -33,14 +35,16 @@ function spreadRows(formation, tol = 6) {
     rowOf.set(y, row)
   })
   const n = row + 1
-  const yAt = (r) => (n === 1 ? 50 : 11 + (r * 82) / (n - 1))
-  // na mesma linha, cartas a pelo menos MIN% uma da outra (mantém a ordem e o centro da linha)
-  const MIN = 25
+  const rows = Array.from({ length: n }, (_, r) => formation.slots.filter((s) => rowOf.get(s.y) === r))
+  const deepest = rows.map((rs) => Math.max(...rs.map((s) => s.y)))
+  const yAt = (r) => (n === 1 ? 50 : 12 + (r * 79) / (n - 1))
+  // degrau dentro da linha: só para a frente (quem é mais avançado sobe um pouco, até 7 pontos)
+  const step = (s) => -Math.min(7, (deepest[rowOf.get(s.y)] - s.y) * 2)
+  const MIN = 23
   const xOf = new Map()
-  for (let r = 0; r < n; r++) {
-    const inRow = formation.slots.filter((s) => rowOf.get(s.y) === r).sort((a, b) => a.x - b.x)
-    const tight = inRow.some((s, i) => i > 0 && s.x - inRow[i - 1].x < MIN)
-    if (!tight) continue
+  rows.forEach((rs) => {
+    const inRow = [...rs].sort((a, b) => a.x - b.x)
+    if (!inRow.some((s, i) => i > 0 && s.x - inRow[i - 1].x < MIN)) return
     const k = inRow.length
     const span = (k - 1) * MIN
     if (span > 84) inRow.forEach((s, i) => xOf.set(s.slot, 8 + (i * 84) / (k - 1)))
@@ -49,8 +53,30 @@ function spreadRows(formation, tol = 6) {
       const start = Math.min(92 - span, Math.max(8, mid - span / 2))
       inRow.forEach((s, i) => xOf.set(s.slot, start + i * MIN))
     }
+  })
+  const pos = formation.slots.map((s) => ({ ...s, y: yAt(rowOf.get(s.y)) + step(s), x: xOf.get(s.slot) ?? s.x }))
+  // folga final: carta + nome ocupam ~22% da largura e ~14% da altura do campo (celular de 375 px);
+  // se duas se sobrepõem, a de cima sobe e a de baixo desce até caberem
+  const W = 22
+  const H = 14
+  for (let it = 0; it < 8; it++) {
+    let moved = false
+    for (let i = 0; i < pos.length; i++) {
+      for (let j = i + 1; j < pos.length; j++) {
+        const a = pos[i]
+        const b = pos[j]
+        const dy = Math.abs(a.y - b.y)
+        if (Math.abs(a.x - b.x) >= W || dy >= H) continue
+        const push = (H - dy) / 2 + 0.2
+        const [up, down] = a.y <= b.y ? [a, b] : [b, a]
+        up.y = Math.max(4, up.y - push)
+        down.y = Math.min(95, down.y + push)
+        moved = true
+      }
+    }
+    if (!moved) break
   }
-  return { ...formation, slots: formation.slots.map((s) => ({ ...s, y: yAt(rowOf.get(s.y)), x: xOf.get(s.slot) ?? s.x })) }
+  return { ...formation, slots: pos }
 }
 
 const SCARCITY = { GOL: 1, ZAG: 2, LD: 3, LE: 3, VOL: 4, ATA: 5, MC: 6, MEI: 7, PD: 8, PE: 8 }
