@@ -70,6 +70,19 @@ export default function OnlineScreen({ onBack, params }) {
     const id = setInterval(load, tab === 'home' || tab === 'market' ? 15000 : 30000)
     return () => clearInterval(id)
   }, [ready, tab, match, load])
+  // Fora da temporada (fila, sem clube) também consulta, a cada 20 s: se o modo fechar para manutenção, a tela percebe.
+  useEffect(() => {
+    if (!status || ready || match != null || status.access === 'unavailable') return undefined
+    const id = setInterval(load, 20000)
+    return () => clearInterval(id)
+  }, [status, ready, match, load])
+  // Modo fechado (manutenção ou ainda não aberto): avisa e volta ao início.
+  const closed = status?.access === 'unavailable'
+  useEffect(() => {
+    if (!closed) return undefined
+    const id = setTimeout(onBack, 4000)
+    return () => clearTimeout(id)
+  }, [closed, onBack])
   const results = ready && match == null ? status.results || [] : []
   const seenResults = (ids) => markOnlineNewsSeen(ids).catch(() => {}).finally(load)
 
@@ -95,7 +108,7 @@ export default function OnlineScreen({ onBack, params }) {
     const gate = status.access === 'queued'
       ? { icon: Clock, title: 'Liga cheia', text: 'Sua vaga está garantida para a próxima temporada.' }
       : status.access === 'unavailable'
-        ? { icon: Swords, title: 'Em breve', text: 'A liga online ainda não abriu.' }
+        ? { icon: Swords, title: 'Modo Online em manutenção', text: 'Estamos atualizando o modo Online. Voltando ao início…' }
         : { icon: Swords, title: 'Liga Online', text: 'Assuma um clube, contrate três craques e dispute a liga contra outros técnicos.', action: 'Entrar na liga', onAction: join }
     body = (
       <>
