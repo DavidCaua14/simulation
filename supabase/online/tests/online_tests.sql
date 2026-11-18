@@ -1255,3 +1255,34 @@ begin
  if not (public.on_ai_plan(k.id,k.id,0,true)->>'plan')=any(public.on_plans()) then raise exception 'plano da IA';end if;
  raise notice 'PASS fase 31';
 end $$;
+
+-- ═════════════════════════════════════════════════════════════════════════════
+-- Fase 33: condição (setas), estilos de jogo e ficha
+-- ═════════════════════════════════════════════════════════════════════════════
+do $$
+declare i int;a int;p public.on_players;j jsonb;bad int;
+begin
+ -- lenda (regularidade B) nunca abaixo da amarela; C cobre as cinco setas
+ for i in 1..400 loop
+  a:=public.on_arrow_next('B',(1+i%5)::int,case when i%3=0 then 4.5 end,i%2=0);
+  if a<3 then raise exception 'lenda com seta %',a;end if;
+ end loop;
+ if (select count(distinct public.on_arrow_next('C',3,null,false,x/400.0)) from generate_series(0,399) x)<>5 then raise exception 'C não cobre as cinco setas';end if;
+ if public.on_arrow_delta(1)>=0 or public.on_arrow_delta(5)<=0 or public.on_arrow_delta(3)<>0 then raise exception 'efeito da seta';end if;
+ -- todo jogador tem estilo sem a bola da própria posição; estilos ofensivos também batem com a posição
+ select count(*) into bad from public.on_players x where x.style_def is null
+  or not exists(select 1 from public.on_styles s where s.code=x.style_def and x.pos=any(s.pos))
+  or x.style_off is not null and not exists(select 1 from public.on_styles s where s.code=x.style_off and x.pos=any(s.pos))
+  or exists(select 1 from unnest(x.ai_styles) y where not exists(select 1 from public.on_styles s where s.code=y and x.pos=any(s.pos)));
+ if bad>0 then raise exception '% jogador(es) com estilo incoerente',bad;end if;
+ if exists(select 1 from public.on_players where coalesce(legend,false) and form<>'B') then raise exception 'lenda sem regularidade B';end if;
+ -- ficha: geral Normal/Atual e atributos de linha (ou de goleiro)
+ select x.* into p from public.on_players x where x.pos='ATA' limit 1;
+ j:=public.on_sheet(p);
+ if jsonb_array_length(j->'attrs')<20 or j->'overall'->>'normal' is null then raise exception 'ficha: %',j;end if;
+ if exists(select 1 from jsonb_array_elements(j->'attrs') e where e->>'group'='gk') then raise exception 'atacante com atributo de goleiro';end if;
+ -- seta muda a ficha "Atual" no sentido certo
+ p.arrow:=5;
+ if (public.on_sheet(p)->'overall'->>'atual')::numeric<=(j->'overall'->>'atual')::numeric and j->>'arrow'<>'5' then raise exception 'seta azul não melhora';end if;
+ raise notice 'PASS fase 33';
+end $$;

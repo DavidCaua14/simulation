@@ -72,6 +72,8 @@ export const buyOnlineTrainEnergy = (pack = 'coin') => rpc('online_train_energy_
 export const fetchOnlineScout = (mark = true) => rpc('on_scout', { p_mark: mark })
 // Aderência de cada plano de jogo contra o adversário (próximo jogo, ou a partida ao vivo)
 export const fetchPlanFit = (fixtureId = null) => rpc('on_plan_fit', { p_fixture: fixtureId })
+// Ficha completa do jogador: condição (seta), estilos de jogo e atributos Normal/Atual
+export const fetchPlayerSheet = (playerId) => rpc('on_player_sheet', { p_player: playerId })
 // Preleção do intervalo: praise, focus, demand, encourage, calm ou angry
 export const sendOnlineHalftimeTalk = (fixtureId, talk) => rpc('on_match_talk', { p_fixture: fixtureId, p_talk: talk })
 export const sendOnlineTeamTalk = (talk) => rpc('on_team_talk', { p_talk: talk })

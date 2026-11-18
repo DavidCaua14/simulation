@@ -1,6 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
-import { FileSignature, Gavel, Sparkles, TrendingUp, UserMinus, X } from 'lucide-react'
+import { FileSignature, Gavel, ListChecks, Sparkles, TrendingUp, UserMinus, X } from 'lucide-react'
 import GoldenWhistle from './GoldenWhistle'
+import ConditionArrow from './ConditionArrow'
+import { ARROWS } from '../conditions'
+import PlayerDetails from './PlayerDetails'
 import { POS_NAME } from '../../seasons/utils/managerUtils'
 import { FutCard } from './PlayerFut'
 import { money } from '../onlineUtils'
@@ -77,7 +80,8 @@ export default function PlayerSheet({ p, club, seasonId, busy, listed, onClose, 
           <div><dt>Valor</dt><dd>{money(p.value)}</dd></div>
           <div><dt>Salário</dt><dd>{money(p.wage)}/dia</dd></div>
           <div><dt>Contrato</dt><dd>{left <= 0 ? 'Último ano' : `+${left} temp.`}</dd></div>
-          <div><dt>Condição</dt><dd>{Math.round(p.cond)}%</dd></div>
+          <div><dt>Físico</dt><dd>{Math.round(p.cond)}%</dd></div>
+          {p.arrow != null && <div><dt>Condição</dt><dd className="on-ps-arrow"><ConditionArrow arrow={p.arrow} size={16} /> {ARROWS[p.arrow]?.label}</dd></div>}
         </dl>
 
         {!mode && (
@@ -85,6 +89,7 @@ export default function PlayerSheet({ p, club, seasonId, busy, listed, onClose, 
             <button type="button" className="gx-btn" disabled={busy || listed} onClick={() => setMode('auction')}><Gavel size={15} /> Leiloar</button>
             <button type="button" className="gx-btn-ghost" disabled={busy || left >= 3} onClick={() => setMode('renew')}><FileSignature size={15} /> Renovar</button>
             <button type="button" className="gx-btn-ghost" disabled={busy || listed} onClick={() => setMode('sell')}><UserMinus size={15} /> Dispensar</button>
+            <button type="button" className="gx-btn-ghost" onClick={() => setMode('details')}><ListChecks size={15} /> Detalhes do jogador</button>
             {whistle && (
               <button type="button" className="on-ps-item" disabled={busy || room <= 0} onClick={() => { setItemErr(''); setMode('item') }}>
                 <GoldenWhistle size={22} /> {room > 0 ? 'Apito de Ouro' : 'Já no nível máximo'}
@@ -108,6 +113,12 @@ export default function PlayerSheet({ p, club, seasonId, busy, listed, onClose, 
               <small>Você não tem Apito de Ouro. Compre na Loja → Itens ({whistle.price} diamantes).</small>
             )}
             {itemErr && <small className="on-ps-err">{itemErr}</small>}
+            <button type="button" className="gx-btn-ghost" onClick={() => setMode(null)}>Voltar</button>
+          </div>
+        )}
+        {mode === 'details' && (
+          <div className="on-ps-step">
+            <PlayerDetails playerId={p.id} />
             <button type="button" className="gx-btn-ghost" onClick={() => setMode(null)}>Voltar</button>
           </div>
         )}

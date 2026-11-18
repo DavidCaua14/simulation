@@ -1,0 +1,40 @@
+/* Detalhes do jogador do modo online (condição, estilos, ficha "Normal → Atual") */
+.pd { display: flex; flex-direction: column; gap: 8px; text-align: left; }
+.pd-load, .pd-err { margin: 6px 0; font-size: 0.8rem; color: #9fb0d2; }
+.pd-err { color: #ff8a96; }
+.pd-cond { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 10px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.12); }
+.pd-cond span { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+.pd-cond b { font-size: 0.86rem; }
+.pd-cond small { font-size: 0.7rem; color: #9fb0d2; }
+.pd-cond em { font: 900 1.1rem var(--font-heading, inherit); font-style: normal; color: #ffd23f; width: 30px; height: 30px; display: grid; place-items: center; border-radius: 8px; background: rgba(255, 210, 63, 0.12); }
+.pd-form { margin: 0; font-size: 0.7rem; color: #9fb0d2; }
+.pd-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.pd-tabs button { min-height: 36px; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.14); background: rgba(255, 255, 255, 0.04); color: #e6ecf8; font-weight: 800; font-size: 0.74rem; text-transform: uppercase; cursor: pointer; }
+.pd-tabs button.is-on { border-color: #ffd23f; background: rgba(255, 210, 63, 0.16); color: #fff; }
+.pd h5 { margin: 6px 0 2px; font-size: 0.72rem; letter-spacing: 0.04em; text-transform: uppercase; color: #ff4fa3; }
+.pd-styles ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.pd-styles li { border-bottom: 1px solid rgba(255, 255, 255, 0.08); }
+.pd-styles li button { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 6px 2px; background: none; border: 0; color: #e6ecf8; cursor: pointer; text-align: left; }
+.pd-styles li button span { display: flex; flex-direction: column; }
+.pd-styles li button b { font-size: 0.86rem; }
+.pd-styles li button small { font-size: 0.66rem; color: #8a98b8; }
+.pd-styles li button svg { color: #3d9bff; flex: 0 0 auto; }
+.pd-styles li p { margin: 0 0 6px; font-size: 0.74rem; line-height: 1.35; color: #c8d3ea; }
+.pd-styles .pd-none { padding: 6px 2px; font-size: 0.76rem; color: #8a98b8; border: 0; }
+.pd-attrs { display: flex; flex-direction: column; }
+.pd-row { display: grid; grid-template-columns: 1fr 40px 14px 40px; align-items: center; gap: 4px; padding: 5px 2px; border-bottom: 1px solid rgba(255, 255, 255, 0.07); font-size: 0.8rem; }
+.pd-row span { color: #e6ecf8; }
+.pd-row b { position: relative; text-align: right; font-weight: 900; font-variant-numeric: tabular-nums; }
+.pd-row i { color: #5b6886; font-style: normal; text-align: center; font-size: 0.7rem; }
+.pd-head small { text-align: right; font-size: 0.66rem; color: #8a98b8; font-weight: 800; }
+.pd-overall { font-size: 0.9rem; }
+.pd-overall b { color: #fff; }
+.pd-row em { position: absolute; right: -8px; top: 50%; width: 5px; height: 5px; margin-top: -2px; border-radius: 50%; }
+.pd-row em.up { background: #3ddc4a; }
+.pd-row em.down { background: #ff5b6e; }
+.pd .t-top { color: #2fe0c8; }
+.pd .t-good { color: #3ddc4a; }
+.pd .t-ok { color: #b5e61d; }
+.pd .t-mid { color: #ffc61a; }
+.pd .t-low { color: #ff7a1a; }
+.pd-note { margin: 6px 0 0; font-size: 0.68rem; color: #8a98b8; line-height: 1.35; }

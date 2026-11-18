@@ -1,4 +1,5 @@
 import { Crown } from 'lucide-react'
+import ConditionArrow from './ConditionArrow'
 import { TIER_LABEL, cardLabels, cardTier } from '../onlineUtils'
 import './pitch-card.css'
 
@@ -116,6 +117,7 @@ export function PitchCard({ player, pos, colors, selected, live, onClick, label,
     >
       <span className="fut-pitch-card">
         <span className="fut-pitch-ovr"><b>{rating}</b><small>{pos || player.position}</small></span>
+        {player.arrow != null && <ConditionArrow arrow={player.arrow} size={13} className="fut-pitch-arrow" />}
         {tier === 'legend' && <Crown className="fut-pitch-crown" size={9} aria-hidden="true" />}
         <PlayerFace seed={name} colors={colors ? { a: colors[0], b: colors[1] } : undefined} size={34} />
         <strong className={`fut-pitch-name ${name.length > 12 ? 'is-long' : ''}`}>{name}</strong>

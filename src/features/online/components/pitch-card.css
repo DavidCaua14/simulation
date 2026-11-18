@@ -55,3 +55,7 @@ button.fut-pitch { cursor: pointer; }
 }
 @media (prefers-reduced-motion: reduce) { .fut-pitch.is-sel { animation: none; filter: drop-shadow(0 0 4px #22d3ee) drop-shadow(0 0 14px #22d3ee); } }
 @media (max-width: 380px) { .fut-pitch.is-sel:not(.is-empty)::after { width: 48px; } }
+/* seta de condição (fase 33): canto superior esquerdo da carta */
+.fut-pitch-arrow { position: absolute; top: 3px; right: 3px; z-index: 2; border-radius: 3px; box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.25); }
+.cond-arrow { flex: 0 0 auto; display: inline-block; vertical-align: middle; }
+.fut-pitch-arrow ~ .fut-pitch-crown, .fut-pitch-crown:has(+ .fut-pitch-arrow) { top: 19px; }
