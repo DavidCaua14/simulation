@@ -928,7 +928,14 @@ begin
  if v_new is null or v_new=s.id then raise exception 'nova temporada';end if;
  if (select count(*) from public.on_history where season_id=s.id)<>12 then raise exception 'histórico';end if;
  if (select count(*) from public.on_ledger where kind='prize')<12 then raise exception 'prêmios';end if;
- if (select coins from public.careers where user_id='00000000-0000-0000-0000-000000000004')<=coins0 then raise exception 'recompensa na conta';end if;
+ -- Fase 30: técnico recebe comunicado com premiação (liga e copa) e o caixa recebe o prêmio da liga
+ if not exists(select 1 from public.player_notices n join public.careers c on c.id=n.career_id
+   where c.user_id='00000000-0000-0000-0000-000000000004' and n.title like '%Liga Online%' and n.reward ? 'xp') then raise exception 'premiação da liga na caixa';end if;
+ if (select count(*) from public.on_ledger where kind='prize' and note like 'Copa Online%')<8 then raise exception 'prêmios da copa: %',(select count(*) from public.on_ledger where kind='prize' and note like 'Copa%');end if;
+ if s.cup_paid_at is null or s.league_paid_at is null then raise exception 'pagamento sem marca';end if;
+ if (select count(*) from public.on_honors where season_id=s.id)<>(select count(*) from public.on_history y where y.season_id=s.id and y.user_id is not null and (y.pos=1 or y.cup='champion')) then
+  raise exception 'insígnias da temporada';end if;
+ if exists(select 1 from public.on_honors where first) then raise exception 'sandbox deu insígnia de primeiro campeão';end if;
  if (select count(*) from public.on_clubs where season_id=v_new)<>12 or exists(select 1 from public.on_table where season_id=v_new and (p<>0 or pts<>0)) then
   raise exception 'tabela da nova temporada';end if;
  if (select count(*) from public.on_fixtures where season_id=v_new)<>132 then raise exception 'calendário novo';end if;
@@ -1077,7 +1084,7 @@ begin
  if public.on_ovr(98,107,'{6,4,0,0}')<>103 then raise exception 'overall acima de 100';end if;
  if public.on_start_price((select p from public.on_players p where p.id=pid))<>8000000 then raise exception 'preço do Messi';end if;
  update public.on_players set pot=89,level=85 where id=pid;
- if public.on_start_price((select p from public.on_players p where p.id=pid))<>1400000 then raise exception 'preço da lenda comum';end if;
+ if public.on_start_price((select p from public.on_players p where p.id=pid))<>2500000 then raise exception 'preço da lenda comum (fase 30)';end if;
  delete from public.on_players where id=pid;
  -- extras entram no catálogo; nome igual ao do jogo some
  select count(*) into n from public.on_pool where id like 'ex-%';
@@ -1171,4 +1178,46 @@ begin
  begin perform public.online_item_use(p.id);raise exception 'usou em quem já está no máximo';
  exception when others then if sqlerrm not like '%nota máxima%' then raise;end if;end;
  raise notice 'PASS fase 28 e 29';
+end $$;
+
+-- ═════════════════════════════════════════════════════════════════════════════
+-- Fase 30: premiação da copa no fim da final, primeiro campeão único, lances
+-- ═════════════════════════════════════════════════════════════════════════════
+do $$
+declare s public.on_seasons;k public.on_clubs;k2 public.on_clubs;c0 bigint;n jsonb;p public.on_players;
+begin
+ select * into s from public.on_seasons where status='live';
+ update public.on_seasons set kind='main' where id=s.id;
+ select c.* into k from public.on_clubs c where c.season_id=s.id and c.user_id is not null order by c.id limit 1;
+ select c.* into k2 from public.on_clubs c where c.season_id=s.id and c.id<>k.id order by c.id limit 1;
+ -- final de mentira: k campeão
+ insert into public.on_fixtures(season_id,comp,round,stage,home,away,kickoff,status,hg,ag) values(s.id,'C',4,'final',k.id,k2.id,now()-interval '1 hour','done',2,1);
+ c0:=k.cash;
+ if not public.on_award_cup(s.id) then raise exception 'copa não pagou';end if;
+ if public.on_award_cup(s.id) then raise exception 'copa pagou duas vezes';end if;
+ if (select cash from public.on_clubs where id=k.id)<>c0+3000000+1000000 then raise exception 'caixa do campeão: %',(select cash from public.on_clubs where id=k.id)-c0;end if;
+ if not exists(select 1 from public.on_honors where user_id=k.user_id and comp='C' and first and season_id=s.id) then raise exception 'primeiro campeão da copa';end if;
+ select n2.reward into n from public.player_notices n2 where n2.career_id=public.on_career_of(k.user_id) order by n2.id desc limit 1;
+ if (n->>'honor_first_cup')::int<>1 or (n->>'golden_whistle')::int<>1 or (n->>'diamonds')::int<>500 then raise exception 'premiação do primeiro campeão: %',n;end if;
+ -- segundo campeão de copa (outra temporada): só a comum
+ delete from public.on_fixtures where season_id=s.id and comp='C' and stage='final' and status='done' and hg=2 and ag=1;
+ update public.on_seasons set cup_paid_at=null where id=s.id;
+ delete from public.on_honors where season_id=s.id and not first;
+ update public.on_honors set season_id=s.id-1 where first and season_id=s.id;
+ insert into public.on_fixtures(season_id,comp,round,stage,home,away,kickoff,status,hg,ag) values(s.id,'C',4,'final',k.id,k2.id,now()-interval '1 hour','done',3,0);
+ perform public.on_award_cup(s.id);
+ if (select count(*) from public.on_honors where comp='C' and first)<>1 then raise exception 'primeiro campeão repetido';end if;
+ if not exists(select 1 from public.on_honors where user_id=k.user_id and comp='C' and not first and season_id=s.id) then raise exception 'insígnia comum';end if;
+ -- perfil: insígnia aparece só depois do resgate
+ if jsonb_array_length(public.on_honors_json(k.user_id))<>0 then raise exception 'insígnia antes do resgate';end if;
+ update public.on_honors set claimed_at=now() where user_id=k.user_id;
+ if (public.on_honors_json(k.user_id)->0->>'id')<>'first_cup' then raise exception 'vitrine: %',public.on_honors_json(k.user_id);end if;
+ delete from public.on_fixtures where season_id=s.id and comp='C' and stage='final' and hg=3 and ag=0;
+ -- lances iniciais
+ select x.* into p from public.on_players x limit 1;
+ p.legend:=true;p.level:=95;p.pot:=99;
+ if public.on_start_price(p)<>3300000 then raise exception 'lance de lenda: %',public.on_start_price(p);end if;
+ p.legend:=false;p.level:=84;
+ if public.on_start_price(p)<>850000 then raise exception 'lance de destaque: %',public.on_start_price(p);end if;
+ raise notice 'PASS fase 30';
 end $$;

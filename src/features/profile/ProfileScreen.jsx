@@ -6,6 +6,7 @@ import { fetchCompetitions } from '../seasons/services/managerApi'
 import BottomTabBar from '../home/components/BottomTabBar'
 import { useProfilePrefs } from './profileStore'
 import { fetchMyProfile, migrateLocalPrefs, setAvatar } from './services/profileApi'
+import HonorShowcase from './components/HonorShowcase'
 import ProfileHero from './components/ProfileHero'
 import { avatarSrcOf } from './components/ProfileAvatar'
 import AvatarPicker from './components/AvatarPicker'
@@ -96,6 +97,7 @@ export default function ProfileScreen({ career, onNavigate, onOpenNews, onOpenAd
           ) : (
             <>
               <ProfileHero profile={profile} />
+              <HonorShowcase honors={profile.honors} />
 
               <nav className="pf-menu" aria-label="Ações do perfil">
                 <button type="button" onClick={() => setSheet('customize')}><Palette size={20} /> Visual</button>

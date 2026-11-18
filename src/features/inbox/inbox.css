@@ -45,3 +45,5 @@
 @keyframes pn-pop { from { opacity: 0; transform: translateY(16px) scale(.96); } }
 @media (prefers-reduced-motion: reduce) { .pn-overlay, .pn-card { animation: none; } }
 .pn-card p.is-long { text-align: left; }
+.gi-honor { display: inline-flex; align-items: center; gap: 5px; color: #fde68a; font-weight: 800; }
+.gi-xp { display: inline-grid; place-items: center; min-width: 22px; height: 16px; padding: 0 3px; border-radius: 5px; background: #6d28d9; color: #fff; font-size: .62rem; }

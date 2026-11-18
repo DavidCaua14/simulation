@@ -311,3 +311,18 @@ do jogador: leva o jogador na hora à nota máxima (potencial), sem gastar condi
 `supabase/online/31_items_for_all.sql`: `on_item_gate()` aceita qualquer usuário logado.
 `supabase/evolution/76_inbox_item_rewards.sql`: a premiação de avisos aceita `golden_whistle` (vai para `on_items` no
 resgate, uma vez por conta) e cria o aviso de lançamento com 7 Apitos de Ouro, tutorial de uso e de como conseguir mais.
+
+## Fase 30 — Premiação da Liga e da Copa, insígnias de campeão
+
+`supabase/online/32_competition_prizes.sql` e `supabase/evolution/77_inbox_champion_rewards.sql`.
+
+- Prêmio em dinheiro no **caixa do clube**, medido pelo mercado (`on_config.prize_league`, `prize_cup`):
+  liga 1º $ 5 mi … 12º $ 250 mil; copa campeão $ 3 mi, vice $ 1,5 mi, semifinal $ 800 mil, quartas $ 400 mil, 1ª fase $ 200 mil.
+- Técnicos recebem ainda diamantes, energia e XP por comunicado na caixa de entrada (resgate); pontos de ranking da copa
+  entram na hora (a liga segue em `on_rank_season`).
+- Copa paga no fim da final (`on_award_cup`, gancho em `on_cup_hook`); liga no fim da temporada (`on_award_league`).
+- Insígnias (`on_honors`): "Primeiro Campeão" da liga e da copa existem uma vez só (índice único, só na liga principal);
+  os seguintes recebem "Campeão". Aparecem na vitrine do topo do perfil depois do resgate (`profile_build.honors`).
+- Primeiro campeão: +$ 1 mi, +300 diamantes e 1 Apito de Ouro (`prize_first`).
+- Comemoração de título (`ChampionCelebration`): abre ao fim do jogo do título e na caixa de entrada.
+- Lances iniciais: lenda $ 2,5 a 3,5 mi; destaque a partir de $ 700 mil; nível Messi a partir de $ 5 mi.

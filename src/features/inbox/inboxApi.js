@@ -12,7 +12,7 @@ export const fetchPending = () => rpc('inbox_pending')
 export const markSeen = (items) => rpc('inbox_seen', { p_items: items.map((i) => ({ type: i.type, id: i.id })) })
 export const claimItem = (item) => rpc('inbox_claim', { p_type: item.type, p_id: item.id })
 
-export const REWARD_LABEL = { coins: 'moedas', diamonds: 'diamantes', bonus_energy: 'de energia', golden_whistle: 'Apitos de Ouro' }
+export const REWARD_LABEL = { coins: 'moedas', diamonds: 'diamantes', bonus_energy: 'de energia', golden_whistle: 'Apitos de Ouro', xp: 'de XP' }
 export const REWARD_ICON = { coins: 'coins', diamonds: 'diamond', bonus_energy: 'energy' }
 export const rewardEntries = (reward) => Object.entries(reward || {}).filter(([, v]) => Number(v) > 0)
 

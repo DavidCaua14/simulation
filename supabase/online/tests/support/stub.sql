@@ -981,3 +981,9 @@ create function public.is_admin() returns boolean language sql stable security d
  select exists(select 1 from public.admins where user_id=auth.uid())
   and lower(trim(coalesce(auth.jwt()->>'email','')))='contatodavidcaua@gmail.com'
 $$;
+
+-- Caixa de entrada (comunicados com premiação) e energia bônus da conta.
+create table public.player_notices(id bigint generated always as identity primary key, career_id uuid not null, kind text not null,
+ title text not null, body text not null, reward jsonb not null default '{}'::jsonb, created_at timestamptz not null default now(),
+ seen_at timestamptz, claimed_at timestamptz);
+alter table public.careers add column if not exists bonus_energy int not null default 0;

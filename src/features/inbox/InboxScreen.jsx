@@ -3,6 +3,8 @@ import { ArrowLeft, Bell, Gift, Inbox, Megaphone, Shield, TrendingUp, Wallet } f
 import GameIcon from '../../components/ui/GameIcon'
 import { EmptyState, Notice, Skeleton } from '../../components/ui/feedback'
 import GoldenWhistle from '../online/components/GoldenWhistle'
+import ChampionCelebration from '../online/components/ChampionCelebration'
+import { HONOR_ART, HONOR_REWARD, honorOf } from '../online/honors'
 import { claimItem, fetchInbox, markSeen, notifyInboxChanged, REWARD_ICON, REWARD_LABEL, rewardEntries } from './inboxApi'
 import './inbox.css'
 
@@ -16,7 +18,11 @@ export function RewardChips({ reward }) {
   if (!list.length) return null
   return (
     <span className="gi-rewards">
-      {list.map(([k, v]) => <span key={k}>{k === 'golden_whistle' ? <GoldenWhistle size={18} /> : <GameIcon name={REWARD_ICON[k]} size={16} />} {Number(v).toLocaleString('pt-BR')} {REWARD_LABEL[k]}</span>)}
+      {list.map(([k, v]) => HONOR_REWARD[k] ? (
+        <span key={k} className="gi-honor"><img src={HONOR_ART[HONOR_REWARD[k].id]} alt="" width={22} height={22} /> Insígnia {HONOR_REWARD[k].label}</span>
+      ) : (
+        <span key={k}>{k === 'golden_whistle' ? <GoldenWhistle size={18} /> : k === 'xp' ? <b className="gi-xp">XP</b> : <GameIcon name={REWARD_ICON[k]} size={16} />} {Number(v).toLocaleString('pt-BR')} {REWARD_LABEL[k]}</span>
+      ))}
     </span>
   )
 }
@@ -26,6 +32,7 @@ export default function InboxScreen({ onBack, onWalletChange }) {
   const [tab, setTab] = useState('all')
   const [busy, setBusy] = useState(null)
   const [msg, setMsg] = useState(null)
+  const [party, setParty] = useState(null) // comunicado de título: resgate com a comemoração
 
   const load = useCallback(() => fetchInbox().then((d) => { setData(d); return d }).catch((e) => setMsg({ kind: 'error', text: e.message })), [])
   useEffect(() => {
@@ -37,6 +44,7 @@ export default function InboxScreen({ onBack, onWalletChange }) {
   }, [load])
 
   async function claim(item) {
+    if (honorOf(item.reward) && !party) return setParty(item)
     setBusy(item.id)
     try {
       await claimItem(item)
@@ -63,6 +71,11 @@ export default function InboxScreen({ onBack, onWalletChange }) {
         {TABS.map(([id, label]) => <button key={id} role="tab" aria-selected={tab === id} className={tab === id ? 'is-on' : ''} onClick={() => setTab(id)}>{label}</button>)}
       </div>
       {msg && <Notice kind={msg.kind} onClose={() => setMsg(null)}>{msg.text}</Notice>}
+      {party && (
+        <ChampionCelebration notice={party}
+          onClaim={async () => { await claimItem(party); onWalletChange?.(); notifyInboxChanged() }}
+          onClose={() => { setParty(null); load() }} />
+      )}
       {!data ? <Skeleton rows={4} /> : items.length === 0 ? (
         <EmptyState icon={Inbox} title="Nada por aqui" text="Avisos do jogo e premiações aparecem nesta caixa." />
       ) : (

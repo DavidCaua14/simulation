@@ -1,3 +1,4 @@
+import { COMP_LOGO } from './honors'
 import { useEffect, useMemo, useState } from 'react'
 import { CalendarDays, ChevronLeft, ChevronRight, ListOrdered, Radio, Trophy, User } from 'lucide-react'
 import { Notice, Skeleton } from '../../components/ui/feedback'
@@ -120,6 +121,15 @@ export default function OnlineLeague({ now, onOpenMatch }) {
   const [view, setView] = useState('table')
   return (
     <section className="on-league">
+      {view !== 'cup' && (
+        <div className="on-cup-hero is-league">
+          <img className="on-comp-logo" src={COMP_LOGO.L} alt="Liga Online" width={64} height={64} />
+          <div>
+            <small>Liga Online · pontos corridos</small>
+            <b>Campeão leva $ 5 milhões</b>
+          </div>
+        </div>
+      )}
       <div className="on-seg on-seg-3" role="tablist" aria-label="Liga">
         <button type="button" role="tab" aria-selected={view === 'table'} className={view === 'table' ? 'is-on' : ''} onClick={() => setView('table')}><ListOrdered size={15} /> Tabela</button>
         <button type="button" role="tab" aria-selected={view === 'fixtures'} className={view === 'fixtures' ? 'is-on' : ''} onClick={() => setView('fixtures')}><CalendarDays size={15} /> Jogos</button>

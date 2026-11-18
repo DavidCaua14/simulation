@@ -13,6 +13,9 @@ import OnlineCrest from './components/OnlineCrest'
 import { OvrBadge } from './components/PlayerFut'
 import { actOnlineMatch, fetchOnlineScout, fetchOnlineSquad, pollOnlineMatch, sendOnlineHalftimeTalk } from './services/onlineApi'
 import { kickoffState } from './kickoffState'
+import ChampionCelebration from './components/ChampionCelebration'
+import { honorOf } from './honors'
+import { claimItem, fetchPending, markSeen, notifyInboxChanged } from '../inbox/inboxApi'
 import { SCREEN_LAG_MS, asSeasonPlayer, clockPhase, clubColors, matchClock } from './onlineUtils'
 import '../seasons/seasons.css'
 import '../seasons/manager.css'
@@ -161,6 +164,30 @@ export default function OnlineMatchLive({ fixtureId = null, onClose, notify }) {
   const shownMinute = Math.floor(Math.max(0, clock))
   const ended = finished && raw >= endMin
   const phase = kick ? clockPhase(kick, serverNow - SCREEN_LAG_MS, et) : 'pre'
+
+  // Fim do jogo que deu o título (final da copa ou última rodada da liga): o servidor premia na hora e manda o
+  // comunicado de campeão. Procura por ele algumas vezes e abre a comemoração por cima da partida.
+  const [party, setParty] = useState(null)
+  useEffect(() => {
+    if (!ended) return undefined
+    let alive = true
+    let tries = 0
+    let t = 0
+    const look = () =>
+      fetchPending()
+        .then((list) => {
+          if (!alive) return
+          const it = (list || []).find((i) => i.claimable && honorOf(i.reward) && Date.now() - new Date(i.at).getTime() < 6 * 3600e3)
+          if (it) setParty(it)
+          else if ((tries += 1) < 4) t = setTimeout(look, 4000)
+        })
+        .catch(() => {})
+    t = setTimeout(look, 2500)
+    return () => {
+      alive = false
+      clearTimeout(t)
+    }
+  }, [ended])
 
   const onReveal = useCallback((seqs) => {
     setRevealed((prev) => {
@@ -611,6 +638,11 @@ export default function OnlineMatchLive({ fixtureId = null, onClose, notify }) {
             if (Object.keys(changes).length) apply(changes)
           }}
         />
+      )}
+      {party && (
+        <ChampionCelebration notice={party}
+          onClaim={async () => { await claimItem(party); notifyInboxChanged() }}
+          onClose={() => { markSeen([party]).then(notifyInboxChanged).catch(() => {}); setParty(null) }} />
       )}
     </div>
   )

@@ -1,5 +1,6 @@
+import { COMP_LOGO } from './honors'
 import { useEffect, useState } from 'react'
-import { Crown, Radio, Trophy } from 'lucide-react'
+import { Crown, Radio } from 'lucide-react'
 import { Notice, Skeleton } from '../../components/ui/feedback'
 import OnlineCrest from './components/OnlineCrest'
 import { fetchOnlineCup } from './services/onlineApi'
@@ -43,9 +44,9 @@ export default function OnlineCup({ now, onOpenMatch }) {
   return (
     <div className="on-cup">
       <div className="on-cup-hero">
-        <Trophy size={40} />
+        <img className="on-comp-logo" src={COMP_LOGO.C} alt="Copa Online" width={64} height={64} />
         <div>
-          <small>Copa Online</small>
+          <small>Copa Online · campeão leva $ 3 milhões</small>
           {champ ? <b><OnlineCrest club={champ} size={22} /> {champ.name}</b> : <b>{data.rounds.length ? STAGES.filter(([r]) => data.rounds.some((f) => f.round === r)).at(-1)[1] : 'Sorteio após a 5ª rodada'}</b>}
         </div>
         {champ && <Crown size={22} className="on-cup-crown" />}

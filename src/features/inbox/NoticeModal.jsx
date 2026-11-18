@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { Bell } from 'lucide-react'
 import { claimItem, fetchPending, markSeen, notifyInboxChanged, rewardEntries } from './inboxApi'
 import { KIND_ICON, RewardChips } from './InboxScreen'
+import ChampionCelebration from '../online/components/ChampionCelebration'
+import { honorOf } from '../online/honors'
 import './inbox.css'
 
 // MODAL DA TELA INICIAL: mostra, um por vez, os avisos no período e os comunicados ainda não vistos
@@ -43,6 +45,14 @@ export default function NoticeModal({ onWalletChange }) {
     }
   }
 
+  // título de campeão: a comemoração no lugar do aviso comum
+  if (hasReward && honorOf(item.reward)) {
+    return (
+      <ChampionCelebration key={item.id} notice={item}
+        onClaim={async () => { await claimItem(item); onWalletChange?.() }}
+        onClose={() => next(false)} />
+    )
+  }
   return (
     <div className="pn-overlay" role="dialog" aria-modal="true" aria-labelledby="pn-title">
       <div className={`pn-card k-${kind}`}>

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Trophy, UserMinus, Users, X } from 'lucide-react'
+import HonorShowcase from '../profile/components/HonorShowcase'
 import ProfileHero from '../profile/components/ProfileHero'
 import BadgeGrid from '../profile/components/BadgeGrid'
 import CoachCard from '../profile/components/CoachCard'
@@ -39,6 +40,7 @@ export default function FriendProfile({ username, onClose, onRemove }) {
         {p && (
           <>
             <ProfileHero profile={p} />
+            <HonorShowcase honors={p.honors} />
             {p.friend_since && (
               <p className="fr-since"><Users size={13} aria-hidden="true" /> Amigos desde {new Date(p.friend_since).toLocaleDateString('pt-BR')}</p>
             )}
