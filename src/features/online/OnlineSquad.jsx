@@ -21,6 +21,38 @@ import '../seasons/matchflow/matchflow.css'
 // carta quadrada do eFootball no campo do Elenco (as outras telas do online continuam com a carta de sempre)
 const renderTile = ({ player, pos, colors, selected, onClick, label }) => <EfTile player={player} pos={pos} colors={colors} selected={selected} onClick={onClick} label={label} size={58} />
 
+// Campo do Elenco: as vagas com alturas próximas viram uma linha só e as linhas se espalham por igual de cima a baixo,
+// para o nome de uma carta não encostar na carta de baixo (a formação real continua a mesma no motor).
+function spreadRows(formation, tol = 6) {
+  if (!formation?.slots?.length) return formation
+  const ys = [...new Set(formation.slots.map((s) => s.y))].sort((a, b) => a - b)
+  const rowOf = new Map()
+  let row = 0
+  ys.forEach((y, i) => {
+    if (i > 0 && y - ys[i - 1] > tol) row += 1
+    rowOf.set(y, row)
+  })
+  const n = row + 1
+  const yAt = (r) => (n === 1 ? 50 : 11 + (r * 82) / (n - 1))
+  // na mesma linha, cartas a pelo menos MIN% uma da outra (mantém a ordem e o centro da linha)
+  const MIN = 25
+  const xOf = new Map()
+  for (let r = 0; r < n; r++) {
+    const inRow = formation.slots.filter((s) => rowOf.get(s.y) === r).sort((a, b) => a.x - b.x)
+    const tight = inRow.some((s, i) => i > 0 && s.x - inRow[i - 1].x < MIN)
+    if (!tight) continue
+    const k = inRow.length
+    const span = (k - 1) * MIN
+    if (span > 84) inRow.forEach((s, i) => xOf.set(s.slot, 8 + (i * 84) / (k - 1)))
+    else {
+      const mid = inRow.reduce((a, s) => a + s.x, 0) / k
+      const start = Math.min(92 - span, Math.max(8, mid - span / 2))
+      inRow.forEach((s, i) => xOf.set(s.slot, start + i * MIN))
+    }
+  }
+  return { ...formation, slots: formation.slots.map((s) => ({ ...s, y: yAt(rowOf.get(s.y)), x: xOf.get(s.slot) ?? s.x })) }
+}
+
 const SCARCITY = { GOL: 1, ZAG: 2, LD: 3, LE: 3, VOL: 4, ATA: 5, MC: 6, MEI: 7, PD: 8, PE: 8 }
 const ROLES = [
   { id: 'captain', label: 'Capitão', Icon: Crown },
@@ -160,6 +192,7 @@ export default function OnlineSquad({ onOpenMatch, notify, seasonId }) {
   const byId = useMemo(() => Object.fromEntries((squad?.players || []).map((p) => [p.id, asSeasonPlayer(p, posFit)])), [squad])
   const colors = clubColors(squad?.club)
   const formation = catalog?.byId?.[draft?.formation]
+  const boardFormation = useMemo(() => spreadRows(formation), [formation])
   const dirty = squad?.lineup && draft && JSON.stringify({ f: draft.formation, s: draft.slots, b: draft.bench, t: draft.tactics }) !==
     JSON.stringify({ f: squad.lineup.formation, s: squad.lineup.slots, b: squad.lineup.bench, t: squad.lineup.tactics || {} })
 
@@ -276,7 +309,7 @@ export default function OnlineSquad({ onOpenMatch, notify, seasonId }) {
           <div className="ef-pitch">
             <PitchTokenContext.Provider value={renderTile}>
               <Pitch
-                formation={formation}
+                formation={boardFormation}
                 slots={draft.slots}
                 playersById={byId}
                 colors={colors}
