@@ -19,7 +19,7 @@ import '../seasons/manager.css'
 import '../seasons/matchflow/matchflow.css'
 
 // carta quadrada do eFootball no campo do Elenco (as outras telas do online continuam com a carta de sempre)
-const renderTile = ({ player, pos, colors, selected, onClick, label }) => <EfTile player={player} pos={pos} colors={colors} selected={selected} onClick={onClick} label={label} size={54} />
+const renderTile = ({ player, pos, colors, selected, onClick, label }) => <EfTile player={player} pos={pos} colors={colors} selected={selected} onClick={onClick} label={label} size={58} />
 
 const SCARCITY = { GOL: 1, ZAG: 2, LD: 3, LE: 3, VOL: 4, ATA: 5, MC: 6, MEI: 7, PD: 8, PE: 8 }
 const ROLES = [

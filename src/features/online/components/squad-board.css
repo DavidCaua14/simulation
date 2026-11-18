@@ -29,7 +29,7 @@
   padding: 4px 30px; border-radius: 14px; background: repeating-linear-gradient(180deg, #1d5a2a 0 9%, #22662f 9% 18%);
   box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.45);
 }
-.ef-pitch div.pt { width: 100%; margin: 0 auto; background: none; box-shadow: none; overflow: visible; aspect-ratio: 100 / 172; }
+.ef-pitch div.pt { width: 100%; margin: 0 auto; background: none; box-shadow: none; overflow: visible; aspect-ratio: 100 / 188; }
 /* o Pitch já centraliza cada carta na vaga (translate -50%) */
 
 .ef-tile {
@@ -85,6 +85,8 @@
 .ef-tile-cond.warn i { background: #ffc61a; }
 .ef-tile-cond.bad i { background: #ff4d4d; }
 .ef-drawer .ef-tile-cond { background: #e5e7eb; box-shadow: none; }
+.ef-tile.is-3d .ef-tile-ovr b { font-size: calc(var(--ef) * 0.27); letter-spacing: -0.03em; }
+.ef-tile.is-3d .ef-tile-ovr { top: 5%; left: 5%; }
 .ef-tile.is-sel .ef-tile-box { box-shadow: 0 0 0 3px #3d9bff, 0 0 16px rgba(61, 155, 255, 0.8); }
 .ef-tile.is-off .ef-tile-ovr b { color: #ff9f1a; }
 .ef-tile.is-dim { opacity: 0.5; }
@@ -122,7 +124,7 @@
 .ef-drawer-sort { display: flex; align-items: center; gap: 4px; padding-bottom: 6px; border-bottom: 1px solid #e5e7eb; }
 .ef-drawer-sort small { margin-right: 4px; font-size: 0.72rem; font-weight: 800; color: #1d6fe0; }
 .ef-drawer-hint { margin: 0; padding: 6px 8px; border-radius: 8px; background: #dbeafe; color: #1e3a8a; font-size: 0.76rem; }
-.ef-drawer-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(66px, 1fr)); gap: 10px 6px; justify-items: center; }
+.ef-drawer-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); gap: 10px 6px; justify-items: center; }
 .ef-drawer .ef-tile-name { background: none; color: #111827; text-shadow: none; }
 .ef-drawer-legend { margin: 4px 0 0; font-size: 0.68rem; color: #6b7280; }
 @keyframes efSlide { from { transform: translateX(-100%); } to { transform: none; } }

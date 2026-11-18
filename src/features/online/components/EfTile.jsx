@@ -4,7 +4,7 @@ import { cardTier } from '../onlineUtils'
 
 // CARTA QUADRADA no estilo eFootball: posição e nota no canto, rosto, seta de condição e o nome embaixo.
 // Usada no campo e nas listas do Elenco. pos: posição da vaga (nota nessa posição).
-export default function EfTile({ player, pos, colors, selected, onClick, label, dim = false, badge = null, size = 62 }) {
+export default function EfTile({ player, pos, colors, selected, onClick, label, dim = false, badge = null, size = 66 }) {
   const box = { '--ef': `${size}px` }
   const Tag = onClick ? 'button' : 'div'
   if (!player) {
@@ -28,7 +28,7 @@ export default function EfTile({ player, pos, colors, selected, onClick, label, 
   return (
     <Tag
       type={onClick ? 'button' : undefined}
-      className={`ef-tile t-${tier} ${selected ? 'is-sel' : ''} ${dim ? 'is-dim' : ''} ${off ? 'is-off' : ''}`}
+      className={`ef-tile t-${tier} ${selected ? 'is-sel' : ''} ${dim ? 'is-dim' : ''} ${off ? 'is-off' : ''} ${rating >= 100 ? 'is-3d' : ''}`}
       style={box}
       onClick={onClick}
       aria-label={`${at}: ${name}, nota ${rating}${off ? `, fora da posição (é ${player.position})` : ''}${cond != null ? `, físico ${Math.round(cond)}%` : ''}`}
