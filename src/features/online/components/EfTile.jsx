@@ -21,6 +21,9 @@ export default function EfTile({ player, pos, colors, selected, onClick, label, 
   const injured = player.injured_days > 0 || player.injured
   const susp = player.suspended > 0
   const name = player.short_name || player.name || ''
+  // físico (cansaço): diferente da seta, que é a condição (forma) da partida
+  const cond = player.condition ?? player.cond
+  const tone = cond == null ? '' : cond >= 85 ? 'ok' : cond >= 70 ? 'warn' : 'bad'
   const short = name.length > 13 ? name.split(' ').slice(-1)[0] : name
   return (
     <Tag
@@ -28,7 +31,7 @@ export default function EfTile({ player, pos, colors, selected, onClick, label, 
       className={`ef-tile t-${tier} ${selected ? 'is-sel' : ''} ${dim ? 'is-dim' : ''} ${off ? 'is-off' : ''}`}
       style={box}
       onClick={onClick}
-      aria-label={`${at}: ${name}, nota ${rating}${off ? `, fora da posição (é ${player.position})` : ''}`}
+      aria-label={`${at}: ${name}, nota ${rating}${off ? `, fora da posição (é ${player.position})` : ''}${cond != null ? `, físico ${Math.round(cond)}%` : ''}`}
     >
       <span className="ef-tile-box">
         <span className="ef-tile-ovr"><small>{at}</small><b>{rating}</b></span>
@@ -37,6 +40,11 @@ export default function EfTile({ player, pos, colors, selected, onClick, label, 
         {(injured || susp) && <i className={`ef-tile-flag ${injured ? 'inj' : 'susp'}`}>{injured ? '+' : 'S'}</i>}
         {badge && <em className="ef-tile-badge">{badge}</em>}
       </span>
+      {cond != null && (
+        <span className={`ef-tile-cond ${tone}`} title={`Físico ${Math.round(cond)}%`} aria-label={`Físico ${Math.round(cond)}%`}>
+          <i style={{ width: `${Math.max(4, Math.min(100, cond))}%` }} />
+        </span>
+      )}
       <span className="ef-tile-name">{short}</span>
     </Tag>
   )

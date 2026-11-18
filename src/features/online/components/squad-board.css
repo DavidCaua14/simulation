@@ -79,6 +79,12 @@
   max-width: calc(var(--ef) + 14px); padding: 1px 5px; border-radius: 4px; background: rgba(5, 10, 20, 0.72); font-size: 0.62rem; font-weight: 800;
   line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
+.ef-tile-cond { display: block; width: var(--ef); height: 4px; border-radius: 3px; overflow: hidden; background: rgba(0, 0, 0, 0.55); box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.12); }
+.ef-tile-cond i { display: block; height: 100%; border-radius: 3px; }
+.ef-tile-cond.ok i { background: #3ddc4a; }
+.ef-tile-cond.warn i { background: #ffc61a; }
+.ef-tile-cond.bad i { background: #ff4d4d; }
+.ef-drawer .ef-tile-cond { background: #e5e7eb; box-shadow: none; }
 .ef-tile.is-sel .ef-tile-box { box-shadow: 0 0 0 3px #3d9bff, 0 0 16px rgba(61, 155, 255, 0.8); }
 .ef-tile.is-off .ef-tile-ovr b { color: #ff9f1a; }
 .ef-tile.is-dim { opacity: 0.5; }
