@@ -18,7 +18,7 @@ const wageFor = (ovr, age) => Math.ceil((Math.max(1, ovr - 45) ** 2 * 0.65 + Mat
 // Linha da lista de ações (ícone, título azul e uma linha de apoio), como no menu do jogador do eFootball.
 function Row({ Icon, label, sub, onClick, disabled, danger, children }) {
   return (
-    <button type="button" className={`pm-row ${danger ? 'is-danger' : ''}`} disabled={disabled} onClick={onClick}>
+    <button type="button" className={`opm-row ${danger ? 'is-danger' : ''}`} disabled={disabled} onClick={onClick}>
       {Icon ? <Icon size={20} /> : children}
       <span><b>{label}</b>{sub && <small>{sub}</small>}</span>
     </button>
@@ -63,24 +63,24 @@ export default function PlayerSheet({ p, club, seasonId, busy, listed, onClose, 
   const styleDef = styleName(p.style_def)
   const arrow = ARROWS[p.arrow]
   return (
-    <div className="on-modal pm" role="dialog" aria-modal="true" aria-label={p.name} onClick={onClose}>
-      <div className="pm-card" onClick={(e) => e.stopPropagation()}>
-        <header className="pm-head">
+    <div className="on-modal opm" role="dialog" aria-modal="true" aria-label={p.name} onClick={onClose}>
+      <div className="opm-card" onClick={(e) => e.stopPropagation()}>
+        <header className="opm-head">
           <h3>{p.name}</h3>
-          <button type="button" className="pm-x" onClick={onClose} aria-label="Fechar"><X size={18} /></button>
+          <button type="button" className="opm-x" onClick={onClose} aria-label="Fechar"><X size={18} /></button>
         </header>
-        <div className="pm-body">
-          <aside className="pm-left">
+        <div className="opm-body">
+          <aside className="opm-left">
             <FutCard p={p} club={club} size="sm" />
-            <small className="pm-pos">{positions}</small>
+            <small className="opm-pos">{positions}</small>
             {(styleOff || styleDef) && (
-              <div className="pm-style">
+              <div className="opm-style">
                 <small>Estilo de jogo</small>
                 {styleOff && <b><i className="is-off" aria-hidden="true" />{styleOff}</b>}
                 {styleDef && <b><i className="is-def" aria-hidden="true" />{styleDef}</b>}
               </div>
             )}
-            <dl className="pm-facts">
+            <dl className="opm-facts">
               {arrow && <div><dt>Condição</dt><dd><ConditionArrow arrow={p.arrow} size={15} /> {arrow.label}</dd></div>}
               <div><dt>Físico</dt><dd>{Math.round(p.cond)}%</dd></div>
               <div><dt>Evolução</dt><dd>{ovr} <TrendingUp size={12} /> {pot}</dd></div>
@@ -88,9 +88,9 @@ export default function PlayerSheet({ p, club, seasonId, busy, listed, onClose, 
               <div><dt>Valor</dt><dd>{money(p.value)}</dd></div>
               <div><dt>Salário</dt><dd>{money(p.wage)}/dia</dd></div>
             </dl>
-            {listed && <span className="pm-tag"><Gavel size={12} /> Em leilão</span>}
+            {listed && <span className="opm-tag"><Gavel size={12} /> Em leilão</span>}
           </aside>
-          <div className="pm-right">
+          <div className="opm-right">
             {maxed && (
               <div className="on-ps-maxed" role="status">
                 <GoldenWhistle size={34} />
@@ -98,7 +98,7 @@ export default function PlayerSheet({ p, club, seasonId, busy, listed, onClose, 
               </div>
             )}
             {!mode && (
-              <nav className="pm-list" aria-label="Ações do jogador">
+              <nav className="opm-list" aria-label="Ações do jogador">
                 <Row Icon={ListChecks} label="Detalhes do jogador" sub="Estilos, especialidades e qualidade" onClick={() => setMode('details')} />
                 {onSwap && <Row Icon={ArrowLeftRight} label="Trocar de lugar" sub={where ? `Hoje: ${where}` : 'Escolha com quem trocar'} disabled={busy} onClick={() => onSwap(p)} />}
                 {onRoles && <Row Icon={Flag} label="Funções de jogadores" sub="Capitão e cobradores" onClick={() => onRoles(p)} />}

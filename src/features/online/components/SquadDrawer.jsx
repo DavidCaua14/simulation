@@ -19,7 +19,7 @@ const BADGE = { slot: 'T', bench: 'R' }
 
 // GAVETA DO ELENCO (estilo eFootball): todos os jogadores em cartas, com filtro por setor e ordenação.
 // statusOf(id) devolve 'slot' (titular), 'bench' (reserva) ou 'out'. onPick(id) abre a ficha ou completa a troca.
-export default function SquadDrawer({ players, statusOf, colors, onPick, onClose, swapping = null }) {
+export default function SquadDrawer({ players, statusOf, colors, onPick, onClose, swapping = null, bind = null }) {
   const [group, setGroup] = useState('all')
   const [sort, setSort] = useState('ovr')
   const list = useMemo(() => {
@@ -53,10 +53,14 @@ export default function SquadDrawer({ players, statusOf, colors, onPick, onClose
         <div className="ef-drawer-grid">
           {list.map((p) => {
             const st = statusOf(p.id)
-            return <EfTile key={p.id} player={p} colors={colors} badge={BADGE[st]} dim={st === 'out'} onClick={() => onPick(p.id)} />
+            return (
+              <div key={p.id} className="ef-dslot" {...(bind ? bind(`p:${p.id}`, p.id) : {})}>
+                <EfTile player={p} colors={colors} badge={BADGE[st]} dim={st === 'out'} onClick={() => onPick(p.id)} />
+              </div>
+            )
           })}
         </div>
-        <p className="ef-drawer-legend"><b>T</b> titular · <b>R</b> reserva · apagado: fora da lista</p>
+        <p className="ef-drawer-legend"><b>T</b> titular · <b>R</b> reserva · apagado: fora da lista · segure e arraste uma carta até o campo</p>
       </aside>
     </div>
   )

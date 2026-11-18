@@ -29,15 +29,17 @@
   padding: 4px 30px; border-radius: 14px; background: repeating-linear-gradient(180deg, #1d5a2a 0 9%, #22662f 9% 18%);
   box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.45);
 }
-.ef-pitch .pt { background: none; box-shadow: none; overflow: visible; }
-.ef-pitch .pt-slot { width: 64px; margin-left: -32px; }
+.ef-pitch div.pt { width: 100%; margin: 0 auto; background: none; box-shadow: none; overflow: visible; aspect-ratio: 100 / 172; }
+/* o Pitch já centraliza cada carta na vaga (translate -50%) */
+.ef-pitch .ef-tile { --ef: 54px; }
 
 .ef-tile {
-  position: relative; display: flex; flex-direction: column; align-items: center; gap: 2px; width: 62px; padding: 0; border: 0;
+  --ef: 62px;
+  position: relative; display: flex; flex-direction: column; align-items: center; gap: 2px; width: calc(var(--ef) + 4px); padding: 0; border: 0;
   background: none; color: #fff; cursor: pointer;
 }
 .ef-tile-box {
-  position: relative; display: block; width: 62px; height: 62px; border-radius: 9px; overflow: hidden;
+  position: relative; display: block; width: var(--ef); height: var(--ef); border-radius: 9px; overflow: hidden;
   background: linear-gradient(160deg, #3a4660, #1a2133 70%); box-shadow: 0 3px 8px rgba(0, 0, 0, 0.45), inset 0 0 0 1.5px rgba(255, 255, 255, 0.22);
 }
 .ef-tile.t-special .ef-tile-box { background: linear-gradient(160deg, #7b3fe4, #3b1d8f 70%); box-shadow: 0 3px 8px rgba(0, 0, 0, 0.45), inset 0 0 0 1.5px rgba(196, 160, 255, 0.55); }
@@ -52,7 +54,7 @@
 .ef-tile-flag.susp { background: #ffc61a; color: #111; }
 .ef-tile-badge { position: absolute; left: 4px; bottom: 4px; z-index: 2; padding: 1px 4px; border-radius: 4px; background: rgba(0, 0, 0, 0.6); font-style: normal; font-size: 0.58rem; font-weight: 900; color: #fff; }
 .ef-tile-name {
-  max-width: 70px; padding: 1px 4px; border-radius: 4px; background: rgba(0, 0, 0, 0.55); font-size: 0.6rem; font-weight: 800;
+  max-width: calc(var(--ef) + 12px); padding: 1px 4px; border-radius: 4px; background: rgba(0, 0, 0, 0.55); font-size: 0.6rem; font-weight: 800;
   line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .ef-tile.is-sel .ef-tile-box { box-shadow: 0 0 0 3px #3d9bff, 0 0 16px rgba(61, 155, 255, 0.7); }
@@ -96,3 +98,11 @@
 .ef-drawer-legend { margin: 4px 0 0; font-size: 0.68rem; color: #6b7280; }
 @keyframes efSlide { from { transform: translateX(-100%); } to { transform: none; } }
 @keyframes efFade { from { opacity: 0; } to { opacity: 1; } }
+
+/* segurar e arrastar */
+.ef-tile, .ef-bslot, .ef-dslot { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+.ef-bslot, .ef-dslot { flex: 0 0 auto; border-radius: 10px; }
+.ef-bslot.is-drop .ef-tile-box, .ef-pitch .pt-slot.is-drop .ef-tile-box { box-shadow: 0 0 0 3px #3dd68c, 0 0 18px rgba(61, 214, 140, 0.7); }
+.ef-bslot.is-dragging, .ef-pitch .pt-slot.is-dragging { opacity: 0.35; }
+.ef-ghost { position: fixed; z-index: 90; pointer-events: none; transform: translate(-50%, -65%) scale(1.12); filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.6)); }
+.ef-pitch .ef-tile-face svg { width: calc(var(--ef) * 0.7); height: calc(var(--ef) * 0.7); }

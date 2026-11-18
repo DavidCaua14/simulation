@@ -5,6 +5,7 @@ import Pitch from '../seasons/components/Pitch'
 import PlanPanel from './components/PlanPanel'
 import EfTile from './components/EfTile'
 import SquadDrawer from './components/SquadDrawer'
+import useHoldDrag from './hooks/useHoldDrag'
 import { PitchTokenContext } from '../seasons/components/pitchToken'
 import { planLabel, planOf } from './plans'
 import './components/squad-board.css'
@@ -41,6 +42,41 @@ function remap(slots, formation, byId) {
     }
   }
   return next
+}
+
+// Lugar de cada jogador na escalação em edição e troca de dois lugares (campo, banco ou fora da lista).
+function whereIn(d, id) {
+  const slot = Object.keys(d.slots).find((k) => d.slots[k] === id)
+  if (slot) return { kind: 'slot', key: slot }
+  const b = d.bench.indexOf(id)
+  return b >= 0 ? { kind: 'bench', key: b } : { kind: 'out', key: id }
+}
+// chave do arrastar ("slot:ZAG1", "bench:3", "bench:new", "p:<id>") → lugar
+function keyWhere(d, key) {
+  const [kind, ...rest] = key.split(':')
+  const v = rest.join(':')
+  if (kind === 'slot') return { kind: 'slot', key: v }
+  if (kind === 'bench') return { kind: 'bench', key: v === 'new' ? d.bench.length : Number(v) }
+  if (kind === 'p') return whereIn(d, v)
+  return null
+}
+function swapDraft(d, a, b) {
+  if (!a || !b || (a.kind === 'out' && b.kind === 'out')) return d
+  const at = (w) => (w.kind === 'slot' ? d.slots[w.key] : w.kind === 'bench' ? d.bench[w.key] : w.key)
+  const slots = { ...d.slots }
+  const bench = [...d.bench]
+  const ia = at(a)
+  const ib = at(b)
+  const put = (w, id) => {
+    if (w.kind === 'slot') slots[w.key] = id
+    else if (w.kind === 'bench') bench[w.key] = id
+  }
+  put(a, ib)
+  put(b, ia)
+  // quem foi para "fora" sai do banco; banco sem buracos nem repetidos
+  const onField = new Set(Object.values(slots))
+  const nextBench = bench.filter((id, i) => id && bench.indexOf(id) === i && !onField.has(id))
+  return { ...d, slots, bench: nextBench }
 }
 
 // Avisos antes de salvar: fora de posição, lesionado, suspenso, cansado.
@@ -95,6 +131,17 @@ export default function OnlineSquad({ onOpenMatch, notify, seasonId }) {
   const [sheet, setSheet] = useState(null) // ficha aberta: {id, where}
   const [items, setItems] = useState(null) // Apito de Ouro (online_items)
   const [planFit, setPlanFit] = useState(null) // aderência dos planos contra o próximo adversário (escalação salva)
+  // segurar e arrastar: soltar uma carta sobre outra troca os dois de lugar (campo, banco ou gaveta)
+  const { drag, bind } = useHoldDrag({
+    onDrop: (from, to) => {
+      setDraft((d) => (d ? swapDraft(d, keyWhere(d, from), keyWhere(d, to)) : d))
+      setSel(null)
+    },
+    onStart: (from) => {
+      setSheet(null)
+      if (from.startsWith('p:')) setDrawer(false) // da gaveta: ela fecha e a carta vai para o campo
+    },
+  })
 
   const load = (sq) => {
     setSquad(sq)
@@ -125,29 +172,9 @@ export default function OnlineSquad({ onOpenMatch, notify, seasonId }) {
   const idAt = (s) => (s.kind === 'slot' ? draft.slots[s.key] : s.kind === 'bench' ? draft.bench[s.key] : s.key)
 
   // troca dois lugares quaisquer (vaga, banco ou fora)
-  const swap = (a, b) => {
-    const slots = { ...draft.slots }
-    const bench = [...draft.bench]
-    const ia = idAt(a)
-    const ib = idAt(b)
-    const put = (where, id) => {
-      if (where.kind === 'slot') slots[where.key] = id
-      else if (where.kind === 'bench') bench[where.key] = id
-    }
-    put(a, ib)
-    put(b, ia)
-    // quem foi para "fora" sai do banco
-    const nextBench = bench.filter((id, i) => id && bench.indexOf(id) === i && !Object.values(slots).includes(id))
-    if (a.kind === 'out' && b.kind === 'out') return
-    setDraft({ ...draft, slots, bench: nextBench })
-  }
+  const swap = (a, b) => setDraft(swapDraft(draft, a, b))
   // onde o jogador está agora (vaga do campo, banco ou fora da lista)
-  const whereOf = (id) => {
-    const slot = Object.keys(draft.slots).find((k) => draft.slots[k] === id)
-    if (slot) return { kind: 'slot', key: slot }
-    const b = draft.bench.indexOf(id)
-    return b >= 0 ? { kind: 'bench', key: b } : { kind: 'out', key: id }
-  }
+  const whereOf = (id) => whereIn(draft, id)
   const whereLabel = (w) => (w.kind === 'slot' ? `titular (${formation?.slots.find((x) => x.slot === w.key)?.pos || w.key})` : w.kind === 'bench' ? 'reserva' : 'fora da lista')
   // toque no campo, no banco ou na gaveta: com uma troca em andamento, troca; senão abre a ficha (vaga vazia: escolher quem entra)
   const tap = (where) => {
@@ -255,6 +282,8 @@ export default function OnlineSquad({ onOpenMatch, notify, seasonId }) {
                 colors={colors}
                 selected={sel?.kind === 'slot' ? sel.key : null}
                 onSlot={(s) => tap({ kind: 'slot', key: s.slot })}
+                bind={bind}
+                drag={drag}
               />
             </PitchTokenContext.Provider>
           </div>
@@ -265,13 +294,21 @@ export default function OnlineSquad({ onOpenMatch, notify, seasonId }) {
           <h3 className="ef-h">Reservas <small>{draft.bench.length}/12</small></h3>
           <div className="ef-bench">
             {draft.bench.map((id, i) => byId[id] && (
-              <EfTile key={id} player={byId[id]} colors={colors} selected={sel?.kind === 'bench' && sel.key === i} onClick={() => tap({ kind: 'bench', key: i })} />
+              <div key={id} className={`ef-bslot ${drag?.over === `bench:${i}` ? 'is-drop' : ''} ${drag?.from === `bench:${i}` ? 'is-dragging' : ''}`} {...bind(`bench:${i}`, id)}>
+                <EfTile player={byId[id]} colors={colors} selected={sel?.kind === 'bench' && sel.key === i} onClick={() => tap({ kind: 'bench', key: i })} />
+              </div>
             ))}
             {draft.bench.length < 12 && (
-              <EfTile player={null} label="Vaga" selected={sel?.kind === 'bench' && sel.key === draft.bench.length} onClick={() => tap({ kind: 'bench', key: draft.bench.length })} />
+              <div className={`ef-bslot ${drag?.over === 'bench:new' ? 'is-drop' : ''}`} {...bind('bench:new', null)}>
+                <EfTile player={null} label="Vaga" selected={sel?.kind === 'bench' && sel.key === draft.bench.length} onClick={() => tap({ kind: 'bench', key: draft.bench.length })} />
+              </div>
             )}
           </div>
+          <p className="ef-note">Toque no jogador para abrir o menu · segure e arraste para trocar de lugar</p>
           {out.length > 0 && <p className="ef-note">{out.length} fora da lista · abra <b>Jogadores</b> para ver todos</p>}
+          {drag && byId[drag.pid] && (
+            <div className="ef-ghost" style={{ left: drag.x, top: drag.y }} aria-hidden="true"><EfTile player={byId[drag.pid]} colors={colors} /></div>
+          )}
         </div>
       )}
 
@@ -319,6 +356,7 @@ export default function OnlineSquad({ onOpenMatch, notify, seasonId }) {
           colors={colors}
           swapping={sel ? (idAt(sel) ? byId[idAt(sel)]?.name : 'a vaga escolhida') : null}
           onPick={(id) => tap(whereOf(id))}
+          bind={bind}
           onClose={() => setDrawer(false)}
         />
       )}
