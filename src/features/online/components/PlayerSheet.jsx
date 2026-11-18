@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { ArrowLeftRight, FileSignature, Flag, Gavel, ListChecks, Sparkles, TrendingUp, UserMinus, X } from 'lucide-react'
+import { ArrowLeftRight, ChevronRight, FileSignature, Flag, Gavel, ListChecks, Sparkles, TrendingUp, UserMinus, X } from 'lucide-react'
 import GoldenWhistle from './GoldenWhistle'
 import ConditionArrow from './ConditionArrow'
 import { ARROWS } from '../conditions'
@@ -19,8 +19,9 @@ const wageFor = (ovr, age) => Math.ceil((Math.max(1, ovr - 45) ** 2 * 0.65 + Mat
 function Row({ Icon, label, sub, onClick, disabled, danger, children }) {
   return (
     <button type="button" className={`opm-row ${danger ? 'is-danger' : ''}`} disabled={disabled} onClick={onClick}>
-      {Icon ? <Icon size={20} /> : children}
+      <i className="opm-ico">{Icon ? <Icon size={19} /> : children}</i>
       <span><b>{label}</b>{sub && <small>{sub}</small>}</span>
+      <ChevronRight size={18} className="opm-chev" aria-hidden="true" />
     </button>
   )
 }
@@ -70,26 +71,29 @@ export default function PlayerSheet({ p, club, seasonId, busy, listed, onClose, 
           <button type="button" className="opm-x" onClick={onClose} aria-label="Fechar"><X size={18} /></button>
         </header>
         <div className="opm-body">
-          <aside className="opm-left">
+          <section className="opm-hero">
             <FutCard p={p} club={club} size="sm" />
-            <small className="opm-pos">{positions}</small>
-            {(styleOff || styleDef) && (
-              <div className="opm-style">
-                <small>Estilo de jogo</small>
-                {styleOff && <b><i className="is-off" aria-hidden="true" />{styleOff}</b>}
-                {styleDef && <b><i className="is-def" aria-hidden="true" />{styleDef}</b>}
-              </div>
-            )}
-            <dl className="opm-facts">
-              {arrow && <div><dt>Condição</dt><dd><ConditionArrow arrow={p.arrow} size={15} /> {arrow.label}</dd></div>}
-              <div><dt>Físico</dt><dd>{Math.round(p.cond)}%</dd></div>
-              <div><dt>Evolução</dt><dd>{ovr} <TrendingUp size={12} /> {pot}</dd></div>
-              <div><dt>Contrato</dt><dd>{left <= 0 ? 'Último ano' : `+${left} temp.`}</dd></div>
-              <div><dt>Valor</dt><dd>{money(p.value)}</dd></div>
-              <div><dt>Salário</dt><dd>{money(p.wage)}/dia</dd></div>
-            </dl>
-            {listed && <span className="opm-tag"><Gavel size={12} /> Em leilão</span>}
-          </aside>
+            <div className="opm-id">
+              <small className="opm-pos">{positions}</small>
+              {(styleOff || styleDef) && (
+                <div className="opm-style">
+                  <small>Estilo de jogo</small>
+                  {styleOff && <b><i className="is-off" aria-hidden="true" />{styleOff}</b>}
+                  {styleDef && <b><i className="is-def" aria-hidden="true" />{styleDef}</b>}
+                </div>
+              )}
+              {arrow && <span className="opm-cond"><ConditionArrow arrow={p.arrow} size={18} /> Condição {arrow.label.toLowerCase()}</span>}
+              {listed && <span className="opm-tag"><Gavel size={12} /> Em leilão</span>}
+            </div>
+          </section>
+          <dl className="opm-facts">
+            <div><dt>Físico</dt><dd>{Math.round(p.cond)}%</dd></div>
+            <div><dt>Evolução</dt><dd>{ovr} <TrendingUp size={13} /> {pot}</dd></div>
+            <div><dt>Contrato</dt><dd>{left <= 0 ? 'Último ano' : `+${left} temp.`}</dd></div>
+            <div><dt>Valor</dt><dd>{money(p.value)}</dd></div>
+            <div><dt>Salário</dt><dd>{money(p.wage)}<small>/dia</small></dd></div>
+            <div><dt>Idade</dt><dd>{p.age} anos</dd></div>
+          </dl>
           <div className="opm-right">
             {maxed && (
               <div className="on-ps-maxed" role="status">
@@ -99,12 +103,12 @@ export default function PlayerSheet({ p, club, seasonId, busy, listed, onClose, 
             )}
             {!mode && (
               <nav className="opm-list" aria-label="Ações do jogador">
-                <Row Icon={ListChecks} label="Detalhes do jogador" sub="Estilos, especialidades e qualidade" onClick={() => setMode('details')} />
+                <Row Icon={ListChecks} label="Detalhes do jogador" sub="Estilos e qualidade" onClick={() => setMode('details')} />
                 {onSwap && <Row Icon={ArrowLeftRight} label="Trocar de lugar" sub={where ? `Hoje: ${where}` : 'Escolha com quem trocar'} disabled={busy} onClick={() => onSwap(p)} />}
-                {onRoles && <Row Icon={Flag} label="Funções de jogadores" sub="Capitão e cobradores" onClick={() => onRoles(p)} />}
+                {onRoles && <Row Icon={Flag} label="Funções" sub="Capitão e cobradores" onClick={() => onRoles(p)} />}
                 {whistle && (
                   <Row label="Treino de elite" sub={room > 0 ? `Apito de Ouro · você tem ${whistle.qty}` : 'Já no nível máximo'} disabled={busy || room <= 0} onClick={() => { setItemErr(''); setMode('item') }}>
-                    <GoldenWhistle size={22} />
+                    <GoldenWhistle size={20} />
                   </Row>
                 )}
                 <Row Icon={FileSignature} label="Renovar contrato" sub={left >= 3 ? 'Contrato já no máximo' : `Salário novo ${money(wageFor(p.ovr, p.age))}/dia`} disabled={busy || left >= 3} onClick={() => setMode('renew')} />

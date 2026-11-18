@@ -1,42 +1,41 @@
 /* Planos de jogo do modo online (PlanPanel) — mesmo visual escuro do painel de táticas. */
-.pln { display: flex; flex-direction: column; gap: 10px; }
-.pln-opp { margin: 0; padding: 8px 10px; border-radius: 10px; background: rgba(255, 210, 63, 0.1); border: 1px solid rgba(255, 210, 63, 0.35); color: #f2f5fb; font-size: 0.76rem; line-height: 1.35; }
-.pln-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+.pln { display: flex; flex-direction: column; gap: 12px; }
+.pln-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
 @media (min-width: 560px) { .pln-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
 .pln-card {
-  position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; min-height: 66px; padding: 8px 9px;
-  border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.14); background: rgba(255, 255, 255, 0.04); color: #e6ecf8;
+  display: flex; flex-direction: column; align-items: flex-start; gap: 8px; min-height: 64px; padding: 10px 12px;
+  border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.12); background: rgba(255, 255, 255, 0.04); color: #e6ecf8;
   text-align: left; cursor: pointer; transition: background 0.12s, transform 0.1s;
 }
 .pln-card:active { transform: scale(0.97); }
-.pln-card svg { color: var(--cm-yellow, #ffd23f); }
-.pln-card strong { font: 800 0.74rem/1.15 var(--font-body); text-transform: uppercase; }
-.pln-card.is-on { border-color: var(--cm-yellow, #ffd23f); background: color-mix(in srgb, var(--cm-yellow, #ffd23f) 16%, transparent); box-shadow: 0 0 0 1px var(--cm-yellow, #ffd23f) inset; }
-.pln-fit { display: flex; flex-direction: column; gap: 2px; width: 100%; }
-.pln-fit::before { content: ''; display: block; height: 4px; border-radius: 3px; background: rgba(255, 255, 255, 0.12); }
-.pln-fit i { display: block; height: 4px; margin-top: -6px; border-radius: 3px; background: currentColor; }
-.pln-fit small { font-size: 0.62rem; font-weight: 700; }
-.pln-fit.is-good { color: #8ad61f; }
-.pln-fit.is-mid { color: #f5c542; }
-.pln-fit.is-bad { color: #ff5b6e; }
-.pln-info { text-align: left; padding: 10px; border-radius: 10px; border: 1px solid var(--cm-silver, rgba(255, 255, 255, 0.2)); background: var(--cm-panel, #0b1222); }
-.pln-info h4 { margin: 0 0 4px; display: flex; align-items: center; gap: 6px; font: 900 0.82rem var(--font-display); letter-spacing: 0.05em; text-transform: uppercase; color: var(--cm-yellow, #ffd23f); }
-.pln-info p { margin: 0 0 6px; font-size: 0.76rem; line-height: 1.4; color: #e6ecf8; }
-.pln-info dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 3px 8px; font-size: 0.72rem; line-height: 1.35; }
-.pln-info dt { font-weight: 800; color: #9fb0d2; }
-.pln-info dd { margin: 0; color: #e6ecf8; }
-.pln-ins { text-align: left; display: flex; flex-direction: column; gap: 5px; padding: 8px 9px; border-radius: 10px; border: 1px solid var(--cm-silver, rgba(255, 255, 255, 0.2)); background: var(--cm-panel, #0b1222); }
-.pln-ins h5 { margin: 0; display: flex; align-items: center; gap: 5px; font: 900 0.74rem var(--font-display); letter-spacing: 0.05em; text-transform: uppercase; color: var(--cm-yellow, #ffd23f); }
-.pln-opts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5px; }
+.pln-card-top { width: 100%; display: flex; align-items: center; justify-content: space-between; }
+.pln-card-top svg { color: var(--cm-yellow, #ffd23f); }
+.pln-card strong { font: 800 0.8rem/1.15 var(--font-body); text-transform: uppercase; letter-spacing: 0.02em; }
+.pln-card.is-on { border-color: var(--cm-yellow, #ffd23f); background: color-mix(in srgb, var(--cm-yellow, #ffd23f) 14%, transparent); box-shadow: 0 0 0 1px var(--cm-yellow, #ffd23f) inset; }
+.pln-dots { display: inline-flex; gap: 3px; }
+.pln-dots i { width: 7px; height: 7px; border-radius: 50%; background: rgba(255, 255, 255, 0.18); }
+.pln-dots i.is-on { background: var(--cm-yellow, #ffd23f); }
+.pln-info { display: flex; flex-direction: column; gap: 8px; padding: 14px; border-radius: 14px; border: 1px solid rgba(255, 210, 63, 0.35); background: var(--cm-panel, #0b1222); text-align: left; }
+.pln-info h4 { margin: 0; display: flex; align-items: center; gap: 8px; font: 900 0.95rem var(--font-display); letter-spacing: 0.04em; text-transform: uppercase; color: var(--cm-yellow, #ffd23f); }
+.pln-what { margin: 0; font-size: 0.92rem; line-height: 1.4; color: #fff; }
+.pln-info ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.pln-info li { display: grid; grid-template-columns: 104px 1fr; gap: 8px; align-items: baseline; font-size: 0.8rem; line-height: 1.35; }
+.pln-info li span { color: #8fa1c4; }
+.pln-info li b { font-weight: 700; color: #e6ecf8; }
+.pln-fitline { display: inline-flex; align-items: center; gap: 6px; }
+.pln-legend { margin: -4px 2px 0; display: flex; align-items: center; gap: 6px; font-size: 0.72rem; color: #8fa1c4; }
+.pln-ins { display: flex; flex-direction: column; gap: 6px; padding: 10px 12px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); background: var(--cm-panel, #0b1222); text-align: left; }
+.pln-ins h5 { margin: 0; display: flex; align-items: center; gap: 6px; font: 900 0.76rem var(--font-display); letter-spacing: 0.05em; text-transform: uppercase; color: var(--cm-yellow, #ffd23f); }
+.pln-opts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
 .pln-opts button {
-  min-height: 38px; padding: 5px 4px; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.14);
-  background: rgba(255, 255, 255, 0.04); color: #e6ecf8; font: 800 0.7rem/1.15 var(--font-body); text-transform: uppercase; cursor: pointer;
+  min-height: 40px; padding: 6px 4px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04); color: #e6ecf8; font: 800 0.74rem/1.15 var(--font-body); text-transform: uppercase; cursor: pointer;
 }
 .pln-opts button.is-on { border-color: var(--cm-yellow, #ffd23f); background: color-mix(in srgb, var(--cm-yellow, #ffd23f) 18%, transparent); color: #fff; }
-.pln-ins p { margin: 0; font-size: 0.7rem; color: #9fb0d2; line-height: 1.35; }
-.pln-ins select { min-height: 38px; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.2); background: #0e1730; color: #e6ecf8; padding: 0 8px; font-size: 0.78rem; }
-.pln.is-compact .pln-card { min-height: 56px; }
-.pln.is-compact .pln-info p { font-size: 0.72rem; }
+.pln-ins p { margin: 0; font-size: 0.76rem; color: #a9b8d6; line-height: 1.35; }
+.pln-ins select { min-height: 40px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.2); background: #0e1730; color: #e6ecf8; padding: 0 10px; font-size: 0.82rem; }
+.pln.is-compact { gap: 8px; }
+.pln.is-compact .pln-card { min-height: 54px; padding: 8px 10px; }
 
 /* Linha de planos na partida ao vivo */
 .onm-plans { display: flex; gap: 6px; overflow-x: auto; padding: 2px 2px 6px; scrollbar-width: none; }
