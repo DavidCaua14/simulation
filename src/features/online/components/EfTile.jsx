@@ -4,11 +4,12 @@ import { cardTier } from '../onlineUtils'
 
 // CARTA QUADRADA no estilo eFootball: posição e nota no canto, rosto, seta de condição e o nome embaixo.
 // Usada no campo e nas listas do Elenco. pos: posição da vaga (nota nessa posição).
-export default function EfTile({ player, pos, colors, selected, onClick, label, dim = false, badge = null }) {
+export default function EfTile({ player, pos, colors, selected, onClick, label, dim = false, badge = null, size = 62 }) {
+  const box = { '--ef': `${size}px` }
   const Tag = onClick ? 'button' : 'div'
   if (!player) {
     return (
-      <Tag type={onClick ? 'button' : undefined} className={`ef-tile is-empty ${selected ? 'is-sel' : ''}`} onClick={onClick} aria-label={`${label || pos || 'Vaga'} vazia`}>
+      <Tag type={onClick ? 'button' : undefined} className={`ef-tile is-empty ${selected ? 'is-sel' : ''}`} style={box} onClick={onClick} aria-label={`${label || pos || 'Vaga'} vazia`}>
         <span className="ef-tile-box"><b>+</b><small>{label || pos}</small></span>
       </Tag>
     )
@@ -25,13 +26,14 @@ export default function EfTile({ player, pos, colors, selected, onClick, label, 
     <Tag
       type={onClick ? 'button' : undefined}
       className={`ef-tile t-${tier} ${selected ? 'is-sel' : ''} ${dim ? 'is-dim' : ''} ${off ? 'is-off' : ''}`}
+      style={box}
       onClick={onClick}
       aria-label={`${at}: ${name}, nota ${rating}${off ? `, fora da posição (é ${player.position})` : ''}`}
     >
       <span className="ef-tile-box">
         <span className="ef-tile-ovr"><small>{at}</small><b>{rating}</b></span>
         {player.arrow != null && <ConditionArrow arrow={player.arrow} size={14} className="ef-tile-arrow" />}
-        <span className="ef-tile-face"><PlayerFace seed={name} colors={colors ? { a: colors[0], b: colors[1] } : undefined} size={40} /></span>
+        <span className="ef-tile-face"><PlayerFace seed={name} colors={colors ? { a: colors[0], b: colors[1] } : undefined} size={Math.round(size * 0.88)} /></span>
         {(injured || susp) && <i className={`ef-tile-flag ${injured ? 'inj' : 'susp'}`}>{injured ? '+' : 'S'}</i>}
         {badge && <em className="ef-tile-badge">{badge}</em>}
       </span>
