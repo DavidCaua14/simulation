@@ -1,6 +1,22 @@
 // Título conquistado: tela de festa uma vez por competição e temporada. Nos pontos corridos ela aparece assim
 // que o título fica garantido matematicamente (o servidor devolve hub.titles com kind 'clinched' ou 'champion').
+// "Visto" na conta (ui_seen, claimTitleParty) e no aparelho (cópia local, para não perguntar de novo).
+import { seenBump } from '../../../lib/uiSeen'
+
 const seenKey = (account, season, comp) => `title-party:${account || 'anon'}:${season}:${comp}`
+export const titleKey = (season, comp) => `title:${season}:${comp}`
+
+// Reserva a festa para este aparelho: true se nenhum outro aparelho da conta já mostrou (aí mostra aqui).
+export async function claimTitleParty(account, season, comp) {
+  try {
+    const prev = await seenBump(titleKey(season, comp))
+    if (prev == null) return true
+    markTitleSeen(account, season, comp)
+    return false
+  } catch {
+    return true // sem rede: segue a regra do aparelho
+  }
+}
 
 export function pendingTitle(hub, account) {
   const season = hub?.season?.id

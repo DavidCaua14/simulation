@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Banknote, Coins, Crown, DoorClosed, Flame, Gavel, Hourglass, Lock, Sprout, TrendingUp, Undo2, Users } from 'lucide-react'
+import { Banknote, Coins, Crown, DoorClosed, FileText, Flame, Gavel, Hourglass, Lock, Sprout, TrendingUp, Undo2, Users, X } from 'lucide-react'
 import { EmptyState, Notice, Skeleton } from '../../components/ui/feedback'
 import OnlineCrest from './components/OnlineCrest'
 import { FutCard, OvrBadge } from './components/PlayerFut'
+import PlayerDetails from './components/PlayerDetails'
+import { POS_NAME } from '../seasons/utils/managerUtils'
 import { bidOnline, cancelOnlineLot, fetchOnlineMarket } from './services/onlineApi'
 import { money, moneyShort, timeLeft } from './onlineUtils'
 
@@ -14,7 +16,7 @@ const STEPS = [
 ]
 const round100 = (n) => Math.ceil(n / 100) * 100
 
-function Auction({ lot, now, busy, wallet, coins, closed, onBid, onCancel }) {
+function Auction({ lot, now, busy, wallet, coins, closed, onBid, onCancel, onSheet }) {
   const [step, setStep] = useState(0)
   const opensIn = new Date(lot.opens_at).getTime() - now
   const locked = opensIn > 0
@@ -30,7 +32,10 @@ function Auction({ lot, now, busy, wallet, coins, closed, onBid, onCancel }) {
   const p = lot.player
   return (
     <article className={`on-auc ${special ? 'is-special' : ''} ${p.legend ? 'is-legend' : ''} ${locked ? 'is-locked' : ''} ${lot.featured ? 'is-featured' : ''} ${lot.leading ? 'is-leading' : lot.bidding ? 'is-outbid' : ''} ${hot ? 'is-hot' : ''}`}>
-      <FutCard p={p} club={lot.seller} size="sm" />
+      <button type="button" className="on-auc-card" onClick={() => onSheet(lot)} aria-label={`Ver a ficha de ${p.name}`}>
+        <FutCard p={p} club={lot.seller} size="sm" />
+        <span className="on-auc-sheet"><FileText size={12} /> Ficha</span>
+      </button>
       <div className="on-auc-body">
         {special && <span className="on-auc-tag"><Crown size={11} /> {p.legend ? 'Lenda' : 'Destaque'}</span>}
         {!special && !lot.seller && p.age <= 23 && p.pot - p.ovr >= 6 && <span className="on-auc-tag is-prospect"><Sprout size={11} /> Promessa · pot. {p.pot}</span>}
@@ -75,7 +80,44 @@ function Auction({ lot, now, busy, wallet, coins, closed, onBid, onCancel }) {
   )
 }
 
-// Confirmação do lance: carta do jogador, valores dele e de onde sai o dinheiro.
+// Resumo do jogador para decidir a proposta: posições, idade, nota/potencial, salário e valor, contrato.
+function PlayerFacts({ p }) {
+  const positions = [p.pos, ...(p.sec || [])].map((x) => POS_NAME[x] || x).join(' · ')
+  return (
+    <ul className="on-bidc-facts">
+      <li><span>Posições</span><b>{positions}</b></li>
+      <li><span>Idade</span><b>{p.legend ? 'Lenda' : `${p.age} anos`}</b></li>
+      <li><span>Nota / potencial</span><b>{Math.round(p.ovr)}{p.pot != null ? ` / ${p.pot}` : ''}</b></li>
+      <li><span>Valor de mercado</span><b>{money(p.value)}</b></li>
+      <li><span>Salário</span><b>{money(p.wage)} por dia</b></li>
+      {p.nat && <li><span>Nacionalidade</span><b>{p.nat}</b></li>}
+    </ul>
+  )
+}
+
+// Ficha completa de um jogador do mercado (estilo de jogo, especialidades e atributos), como a do elenco.
+function LotSheet({ lot, onClose, onBid }) {
+  const p = lot.player
+  return (
+    <div className="on-modal" role="dialog" aria-modal="true" aria-label={`Ficha de ${p.name}`} onClick={onClose}>
+      <div className="on-sheet on-lotsheet" onClick={(e) => e.stopPropagation()}>
+        <header className="on-lotsheet-head">
+          <FutCard p={p} club={lot.seller} size="sm" />
+          <div>
+            <strong>{p.name}</strong>
+            <span>{lot.seller ? `Anunciado por ${lot.seller.name}` : lot.featured >= 8 ? (p.legend ? 'Lenda' : 'Destaque') : 'Mercado'}</span>
+          </div>
+          <button type="button" className="on-lotsheet-x" onClick={onClose} aria-label="Fechar"><X size={18} /></button>
+        </header>
+        <PlayerFacts p={p} />
+        <PlayerDetails playerId={p.id} />
+        {onBid && <button type="button" className="gx-btn" onClick={onBid}><Gavel size={15} /> Fazer proposta</button>}
+      </div>
+    </div>
+  )
+}
+
+// Confirmação do lance: carta do jogador, valores dele, a ficha completa e de onde sai o dinheiro.
 function BidConfirm({ ask, wallet, coins, busy, onCancel, onConfirm }) {
   const { lot, amount, coinCost } = ask
   const p = lot.player
@@ -100,6 +142,11 @@ function BidConfirm({ ask, wallet, coins, busy, onCancel, onConfirm }) {
           <i>→</i>
           <span><b>{money(p.value)}</b><small>valor de mercado</small></span>
         </div>
+        <details className="on-bidc-sheet" open>
+          <summary>Ficha do jogador</summary>
+          <PlayerFacts p={p} />
+          <PlayerDetails playerId={p.id} />
+        </details>
         <ul className="on-bidc-rows">
           <li><span>{lot.best_bid ? 'Maior lance agora' : 'Lance inicial'}</span><b>{money(lot.best_bid || lot.start_price)}</b></li>
           <li><span>Salário</span><b>{money(p.wage)} por dia</b></li>
@@ -134,6 +181,7 @@ export default function OnlineMarket({ notify, onChanged }) {
   const [view, setView] = useState('featured')
   const [kind, setKind] = useState('all')
   const [ask, setAsk] = useState(null) // lance esperando confirmação: { lot, amount, coinCost }
+  const [sheetLot, setSheetLot] = useState(null) // ficha completa aberta (toque na carta)
 
   const apply = useCallback((d) => {
     setOffset(new Date(d.server_now).getTime() - Date.now())
@@ -225,7 +273,7 @@ export default function OnlineMarket({ notify, onChanged }) {
             <EmptyState compact icon={Gavel} title={view !== 'featured' ? 'Nenhum leilão em andamento' : lists.featured.length ? 'Nenhum leilão desse tipo agora' : `Próximos jogadores às ${hours?.open_label || '08:00'}`} />
           )}
           <div className="on-aucs">
-            {list.map((l) => <Auction key={l.id} lot={l} now={serverNow} busy={busy} wallet={wallet} coins={coins} closed={closed} onBid={bid} onCancel={cancel} />)}
+            {list.map((l) => <Auction key={l.id} lot={l} now={serverNow} busy={busy} wallet={wallet} coins={coins} closed={closed} onBid={bid} onCancel={cancel} onSheet={setSheetLot} />)}
           </div>
         </>
       )}
@@ -241,6 +289,15 @@ export default function OnlineMarket({ notify, onChanged }) {
             </li>
           ))}
         </ul>
+      )}
+      {sheetLot && (
+        <LotSheet lot={sheetLot} onClose={() => setSheetLot(null)}
+          onBid={!sheetLot.mine && !closed && new Date(sheetLot.opens_at).getTime() <= serverNow ? () => {
+            const l = sheetLot
+            const need = l.min_bid - (l.leading ? l.best_bid : 0) - wallet.free
+            setSheetLot(null)
+            bid(l, l.min_bid, need > 0 ? Math.ceil(need / coins.bid_rate) : 0)
+          } : null} />
       )}
       {ask && <BidConfirm ask={ask} wallet={wallet} coins={coins} busy={busy} onCancel={() => setAsk(null)} onConfirm={confirmBid} />}
     </section>

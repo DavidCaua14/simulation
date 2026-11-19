@@ -534,3 +534,35 @@ python3 scripts/build-lower-squads.py          # gera supabase/online/41_lower_s
   batedores de escanteio respeitados, função herdada em todas as substituições, 2,2–2,4 gols por jogo.
 - **Correções**: Série A voltou a ter cartas de destaque (a regra tinha ficado só no ramo dos elencos reais desde a
   fase 37); escalação de emergência nunca usa suspenso (o time joga com menos gente).
+
+## Fase 40 — Prêmios balanceados, título na hora, ficha no mercado e "já vi" por conta
+
+`supabase/online/44_prizes_seen_sheet.sql` (migração `20261119210000`).
+
+- **Prêmios das séries** (`on_league_prize`): dinheiro pela tabela da liga vezes o peso da série (A 1, B 0,6, C 0,4,
+  D 0,25 — os salários da A são ~7x os da D); diamantes, XP e energia pela raiz do peso (A 1, B 0,77, C 0,63, D 0,5),
+  para o título de qualquer série valer. Bônus de acesso: 40% do prêmio de campeão da série de destino
+  (D→C $ 800 mil, C→B $ 1,2 mi, B→A $ 2 mi; o campeão da B leva o mesmo que o da A). Ajuda de rebaixamento: um quarto do prêmio de campeão da série que o clube
+  deixa (A→B $ 1,25 mi, B→C $ 750 mil, C→D $ 500 mil). Ajustes em `on_config.series_mult` e `on_config.series_bonus`.
+
+  | Campeão | Dinheiro | Diamantes | XP | Energia |
+  |---|---|---|---|---|
+  | Série A | $ 5 mi | 300 | 3.000 | 50 |
+  | Série B | $ 3 mi + $ 2 mi de acesso | 232 | 2.324 | 39 |
+  | Série C | $ 2 mi + $ 1,2 mi de acesso | 190 | 1.897 | 32 |
+  | Série D | $ 1,25 mi + $ 800 mil de acesso | 150 | 1.500 | 25 |
+  | Copa | $ 3 mi | 200 | 2.000 | 30 |
+
+- **Título na hora** (`on_series_div_award`): cada série é paga quando termina (o campeão comemora logo depois do jogo
+  do título, sem esperar a final da copa); `on_seasons.div_paid` evita pagar de novo no fim da temporada.
+- **Ficha no mercado**: tocar na carta do leilão abre a ficha completa (posições, idade, nota/potencial, valor,
+  salário, estilo de jogo, especialidades e atributos); a confirmação da proposta também mostra a ficha.
+  `on_player_sheet` aceita jogador em leilão aberto.
+- **"Já vi" por conta** (`ui_seen`, `ui_seen_bump`): a festa de título do modo Temporadas e a animação de subir de
+  nível guardavam o "visto" só no aparelho; quem abria no PC e no celular via a festa duas vezes, como se recebesse de
+  novo. Agora a conta decide (o primeiro aparelho mostra, os outros não). Os prêmios em si sempre foram entregues uma
+  vez só: todo resgate (caixa de entrada, eventos, sequência diária, presente) trava a carreira e confere se já foi feito.
+- **Comemoração por campeonato**: cores, fundo e confete de cada série (A verde e dourado, B azul, C vermelho, D roxo)
+  e da copa.
+- **Elenco de bot**: as cartas geradas só completam as posições que faltam (antes podiam apagar jogadores reais e
+  deixar o time sem goleiro); elenco real com menos de 2 goleiros é completado (Madureira tinha 1).

@@ -108,6 +108,8 @@
 
 /* listas de jogos */
 .mt-block { display: flex; flex-direction: column; gap: 6px; }
+/* abas Rodada, Tabela e Copa: séries, card da série e listas com respiro entre si */
+.mt-round, .mt-tables, .mt-cup { display: flex; flex-direction: column; gap: 14px; }
 .mt-sub { margin: 4px 2px 0; font: 900 .74rem var(--font-display); text-transform: uppercase; letter-spacing: .1em; color: var(--cm-yellow, #ffd23f); }
 .mt-rows { display: flex; flex-direction: column; gap: 4px; }
 .mt-row { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: 8px; width: 100%; min-height: 46px; padding: 6px 8px; border-radius: 11px;

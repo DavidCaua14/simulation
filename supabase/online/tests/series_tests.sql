@@ -29,7 +29,7 @@ create or replace function public.t_sizes(p smallint) returns text language sql 
  select string_agg(x.div||x.n,',' order by x.div) from(select div,count(*) n from public.on_clubs where season_id=p group by div) x $$;
 
 do $$
-declare v_s smallint;n int;users int;h0 int;
+declare v_s smallint;n int;users int;h0 int;early boolean;
 begin
  h0:=(select count(*) from public.on_honors);
  users:=(select count(*) from public.on_clubs k join public.on_seasons s on s.id=k.season_id and s.status='live' where k.user_id is not null);
@@ -53,6 +53,10 @@ begin
    and (b.home in(a.home,a.away) or b.away in(a.home,a.away)) where a.season_id=v_s)<interval '3 hours' then
   raise exception 'descanso curto entre jogos do dia: %',(select min(b.kickoff-a.kickoff) from public.on_fixtures a join public.on_fixtures b on b.season_id=a.season_id and b.slot=a.slot+1 and a.slot%2=0
    and (b.home in(a.home,a.away) or b.away in(a.home,a.away)) where a.season_id=v_s);
+ end if;
+ -- todo bot com pelo menos 2 goleiros (fase 40)
+ if exists(select 1 from public.on_clubs k where k.season_id=v_s and k.user_id is null and (select count(*) from public.on_players p where p.club_id=k.id and p.pos='GOL')<2) then
+  raise exception 'bot com menos de 2 goleiros';
  end if;
  -- Série A em cartas de destaque
  if not exists(select 1 from public.on_players p join public.on_clubs k on k.id=p.club_id where k.season_id=v_s and k.div='A' and k.user_id is null and p.tier='destaque')
@@ -81,8 +85,14 @@ begin
  -- temporada inteira com resultados de mentira (as fases seguintes nascem no gancho)
  for n in 1..4000 loop
   perform public.t_fake(f.id) from(select id from public.on_fixtures where season_id=v_s and status<>'done' order by kickoff,id limit 1) f;
+  -- fase 40: série que termina é paga na hora (antes do fim da temporada)
+  if (select status from public.on_seasons where id=v_s)='live' and cardinality((select div_paid from public.on_seasons where id=v_s))>0 then early:=true;end if;
   exit when (select status from public.on_seasons where id=v_s)<>'live';
  end loop;
+ if not coalesce(early,false) then raise exception 'nenhuma série foi paga antes do fim da temporada';end if;
+ if (select array(select unnest(div_paid) order by 1) from public.on_seasons where id=v_s)<>array['A','B','C','D'] then
+  raise exception 'séries pagas: %',(select div_paid from public.on_seasons where id=v_s);
+ end if;
  if (select status from public.on_seasons where id=v_s)<>'closed' then raise exception 'temporada não fechou (% jogos abertos)',(select count(*) from public.on_fixtures where season_id=v_s and status<>'done');end if;
  -- fases: B playoff (4 jogos), C quadrangulares (24) e final (2), D quartas (8), semi (4), final (2); copa 30+32+16+16+8+4+2
  if (select count(*) from public.on_fixtures where season_id=v_s and div='B' and stage='po')<>4 then raise exception 'playoff da B';end if;
@@ -250,4 +260,32 @@ begin
  if (select count(*) from jsonb_object_keys(j->'slots'))<>8 then raise exception 'esperava 8 titulares: %',j->'slots';end if;
  update public.on_players set susp='{}' where club_id=k;
  raise notice 'PASS suspenso fora mesmo com elenco curto';
+end $$;
+
+-- fase 40: prêmios das séries (dinheiro pelo peso, resto pela raiz, acesso e rebaixamento)
+do $$
+declare a jsonb:=public.on_league_prize('A',1,'champion');d jsonb:=public.on_league_prize('D',1,'champion');
+ up jsonb:=public.on_league_prize('D',3,'promoted');down jsonb:=public.on_league_prize('A',20,'relegated');mid jsonb:=public.on_league_prize('B',10,null);
+begin
+ if (a->>'cash')::bigint<>5000000 or (a->>'bonus')::bigint<>0 then raise exception 'campeão da A: %',a;end if;
+ if (d->>'cash')::bigint<>1250000+800000 or (d->>'diamonds')::int<>150 then raise exception 'campeão da D: %',d;end if;
+ if (up->>'bonus')::bigint<>800000 then raise exception 'acesso da D: %',up;end if;
+ if (down->>'bonus')::bigint<>1250000 then raise exception 'rebaixado da A: %',down;end if;
+ if (mid->>'bonus')::bigint<>0 then raise exception 'meio da tabela: %',mid;end if;
+ raise notice 'PASS prêmios das séries';
+end $$;
+
+-- fase 40: "já vi" por conta e ficha de jogador em leilão
+do $$
+declare u uuid;l public.on_lots;
+begin
+ select k.user_id into u from public.on_clubs k join public.on_seasons s on s.id=k.season_id and s.status='live' where k.user_id is not null limit 1;
+ perform set_config('request.jwt.claim.sub',u::text,true);
+ if public.ui_seen_bump('t:festa') is not null then raise exception 'primeira vez deveria ser nula';end if;
+ if public.ui_seen_bump('t:festa') is distinct from 1 then raise exception 'segunda vez (outro aparelho) deveria ver 1';end if;
+ if public.ui_seen_bump('level',7) is not null or public.ui_seen_bump('level',9)<>7 or public.ui_seen_bump('level',8)<>9 then raise exception 'nível não só sobe';end if;
+ if public.ui_seen_get(array['level','t:festa','x'])<>'{"level":9,"t:festa":1}'::jsonb then raise exception 'leitura: %',public.ui_seen_get(array['level','t:festa','x']);end if;
+ select * into l from public.on_lots where status='open' limit 1;
+ if l.id is not null and (public.on_player_sheet(l.player_id)->>'id')<>l.player_id then raise exception 'ficha do leilão';end if;
+ raise notice 'PASS já vi por conta e ficha do mercado';
 end $$;

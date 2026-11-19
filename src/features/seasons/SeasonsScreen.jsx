@@ -26,7 +26,7 @@ import MatchReport from './components/MatchReport'
 import ParallelDigest from './components/ParallelDigest'
 import SeasonReward from './components/SeasonReward'
 import TitleCelebration from './components/TitleCelebration'
-import { pendingTitle } from './utils/titleParty'
+import { claimTitleParty, pendingTitle } from './utils/titleParty'
 import InboxSheet from './components/InboxSheet'
 import '../cards/cards.css'
 import HomeTab from './tabs/HomeTab'
@@ -67,7 +67,8 @@ export default function SeasonsScreen({ career: account, onBack }) {
   const [central, setCentral] = useState(false)
   const [toast, setToast] = useState(null)
   const [assistant, setAssistant] = useState(() => !assistantDone(account?.id))
-  const [, setPartySeen] = useState(0) // re-render depois de fechar a comemoração (o "visto" fica no navegador)
+  const [, setPartySeen] = useState(0) // re-render depois de fechar a comemoração
+  const [partyOk, setPartyOk] = useState({}) // festa liberada pela conta (outro aparelho já mostrou? então não repete)
 
   const actionLock = useRef(false)
   const mounted = useRef(true)
@@ -109,6 +110,21 @@ export default function SeasonsScreen({ career: account, onBack }) {
   useEffect(() => {
     if (hub?.career?.level) reportLevel(account?.userId, hub.career.level)
   }, [hub?.career?.level, account?.userId])
+
+  // festa de título: a conta decide se já foi mostrada em outro aparelho (ui_seen); uma por título
+  useEffect(() => {
+    const party = hub ? pendingTitle(hub, account?.id) : null
+    if (!party) return undefined
+    const k = `${hub.season.id}:${party.competition}`
+    if (partyOk[k] !== undefined) return undefined
+    let alive = true
+    claimTitleParty(account?.id, hub.season.id, party.competition).then((ok) => {
+      if (alive) setPartyOk((m) => ({ ...m, [k]: ok }))
+    })
+    return () => {
+      alive = false
+    }
+  }, [hub, account?.id, partyOk])
 
   const remaining = useCountdown(hub?.career.next_reset_at, () => refresh({ silent: true }))
 
@@ -483,7 +499,8 @@ export default function SeasonsScreen({ career: account, onBack }) {
         )}
         {(() => {
           const party = hub && !live && !preMatch && !summary && !digest && !report && !hub.season_reward ? pendingTitle(hub, account?.id) : null
-          return party && <TitleCelebration key={party.competition} title={party} hub={hub} account={account?.id} onClose={() => setPartySeen((n) => n + 1)} />
+          const k = party && `${hub.season.id}:${party.competition}`
+          return party && partyOk[k] === true && <TitleCelebration key={party.competition} title={party} hub={hub} account={account?.id} onClose={() => setPartySeen((n) => n + 1)} />
         })()}
         {central && ctx && !live &&<ClubCentral hub={hub} actions={actions} onClose={() => setCentral(false)} />}
         {inbox && hub && <InboxSheet messages={[...hub.messages, ...worldMail]} focusId={inbox.focusId} initialCategory={inbox.category} onSeen={seenInbox} onAction={inboxAction} onClose={() => setInbox(null)} />}

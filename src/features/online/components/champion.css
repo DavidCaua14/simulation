@@ -1,7 +1,13 @@
-/* Comemoração de título (Liga/Copa Online): estádio à noite, holofotes, torcida, fogos e confete. */
+/* Comemoração de título (Séries A, B, C, D e Copa Online): estádio à noite, holofotes, torcida, fogos e confete. */
 .ch-wrap { --c1: #facc15; --c2: #22c55e; position: fixed; inset: 0; z-index: 120; overflow: hidden; display: grid; place-items: center; padding: 16px;
   background: radial-gradient(120% 70% at 50% 110%, #0e5a2a 0%, #06301a 38%, #030b18 70%), #030b18; color: #fff; animation: ch-in .35s ease-out; }
 .ch-wrap.is-cup { --c2: #3b82f6; background: radial-gradient(120% 70% at 50% 110%, #123a8a 0%, #0a1f55 38%, #030b18 70%), #030b18; }
+/* uma cara para cada campeonato (cores dos logos das séries) */
+.ch-wrap.is-la { --c1: #facc15; --c2: #16a34a; background: radial-gradient(120% 70% at 50% 110%, #14532d 0%, #0a2e18 38%, #030b18 70%), #030b18; }
+.ch-wrap.is-lb { --c1: #e0f2fe; --c2: #2563eb; background: radial-gradient(120% 70% at 50% 110%, #1e3a8a 0%, #0f1e4d 38%, #030b18 70%), #030b18; }
+.ch-wrap.is-lc { --c1: #fdba74; --c2: #dc2626; background: radial-gradient(120% 70% at 50% 110%, #7f1d1d 0%, #3f0d0d 38%, #030b18 70%), #030b18; }
+.ch-wrap.is-ld { --c1: #f0abfc; --c2: #9333ea; background: radial-gradient(120% 70% at 50% 110%, #581c87 0%, #2e1065 38%, #030b18 70%), #030b18; }
+.ch-wrap.is-cup { --c1: #fde68a; }
 @keyframes ch-in { from { opacity: 0; } }
 .ch-sky { position: absolute; inset: 0; pointer-events: none; }
 .ch-beam { position: absolute; bottom: 30%; width: 26vmax; height: 120vh; transform-origin: 50% 100%; opacity: .0;

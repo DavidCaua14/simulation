@@ -1240,3 +1240,21 @@ button.fut:disabled { cursor: default; }
 .on-elite-card em { font-style: normal; color: var(--gx-ink-2); font-size: .82rem; font-weight: 700; }
 .on-comp-logo { width: 64px; height: 64px; object-fit: contain; flex-shrink: 0; filter: drop-shadow(0 4px 10px rgba(0, 0, 0, .5)); }
 .on-cup-hero.is-league { margin-bottom: 10px; border-color: rgba(34, 197, 94, .5); background: radial-gradient(100% 140% at 0% 0%, rgba(34, 197, 94, .25), transparent 60%), #0b1426; }
+
+/* mercado: carta abre a ficha; ficha completa na proposta (fase 40) */
+.on-auc-card { position: relative; flex: 0 0 auto; padding: 0; border: 0; background: none; color: inherit; cursor: pointer; align-self: flex-start; }
+.on-auc-sheet { position: absolute; left: 50%; bottom: -6px; transform: translateX(-50%); display: inline-flex; align-items: center; gap: 3px; padding: 2px 8px; border-radius: 999px;
+  background: #0b1426; border: 1px solid rgba(34, 211, 238, .55); color: #67e8f9; font: 800 .6rem var(--font-body); letter-spacing: .06em; text-transform: uppercase; white-space: nowrap; }
+.on-bidc-facts { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.on-bidc-facts li { display: flex; flex-direction: column; gap: 1px; padding: 7px 9px; border-radius: 10px; background: rgba(255, 255, 255, .04); border: 1px solid var(--gx-line); min-width: 0; }
+.on-bidc-facts span { color: #93a3c4; font-size: .66rem; text-transform: uppercase; letter-spacing: .04em; }
+.on-bidc-facts b { font-size: .82rem; overflow-wrap: anywhere; }
+.on-bidc-sheet { display: flex; flex-direction: column; gap: 10px; padding: 10px; border-radius: 14px; border: 1px solid rgba(34, 211, 238, .3); background: rgba(34, 211, 238, .04); }
+.on-bidc-sheet > summary { cursor: pointer; font: 900 .74rem var(--font-display); letter-spacing: .08em; text-transform: uppercase; color: #67e8f9; }
+.on-bidc-sheet[open] > summary { margin-bottom: 8px; }
+.on-sheet.on-bidc, .on-sheet.on-lotsheet { width: min(440px, 100%); max-height: 94%; }
+.on-lotsheet-head { display: grid; grid-template-columns: 96px minmax(0, 1fr) auto; align-items: center; gap: 12px; }
+.on-lotsheet-head > div { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.on-lotsheet-head strong { font: 900 1.1rem/1.15 var(--font-heading); text-transform: uppercase; overflow-wrap: break-word; }
+.on-lotsheet-head span { color: #93a3c4; font-size: .78rem; }
+.on-lotsheet-x { width: 34px; height: 34px; display: grid; place-items: center; border-radius: 50%; border: 0; background: rgba(255, 255, 255, .08); color: #fff; cursor: pointer; align-self: flex-start; }

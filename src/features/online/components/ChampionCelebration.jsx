@@ -8,9 +8,17 @@ import './champion.css'
 
 const fmt = (n) => Number(n || 0).toLocaleString('pt-BR')
 const COLORS = ['#facc15', '#fde68a', '#ffffff', '#22c55e', '#38bdf8', '#f97316', '#e11d48']
+// confete nas cores de cada campeonato
+const COMP_COLORS = {
+  LA: ['#facc15', '#fde68a', '#ffffff', '#16a34a', '#22c55e'],
+  LB: ['#2563eb', '#60a5fa', '#ffffff', '#e0f2fe', '#facc15'],
+  LC: ['#dc2626', '#f97316', '#fdba74', '#ffffff', '#facc15'],
+  LD: ['#9333ea', '#c084fc', '#f0abfc', '#ffffff', '#facc15'],
+  C: ['#3b82f6', '#fde68a', '#ffffff', '#facc15', '#38bdf8'],
+}
 
 // Confete caindo e girando (canvas), com rajadas laterais como os canhões de papel picado do estádio.
-function useConfetti(ref, on) {
+function useConfetti(ref, on, colors = COLORS) {
   useEffect(() => {
     const cv = ref.current
     if (!cv || !on) return undefined
@@ -32,12 +40,12 @@ function useConfetti(ref, on) {
     const burst = (x, dir, n) => {
       for (let i = 0; i < n; i += 1) {
         bits.push({ x, y: h * 0.9, vx: dir * (2 + Math.random() * 5), vy: -(9 + Math.random() * 8), r: Math.random() * Math.PI, vr: (Math.random() - 0.5) * 0.3,
-          s: 5 + Math.random() * 6, c: COLORS[(Math.random() * COLORS.length) | 0], life: 0 })
+          s: 5 + Math.random() * 6, c: colors[(Math.random() * colors.length) | 0], life: 0 })
       }
     }
     const rain = () => {
       bits.push({ x: Math.random() * w, y: -10, vx: (Math.random() - 0.5) * 1.2, vy: 1.5 + Math.random() * 2, r: Math.random() * Math.PI, vr: (Math.random() - 0.5) * 0.2,
-        s: 4 + Math.random() * 6, c: COLORS[(Math.random() * COLORS.length) | 0], life: 0 })
+        s: 4 + Math.random() * 6, c: colors[(Math.random() * colors.length) | 0], life: 0 })
     }
     burst(0, 1, 90)
     burst(w, -1, 90)
@@ -70,7 +78,7 @@ function useConfetti(ref, on) {
       clearInterval(again)
       window.removeEventListener('resize', fit)
     }
-  }, [ref, on])
+  }, [ref, on, colors])
 }
 
 // Torcida: fileiras de cabeças com bandeiras e flashes de câmera.
@@ -99,7 +107,7 @@ export default function ChampionCelebration({ notice, onClaim, onClose }) {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const { playSfx } = useAudio()
-  useConfetti(cv, true)
+  useConfetti(cv, true, COMP_COLORS[honor?.comp] || COLORS)
   useEffect(() => {
     playSfx('whistle_end')
     const a = setTimeout(() => { setStage(1); playSfx('goal_for') }, 700)
