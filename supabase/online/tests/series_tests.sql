@@ -296,12 +296,11 @@ declare s public.on_seasons;a public.on_clubs;b public.on_clubs;k int;v_src text
 begin
  select * into s from public.on_seasons where status='live';
  select * into a from public.on_clubs where season_id=s.id and user_id is not null order by id limit 1;
- -- jogador base de algum bot: pode virar nova cópia no mercado
- select p.src,p.club_id into v_src,k from public.on_players p join public.on_pool q on q.id=p.src and not q.legend and q.rating<81
-  join public.on_clubs c on c.id=p.club_id and c.season_id=s.id and c.user_id is null
-  where not exists(select 1 from public.on_players o where o.src=p.src and o.club_id=a.id) order by p.id limit 1;
- if v_src is null then raise exception 'nenhum jogador real em bot';end if;
- select * into b from public.on_clubs where id=k;
+ -- jogador base do catálogo colocado num bot: pode virar nova cópia no mercado
+ select * into b from public.on_clubs where season_id=s.id and user_id is null order by id limit 1;
+ select q.id into v_src from public.on_pool q where not q.legend and q.rating<81
+  and not exists(select 1 from public.on_players o where o.src=q.id) order by q.id limit 1;
+ perform public.on_real_insert(v_src,b.id,99,s.id+1);
  if not public.on_src_free(v_src,false,70) then raise exception 'jogador com dono deveria poder ter nova cópia';end if;
  pid:=public.on_real_insert(v_src,null,null,s.id+1);
  if public.on_src_free(v_src,false,70) then raise exception 'duas cópias livres ao mesmo tempo';end if;
