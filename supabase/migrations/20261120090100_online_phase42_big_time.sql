@@ -435,7 +435,8 @@ language sql stable security definer set search_path=public as $$
 do $$ begin
  if position('Elenco cheio' in pg_get_functiondef('public.on_bid_as(integer,bigint,bigint,timestamp with time zone)'::regprocedure))>0 then
   perform public.on_patch('public.on_bid_as(integer,bigint,bigint,timestamp with time zone)',
-   ' if v_roster>=28 then raise exception ''Elenco cheio: com 28 jogadores (contando lances na frente) não dá para comprar'';end if;','');
+   ' if v_roster>=28 then raise exception ''Elenco cheio: com 28 jogadores (contando lances na frente) não dá para comprar'';end if;',
+   ' -- elenco sem limite de jogadores');
  end if;
 end $$;
 

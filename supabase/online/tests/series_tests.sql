@@ -450,3 +450,18 @@ begin
  perform set_config('request.jwt.claims','',true);
  raise notice 'PASS Big Time e caixas';
 end $$;
+
+-- fase 42: elenco sem limite — lance aceito com mais de 28 jogadores
+do $$
+declare s public.on_seasons;c public.on_clubs;l public.on_lots;pid text;
+begin
+ select * into s from public.on_seasons where status='live';
+ select * into c from public.on_clubs where season_id=s.id and user_id is not null order by id limit 1;
+ insert into public.on_players(club_id,name,pos,age,level,pot,ovr,wage,contract_end)
+  select c.id,'Sem limite '||g,'MC',25,60,60,60,10,s.id+1 from generate_series(1,greatest(0,32-(select count(*)::int from public.on_players where club_id=c.id))) g;
+ update public.on_clubs set cash=100000000,reserved=0,debt=0 where id=c.id;
+ insert into public.on_players(club_id,name,pos,age,level,pot,ovr,wage,contract_end) values(null,'Alvo Sem Limite','MC',25,70,70,70,10,s.id+1) returning id into pid;
+ insert into public.on_lots(season_id,player_id,start_price,opens_at,ends_at,hard_end) values(s.id,pid,500,now(),now()+interval '1 hour',now()+interval '2 hours') returning * into l;
+ perform public.on_bid_as(c.id,l.id,500,now());
+ raise notice 'PASS elenco sem limite (% jogadores)',(select count(*) from public.on_players where club_id=c.id);
+end $$;
