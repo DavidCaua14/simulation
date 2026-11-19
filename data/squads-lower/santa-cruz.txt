@@ -1,0 +1,31 @@
+# club: santa-cruz
+# source: https://en.wikipedia.org/wiki/Santa_Cruz_Futebol_Clube
+# accessed: 2026-11-19
+# as_of: 4 October 2026
+1|GK|BRA|Thiago Coelho|
+2|DF|BRA|Thiago Ennes|
+3|DF|BRA|Eurico|
+4|DF|BRA|William Alves|captain
+5|MF|BRA|Pedro Favela|
+6|DF|BRA|Alex Ruan|
+7|MF|BRA|Fabinho|
+8|MF|BRA|Arilson|
+9|FW|BRA|Matheus Cadorini|on loan from Portuguesa
+10|FW|BRA|Cassiano Bouzon|
+11|MF|BRA|Matheus Melo|
+12|GK|BRA|Rokenedy|
+13|DF|BRA|Matheus Vinícius|
+15|MF|BRA|Andrey|
+17|FW|BRA|Ronald|
+18|MF|BRA|Willian Júnior|on loan from Gama-DF
+19|FW|BRA|Renato|
+20|MF|BRA|Patrick Allan|
+23|FW|BRA|Tiago Marques|
+25|GK|BRA|Gabriel Souza|
+26|MF|BRA|Silva|
+28|FW|BRA|Eron|
+29|FW|BRA|Alex Sandro|
+31|DF|BRA|Zé Mário|
+32|MF|BRA|João Pedro|
+37|FW|BRA|Everaldo|
+60|DF|BRA|Rodrigues|

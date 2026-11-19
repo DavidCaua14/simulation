@@ -1,0 +1,34 @@
+# club: joinville
+# source: https://en.wikipedia.org/wiki/Joinville_Esporte_Clube
+# accessed: 2026-11-19
+# as_of: {{date
+-|GK|BRA|Jhonatan|
+-|GK|BRA|Matheus|
+-|GK|BRA|Felipe|
+-|GK|BRA|Samuel Pires|
+-|DF|BRA|Danrlei|
+-|DF|BRA|Fabiano Eller|on loan from Náutico
+-|DF|BRA|Jaime|on loan from Figueirense
+-|DF|BRA|Ligger|on loan from Oeste
+-|DF|BRA|Everton Silva|
+-|DF|BRA|Reginaldo|
+-|DF|BRA|Robertinho|on loan from Tombense
+-|DF|BRA|Diego|
+-|DF|BRA|Fernandinho|
+-|MF|BRA|Matheus Bertotto|on loan from Internacional
+-|MF|BRA|Diones|
+-|MF|BRA|Kadu|
+-|MF|BRA|Naldo|
+-|MF|BRA|Paulinho Dias|on loan from Atlético Paranaense
+-|MF|BRA|Tinga|
+-|MF|BRA|Bruno Farias|
+-|MF|BRA|Bruno Ribeiro|on loan from Juventude
+-|MF|BRA|Carlos Alberto|on loan from Atlético Paranaense
+-|MF|BRA|Juninho|
+-|MF|BRA|Mateus Silva|
+-|MF|BRA|Thomás|on loan from Flamengo
+-|FW|BRA|Adriano|
+-|FW|BRA|Fernando Viana|
+-|FW|BRA|Giva|on loan from Ponte Preta
+-|FW|BRA|Heliardo|on loan from Cianorte
+-|FW|BRA|Jael|

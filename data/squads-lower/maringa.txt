@@ -1,0 +1,34 @@
+# club: maringa
+# source: https://en.wikipedia.org/wiki/Maring%C3%A1_Futebol_Clube
+# accessed: 2026-11-19
+# as_of: 20 August 2026
+1|GK|BRA|Gabriel Affonso|
+2|DF|BRA|Gabriel Souza|
+3|DF|BRA|Gabriel Santos|
+4|DF|BRA|Wendel Lomar|
+5|MF|BRA|Kelvi Gomes|
+6|DF|BRA|Thiago Rosa|
+7|FW|BRA|Edison Negueba|
+8|MF|BRA|Adeílson Maranhão|
+9|FW|BRA|Giovane Gomes|
+10|FW|BRA|Guilherme Pira|
+11|MF|BRA|Danielzinho|
+12|GK|BRA|Romário|
+13|DF|BRA|Keven|
+14|DF|BRA|Felipe|
+16|FW|BRA|Rian Patric|
+17|FW|BRA|Iago Santana|
+18|DF|BRA|Jonathan|
+19|FW|BRA|Julio Rodrigues|
+20|MF|BRA|Bruno Cheron|
+21|FW|BRA|Ronald Camarão|
+23|MF|BRA|Paulinho|
+25|GK|BRA|Neto|
+28|MF|BRA|Lucas Bonifácio|
+29|FW|BRA|Raí Natalino|
+30|DF|BRA|Ronald Carvalho|
+35|FW|BRA|Pedrinho|
+37|MF|BRA|Serginho|
+44|DF|BRA|Jesiel|
+77|FW|BRA|Rafinha|
+99|FW|BRA|Caíque|

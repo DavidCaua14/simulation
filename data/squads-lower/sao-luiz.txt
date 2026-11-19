@@ -1,0 +1,30 @@
+# club: sao-luiz
+# source: https://en.wikipedia.org/wiki/Esporte_Clube_S%C3%A3o_Luiz
+# accessed: 2026-11-19
+# as_of: unknown
+-|GK|BRA|Altieri|
+-|GK|BRA|Célio|
+-|GK|BRA|Vanderlei|
+-|DF|BRA|Da Silva|
+-|DF|BRA|Danilo Baia|
+-|DF|BRA|João Paulo|
+-|DF|BRA|Marcelo Mineiro|
+-|FW|BRA|Sandro Sotilli|
+-|DF|BRA|Tatto|
+-|DF|BRA|Thiago Costa|
+-|DF|BRA|Xaro|
+-|MF|BRA|Baiano|
+-|MF|BRA|Cássio|
+-|MF|BRA|Márcio Oldra|
+-|MF|BRA|Quim|
+-|MF|BRA|Ruy Netto|
+-|MF|BRA|Thiago Corrêa|
+-|MF|BRA|Willian Santos|
+-|MF|URU|Alejandro Correa|
+-|FW|BRA|William de Amorim|
+-|FW|BRA|Adriano Paulista|
+-|FW|BRA|Douglas|
+-|FW|BRA|Éderson|
+-|FW|BRA|Sandro Sotilli|
+-|FW|BRA|Sharlei|
+-|FW|BRA|Tiago França|

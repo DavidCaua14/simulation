@@ -1,0 +1,40 @@
+# club: ferroviaria
+# source: https://en.wikipedia.org/wiki/Associa%C3%A7%C3%A3o_Ferrovi%C3%A1ria_de_Esportes
+# accessed: 2026-11-19
+# as_of: 20 August 2026
+2|DF|BRA|Lucas Rodrigues|
+3|DF|BRA|Erik|
+4|DF|BRA|Guilherme Ferreira|on loan from Londrina
+5|MF|BRA|Ricardinho|captain
+6|DF|BRA|Rhuan|
+7|FW|BRA|Fábio Soares|
+8|MF|BRA|Alencar|
+9|FW|BRA|Denilson Silva|on loan from Rio Claro
+10|MF|BRA|Albano|
+11|FW|BRA|Vitor Barreto|
+12|GK|BRA|Fábio Rampi|
+13|DF|BRA|Gustavo Medina|
+14|MF|BRA|Jhonatan Garcia|
+15|MF|BRA|Fernandinho|on loan from Nova Iguaçu
+16|MF|BRA|Vinícius Meireles|
+18|MF|BRA|Rafael Carrilho|
+19|FW|BRA|Thiago|
+20|MF|BRA|David Souza|
+21|MF|BRA|Alan Stence|
+22|DF|BRA|Felipe Rodrigues|
+23|MF|BRA|Arthur Schilling|
+24|GK|BRA|Igor|
+26|DF|BRA|Vinicius Kauê|
+27|MF|BRA|Igor Henrique|
+28|FW|BRA|Denilson Chaves|
+29|DF|BRA|Eduardo Oliveira|
+30|MF|BRA|Raoni|
+31|GK|BRA|Denis Júnior|
+33|FW|BRA|Pedro Estevam|
+34|GK|BRA|Gustavo Jundi|
+36|FW|BRA|Douglas Skilo|
+39|DF|BRA|Gadu|
+40|DF|BRA|Zé Vitor|
+44|DF|BRA|Carlão|
+77|MF|BRA|Juninho|
+99|FW|BRA|Maranhão|on loan from Guarani

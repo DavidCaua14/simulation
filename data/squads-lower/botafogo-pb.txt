@@ -1,0 +1,38 @@
+# club: botafogo-pb
+# source: https://en.wikipedia.org/wiki/Botafogo_Futebol_Clube_%28PB%29
+# accessed: 2026-11-19
+# as_of: 20 August 2026
+2|DF|BRA|Diogo Mateus|
+3|DF|BRA|Yan Souto|
+4|DF|BRA|Saimon Tormen|
+5|MF|BRA|Jhonata Varela|
+6|DF|BRA|Patric Calmon|
+7|FW|BRA|Dudu Hatamoto|
+8|MF|BRA|Igor Maduro|
+9|FW|BRA|Henrique Dourado|
+10|MF|BRA|Nenê|
+11|DF|BRA|Diego Tavares|
+12|DF|BRA|Erick|
+14|DF|BRA|Igor Morais|
+15|FW|BRA|Kayon|
+16|DF|BRA|Bull|
+17|DF|BRA|Lucas Sena|
+18|MF|BRA|Giovanni Piccolomo|
+20|MF|BRA|Thallyson|
+21|GK|BRA|Leandro Mathias|
+22|DF|BRA|Léo Pereira|
+23|GK|BRA|Max Walef|
+25|MF|BRA|Caio Garcia|
+27|GK|BRA|Luiz Daniel|
+28|MF|BRA|Lucas Cândido|
+30|FW|BRA|Lucas Matheus Alves|
+32|MF|BRA|Gustavo|
+33|DF|BRA|Júlio Vaz|
+34|GK|BRA|Edilson|
+35|DF|BRA|Dhônata|
+37|MF|BRA|Ed Carlos|
+66|FW|BRA|Lawan|
+47|MF|BRA|Riquelmo|
+77|FW|BRA|Rodolfo|
+84|GK|BRA|Deivid Andrade|
+-|FW|BRA|Felipe Azevedo|

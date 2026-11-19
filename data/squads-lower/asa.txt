@@ -1,0 +1,38 @@
+# club: asa
+# source: https://en.wikipedia.org/wiki/Agremia%C3%A7%C3%A3o_Sportiva_Arapiraquense
+# accessed: 2026-11-19
+# as_of: unknown
+-|GK|BRA|Marcão|
+-|GK|BRA|Pedro Henrique|
+-|GK|BRA|Vinicius|
+-|DF|BRA|Amarildo|
+-|DF|BRA|André Nunes|
+-|DF|BRA|Augusto|
+-|DF|BRA|Cristiano Gaúcho|
+-|DF|BRA|Jorge|
+-|DF|BRA|Leandrinho|
+-|DF|BRA|Marco Tiago|
+-|DF|BRA|Rodrigão|
+-|DF|BRA|Rogério|
+-|DF|BRA|Romano|
+-|DF|BRA|Tiago Baiano|
+-|DF|BRA|Thiago Papel|
+-|MF|BRA|Alex Henrique|
+-|MF|BRA|Cal|
+-|MF|BRA|Didira|
+-|MF|BRA|Natan|on loan from Grêmio
+-|MF|BRA|Glauber|
+-|MF|BRA|Jaildo|
+-|MF|BRA|Jean|
+-|MF|BRA|Jorginho|
+-|MF|BRA|Kiko Alagoano|
+-|MF|BRA|Lucas|
+-|MF|BRA|Rafael Gava|
+-|MF|BRA|Rai|
+-|MF|BRA|Thallyson|
+-|FW|BRA|Anderson Lessa|
+-|FW|BRA|Bruno Carvalho|
+-|FW|BRA|Lima|
+-|FW|BRA|Ramazotti|
+-|FW|BRA|Tiago Cavalcanti|
+-|FW|BRA|Wanderson|

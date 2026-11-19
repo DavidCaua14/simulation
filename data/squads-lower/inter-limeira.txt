@@ -1,0 +1,38 @@
+# club: inter-limeira
+# source: https://en.wikipedia.org/wiki/Associa%C3%A7%C3%A3o_Atl%C3%A9tica_Internacional_%28Limeira%29
+# accessed: 2026-11-19
+# as_of: 20 August 2026
+1|GK|BRA|Saulo|
+2|DF|BRA|Yan Silva|
+4|DF|BRA|Lucas Santos|
+5|MF|BRA|Ronaldo Henrique|
+6|DF|BRA|João Victor|
+7|FW|BRA|Rafael Oller|
+8|MF|BRA|Luiz Guilherme|
+9|FW|BRA|Miguel Bianconi|
+10|MF|BRA|Claudinho|
+11|MF|BRA|Gustavo Bochecha|
+12|GK|BRA|Pedro Nagel|
+14|DF|BRA|Nassom|
+16|FW|BRA|Robinho|
+19|FW|BRA|Vitor Leque|
+20|MF|BRA|Fabricio Dias|
+21|DF|BRA|Gabriel Dias|
+22|DF|BRA|Juan Tavares|
+23|GK|BRA|Emerson Junior|
+24|GK|BRA|Renan|
+25|MF|BRA|Lucas Buchecha|
+26|MF|BRA|Marco Antônio|
+27|MF|BRA|Gabriel Santiago|
+28|DF|BRA|Cristiano Vidal|
+29|DF|BRA|Heitor Roca|
+30|DF|BRA|Robson|
+31|MF|BRA|Emerson Santos|
+32|FW|BRA|Richard|
+34|DF|BRA|Léo Paraíso|
+35|MF|BRA|Romarinho|
+44|DF|BRA|Alemão|
+98|FW|BRA|Felipe Saraiva|
+99|FW|BRA|Getúlio|
+-|DF|BRA|César Morais|
+-|MF|BRA|Alef|

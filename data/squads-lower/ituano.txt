@@ -1,0 +1,31 @@
+# club: ituano
+# source: https://en.wikipedia.org/wiki/Ituano_FC
+# accessed: 2026-11-19
+# as_of: 1 September 2026
+-|GK|BRA|Lucas Wingert|
+-|GK|BRA|Saulo|
+-|GK|BRA|Wesley|
+-|DF|BRA|Lucas Dias|
+-|DF|BRA|Matheus Mancini|
+-|DF|BRA|Léo Coltro|
+-|DF|BRA|Leandro Sergipe|
+-|DF|BRA|Richard|
+-|DF|BRA|Guilherme Dal Pian|
+-|DF|BRA|Thassio|
+-|DF|BRA|Lucas Mota|
+-|MF|BRA|Guilherme Xavier|
+-|MF|BRA|Marthã|
+-|MF|BRA|Lipe|
+-|MF|BRA|Nelsinho|
+-|MF|BRA|Fernando Canesin|
+-|MF|BRA|Lucas Stefanello|
+-|MF|BRA|Victor Silva|
+-|MF|BRA|Felipe Muranga|
+-|FW|BRA|Léo Passos|
+-|FW|BRA|Neto Berola|
+-|FW|BRA|Bruno Alves|
+-|FW|BRA|Marlinho|
+-|FW|BRA|Alason Carioca|
+-|FW|BRA|Bruno Mezenga|
+-|FW|BRA|Gabriel Razera|
+-|FW|BRA|Luan|

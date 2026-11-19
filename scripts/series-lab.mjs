@@ -122,7 +122,7 @@ for (let season = 0; season < SEASONS; season++) {
   const moved = await one(`select count(*)::int n from public.on_clubs k join public.on_history h on h.club_id=k.id and h.season_id=$1 where k.season_id=$2 and k.div<>h.div`, [cur, nxt.id])
   check(moved.n === 24, `24 clubes mudaram de série (${moved.n})`)
   const wrongSq = await one(`select count(*)::int n from public.on_clubs where season_id=$1 and user_id is null and real_key is not null
-    and sq<>case when div='A' and real_key in(select key from public.on_real_clubs where sim_club is not null) then 'star' when div='B' and real_key in(select key from public.on_real_clubs where sim_club is not null) then 'base' else 'gen' end`, [nxt.id])
+    and sq<>case when div='A' and real_key in(select key from public.on_real_clubs where sim_club is not null) then 'star' when div='B' and real_key in(select key from public.on_real_clubs where sim_club is not null) then 'base' when real_key in(select club_key from public.on_lower_players) then 'real' else 'gen' end`, [nxt.id])
   check(wrongSq.n === 0, 'bots trocaram o tipo de elenco ao mudar de série')
   check((await one(`select count(*)::int n from public.on_fixtures where season_id=$1 and comp='C'`, [nxt.id])).n === 30, 'copa da nova temporada sorteada')
   report.seasons.push({ season: cur, ticks, worstTick: worst, goals, cards, fixtures: fx2, results: res, champs })

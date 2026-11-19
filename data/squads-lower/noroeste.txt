@@ -1,0 +1,35 @@
+# club: noroeste
+# source: https://en.wikipedia.org/wiki/Esporte_Clube_Noroeste
+# accessed: 2026-11-19
+# as_of: 11 February 2026
+1|GK|BRA|Luiz Daniel|
+2|DF|BRA|Jhonny|on loan from Fluminense
+3|DF|BRA|Carlinhos|
+5|DF|BRA|Pedro Carrerette|
+6|DF|BRA|PH|
+7|FW|BRA|Pedro Felipe|
+8|MF|BRA|Léo Sena|
+9|FW|BRA|Carlão|
+10|MF|BRA|Thiago Lopes|
+11|FW|BRA|Marlyson|
+12|DF|BRA|Sánchez|
+15|MF|BRA|Tauã|
+18|FW|BRA|Rafael Silva|
+19|FW|BRA|Léo Tocantins|
+20|DF|BRA|Wesley Santos|on loan from Mirassol
+22|DF|BRA|Renan Araújo|
+23|MF|BRA|Igor Cristiano|
+27|FW|BRA|Diego Mathias|
+30|DF|BRA|Leocovick|on loan from Inter de Limeira
+33|DF|BRA|Ronaldo Alves|
+44|DF|BRA|Maycon|
+70|MF|BRA|Cristiano|on loan from Sagan Tosu
+72|MF|BRA|Daniel Peixoto|
+88|MF|BRA|Denner|
+94|GK|BRA|Jeferson Romário|
+95|DF|BRA|Yuri Ferraz|
+99|GK|BRA|Henrique Lima|
+-|MF|BRA|Lucas Belém|
+-|FW|BRA|Cauã Aguiar|
+-|FW|BRA|Robertinho|
+-|FW|BRA|Thiaguinho|

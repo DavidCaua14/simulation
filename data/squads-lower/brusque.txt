@@ -1,0 +1,35 @@
+# club: brusque
+# source: https://en.wikipedia.org/wiki/Brusque_Futebol_Clube
+# accessed: 2026-11-19
+# as_of: 20 August 2026
+1|GK|BRA|Matheus Nogueira|
+2|DF|BRA|Jeferson|
+3|DF|BRA|João Maistro|
+4|DF|BRA|Cipriano|
+5|MF|BRA|Bernardo Lemes|
+6|DF|BRA|Raimar|
+7|MF|BRA|Gazão|
+8|MF|BRA|Jonatan Lucca|
+9|FW|BRA|Marlyson|
+10|FW|BRA|João Pedro|
+11|FW|BRA|Petterson Novaes|
+12|GK|BRA|Paulo Gianezini|
+13|FW|BRA|Renan Henrique|
+14|DF|BRA|Ryan Santos|
+15|DF|BRA|Rafael Milhorim|
+16|DF|BRA|Davi Gabriel|
+17|FW|BRA|Adrianinho|
+18|FW|BRA|Álvaro|
+19|FW|BRA|Macário|
+20|MF|BRA|Ariel Palácio|
+21|FW|NGA|Udeh Clinton|
+22|MF|BRA|Pedro Medeiros|
+23|DF|BRA|Italo Lucas|
+24|MF|BRA|Alex Paulino|
+25|GK|BRA|José Vinicius|
+26|DF|BRA|Leonardo Ataíde|
+-|GK|BRA|Lucas Moura|
+-|DF|BRA|Alisson Cassiano|
+-|MF|BRA|Rafa Fonseca|
+-|MF|BRA|Leonardo|
+-|MF|BRA|João Vithor|

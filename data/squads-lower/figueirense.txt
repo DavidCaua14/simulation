@@ -1,0 +1,20 @@
+# club: figueirense
+# source: https://en.wikipedia.org/wiki/Figueirense_FC
+# accessed: 2026-11-19
+# as_of: 16 November 2026
+-|GK|BRA|Fabrício|
+-|GK|BRA|Antônio|
+-|GK|BRA|Vinícius Barreta|
+-|GK|BRA|Igo Gabriel|
+-|DF|BRA|Zé Luiz|
+-|DF|BRA|Jhonnathan|
+-|DF|BRA|Léo Maia|
+-|DF|BRA|Arthur Henrique|
+-|DF|BRA|Wesley Costa|
+-|MF|BRA|Breno|
+-|MF|BRA|Léo Renz|
+-|MF|BRA|Flávio|
+-|MF|BRA|Pedro Melo|
+-|MF|BRA|Nicolas Porto|
+-|FW|BRA|Arthur Martins|
+-|FW|BRA|Thyerry|

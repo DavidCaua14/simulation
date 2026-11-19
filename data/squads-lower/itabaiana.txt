@@ -1,0 +1,34 @@
+# club: itabaiana
+# source: https://en.wikipedia.org/wiki/Associa%C3%A7%C3%A3o_Ol%C3%ADmpica_de_Itabaiana
+# accessed: 2026-11-19
+# as_of: unknown
+-|GK|BRA|Jefferson|
+-|GK|BRA|Léo Souza|
+-|GK|BRA|Geaze|
+-|GK|BRA|William|
+-|DF|BRA|Ligger|
+-|DF|BRA|Yann Motta|
+-|DF|BRA|Lucas Rafael|
+-|DF|BRA|Betão|
+-|DF|BRA|Caio Felipe|
+-|DF|BRA|Júlio Henrique|
+-|DF|BRA|Manoel|
+-|DF|BRA|Isaque|
+-|DF|BRA|Gustavo Fagundes|
+-|DF|BRA|Gustavo Cintra|
+-|DF|BRA|Tito|
+-|MF|BRA|Dyego|
+-|MF|BRA|Fabrício Moura|
+-|MF|BRA|Cleiton|
+-|MF|BRA|Gustavo Crecci|
+-|MF|BRA|Ricardo Cerqueira|
+-|MF|BRA|Renatinho|
+-|MF|BRA|Victor Luis|
+-|FW|BRA|Everton Kanela|
+-|FW|BRA|Leilson|
+-|FW|BRA|Luan Silva|
+-|FW|BRA|Denílson|
+-|FW|BRA|Tarcísio|
+-|FW|CHI|Brandon Mondaca|
+-|FW|BRA|Elimar|
+-|FW|BRA|Rodrigo Alves|

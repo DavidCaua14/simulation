@@ -1,0 +1,30 @@
+# club: maranhao
+# source: https://en.wikipedia.org/wiki/Maranh%C3%A3o_Atl%C3%A9tico_Clube
+# accessed: 2026-11-19
+# as_of: 17 September 2026
+1|GK|BRA|Jean|
+2|DF|BRA|Ball|
+3|DF|BRA|Edson Fernando|
+4|DF|BRA|Iran|
+5|MF|BRA|Railson|
+6|DF|BRA|Lucas Santos|
+7|FW|BRA|Felipe Sales|
+9|FW|BRA|Erverson|
+10|MF|BRA|Jorge Rocha|
+11|FW|BRA|Pimentinha|
+13|DF|BRA|Lucão|
+15|DF|BRA|Almeida|
+16|DF|BRA|André Radija|
+17|FW|BRA|Kleberson|
+18|DF|BRA|Rodrigo Negueba|
+19|FW|BRA|Rafael Texieira|
+20|MF|BRA|Vagalume|
+21|MF|BRA|Pedro Lucas|
+22|MF|BRA|Rodrigo|
+23|GK|BRA|Cauê|
+24|FW|BRA|Ronald Makalysten|
+25|DF|BRA|Maurício Maranhão|
+26|MF|BRA|Luis Gustavo|
+27|MF|BRA|Peu|
+29|FW|BRA|Felipe Cruz|
+-|GK|BRA|Victor Guilherme|

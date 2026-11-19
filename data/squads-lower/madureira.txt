@@ -1,0 +1,25 @@
+# club: madureira
+# source: https://en.wikipedia.org/wiki/Madureira_Esporte_Clube
+# accessed: 2026-11-19
+# as_of: unknown
+-|GK|BRA|Guilherme Cabo|
+-|DF|BRA|Pedro Cavalini|
+-|DF|BRA|Eisy|
+-|DF|BRA|Fabricio|
+-|DF|BRA|Guilherme Zoio|
+-|DF|BRA|Kadu|
+-|DF|BRA|Marcão|
+-|DF|BRA|Oliveira|
+-|DF|BRA|Wagner Iguatu|
+-|MF|BRA|Fabio Paulista|
+-|MF|BRA|Leoni Gastaldelo|
+-|MF|BRA|Henrique|
+-|MF|BRA|Jonnathan Luís|
+-|MF|BRA|Thiago Marques|
+-|MF|BRA|Vitor Rocha|
+-|MF|BRA|Yan Tanque|
+-|FW|BRA|Douglas Cunha|
+-|FW|BRA|Guilherme Augusto|
+-|FW|BRA|Gustavo|
+-|FW|BRA|Léo Loureiro|
+-|FW|HKG|Sandro|

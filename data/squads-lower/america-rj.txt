@@ -1,0 +1,29 @@
+# club: america-rj
+# source: https://en.wikipedia.org/wiki/America_Football_Club_%28Rio_de_Janeiro%29
+# accessed: 2026-11-19
+# as_of: unknown
+-|FW|BRA|Romário|
+-|GK|BRA|Luis Henrique|
+-|GK|BRA|Felipe Eduardo|
+-|DF|BRA|Matheus Menezes|<small>on loan from Botafogo</small>
+-|DF|BRA|Erick|<small>on loan from Botafogo</small>
+-|DF|BRA|Marcão|
+-|DF|BRA|Enric|
+-|DF|BRA|Fábio Braz|
+-|DF|BRA|Wagner Diniz|
+-|MF|BRA|PH|
+-|MF|BRA|Muniz|
+-|MF|ARG|Matías Sosa|
+-|MF|BRA|Darlan|
+-|MF|BRA|Victor Pucinelli|
+-|MF|BRA|Leandro Aguiar|
+-|MF|BRA|Thiago Accioli|
+-|MF|BRA|Ramon Fraga|
+-|MF|BRA|Richarlyson|
+-|FW|BRA|Russo|
+-|FW|BRA|Renato|
+-|FW|BRA|Marcelinho Quarterole|
+-|FW|BRA|Igor|
+-|FW|BRA|Daniel|
+-|FW|BRA|Romarinho|
+-|FW|BRA|Jean|

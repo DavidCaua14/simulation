@@ -1,0 +1,29 @@
+# club: crac
+# source: https://en.wikipedia.org/wiki/Clube_Recreativo_e_Atl%C3%A9tico_Catalano
+# accessed: 2026-11-19
+# as_of: unknown
+-|GK|BRA|Alex|
+-|GK|BRA|Dudú|
+-|GK|BRA|Gott|
+-|GK|BRA|João Pedro|
+-|DF|BRA|Alan Silva|
+-|DF|BRA|Anelka|
+-|DF|BRA|Guerra|
+-|DF|BRA|Luis Fernando|
+-|DF|BRA|Marcelo Tchê|
+-|DF|BRA|Rafael Morisco|
+-|DF|BRA|Ronaldo Trevisan|
+-|DF|BRA|Tales|
+-|DF|BRA|Wallace|
+-|MF|BRA|Alexandre|
+-|MF|BRA|Assis|
+-|MF|BRA|Coquinho|
+-|MF|BRA|Everton|
+-|MF|BRA|Hélder|
+-|MF|BRA|Marielson|
+-|MF|BRA|Paulinho|
+-|MF|BRA|Pituca|
+-|MF|BRA|Rafael Sayão|
+-|MF|BRA|Zé Neto|
+-|FW|BRA|Danilo Lins|
+-|FW|BRA|Renatinho|

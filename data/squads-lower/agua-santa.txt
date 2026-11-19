@@ -1,0 +1,31 @@
+# club: agua-santa
+# source: https://en.wikipedia.org/wiki/Esporte_Clube_%C3%81gua_Santa
+# accessed: 2026-11-19
+# as_of: 13 February 2025
+-|GK|BRA|Luan Ribeiro|
+-|GK|BRA|Lucas Arceli|
+-|GK|BRA|Matheus Novaes|
+-|DF|CHI|Andrés Robles|on loan from Deportes Antofagasta
+-|DF|BRA|Fábio Sanches|
+-|DF|BRA|Joílson|
+-|DF|BRA|Lucas Rocha|
+-|DF|BRA|Rafael Vaz|
+-|DF|BRA|Roger|
+-|DF|BRA|Stephanno|
+-|DF|BRA|Diogo Batista|on loan from Coritiba
+-|DF|BRA|Guilherme Lazaroni|
+-|DF|BRA|Renan Castro|
+-|DF|BRA|Ynaiã|
+-|MF|BRA|Luan Dias|
+-|MF|BRA|Ramon Vinicius|
+-|MF|BRA|Robinho|
+-|MF|BRA|Villian|
+-|MF|BRA|Wesley Dias|
+-|FW|BRA|Ademilson|
+-|FW|BRA|Davi Gomes|
+-|FW|BRA|Gabriel Silva|on loan from Vila Nova
+-|FW|BRA|Arthur Korek|
+-|FW|BRA|Marco Antônio|
+-|FW|BRA|Neilton|
+-|FW|BRA|Willen Mota|
+-|FW|BRA|Marquinhos|

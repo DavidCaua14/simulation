@@ -1,0 +1,29 @@
+# club: caxias
+# source: https://en.wikipedia.org/wiki/Sociedade_Esportiva_e_Recreativa_Caxias_do_Sul
+# accessed: 2026-11-19
+# as_of: 30 July 2026
+1|GK|BRA|Marcelo Dal Soler|
+2|DF|BRA|Vitor Gabriel|
+3|DF|BRA|Ianson|
+4|DF|BRA|Mancha|
+5|MF|BRA|Breno Santos|
+6|DF|BRA|Roberto|
+7|FW|BRA|Dentinho|
+8|MF|BRA|Marcelo Freitas|
+9|FW|BRA|Diego Quirino|
+10|MF|BRA|Matheus Anjos|
+11|FW|BRA|Vitor Feijão|
+12|GK|BRA|Gabriel Toebe|
+13|DF|BRA|Windson|
+14|DF|BRA|Maurício|
+15|MF|BRA|Grígor|
+16|FW|BRA|Gaspar|
+17|DF|BRA|Felipe Albuquerque|
+18|FW|BRA|Salatiel|
+19|FW|BRA|Jhonatan Ribeiro|
+20|MF|BRA|Ravanelli|
+21|FW|BRA|Calyson|
+22|MF|BRA|Matheus Nunes|
+23|DF|BRA|André|
+24|DF|BRA|Vitinho|
+25|FW|BRA|João Lucas|

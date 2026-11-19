@@ -1,0 +1,49 @@
+# club: atletico-alagoinhas
+# source: https://en.wikipedia.org/wiki/Alagoinhas_Atl%C3%A9tico_Clube
+# accessed: 2026-11-19
+# as_of: 31 May 2026
+1|GK|BRA|Mateus|
+2|DF|BRA|Hernandes|
+3|DF|BRA|Guilherme Queiroz|
+4|DF|BRA|Jailton|
+6|DF|BRA|Cicero Matheus|
+7|FW|BRA|Higor Farias|
+8|MF|BRA|Everson Ribeiro|
+9|FW|BRA|João Leonardo|
+10|FW|BRA|Esquerdinha|
+11|DF|BRA|Jefferson|
+12|GK|BRA|Gabriel Bartelli|
+13|DF|BRA|Jadson|
+14|DF|BRA|Fellipe Kayrê|
+15|MF|BRA|Everton|
+16|MF|BRA|Kaio Ribeiro|
+17|DF|BRA|Ryan Rocha|
+18|FW|BRA|Walter|
+19|FW|BRA|Gleydisson|
+20|FW|BRA|Ruan Teles|
+-|GK|BRA|Neto Barbosa|
+-|GK|BRA|Jordan|
+-|GK|BRA|Leonardo|
+-|DF|BRA|Marquinhos|
+-|DF|BRA|Lucas Barboza|
+-|DF|BRA|Anderson Santos|
+-|DF|BRA|Pessi|
+-|DF|BRA|Maksuel Pereira|
+-|DF|BRA|Van|
+-|DF|BRA|Cordeiro|
+-|DF|BRA|Pedro Victor|
+-|DF|BRA|Gabriel de Lima|
+-|MF|BRA|Rafael Augusto|
+-|MF|BRA|Macajuba|
+-|MF|BRA|Miller Dias|
+-|MF|BRA|Fabiano Santiago|
+-|DF|BRA|Henrique Marcos|
+-|MF|BRA|Paulo Victor|
+-|FW|BRA|Juan Xavier|
+-|FW|BRA|Kevin Chaves|
+-|FW|BRA|Michael|
+-|FW|BRA|Douglas Barbosa|
+-|DF|BRA|Samuel|
+-|FW|BRA|Nalbert Cauã|
+-|MF|BRA|Julian Suzuki|
+-|FW|BRA|Jeferson|

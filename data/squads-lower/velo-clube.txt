@@ -1,0 +1,31 @@
+# club: velo-clube
+# source: https://en.wikipedia.org/wiki/Associa%C3%A7%C3%A3o_Esportiva_Velo_Clube_Rioclarense
+# accessed: 2026-11-19
+# as_of: 11 February 2026
+-|GK|BRA|Léo Steffen|
+-|GK|BRA|Marcelo Carné|
+-|GK|BRA|Paulo Vitor|
+-|GK|BRA|Paulo Oliveira|
+-|DF|BRA|Betão|
+-|DF|BRA|Gabriel Mancha|
+-|DF|BRA|Islan|
+-|DF|BRA|Lucas Mingoti|on loan from ABECAT
+-|DF|BRA|Marcelo Augusto|
+-|DF|BRA|Breno Lopes|
+-|DF|BRA|Caíque|
+-|DF|BRA|Ruan Souza|
+-|DF|BRA|Thomas Luciano|
+-|DF|BRA|Ynaiã|
+-|DF|BRA|Zé Mário|
+-|MF|BRA|Adriano Júnior|
+-|MF|BRA|Karl|on loan from Itabaiana
+-|MF|BRA|Luiz Otávio|
+-|MF|BRA|Mateus Norton|
+-|MF|BRA|Matheus Firmino|
+-|MF|BRA|Rodrigo Oliveira|
+-|MF|BRA|Sillas|
+-|FW|BRA|Daniel Amorim|
+-|FW|BRA|Jhoninha|
+-|FW|BRA|João Lucas|on loan from Vila Nova
+-|FW|BRA|Lucas Duni|
+-|FW|BRA|Rodrigo Alves|

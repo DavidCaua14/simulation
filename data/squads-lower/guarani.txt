@@ -1,0 +1,28 @@
+# club: guarani
+# source: https://en.wikipedia.org/wiki/Guarani_FC
+# accessed: 2026-11-19
+# as_of: 10 September 2026
+-|GK|BRA|Mateus Claus|
+-|GK|BRA|Andrey Ventura|
+-|GK|BRA|Fred Conte|
+-|DF|BRA|Edson Rogério|
+-|DF|BRA|Maurício Antônio|
+-|DF|BRA|Rafael Donato|captain
+-|DF|BRA|Raphael Rodrigues|
+-|DF|BRA|Rian|
+-|DF|BRA|Yan Henrique|
+-|DF|BRA|Ynaiã|
+-|MF|BRA|Carlos Eduardo|
+-|MF|BRA|Igor Pereira|
+-|MF|BRA|Nathan Melo|
+-|MF|BRA|Willian Farias|
+-|MF|ARG|Diego Torres|vice-captain
+-|MF|BRA|Isaque|
+-|MF|BRA|Kauã Jesus|
+-|MF|BRA|João Paulo|
+-|FW|BRA|Kewen|
+-|FW|BRA|Lucca|
+-|FW|BRA|Rafael Freitas|
+-|FW|BRA|Éverton Brito|
+-|FW|BRA|Matheus Guilherme|
+-|FW|BRA|Neto Costa|

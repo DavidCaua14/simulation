@@ -1,0 +1,20 @@
+# club: portuguesa
+# source: https://en.wikipedia.org/wiki/Associa%C3%A7%C3%A3o_Portuguesa_de_Desportos
+# accessed: 2026-11-19
+# as_of: 17 November 2026
+1|GK|BRA|Ricardo Friedrich|
+2|DF|BRA|João Vitor|
+3|DF|BRA|Gustavo Henrique|
+6|DF|BRA|Gustavo Salomão|
+7|FW|BRA|Pedro Felipe|
+8|MF|BRA|Cesinha|
+9|FW|BRA|Matheus Cadorini|
+14|MF|BRA|Marcelo Freitas|
+15|DF|BRA|Wellington|
+17|DF|BRA|Caio Roque|
+20|MF|BRA|Guilherme Portuga|
+21|FW|BRA|Romarinho|
+33|DF|BRA|Eric Botteghin|
+39|DF|BRA|Carlos Lima|
+42|DF|BRA|Gustavo Sciencia|
+82|GK|BRA|Tiago Gomes|

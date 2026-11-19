@@ -1,0 +1,31 @@
+# club: volta-redonda
+# source: https://en.wikipedia.org/wiki/Volta_Redonda_FC
+# accessed: 2026-11-19
+# as_of: 1 September 2026
+1|GK|BRA|Avelino|
+2|DF|BRA|Wellington Silva|
+3|DF|BRA|Lucas Adell|
+4|DF|BRA|Fabrício|
+5|MF|BRA|Bruno Barra|
+6|DF|BRA|Jean Victor|
+7|FW|BRA|Marquinhos|
+8|MF|BRA|Dener|
+9|FW|COL|Yamilo Zuniga|
+10|MF|BRA|Luciano Naninho|
+11|MF|BRA|Bernardo Carvalho|
+12|GK|BRA|Heitor Silva|
+13|DF|BRA|Alan Ferreira|
+14|FW|BRA|Matheus Régis|
+15|DF|BRA|Lucas Rocha|
+16|MF|BRA|Du Fernandes|
+17|MF|BRA|Wagninho|
+19|FW|BRA|Andrey|
+20|DF|BRA|Juninho|
+21|MF|BRA|Henrique Silva|
+22|FW|BRA|Levi|
+23|FW|BRA|Wendel|
+25|MF|BRA|Juliano Fabro|
+28|FW|BRA|Rafael Furtado|
+29|MF|BRA|Caetano|
+30|MF|BRA|Juninho Ramos|
+45|GK|BRA|Deivity|

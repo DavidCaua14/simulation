@@ -408,8 +408,8 @@ caixa, cria os 94 clubes (bots com nomes reais) e sorteia o calendário e a 1ª 
 |---|---|---|---|
 | A | 20 (Série A 2026) | Turno e returno, 38 rodadas. Os 4 últimos caem | Elenco real do catálogo em cartas de destaque: potencial pelo menos 5 acima da nota, +0,5 por jogo com 45 minutos ou mais (`on_star_grow`) |
 | B | 20 (Série B 2026) | 38 rodadas; 1º e 2º sobem; 3º×6º e 4º×5º em ida e volta (empate no agregado: melhor campanha). Os 4 últimos caem | Elenco real em cartas base |
-| C | 24 (Série C 2027) | Turno único (23 rodadas); 8 primeiros em dois quadrangulares (1-4-5-8 e 2-3-6-7) em ida e volta; 2 de cada grupo sobem; final em ida e volta. Os 4 últimos caem (a real rebaixa 2) | Cartas base geradas (nível 60) |
-| D | 30 (técnicos + clubes reais da D) | 2 grupos de 15 em turno e returno (30 rodadas, 1 folga por turno); 4 de cada grupo nas quartas (1A×4B, 2A×3B, 1B×4A, 2B×3A) em ida e volta: quem vence sobe; semifinal e final | Cartas base geradas (nível 56) |
+| C | 24 (Série C 2027) | Turno único (23 rodadas); 8 primeiros em dois quadrangulares (1-4-5-8 e 2-3-6-7) em ida e volta; 2 de cada grupo sobem; final em ida e volta. Os 4 últimos caem (a real rebaixa 2) | Elenco real da Wikipédia em cartas base (16 clubes); os outros 8, cartas geradas (nível 60) |
+| D | 30 (técnicos + participantes reais da Série D 2026) | 2 grupos de 15 em turno e returno (30 rodadas, 1 folga por turno); 4 de cada grupo nas quartas (1A×4B, 2A×3B, 1B×4A, 2B×3A) em ida e volta: quem vence sobe; semifinal e final | Elenco real da Wikipédia em cartas base (17 clubes, que entram primeiro); os outros, cartas geradas (nível 56) |
 
 - **Clubes reais**: `on_real_clubs` (nome, sigla, cores, cidade, `crest` para o escudo oficial quando houver). A e B
   apontam para `sim_clubs` (elenco real). A Série C 2027 tem 24 clubes; os 4 que caíram da B 2026 (Avaí, Londrina,
@@ -464,3 +464,23 @@ final. Agora, quando o jogo decisivo termina empatado (no agregado, na volta), a
 - Cada lance tem `at_s` (segundo desde o pontapé em que a tela mostra). A tela (`components/Shootout.jsx`) mostra o
   placar das cobranças com bolinhas e a narração; o "Fim de jogo" só aparece depois da última cobrança. Sem ninguém
   assistindo, a disputa sai inteira de uma vez.
+
+## Fase 37 — Elencos reais das Séries C e D
+
+`supabase/online/40_lower_squads.sql` e `41_lower_squads_data.sql` (migrações `20261119180000` e `20261119180100`).
+O catálogo do modo Temporadas só tem os elencos da A e da B. Os da C e da D vêm da Wikipédia (seção do elenco atual):
+
+```bash
+python3 scripts/fetch-lower-squads.py          # baixa para data/squads-lower/<clube>.txt (respeita o limite da Wikipédia)
+python3 scripts/build-lower-squads.py          # gera supabase/online/41_lower_squads_data.sql
+```
+
+- Nome, número, nacionalidade e posição vêm da fonte. Quando a fonte só diz goleiro/defensor/meia/atacante, a posição
+  detalhada é estimada pela camisa (2 lateral-direito, 6 lateral-esquerdo, 5 volante, 8 meio-campista, 10 meia, 7 e 11
+  pontas, 9 centroavante) e pelo que falta no elenco (`on_lower_players.pos_est`). Nota e idade são estimativas de jogo:
+  nível da série no jogo + papel no elenco (camisa 1 a 11 e capitão um pouco acima, números de base abaixo).
+- Elenco com data anterior a 2025 fica de fora. Alguns elencos não têm data na fonte (marcados `unknown`).
+- Resultado em 19/11/2026: 33 clubes, 919 jogadores. Série C: 16 de 24 (Amazonas, Anápolis, Barra, Floresta,
+  Uberlândia, Gama, Goiatuba e Nacional-AM não têm elenco publicado). Série D: a lista passou a priorizar participantes
+  reais da Série D 2026 com elenco publicado (17 de 30). Os demais seguem com cartas base geradas e nome real.
+- Ao mudar de série, o elenco real é refeito no nível da série nova (cartas base).

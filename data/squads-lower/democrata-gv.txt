@@ -1,0 +1,26 @@
+# club: democrata-gv
+# source: https://en.wikipedia.org/wiki/Esporte_Clube_Democrata
+# accessed: 2026-11-19
+# as_of: unknown
+-|GK|BRA|Luiz Fernando|
+-|GK|BRA|Alex|
+-|GK|BRA|Lucas|
+-|DF|BRA|Riso|
+-|DF|BRA|Eliézio|
+-|DF|BRA|Weldes|
+-|DF|BRA|Pablo|
+-|DF|BRA|Geison|
+-|DF|BRA|Peterson|
+-|DF|BRA|Fabiano|
+-|MF|BRA|Saulo|
+-|MF|URU|Luis Oyarbide|
+-|MF|BRA|Sandro|
+-|MF|URU|Jorge García|
+-|MF|BRA|Zé Maria|
+-|MF|BRA|Marquinhos|
+-|MF|BRA|Robson|
+-|MF|BRA|Hugo|
+-|MF|BRA|Marcelo Lima|
+-|FW|ARG|Luis Acuña|
+-|FW|BRA|Allan|
+-|FW|BRA|André Luis|

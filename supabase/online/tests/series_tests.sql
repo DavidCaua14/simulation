@@ -47,6 +47,14 @@ begin
  end if;
  -- segunda chamada do sorteio da copa não duplica
  if public.on_cup_draw(v_s,1,'{}')<>0 then raise exception 'copa sorteada de novo';end if;
+ -- elencos reais da C e da D (fase 37): clube com elenco na fonte entra com os jogadores dela
+ if exists(select 1 from public.on_clubs k where k.season_id=v_s and k.user_id is null and k.real_key in(select club_key from public.on_lower_players) and k.sq<>'real') then
+  raise exception 'clube com elenco real ficou com cartas geradas';
+ end if;
+ if (select count(*) from public.on_players p join public.on_clubs k on k.id=p.club_id where k.season_id=v_s and k.sq='real'
+   and p.name in(select l.name from public.on_lower_players l where l.club_key=k.real_key))<18*(select count(*) from public.on_clubs where season_id=v_s and sq='real') then
+  raise exception 'elenco real incompleto';
+ end if;
  raise notice 'PASS séries: estrutura e calendário';
 
  -- temporada inteira com resultados de mentira (as fases seguintes nascem no gancho)

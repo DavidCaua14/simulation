@@ -1,0 +1,28 @@
+# club: cianorte
+# source: https://en.wikipedia.org/wiki/Cianorte_Futebol_Clube
+# accessed: 2026-11-19
+# as_of: unknown
+-|GK|BRA|Marcelo|
+-|GK|BRA|Oliveira|
+-|DF|BRA|Elvis|
+-|DF|BRA|Valdir|
+-|DF|BRA|Xandi|
+-|DF|BRA|Fabinho|
+-|DF|BRA|Ligger|
+-|DF|BRA|Bruno Matavelli|
+-|MF|BRA|Cleitão|
+-|MF|BRA|Emerson Bala|
+-|MF|BRA|Felipe Pinto|
+-|MF|BRA|Viera Joseph|
+-|MF|BRA|José Célio|
+-|MF|BRA|Maikon Willian|
+-|MF|BRA|Lenílson|
+-|MF|BRA|Jovany|
+-|MF|BRA|Valmir|
+-|FW|BRA|Marquinhos|
+-|FW|BRA|Thiago Santos|
+-|FW|BRA|William Martins|
+-|FW|BAN|Asif Abdullah|
+-|FW|BRA|Vágner Carioca|
+-|FW|BRA|Warlley|
+-|DF|BAN|Nazmul Hossain Akondo|

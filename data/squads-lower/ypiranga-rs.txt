@@ -1,0 +1,29 @@
+# club: ypiranga-rs
+# source: https://en.wikipedia.org/wiki/Ypiranga_Futebol_Clube
+# accessed: 2026-11-19
+# as_of: 8 October 2026
+2|DF|BRA|Cleiton|
+3|DF|BRA|Willian Gomes|
+4|DF|BRA|Reinaldo|
+5|MF|BRA|Robson Lopes|
+7|FW|BRA|Felipe Ferreira|
+9|FW|BRA|Vinicius Charopem|
+10|MF|BRA|Léo Rafael|
+11|MF|BRA|Allison|
+12|GK|BRA|Edu Araújo|
+15|FW|BRA|Pedro Lucas|
+16|MF|BRA|Lucas Ramos|
+17|FW|BRA|Henrique|
+20|MF|BRA|Dudu|
+21|DF|BRA|Léo Gobo|
+22|DF|BRA|Walce|
+27|MF|BRA|Dionísio|
+28|FW|BRA|Gustavo Simões|
+35|GK|BRA|Zé Carlos|
+40|MF|BRA|Kauan Bruno|
+41|DF|BRA|Adilson Júnior|
+43|MF|BRA|Ramon Vinicius|
+44|DF|BRA|Wesllen|
+79|MF|BRA|Nathan Zamith|
+80|FW|BRA|Marcelinho|
+85|GK|BRA|Lucas Maticoli|

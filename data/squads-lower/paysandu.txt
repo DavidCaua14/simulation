@@ -1,0 +1,37 @@
+# club: paysandu
+# source: https://en.wikipedia.org/wiki/Paysandu_Sport_Club
+# accessed: 2026-11-19
+# as_of: 4 October 2026
+1|GK|BRA|Jean Drosny|
+2|DF|BRA|Edílson|
+3|DF|BRA|Gustavo Henrique|on loan from Portuguesa
+4|DF|BRA|Iarley|
+5|MF|BRA|Henrico|
+8|MF|BRA|Caio Mello|
+9|FW|BRA|Ítalo|on loan from Volta Redonda
+10|MF|BRA|Marcinho|captain
+12|GK|BRA|Gabriel Mesquita|
+14|DF|BRA|Bruno Bispo|
+15|DF|BRA|Castro|
+18|DF|BRA|Eduardo|
+19|FW|BRA|Thayllon|on loan from Atlético Goianiense
+20|FW|URU|Nicolás Schiappacasse|
+21|DF|BRA|Renan Castro|on loan from Guarani
+22|DF|BRA|Lucas Rodrigues|on loan from América de Natal
+23|MF|BRA|Brian|
+25|MF|BRA|Tiago Índio|
+26|MF|BRA|Cauã Libonati|
+30|FW|BRA|Thalyson|
+31|DF|URU|Facundo Bonifazi|
+39|MF|BRA|Pedro Henrique|on loan from Flamengo
+40|GK|BRA|Levi|
+41|GK|BRA|Marcão|
+44|DF|BRA|Pedro Carrerette|on loan from Noroeste
+55|MF|BRA|Radsley|on loan from Retrô
+75|FW|BRA|Kleiton Pego|on loan from Tombense
+77|DF|BRA|Luciano Taboca|
+80|MF|BRA|Pablo Baianinho|on loan from Vitória
+94|FW|BRA|Kauã Hinkel|
+96|MF|BRA|Matheus Vargas|
+98|FW|BRA|Juninho|on loan from Osasco Sporting
+99|MF|BRA|Lucas Cardoso|

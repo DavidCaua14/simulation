@@ -172,29 +172,29 @@ from(values
  ('campinense','Campinense','CPN','D',null,'Campina Grande-PB','#E30613','#111111','stripes'),
  ('america-rn','América-RN','ARN','D',null,'Natal-RN','#E30613','#FFFFFF','plain'),
  ('ferroviario','Ferroviário','FRR','D',null,'Fortaleza-CE','#111111','#E30613','hoops'),
- ('central','Central','CEN','D',null,'Caruaru-PE','#111111','#FFFFFF','stripes'),
- ('retro','Retrô','RET','D',null,'Camaragibe-PE','#F97316','#111111','plain'),
- ('sampaio-correa','Sampaio Corrêa','SAM','D',null,'São Luís-MA','#FFD100','#0F7A3A','hoops'),
  ('moto-club','Moto Club','MOT','D',null,'São Luís-MA','#E30613','#111111','stripes'),
  ('fluminense-pi','Fluminense-PI','FPI','D',null,'Teresina-PI','#8B1E3F','#0A7A3D','stripes'),
  ('altos','Altos','ALT','D',null,'Altos-PI','#FFD100','#0F7A3A','plain'),
  ('juazeirense','Juazeirense','JUA','D',null,'Juazeiro-BA','#E30613','#FFFFFF','plain'),
  ('jacuipense','Jacuipense','JAC','D',null,'Riachão do Jacuípe-BA','#E30613','#FFD100','plain'),
- ('csa','CSA','CSA','D',null,'Maceió-AL','#1E40AF','#FFFFFF','stripes'),
- ('ceilandia','Ceilândia','CEI','D',null,'Ceilândia-DF','#111111','#E30613','plain'),
  ('brasiliense','Brasiliense','BSE','D',null,'Taguatinga-DF','#FFD100','#0F7A3A','plain'),
- ('aparecidense','Aparecidense','APA','D',null,'Aparecida de Goiânia-GO','#1E40AF','#FFFFFF','plain'),
  ('portuguesa','Portuguesa','POR','D',null,'São Paulo-SP','#E30613','#0F7A3A','halves'),
  ('xv-piracicaba','XV de Piracicaba','XVP','D',null,'Piracicaba-SP','#111111','#FFFFFF','stripes'),
- ('santo-andre','Santo André','SAD','D',null,'Santo André-SP','#1E40AF','#FFFFFF','plain'),
  ('joinville','Joinville','JEC','D',null,'Joinville-SC','#E30613','#111111','stripes'),
- ('cascavel','Cascavel','FCC','D',null,'Cascavel-PR','#FFD100','#111111','plain'),
  ('sao-jose-rs','São José-RS','SJO','D',null,'Porto Alegre-RS','#1E40AF','#FFFFFF','plain'),
- ('tombense','Tombense','TOM','D',null,'Tombos-MG','#E30613','#FFFFFF','plain'),
- ('manaus','Manaus','MAN','D',null,'Manaus-AM','#FFD100','#111111','stripes'),
- ('aguia-maraba','Águia de Marabá','AGU','D',null,'Marabá-PA','#1E40AF','#E30613','plain'),
- ('rio-branco-ac','Rio Branco-AC','RBR','D',null,'Rio Branco-AC','#E30613','#FFFFFF','stripes'),
- ('tuna-luso','Tuna Luso','TUN','D',null,'Belém-PA','#0F7A3A','#E30613','plain')
+ ('atletico-alagoinhas','Atlético de Alagoinhas','AAC','D',null,'Alagoinhas-BA','#C8102E','#FFFFFF','stripes'),
+ ('velo-clube','Velo Clube','VEL','D',null,'Rio Claro-SP','#0F7A3A','#FFFFFF','plain'),
+ ('noroeste','Noroeste','NOR','D',null,'Bauru-SP','#C8102E','#FFFFFF','plain'),
+ ('agua-santa','Água Santa','ASN','D',null,'Diadema-SP','#1E40AF','#FFFFFF','plain'),
+ ('crac','CRAC','CRA','D',null,'Catalão-GO','#1E40AF','#FFFFFF','stripes'),
+ ('democrata-gv','Democrata-GV','DEM','D',null,'Governador Valadares-MG','#111111','#FFFFFF','stripes'),
+ ('cianorte','Cianorte','CIA','D',null,'Cianorte-PR','#1E40AF','#FFFFFF','plain'),
+ ('decisao','Decisão','DEC','D',null,'Goiânia-GO','#0F7A3A','#FFFFFF','plain'),
+ ('madureira','Madureira','MAD','D',null,'Rio de Janeiro-RJ','#FFD100','#1E40AF','hoops'),
+ ('america-rj','America-RJ','AME','D',null,'Rio de Janeiro-RJ','#C8102E','#FFFFFF','plain'),
+ ('marica','Maricá','MRC','D',null,'Maricá-RJ','#1E40AF','#FFD100','plain'),
+ ('sao-luiz','São Luiz','SLZ','D',null,'Ijuí-RS','#C8102E','#FFFFFF','plain'),
+ ('marcilio-dias','Marcílio Dias','MDI','D',null,'Itajaí-SC','#C8102E','#1E40AF','halves')
 ) x(key,name,short,div0,sim,city,ca,cb,pat)
 on conflict(key) do update set name=excluded.name,short=excluded.short,div0=excluded.div0,sim_club=excluded.sim_club,city=excluded.city,
  colors=excluded.colors||coalesce(public.on_real_clubs.colors-'a'-'b'-'pattern'-'shape'-'stadium','{}'::jsonb);
@@ -742,7 +742,8 @@ begin
  insert into public.on_clubs(season_id,seat,name,short,colors,cash,draft_step,div,real_key)
  select v_s,(row_number() over(order by x.div0,x.key))::smallint,x.name,x.short,x.colors,
   case x.div0 when 'A' then 3000000 when 'B' then 1500000 when 'C' then 800000 else 500000 end,3,x.div0,x.key
- from(select rc.*,row_number() over(partition by rc.div0 order by public.sim_hash01(v_seed||':real:'||rc.key)) rn from public.on_real_clubs rc) x
+ from(select rc.*,row_number() over(partition by rc.div0 order by (rc.key in(select club_key from public.on_lower_players)) desc,public.sim_hash01(v_seed||':real:'||rc.key)) rn
+  from public.on_real_clubs rc) x
  where x.div0<>'D' or x.rn<=30-v_users;
  for r in select k.id from public.on_clubs k where k.season_id=v_s and k.user_id is null order by k.id loop
   perform public.on_bot_squad(r.id,v_seed);

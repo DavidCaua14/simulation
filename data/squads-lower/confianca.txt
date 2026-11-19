@@ -1,0 +1,32 @@
+# club: confianca
+# source: https://en.wikipedia.org/wiki/Associa%C3%A7%C3%A3o_Desportiva_Confian%C3%A7a
+# accessed: 2026-11-19
+# as_of: 1 November 2026
+-|GK|BRA|Matheus Emiliano|
+-|GK|BRA|Cadu|
+-|GK|BRA|Marcos Paulo|
+-|DF|BRA|Lucas Cunha|on loan from Noroeste
+-|DF|BRA|Ícaro|
+-|DF|BRA|Eduardo Moura|
+-|DF|BRA|Renilson|
+-|DF|BRA|Marcelo|
+-|DF|BRA|Weriton|
+-|DF|BRA|Alisson|
+-|DF|BRA|João Mandovani|on loan from Tombense
+-|DF|BRA|Kelvyn|
+-|DF|BRA|Valdir|
+-|DF|BRA|Mateus Ludke|
+-|DF|BRA|Adryan|
+-|MF|BRA|Guilherme Nunes|
+-|MF|BRA|Madison|
+-|MF|BRA|Moisés|
+-|MF|BRA|Fabrício Oya|
+-|MF|BRA|Gabriel Zeca|on loan from Azuriz
+-|MF|BRA|Lorran|
+-|MF|BRA|Paulo Henrique|
+-|FW|BRA|Welder|
+-|FW|BRA|Maikon Aquino|
+-|FW|BRA|Luiz Thiago|on loan from América-RN
+-|FW|BRA|Danielzinho|
+-|FW|BRA|Iago|
+-|FW|BRA|Sassá|

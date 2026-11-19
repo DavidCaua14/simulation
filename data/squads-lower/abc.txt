@@ -1,0 +1,28 @@
+# club: abc
+# source: https://en.wikipedia.org/wiki/ABC_Futebol_Clube
+# accessed: 2026-11-19
+# as_of: unknown
+-|GK|BRA|Matheus Alves|
+-|GK|BRA|Rodolfo Castro|
+-|GK|BRA|Vitor Luiz|
+-|DF|BRA|Davi|
+-|DF|BRA|Fabão|
+-|DF|BRA|Wellington Carvalho|
+-|DF|BRA|João Victor|
+-|DF|BRA|Lucas Souza|
+-|DF|BRA|Dudu Mandai|
+-|DF|BRA|Lucas Marques|
+-|DF|BRA|Thallyson|
+-|DF|BRA|Darlan|
+-|DF|BRA|Cayo Tenório|
+-|MF|BRA|Geilson|
+-|MF|BRA|Régis Potiguar|
+-|MF|BRA|Edson|
+-|MF|BRA|Wellington Reis|
+-|MF|BRA|Lima|
+-|MF|BRA|Mateus Bernardo|
+-|MF|BRA|Ramires|
+-|FW|BRA|Rikelmi|
+-|FW|BRA|Emanuel|
+-|FW|BRA|Fábio|
+-|FW|BRA|Wallyson|

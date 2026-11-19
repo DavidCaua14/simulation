@@ -1,0 +1,26 @@
+# club: marcilio-dias
+# source: https://en.wikipedia.org/wiki/Clube_N%C3%A1utico_Marc%C3%ADlio_Dias
+# accessed: 2026-11-19
+# as_of: unknown
+-|GK|BRA|Igor|
+-|GK|BRA|Eduardo|
+-|DF|BRA|Alex Moraes|
+-|DF|BRA|Edimar|
+-|DF|BRA|Josias Basso|
+-|DF|BRA|Neguette|
+-|DF|BRA|Maurício Ribeiro|
+-|DF|BRA|Sidnei|
+-|DF|BRA|Alex Cazumba|
+-|DF|BRA|André Luiz|
+-|DF|BRA|Felipe Correia|
+-|MF|BRA|Batista|
+-|MF|BRA|Xipote|
+-|MF|BRA|Cacá|
+-|MF|BRA|Leandro Branco|
+-|MF|BRA|Mineiro|
+-|FW|BRA|Adriano|
+-|FW|BRA|João Paulo|
+-|FW|BRA|Leandrinho|
+-|FW|BRA|Rodrigo|
+-|FW|BRA|Tardelli|
+-|FW|BRA|Toni|

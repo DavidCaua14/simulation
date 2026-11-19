@@ -1,0 +1,39 @@
+# club: marica
+# source: https://en.wikipedia.org/wiki/Maric%C3%A1_Futebol_Clube
+# accessed: 2026-11-19
+# as_of: unknown
+-|GK|BRA|Junior Souza|
+-|GK|BRA|Evayr|
+-|GK|BRA|Vinicius|
+-|DF|BRA|Thiago Carioca|
+-|DF|BRA|Matheus|
+-|DF|BRA|Jean|
+-|DF|BRA|Índio|
+-|DF|BRA|Alex Lopes|
+-|DF|BRA|Rhenan|
+-|DF|BRA|Pablo|
+-|DF|BRA|Alex|
+-|DF|BRA|Bruno Santos|
+-|DF|BRA|Guilherme Costa|
+-|DF|URU|Felipe Carvalho|
+-|MF|BRA|Angelo Renan|
+-|MF|BRA|Fabiano|
+-|MF|BRA|Bruno Medeiros|
+-|MF|BRA|Rykellerson|
+-|MF|BRA|Marcos Paulo|
+-|MF|BRA|Allan|
+-|MF|BRA|Maycon|
+-|MF|BRA|Lázaro|
+-|MF|BRA|Badola|
+-|MF|BRA|Júlio César|
+-|MF|BRA|Joel|
+-|MF|BRA|Paulinho Fernandes|
+-|MF|BRA|Richard|
+-|MF|BRA|Rodrigo|
+-|MF|ECU|Kevin Mercado|
+-|FW|BRA|Pablo Luiz|
+-|FW|BRA|Rafael Castro|
+-|FW|BRA|João Manoel|
+-|FW|BRA|Felipe Zuca|
+-|FW|ECU|Johan Mina|
+-|FW|ARG|Matías Roskopf|

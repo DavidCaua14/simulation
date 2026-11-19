@@ -1,0 +1,36 @@
+# club: decisao
+# source: https://en.wikipedia.org/wiki/Decis%C3%A3o_Goiana_Futebol_Clube
+# accessed: 2026-11-19
+# as_of: unknown
+-|GK|BRA|Keu|
+-|GK|BRA|Marcão|
+-|GK|BRA|Henrique|
+-|GK|BRA|João Victor|
+-|DF|BRA|Weslley|on loan from Santa Cruz
+-|DF|BRA|Kaio|
+-|DF|BRA|Victor Luna|
+-|DF|BRA|Felipe Almeida|
+-|DF|BRA|Alenilson|
+-|DF|BRA|Rafael|
+-|DF|BRA|Éverton|
+-|DF|BRA|Raykar|
+-|DF|BRA|Thiago Recife|
+-|DF|BRA|Danilo Cirqueira|
+-|MF|BRA|Vágner Rosa|
+-|MF|BRA|Romário|
+-|MF|BRA|José|
+-|MF|BRA|Victor Sandes|
+-|MF|BRA|Samuel Sousa|
+-|MF|BRA|Willams da Luz|
+-|MF|BRA|Luan|
+-|MF|BRA|Madson|
+-|MF|BRA|Ricardo Felipe|
+-|MF|BRA|Aruá|
+-|MF|BRA|Kady|
+-|FW|BRA|Rafinha|
+-|FW|BRA|Josy|
+-|FW|BRA|Jonathan Bryan|
+-|FW|BRA|Nickson|
+-|FW|BRA|Leonardo Gaúcho|on loan from Santa Cruz
+-|FW|BRA|Kelvis|
+-|FW|BRA|Jackson|
