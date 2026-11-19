@@ -313,6 +313,10 @@ const RPC = {
     return { fixture: f.id, my_side: f.home === 1 ? 'h' : 'a', home: team(f.home, f.home === 1 ? mine : opp), away: team(f.away, f.away === 1 ? mine : opp) }
   },
   on_market: market,
+  on_player_sheet: ({ p_player }) => ({ id: p_player, name: 'Jogador', pos: 'PE', legend: false, mine: false, arrow: 4, form: 'B', overall: 86,
+    styles: { off: { code: 'prolific_winger', name: 'Ponta veloz', descr: 'Usa a largura do campo para atacar a defesa em velocidade.' }, def: { code: 'front_pressure', name: 'Pressão no ataque', descr: 'Pressiona zagueiros e goleiro rivais.' }, ai: [{ code: 'ai_speed', name: 'Drible veloz', descr: 'Usa a velocidade para avançar.' }, { code: 'ai_mazing', name: 'Drible em velocidade', descr: 'Conduz a bola por espaços apertados.' }] },
+    traits: [{ code: 'drible', name: 'Drible', descr: 'Passa pelo marcador com facilidade.' }],
+    attrs: [['atk','Talento ofensivo',84],['atk','Finalização',82],['atk','Cabeceio',61],['tec','Controle de bola',88],['tec','Drible',90],['tec','Condução firme',86],['pas','Passe rasteiro',79],['pas','Passe pelo alto',72],['fis','Velocidade',91],['fis','Aceleração',93],['fis','Resistência',80],['fis','Força',66],['def','Desarme',41],['def','Agressividade',52]].map(([group,label,value],i)=>({ k: 'a'+i, group, label, value })) }),
   on_lot_create: market,
   on_lot_cancel: market,
   on_bid: ({ p_lot, p_amount }) => {

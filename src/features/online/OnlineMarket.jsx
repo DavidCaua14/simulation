@@ -2,11 +2,12 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Banknote, Coins, Crown, DoorClosed, FileText, Flame, Gavel, Hourglass, Lock, Sprout, TrendingUp, Undo2, Users, X } from 'lucide-react'
 import { EmptyState, Notice, Skeleton } from '../../components/ui/feedback'
 import OnlineCrest from './components/OnlineCrest'
-import { FutCard, OvrBadge } from './components/PlayerFut'
+import { OvrBadge, PlayerFace } from './components/PlayerFut'
 import PlayerDetails from './components/PlayerDetails'
 import { POS_NAME } from '../seasons/utils/managerUtils'
 import { bidOnline, cancelOnlineLot, fetchOnlineMarket } from './services/onlineApi'
-import { money, moneyShort, timeLeft } from './onlineUtils'
+import { cardTier, money, moneyShort, timeLeft } from './onlineUtils'
+import './market.css'
 
 const STEPS = [
   [0, 'Mínimo'],
@@ -15,12 +16,24 @@ const STEPS = [
   [0.5, '+50%'],
 ]
 const round100 = (n) => Math.ceil(n / 100) * 100
+const KIND_LABEL = (lot) => (lot.featured >= 8 ? (lot.player.legend ? 'Lenda' : 'Destaque') : null)
+const isProspect = (lot) => !lot.featured && !lot.seller && lot.player.age <= 23 && lot.player.pot - lot.player.ovr >= 6
+const metaLine = (p, long = false) => [long ? POS_NAME[p.pos] || p.pos : p.pos, p.legend ? 'Lenda' : `${p.age} anos`, p.pot != null ? `POT ${p.pot}` : null].filter(Boolean).join(' · ')
+
+// Carta quadrada do mercado: nota, posição e rosto, com a cor do tipo (normal, especial, lenda).
+function MarketTile({ p, club, size = 64 }) {
+  return (
+    <span className={`omk-tile t-${cardTier(p)}`} style={{ '--mk': `${size}px` }}>
+      <span className="omk-tile-ovr"><b>{Math.round(p.ovr)}</b><small>{p.pos}</small></span>
+      <PlayerFace seed={p.name} colors={club?.colors} size={Math.round(size * 0.86)} />
+    </span>
+  )
+}
 
 function Auction({ lot, now, busy, wallet, coins, closed, onBid, onCancel, onSheet }) {
   const [step, setStep] = useState(0)
   const opensIn = new Date(lot.opens_at).getTime() - now
   const locked = opensIn > 0
-  const special = lot.featured >= 8
   const left = new Date(lot.ends_at).getTime() - now
   const hot = !locked && left < 120000
   const amount = step === 0 ? lot.min_bid : round100(lot.min_bid * (1 + step))
@@ -30,135 +43,156 @@ function Auction({ lot, now, busy, wallet, coins, closed, onBid, onCancel, onShe
   const canCoins = coinCost > 0 && coinCost <= coins.wallet && coinCost <= coinRoom
   const blocked = coinCost > 0 && !canCoins
   const p = lot.player
+  const kind = KIND_LABEL(lot)
+  const state = lot.leading ? 'is-leading' : lot.bidding ? 'is-outbid' : ''
   return (
-    <article className={`on-auc ${special ? 'is-special' : ''} ${p.legend ? 'is-legend' : ''} ${locked ? 'is-locked' : ''} ${lot.featured ? 'is-featured' : ''} ${lot.leading ? 'is-leading' : lot.bidding ? 'is-outbid' : ''} ${hot ? 'is-hot' : ''}`}>
-      <button type="button" className="on-auc-card" onClick={() => onSheet(lot)} aria-label={`Ver a ficha de ${p.name}`}>
-        <FutCard p={p} club={lot.seller} size="sm" />
-        <span className="on-auc-sheet"><FileText size={12} /> Ficha</span>
-      </button>
-      <div className="on-auc-body">
-        {special && <span className="on-auc-tag"><Crown size={11} /> {p.legend ? 'Lenda' : 'Destaque'}</span>}
-        {!special && !lot.seller && p.age <= 23 && p.pot - p.ovr >= 6 && <span className="on-auc-tag is-prospect"><Sprout size={11} /> Promessa · pot. {p.pot}</span>}
-        <header>
-          {locked
-            ? <span className="on-auc-clock is-locked"><Lock size={13} /> Abre às {new Date(lot.opens_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</span>
-            : <span className={`on-auc-clock ${hot ? 'is-hot' : ''}`}>{hot ? <Flame size={13} /> : <Hourglass size={13} />} {timeLeft(left)}</span>}
-          {lot.bidders > 0 && <span className="on-auc-count"><Users size={12} /> {lot.bidders}</span>}
-          {lot.seller && <span className="on-auc-seller"><OnlineCrest club={lot.seller} size={16} /> {lot.seller.short}</span>}
-        </header>
-        <div className="on-auc-price">
+    <article className={`omk-card t-${cardTier(p)} ${kind ? 'is-featured' : ''} ${locked ? 'is-locked' : ''} ${hot ? 'is-hot' : ''} ${state}`}>
+      <div className="omk-head">
+        <button type="button" className="omk-tile-btn" onClick={() => onSheet(lot)} aria-label={`Ver a ficha de ${p.name}`}>
+          <MarketTile p={p} club={lot.seller} />
+        </button>
+        <div className="omk-who">
+          <span className="omk-tags">
+            {kind && <em className={`omk-tag ${p.legend ? 'is-legend' : 'is-star'}`}><Crown size={10} /> {kind}</em>}
+            {isProspect(lot) && <em className="omk-tag is-prospect"><Sprout size={10} /> Promessa</em>}
+            {lot.seller && <em className="omk-tag is-seller"><OnlineCrest club={lot.seller} size={13} /> {lot.seller.short}</em>}
+          </span>
+          <strong>{p.name}</strong>
+          <small>{metaLine(p)}</small>
+        </div>
+        <span className={`omk-clock ${hot ? 'is-hot' : ''} ${locked ? 'is-locked' : ''}`}>
+          {locked ? <Lock size={12} /> : hot ? <Flame size={12} /> : <Hourglass size={12} />}
+          {locked ? new Date(lot.opens_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : timeLeft(left)}
+        </span>
+      </div>
+
+      <div className="omk-price">
+        <span>
           <small>{lot.best_bid ? 'Maior lance' : 'Lance inicial'}</small>
           <b>{money(lot.best_bid || lot.start_price)}</b>
-          {lot.best_club && (
-            <span className="on-auc-leader"><OnlineCrest club={lot.best_club} size={18} /> {lot.leading ? 'Você lidera' : lot.best_club.name}</span>
-          )}
-        </div>
-        {lot.history?.length > 1 && (
-          <ol className="on-auc-hist">
-            {lot.history.slice(0, 3).map((h, i) => <li key={i} className={h.me ? 'is-me' : ''}><span>{h.club.short}</span><b>{moneyShort(h.amount)}</b></li>)}
-          </ol>
-        )}
-        {locked && <span className="on-auc-wait">Faltam {timeLeft(opensIn)}</span>}
-        {lot.mine && !lot.best_bid && !locked && (
-          <button type="button" className="gx-btn-ghost on-auc-cancel" disabled={busy} onClick={() => onCancel(lot)}><Undo2 size={14} /> Retirar do leilão</button>
-        )}
-        {!lot.mine && !locked && closed && <span className="on-auc-wait"><DoorClosed size={13} /> Mercado fechado</span>}
-        {!lot.mine && !locked && !closed && (
-          <>
-            <div className="on-auc-steps" role="group" aria-label="Valor do lance">
-              {STEPS.map(([v, label]) => <button key={v} type="button" className={step === v ? 'is-on' : ''} onClick={() => setStep(v)}>{label}</button>)}
-            </div>
-            <button type="button" className={`gx-btn on-auc-bid ${coinCost > 0 ? 'is-coins' : ''}`} disabled={busy || blocked || left <= 0} onClick={() => onBid(lot, amount, coinCost)}>
+        </span>
+        <span className="omk-price-side">
+          {lot.best_club ? (
+            <span className={`omk-leader ${lot.leading ? 'is-me' : ''}`}><OnlineCrest club={lot.best_club} size={16} /> {lot.leading ? 'Você lidera' : lot.best_club.short}</span>
+          ) : <span className="omk-leader is-none">Sem lances</span>}
+          {lot.bidders > 0 && <small><Users size={11} /> {lot.bidders} {lot.bidders === 1 ? 'clube' : 'clubes'}</small>}
+        </span>
+      </div>
+
+      {locked && <p className="omk-note"><Lock size={12} /> Abre em {timeLeft(opensIn)} · veja a ficha antes</p>}
+      {lot.mine && !lot.best_bid && !locked && (
+        <button type="button" className="omk-ghost" disabled={busy} onClick={() => onCancel(lot)}><Undo2 size={14} /> Retirar do leilão</button>
+      )}
+      {!lot.mine && !locked && closed && <p className="omk-note"><DoorClosed size={12} /> Mercado fechado</p>}
+      {!lot.mine && !locked && !closed && (
+        <div className="omk-act">
+          <div className="omk-steps" role="group" aria-label="Valor do lance">
+            {STEPS.map(([v, label]) => <button key={v} type="button" className={step === v ? 'is-on' : ''} onClick={() => setStep(v)}>{label}</button>)}
+          </div>
+          <div className="omk-btns">
+            <button type="button" className="omk-ghost" onClick={() => onSheet(lot)}><FileText size={14} /> Ficha</button>
+            <button type="button" className={`gx-btn omk-bid ${coinCost > 0 ? 'is-coins' : ''}`} disabled={busy || blocked || left <= 0} onClick={() => onBid(lot, amount, coinCost)}>
               <Gavel size={16} /> {money(amount)}
               {coinCost > 0 && <em><Coins size={12} /> {coinCost}</em>}
             </button>
-            {coinCost > coinRoom && <small>{coins.unlimited ? 'Moedas insuficientes para completar o lance.' : 'Limite de aporte da temporada insuficiente.'}</small>}
-          </>
-        )}
-      </div>
+          </div>
+          {coinCost > coinRoom && <small className="omk-warn">{coins.unlimited ? 'Moedas insuficientes para completar o lance.' : 'Limite de aporte da temporada insuficiente.'}</small>}
+        </div>
+      )}
     </article>
   )
 }
 
-// Resumo do jogador para decidir a proposta: posições, idade, nota/potencial, salário e valor, contrato.
+// Dados que importam para decidir a proposta (a condição do dia não entra: ela muda a cada jogo).
 function PlayerFacts({ p }) {
   const positions = [p.pos, ...(p.sec || [])].map((x) => POS_NAME[x] || x).join(' · ')
   return (
-    <ul className="on-bidc-facts">
-      <li><span>Posições</span><b>{positions}</b></li>
-      <li><span>Idade</span><b>{p.legend ? 'Lenda' : `${p.age} anos`}</b></li>
-      <li><span>Nota / potencial</span><b>{Math.round(p.ovr)}{p.pot != null ? ` / ${p.pot}` : ''}</b></li>
-      <li><span>Valor de mercado</span><b>{money(p.value)}</b></li>
-      <li><span>Salário</span><b>{money(p.wage)} por dia</b></li>
-      {p.nat && <li><span>Nacionalidade</span><b>{p.nat}</b></li>}
-    </ul>
+    <dl className="omk-facts">
+      <div><dt>Posições</dt><dd>{positions}</dd></div>
+      <div><dt>Idade</dt><dd>{p.legend ? 'Lenda' : `${p.age} anos`}</dd></div>
+      <div><dt>Nota / potencial</dt><dd>{Math.round(p.ovr)}{p.pot != null ? ` / ${p.pot}` : ''}</dd></div>
+      <div><dt>Valor de mercado</dt><dd>{money(p.value)}</dd></div>
+      <div><dt>Salário</dt><dd>{money(p.wage)}/dia</dd></div>
+      {p.nat && <div><dt>Nacionalidade</dt><dd>{p.nat}</dd></div>}
+    </dl>
+  )
+}
+
+// Cabeçalho comum da ficha e da confirmação: carta, nome, posição/idade e de onde vem.
+function SheetHead({ lot, kicker, onClose }) {
+  const p = lot.player
+  const kind = KIND_LABEL(lot)
+  return (
+    <header className="omk-sheet-head">
+      <MarketTile p={p} club={lot.seller} size={76} />
+      <div>
+        {kicker && <small className="omk-kicker">{kicker}</small>}
+        <strong>{p.name}</strong>
+        <span>{metaLine(p, true)}</span>
+        <em className="omk-from">{kind || (lot.seller ? <><OnlineCrest club={lot.seller} size={13} /> {lot.seller.name}</> : 'Mercado')}</em>
+      </div>
+      {onClose && <button type="button" className="omk-x" onClick={onClose} aria-label="Fechar"><X size={18} /></button>}
+    </header>
   )
 }
 
 // Ficha completa de um jogador do mercado (estilo de jogo, especialidades e atributos), como a do elenco.
 function LotSheet({ lot, onClose, onBid }) {
-  const p = lot.player
   return (
-    <div className="on-modal" role="dialog" aria-modal="true" aria-label={`Ficha de ${p.name}`} onClick={onClose}>
-      <div className="on-sheet on-lotsheet" onClick={(e) => e.stopPropagation()}>
-        <header className="on-lotsheet-head">
-          <FutCard p={p} club={lot.seller} size="sm" />
-          <div>
-            <strong>{p.name}</strong>
-            <span>{lot.seller ? `Anunciado por ${lot.seller.name}` : lot.featured >= 8 ? (p.legend ? 'Lenda' : 'Destaque') : 'Mercado'}</span>
-          </div>
-          <button type="button" className="on-lotsheet-x" onClick={onClose} aria-label="Fechar"><X size={18} /></button>
-        </header>
-        <PlayerFacts p={p} />
-        <PlayerDetails playerId={p.id} />
-        {onBid && <button type="button" className="gx-btn" onClick={onBid}><Gavel size={15} /> Fazer proposta</button>}
+    <div className="on-modal omk-modal" role="dialog" aria-modal="true" aria-label={`Ficha de ${lot.player.name}`} onClick={onClose}>
+      <div className="omk-sheet" onClick={(e) => e.stopPropagation()}>
+        <div className="omk-sheet-body">
+          <SheetHead lot={lot} onClose={onClose} />
+          <PlayerFacts p={lot.player} />
+          <PlayerDetails playerId={lot.player.id} market />
+        </div>
+        {onBid && (
+          <footer className="omk-sheet-foot">
+            <button type="button" className="gx-btn" onClick={onBid}><Gavel size={15} /> Fazer proposta · {money(lot.min_bid)}</button>
+          </footer>
+        )}
       </div>
     </div>
   )
 }
 
-// Confirmação do lance: carta do jogador, valores dele, a ficha completa e de onde sai o dinheiro.
+// Confirmação do lance: o jogador, a proposta contra o valor dele, de onde sai o dinheiro e a ficha (recolhível).
 function BidConfirm({ ask, wallet, coins, busy, onCancel, onConfirm }) {
   const { lot, amount, coinCost } = ask
   const p = lot.player
   const extra = amount - (lot.leading ? lot.best_bid : 0)
   const fromCoins = coinCost > 0 ? Math.min(extra, coinCost * coins.bid_rate) : 0
   const fromCash = extra - fromCoins
-  const kind = lot.featured >= 8 ? (p.legend ? 'Lenda' : 'Destaque') : lot.seller ? `Anunciado por ${lot.seller.name}` : 'Mercado'
+  const diff = p.value ? Math.round(((amount - p.value) / p.value) * 100) : null
   return (
-    <div className="on-modal" role="dialog" aria-modal="true" aria-label={`Confirmar lance em ${p.name}`}>
-      <div className="on-sheet on-confirm on-bidc">
-        <small className="on-sheet-kicker"><Gavel size={13} /> Confirmar proposta</small>
-        <div className="on-bidc-who">
-          <FutCard p={p} club={lot.seller} size="sm" />
-          <div>
-            <strong>{p.name}</strong>
-            <span>{p.pos} · {p.legend ? 'Lenda' : `${p.age} anos`} · nota {Math.round(p.ovr)}{p.pot != null ? ` · POT ${p.pot}` : ''}</span>
-            <em>{kind}</em>
+    <div className="on-modal omk-modal" role="dialog" aria-modal="true" aria-label={`Confirmar lance em ${p.name}`}>
+      <div className="omk-sheet">
+        <div className="omk-sheet-body">
+          <SheetHead lot={lot} kicker={<><Gavel size={12} /> Confirmar proposta</>} />
+          <div className="omk-offer">
+            <span><small>Sua proposta</small><b>{money(amount)}</b></span>
+            <span><small>Valor de mercado</small><b>{money(p.value)}</b>
+              {diff != null && <em className={diff > 0 ? 'is-up' : 'is-down'}>{diff > 0 ? `${diff}% acima` : diff < 0 ? `${-diff}% abaixo` : 'no valor'}</em>}
+            </span>
           </div>
+          <dl className="omk-rows">
+            <div><dt>{lot.best_bid ? 'Maior lance agora' : 'Lance inicial'}</dt><dd>{money(lot.best_bid || lot.start_price)}</dd></div>
+            <div><dt>Salário</dt><dd>{money(p.wage)} por dia</dd></div>
+            <div><dt>Sai do caixa (reservado)</dt><dd>{money(fromCash)}</dd></div>
+            {coinCost > 0 && <div><dt>Moedas usadas</dt><dd><Coins size={12} /> {coinCost}</dd></div>}
+            <div><dt>Caixa livre depois</dt><dd>{money(wallet.free - fromCash)}</dd></div>
+          </dl>
+          <p className="omk-hint">O valor fica reservado até o fim do leilão. Se outro clube cobrir, ele volta para o caixa{coinCost > 0 ? ' e as moedas voltam para a sua conta' : ''}.</p>
+          <details className="omk-more">
+            <summary>Ficha do jogador</summary>
+            <PlayerFacts p={p} />
+            <PlayerDetails playerId={p.id} market />
+          </details>
         </div>
-        <div className="on-confirm-swap">
-          <span><b>{money(amount)}</b><small>sua proposta</small></span>
-          <i>→</i>
-          <span><b>{money(p.value)}</b><small>valor de mercado</small></span>
-        </div>
-        <details className="on-bidc-sheet" open>
-          <summary>Ficha do jogador</summary>
-          <PlayerFacts p={p} />
-          <PlayerDetails playerId={p.id} />
-        </details>
-        <ul className="on-bidc-rows">
-          <li><span>{lot.best_bid ? 'Maior lance agora' : 'Lance inicial'}</span><b>{money(lot.best_bid || lot.start_price)}</b></li>
-          <li><span>Salário</span><b>{money(p.wage)} por dia</b></li>
-          <li><span>Sai do caixa (reservado)</span><b>{money(fromCash)}</b></li>
-          {coinCost > 0 && <li><span>Moedas usadas</span><b><Coins size={12} /> {coinCost}</b></li>}
-          <li><span>Caixa livre depois</span><b>{money(wallet.free - fromCash)}</b></li>
-        </ul>
-        <p>O valor fica reservado até o fim do leilão. Se outro clube cobrir, ele volta para o caixa{coinCost > 0 ? ' e as moedas voltam para a sua conta' : ''}.</p>
-        <div className="on-modal-actions">
+        <footer className="omk-sheet-foot is-two">
           <button type="button" className="gx-btn-ghost" onClick={onCancel}>Cancelar</button>
           <button type="button" className="gx-btn" disabled={busy} onClick={onConfirm}><Gavel size={15} /> Confirmar</button>
-        </div>
+        </footer>
       </div>
     </div>
   )
@@ -272,7 +306,7 @@ export default function OnlineMarket({ notify, onChanged }) {
           {list.length === 0 && (
             <EmptyState compact icon={Gavel} title={view !== 'featured' ? 'Nenhum leilão em andamento' : lists.featured.length ? 'Nenhum leilão desse tipo agora' : `Próximos jogadores às ${hours?.open_label || '08:00'}`} />
           )}
-          <div className="on-aucs">
+          <div className="omk-list">
             {list.map((l) => <Auction key={l.id} lot={l} now={serverNow} busy={busy} wallet={wallet} coins={coins} closed={closed} onBid={bid} onCancel={cancel} onSheet={setSheetLot} />)}
           </div>
         </>

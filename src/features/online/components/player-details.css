@@ -32,3 +32,9 @@
 .pd .t-mid { color: #ffc61a; }
 .pd .t-low { color: #ff7a1a; }
 .pd-note { margin: 6px 0 0; font-size: 0.68rem; color: #8a98b8; line-height: 1.35; }
+/* mercado: só a regularidade (B ou C), sem a condição do dia */
+.pd-type { margin: 0; display: flex; align-items: center; gap: 8px; font-size: 0.76rem; color: #c8d3ea; }
+.pd-type em { width: 24px; height: 24px; flex: 0 0 auto; display: grid; place-items: center; border-radius: 7px; font: 900 0.86rem var(--font-heading, inherit); font-style: normal; }
+.pd-type.f-B em { background: rgba(61, 220, 74, 0.16); color: #3ddc4a; }
+.pd-type.f-C em { background: rgba(255, 198, 26, 0.16); color: #ffc61a; }
+.pd.is-market .pd-tabs button { min-height: 34px; }

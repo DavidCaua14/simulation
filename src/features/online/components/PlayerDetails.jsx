@@ -10,7 +10,10 @@ const GROUPS = [['atk', 'Ataque'], ['tec', 'Técnica'], ['pas', 'Passe'], ['fis'
 const tone = (v) => (v >= 90 ? 't-top' : v >= 80 ? 't-good' : v >= 70 ? 't-ok' : v >= 60 ? 't-mid' : 't-low')
 
 // DETALHES DO JOGADOR (modo online): condição, estilos de jogo e a ficha completa (um valor por atributo).
-export default function PlayerDetails({ playerId }) {
+// market: ficha de jogador do mercado. A condição (seta) não aparece — ela muda a cada jogo e só importa na escalação;
+// fica só a regularidade quando ela pesa na decisão (B: nunca abaixo da seta amarela; C: qualquer seta).
+const FORM_HINT = { B: 'Regularidade B · nunca fica abaixo da seta amarela', C: 'Regularidade C · a condição varia de jogo para jogo' }
+export default function PlayerDetails({ playerId, market = false }) {
   const [sheet, setSheet] = useState(null)
   const [error, setError] = useState('')
   const [tab, setTab] = useState('styles')
@@ -32,13 +35,19 @@ export default function PlayerDetails({ playerId }) {
     </li>
   )
   return (
-    <div className="pd">
-      <div className="pd-cond">
-        <ConditionArrow arrow={sheet.arrow} size={30} />
-        <span><b>Condição {a.label.toLowerCase()}</b><small>{a.effect} na próxima partida · muda ao fim de cada jogo</small></span>
-        <em title={FORM_LABEL[sheet.form]}>{sheet.form}</em>
-      </div>
-      <p className="pd-form">Regularidade {sheet.form}: {FORM_LABEL[sheet.form]}</p>
+    <div className={`pd ${market ? 'is-market' : ''}`}>
+      {market ? (
+        FORM_HINT[sheet.form] && <p className={`pd-type f-${sheet.form}`}><em>{sheet.form}</em> {FORM_HINT[sheet.form]}</p>
+      ) : (
+        <>
+          <div className="pd-cond">
+            <ConditionArrow arrow={sheet.arrow} size={30} />
+            <span><b>Condição {a.label.toLowerCase()}</b><small>{a.effect} na próxima partida · muda ao fim de cada jogo</small></span>
+            <em title={FORM_LABEL[sheet.form]}>{sheet.form}</em>
+          </div>
+          <p className="pd-form">Regularidade {sheet.form}: {FORM_LABEL[sheet.form]}</p>
+        </>
+      )}
       <nav className="pd-tabs" role="tablist">
         <button type="button" role="tab" aria-selected={tab === 'styles'} className={tab === 'styles' ? 'is-on' : ''} onClick={() => setTab('styles')}>Estilo de jogo</button>
         <button type="button" role="tab" aria-selected={tab === 'attrs'} className={tab === 'attrs' ? 'is-on' : ''} onClick={() => setTab('attrs')}>Qualidade</button>
@@ -78,7 +87,7 @@ export default function PlayerDetails({ playerId }) {
               </section>
             )
           })}
-          <p className="pd-note">Valores de hoje, com o treino já feito. A condição (seta) muda o rendimento só na partida.</p>
+          {!market && <p className="pd-note">Valores de hoje, com o treino já feito. A condição (seta) muda o rendimento só na partida.</p>}
         </div>
       )}
     </div>
