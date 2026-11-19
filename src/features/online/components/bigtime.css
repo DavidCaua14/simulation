@@ -1,0 +1,61 @@
+/* CARTAS BIG TIME — vermelhas. Carta grande (.btc), foto (.bt-photo) e a versão vermelha das cartas do elenco,
+ do campo e das listas (t-bigtime). */
+.bt-photo { position: relative; display: block; overflow: hidden; background: radial-gradient(circle at 50% 30%, #7f1d1d, #1a0505); }
+.bt-photo img { display: block; width: 100%; height: 100%; object-fit: cover; user-select: none; }
+.bt-photo.is-empty { display: grid; place-items: center; color: rgba(255, 255, 255, .5); }
+
+.btc { --w: 168px; position: relative; display: grid; gap: 8px; width: var(--w); padding: 0; border: 0; background: none; color: #fff; font: inherit; text-align: left; animation: btc-in .55s cubic-bezier(.2, .9, .3, 1.2) both; }
+button.btc { cursor: pointer; }
+.btc.is-sm { --w: 112px; }
+.btc.is-lg { --w: 232px; }
+.btc-frame { position: relative; display: block; aspect-ratio: 3 / 4.15; overflow: hidden; border-radius: 12px;
+  background: linear-gradient(160deg, #ff3b3b 0%, #b30f1c 32%, #5c0610 70%, #1d0204 100%);
+  box-shadow: 0 0 0 2px #ff4d4d, 0 0 0 4px #3b0207, 0 12px 26px rgba(0, 0, 0, .55), 0 0 26px rgba(255, 40, 40, .35); }
+.btc-photo { position: absolute; inset: 0; z-index: 1; background: none; -webkit-mask-image: linear-gradient(180deg, #000 58%, transparent 92%); mask-image: linear-gradient(180deg, #000 58%, transparent 92%); }
+.btc-rays { position: absolute; inset: 0; z-index: 0; background:
+  repeating-linear-gradient(118deg, rgba(255, 255, 255, .07) 0 10px, transparent 10px 26px),
+  radial-gradient(circle at 70% 18%, rgba(255, 160, 120, .45), transparent 55%); }
+.btc-shine { position: absolute; inset: 0; z-index: 3; pointer-events: none; background: linear-gradient(115deg, transparent 32%, rgba(255, 255, 255, .38) 47%, transparent 60%); transform: translateX(-120%); animation: btc-shine 3.6s ease-in-out infinite; }
+.btc-ovr { position: absolute; top: 7%; left: 8%; z-index: 4; display: flex; flex-direction: column; align-items: center; line-height: .86; text-shadow: 0 2px 6px rgba(0, 0, 0, .7); }
+.btc-ovr b { font: 900 calc(var(--w) * .2)/.86 var(--font-heading); font-variant-numeric: tabular-nums; }
+.btc-ovr small { margin-top: 3px; font: 900 calc(var(--w) * .085) var(--font-heading); letter-spacing: .04em; }
+.btc-tag { position: absolute; top: 7%; right: 6%; z-index: 4; display: inline-flex; align-items: center; gap: 3px; padding: 3px 7px; border-radius: 999px; background: #0d0102; box-shadow: 0 0 0 1px #ff4d4d; font: 900 calc(var(--w) * .052) var(--font-heading); letter-spacing: .06em; text-transform: uppercase; color: #ffd2d2; }
+.btc.is-sm .btc-tag { padding: 2px 5px; }
+.btc-foot { position: absolute; inset: auto 0 0; z-index: 4; display: grid; gap: 2px; padding: 22% 8% 8%; text-align: center; background: linear-gradient(180deg, transparent, rgba(20, 0, 2, .85) 45%); }
+.btc-foot strong { font: 900 calc(var(--w) * .1)/1.05 var(--font-heading); text-transform: uppercase; letter-spacing: .02em; overflow-wrap: anywhere; }
+.btc-foot small { font: 700 calc(var(--w) * .062)/1.2 var(--font-body); color: #fecaca; }
+@keyframes btc-in { from { opacity: 0; transform: translateY(14px) scale(.94); } to { opacity: 1; transform: none; } }
+@keyframes btc-shine { 0%, 55% { transform: translateX(-120%); } 85%, 100% { transform: translateX(120%); } }
+@media (prefers-reduced-motion: reduce) { .btc, .btc-shine { animation: none; } }
+
+/* Bloco "A atuação" */
+.btf { display: grid; gap: 10px; padding: 12px; border-radius: 12px; background: linear-gradient(180deg, rgba(220, 38, 38, .14), rgba(220, 38, 38, .04)); box-shadow: inset 0 0 0 1px rgba(248, 113, 113, .35); }
+.btf h5 { display: flex; align-items: center; gap: 6px; margin: 0; font: 900 .78rem var(--font-heading); letter-spacing: .06em; text-transform: uppercase; color: #fca5a5; }
+.btf dl { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 12px; margin: 0; }
+.btf dl div { min-width: 0; }
+.btf dt { font: 700 .66rem var(--font-body); color: var(--text-dim, #94a3b8); text-transform: uppercase; letter-spacing: .04em; }
+.btf dd { margin: 1px 0 0; font: 800 .84rem/1.25 var(--font-body); color: #fff; overflow-wrap: anywhere; }
+.btf-skills small { font: 700 .66rem var(--font-body); color: var(--text-dim, #94a3b8); text-transform: uppercase; letter-spacing: .04em; }
+.btf-skills ul { display: flex; flex-wrap: wrap; gap: 6px; margin: 5px 0 0; padding: 0; list-style: none; }
+.btf-skills li { padding: 4px 9px; border-radius: 999px; background: #7f1d1d; box-shadow: inset 0 0 0 1px #f87171; font: 800 .74rem var(--font-body); color: #fff; }
+.btf-story { margin: 0; font: 500 .84rem/1.45 var(--font-body); color: #e2e8f0; }
+
+/* Versão vermelha das cartas do elenco, do campo e das listas */
+.fut.t-bigtime { --t1: #1d0204; --t2: #b30f1c; --t3: #ff5a5a; --ink: #fff; }
+.fut.t-bigtime .fut-kind { background: #0d0102; color: #fecaca; box-shadow: 0 0 0 1px #ff4d4d; }
+.fut-pitch.t-bigtime { --t1: #1d0204; --t2: #9f1239; --t3: #ff4d4d; --ink: #fff; }
+.fut-pitch.t-bigtime .fut-pitch-card { background: linear-gradient(155deg, #ff4d4d 0%, #b30f1c 30%, #4a0409 70%, #1d0204 100%); }
+.fut-pitch.t-bigtime .fut-pitch-ovr b { color: #fff; text-shadow: 0 0 8px rgba(255, 77, 77, .9); }
+.fut-pitch.t-bigtime .fut-pitch-name { border-color: rgba(255, 140, 140, .6); }
+.fut-pitch .bt-photo.is-pitch { width: 38px; height: 38px; margin: 6px 0 0 12px; border-radius: 6px; }
+.ef-tile.t-bigtime .ef-tile-box { background: linear-gradient(165deg, #ff4d4d 0%, #b30f1c 45%, #3b0207 100%); box-shadow: 0 3px 8px rgba(0, 0, 0, .5), inset 0 0 0 2px #ff6b6b, 0 0 10px rgba(255, 50, 50, .45); }
+.ef-tile .bt-photo.is-tile { position: absolute; inset: 0; z-index: 1; border-radius: inherit; background: none; -webkit-mask-image: linear-gradient(180deg, #000 60%, transparent 98%); mask-image: linear-gradient(180deg, #000 60%, transparent 98%); }
+.ef-tile.t-bigtime .ef-tile-ovr { text-shadow: 0 1px 4px rgba(0, 0, 0, .85); color: #fff; }
+.fut .bt-photo.is-fut { width: 78px; height: 78px; border-radius: 10px; justify-self: center; }
+.fut.is-sm .bt-photo.is-fut { width: 54px; height: 54px; }
+.fut.is-lg .bt-photo.is-fut { width: 96px; height: 96px; }
+.on-ovr.t-bigtime { --t1: #7f0d16; --t2: #ff5a5a; color: #fff; }
+.omk-tile.t-bigtime { background: linear-gradient(160deg, #ff5a5a, #7f0d16); }
+.on-card.t-bigtime { --tier: #b30f1c; --tier-hi: #ff6b6b; box-shadow: 0 0 14px rgba(255, 50, 50, .35); }
+.on-card.t-bigtime .on-card-who small { color: #fca5a5; }
+.on-card.t-bigtime .on-card-ovr { color: #fff; text-shadow: 0 1px 3px rgba(0, 0, 0, .5); }

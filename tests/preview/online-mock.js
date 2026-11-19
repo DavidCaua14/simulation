@@ -363,6 +363,44 @@ const RPC = {
   },
 }
 if (!params.has('legacy')) Object.assign(RPC, seriesRpc)
+
+// Big Time (?bt=1 põe as duas cartas no elenco). Fotos só na prévia local: tests/preview/tmp-*.jpg (fora do git).
+const BT = [
+  { id: 'bt-1', name: 'Ronaldinho', full_name: 'Ronaldo de Assis Moreira', pos: 'PE', sec: ['MEI', 'PD'], nat: 'BRA', rating: 108, age: 25, match_date: '2005-11-19', year: 2005, opponent: 'Real Madrid', team: 'Barcelona', competition: 'La Liga', score: '3 x 0', story: 'Dois gols arrancando do meio-campo e o Santiago Bernabéu aplaudindo de pé.', photo: '/tests/preview/tmp-r10.png', photo_pos: { x: 50, y: 18, zoom: 1.1 }, skills: ['Drible', 'Finalização', 'Chute de longe', 'Passe'], active: true, owners: 3 },
+  { id: 'bt-2', name: 'Romário', full_name: 'Romário de Souza Faria', pos: 'ATA', sec: [], nat: 'BRA', rating: 107, age: 27, match_date: '1993-09-19', year: 1993, opponent: 'Uruguai', team: 'Brasil', competition: 'Eliminatórias', score: '2 x 0', story: 'Os dois gols que levaram o Brasil à Copa de 1994, no Maracanã.', photo: '/tests/preview/tmp-romario.jpg', photo_pos: { x: 42, y: 10, zoom: 1.2 }, skills: ['Finalização', 'Velocidade', 'Drible'], active: true, owners: 1 },
+  { id: 'bt-3', name: 'Zico', pos: 'MEI', sec: ['MC'], nat: 'BRA', rating: 106, age: 28, match_date: '1981-12-13', year: 1981, opponent: 'Liverpool', team: 'Flamengo', competition: 'Mundial', score: '3 x 0', story: 'Três assistências na final em Tóquio.', photo: '', photo_pos: { x: 50, y: 20, zoom: 1 }, skills: ['Falta', 'Passe'], active: true, owners: 0 },
+]
+if (params.has('bt')) {
+  players.push({ ...players.find((p) => p.pos === 'PE'), id: 'pbt1', name: 'Ronaldinho', pos: 'PE', ovr: 108, pot: 108, age: 25, form: 'B', arrow: 4, tier: 'bigtime', bt: BT[0], value: 0, wage: 4017 })
+  players.push({ ...players.find((p) => p.pos === 'ATA'), id: 'pbt2', name: 'Romário', pos: 'ATA', ovr: 107, pot: 107, age: 27, form: 'B', arrow: 3, tier: 'bigtime', bt: BT[1], value: 0, wage: 4017 })
+}
+const packItems = () => [
+  ...BT.map((b, i) => ({ id: i + 1, kind: 'bigtime', qty: 1, balls: 1, left: i === 1 && packState.got.includes(2) ? 0 : packState.got.includes(i + 1) ? 0 : 1, bt: b })),
+  { id: 10, kind: 'energy', qty: 5, balls: 3, left: 3 - packState.got.filter((x) => x === 10).length },
+  { id: 11, kind: 'coins', qty: 500, balls: 3, left: 3 - packState.got.filter((x) => x === 11).length },
+  { id: 12, kind: 'whistle', qty: 1, balls: 1, left: 1 - packState.got.filter((x) => x === 12).length },
+]
+const packState = { got: [], diamonds: 2400 }
+const pack = () => {
+  const items = packItems()
+  return { id: 1, title: 'Big Time · Noites mágicas', subtitle: 'Atuações que pararam estádios', price: 150, starts_at: new Date(Date.now() - 3600e3).toISOString(), ends_at: new Date(Date.now() + 4 * 864e5 + 5 * 3600e3).toISOString(), left: items.reduce((s, i) => s + i.left, 0), total: items.reduce((s, i) => s + i.balls, 0), items }
+}
+Object.assign(RPC, {
+  online_packs: () => ({ enabled: true, has_club: true, diamonds: packState.diamonds, packs: params.has('nopack') ? [] : [pack()] }),
+  online_pack_draw: () => {
+    const items = packItems().flatMap((i) => Array(i.left).fill(i))
+    const it = params.has('force') ? items.find((i) => i.kind === 'bigtime') : items[Math.floor(Math.random() * items.length)]
+    packState.got.push(it.id)
+    packState.diamonds -= 150
+    return { prize: { kind: it.kind, qty: it.qty, bt: it.bt }, store: RPC.online_packs() }
+  },
+  admin_bt_list: () => ({ cards: BT, packs: [{ ...pack(), draws: 42, diamonds: 6300 }], traits: [{ code: 'drible', name: 'Drible' }, { code: 'finalizacao', name: 'Finalização' }, { code: 'passe', name: 'Passe' }, { code: 'velocidade', name: 'Velocidade' }, { code: 'falta', name: 'Falta' }], styles: [{ code: 'artilheiro', kind: 'off', name: 'Artilheiro' }, { code: 'criativo', kind: 'off', name: 'Criativo' }, { code: 'pressao', kind: 'def', name: 'Pressão' }, { code: 'drib_ia', kind: 'ai', name: 'Driblador' }], positions: ['GOL', 'LD', 'ZAG', 'LE', 'VOL', 'MC', 'MEI', 'PD', 'PE', 'ATA'] }),
+  on_player_sheet: ((orig) => (args) => {
+    const p = players.find((x) => x.id === args.p_player)
+    const base = orig ? orig(args) : {}
+    return p?.bt ? { ...base, bt: p.bt, tier: 'bigtime', form: 'B' } : base
+  })(RPC.on_player_sheet),
+})
 const itemState = { diamonds: 645, qty: 1 }
 
 const json = (body, status = 200) => new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } })

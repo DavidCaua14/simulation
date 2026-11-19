@@ -566,3 +566,44 @@ python3 scripts/build-lower-squads.py          # gera supabase/online/41_lower_s
   e da copa.
 - **Elenco de bot**: as cartas geradas só completam as posições que faltam (antes podiam apagar jogadores reais e
   deixar o time sem goleiro); elenco real com menos de 2 goleiros é completado (Madureira tinha 1).
+
+## Fase 41 — Mercado com cópias, bots compradores e promoção relâmpago
+
+`supabase/online/45_market_copies.sql` (migração `20261120090000`).
+
+- **Cópias**: o mesmo jogador pode estar em vários clubes, uma cópia por clube (índice `on_players_club_src`).
+  Depois de comprado no mercado, ele volta a leilão como nova cópia passada a quarentena (`on_config.copy_rules`):
+  base 7 dias, destaque (81+) 14 dias, lenda 21 dias. Destaques têm até 5 cópias vendidas por temporada e lendas até 3.
+  Nunca há duas cópias livres ao mesmo tempo. Toda compra fica em `on_src_log`. A montagem de elencos (draft, bots)
+  continua só com jogadores sem dono; a regra das cópias vale no mercado (`on.copies`).
+- **Quem já tem não compra outra cópia**: o lance é recusado e o lote mostra "Você já tem esse jogador no elenco".
+- **Bots compradores** (`on_bot_limit`): entram em cartas base, reposição, relâmpago e destaques (lendas seguem só
+  para técnicos). Só querem quem vira titular ou primeiro reserva da posição, não é fraco demais para o time, cabe em
+  40% do caixa livre e com elenco abaixo de 26. Teto: base 50%–90% do valor; destaque 100%–160% do lance inicial.
+  Dão lance nos 10 minutos finais (sozinhos ou disputando com técnico). Bot com 25+ jogadores anuncia o pior da
+  posição mais cheia (1 hora, 60% do valor).
+- **Promoção relâmpago** (`on_market_buzz`): `flash_per_day` vezes por dia (padrão 3), em horários sorteados dentro do
+  horário do mercado, entra um lote de 30 minutos com lance inicial 30% menor (1 em 3 é destaque) e todos os técnicos
+  recebem aviso. Aparece no topo do mercado com o selo "Relâmpago".
+- **Setores sempre com oferta**: se faltar lote aberto, entra carta base para garantir goleiro (1), defesa, meio e
+  ataque (2 cada).
+
+## Fase 42 — Cartas Big Time e caixas da loja
+
+`supabase/online/46_big_time.sql` (migração `20261120090100`).
+
+- **Big Time** (`on_bigtime`): carta vermelha de uma atuação real num dia (ex.: Ronaldinho × Real Madrid, 19/11/2005).
+  Overall de 106 a 115, regularidade sempre B, foto real, data, adversário, time, competição, placar, idade naquele dia,
+  história, posições, estilos e habilidades. No motor, os atributos passam do teto de 99 até `99 + 70%` do que o
+  overall passa de 99 (`on_attr_cap`, `on_comp_cap`); a ficha mostra os valores acima de 99. Não pode ser vendida,
+  leiloada nem dispensada, e bots nunca têm.
+- **Caixas** (`on_packs`, `on_pack_items`, `on_pack_draws`): período, preço em diamantes por tiragem e conteúdo (cartas
+  e outros prêmios: energia de treino, moedas, dinheiro do clube, Apito de Ouro, cada um com quantas vezes está na
+  caixa). Sorteio sem reposição por técnico; Big Time que o clube já tem sai da caixa dele. A carta entra direto no
+  elenco do modo Online. Liberado para quem o modo Online libera (`on_pack_gate`).
+- **Painel → Big Time**: cadastro da carta com envio da foto (reduzida para 1000 px e guardada no Storage, bucket
+  público `bigtime`, gravação só do administrador), enquadramento (horizontal, vertical, zoom) e prévia da carta ao
+  vivo; montagem da caixa da semana (cartas, outros prêmios, preço e período) e números de cada caixa (tiragens e
+  diamantes). Editar a carta atualiza as cópias já entregues.
+- **Loja**: nova aba principal "Big Time" com o banner da caixa (cartas em leque, contagem regressiva, quantos prêmios
+  restam), detalhe da caixa e a revelação animada do prêmio.

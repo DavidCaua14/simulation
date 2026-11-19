@@ -1,8 +1,9 @@
 import ClubMoneyInput from '../seasons/world/ClubMoneyInput'
 import { clubMoney } from '../seasons/utils/clubMoney'
 import { useCallback, useEffect, useState } from 'react'
-import { ArrowLeft, CalendarRange, Database, Gauge, Gift, History, Megaphone, RefreshCw, Search, Send, Shield, Trophy, Users, XCircle } from 'lucide-react'
+import { ArrowLeft, CalendarRange, Database, Flame, Gauge, Gift, History, Megaphone, RefreshCw, Search, Send, Shield, Trophy, Users, XCircle } from 'lucide-react'
 import AdminEvents from '../events/AdminEvents'
+import AdminBigTime from './AdminBigTime'
 import { ConfirmSheet, Notice, Skeleton } from '../../components/ui/feedback'
 import { adjustCareer, cancelAnnouncement, fetchActions, fetchAnnouncements, fetchCareer, fetchOverview, fetchPlayers, grantPlayer, saveAnnouncement, setCareerClub } from './adminApi'
 import '../events/events.css'
@@ -16,6 +17,7 @@ const SECTIONS = [
   { id: 'players', label: 'Jogadores', Icon: Users },
   { id: 'announcements', label: 'Avisos', Icon: Megaphone },
   { id: 'events', label: 'Eventos', Icon: CalendarRange },
+  { id: 'bigtime', label: 'Big Time', Icon: Flame },
   { id: 'log', label: 'Registro', Icon: History },
 ]
 const CURRENCY = { coins: 'Moedas', diamonds: 'Diamantes', bonus_energy: 'Energia bônus' }
@@ -35,6 +37,8 @@ function actionText(a) {
   if (a.action === 'broadcast') return `Aviso “${d.title}” para ${fmt(d.recipients)} jogadores`
   if (a.action === 'announcement') return `Aviso “${d.title}” · ${fmtDate(d.starts_at)} → ${fmtDate(d.ends_at)}`
   if (a.action === 'set_club') return `${a.nickname || '—'} levado de ${d.from || 'sem clube'} para ${d.to} · ${d.reason}`
+  if (a.action === 'bigtime_save') return `Carta Big Time “${d.name}” salva`
+  if (a.action === 'pack_save') return `Caixa “${d.title}” salva`
   if (a.action === 'adjust') return `${a.nickname || '—'} · ${d.field === 'cash' ? 'caixa do clube' : 'reputação'} ${d.amount > 0 ? '+' : ''}${d.field === 'cash' ? clubMoney(d.amount) : fmt(d.amount)} · ${d.reason}`
   return a.action
 }
@@ -501,6 +505,7 @@ export default function AdminDashboard({ onBack }) {
             <section className="ad-card ad-events"><AdminEvents onChanged={() => {}} /></section>
           </>
         )}
+        {section === 'bigtime' && <AdminBigTime />}
         {section === 'log' && <Log />}
       </main>
     </div>

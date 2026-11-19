@@ -128,3 +128,6 @@
 .omk-more .omk-facts { margin-bottom: 8px; }
 
 @media (prefers-reduced-motion: reduce) { .omk-card.is-hot, .omk-sheet { animation: none; } }
+/* Promoção relâmpago (fase 41) */
+.omk-tag.is-flash { background: #f59e0b; color: #1a1000; }
+.omk-card.is-flash { box-shadow: 0 0 0 1px rgba(245, 158, 11, .7), 0 0 18px rgba(245, 158, 11, .22); }

@@ -3,6 +3,7 @@ import { Info } from 'lucide-react'
 import { fetchPlayerSheet } from '../services/onlineApi'
 import ConditionArrow from './ConditionArrow'
 import { ARROWS, FORM_LABEL } from '../conditions'
+import { BigTimeFacts } from './BigTime'
 import './player-details.css'
 
 const GROUPS = [['atk', 'Ataque'], ['tec', 'Técnica'], ['pas', 'Passe'], ['fis', 'Físico'], ['def', 'Defesa'], ['gk', 'Goleiro']]
@@ -36,6 +37,7 @@ export default function PlayerDetails({ playerId, market = false }) {
   )
   return (
     <div className={`pd ${market ? 'is-market' : ''}`}>
+      {sheet.bt && <BigTimeFacts bt={sheet.bt} />}
       {market ? (
         FORM_HINT[sheet.form] && <p className={`pd-type f-${sheet.form}`}><em>{sheet.form}</em> {FORM_HINT[sheet.form]}</p>
       ) : (

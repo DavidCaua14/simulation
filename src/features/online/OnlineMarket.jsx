@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Banknote, Coins, Crown, DoorClosed, FileText, Flame, Gavel, Hourglass, Lock, Sprout, TrendingUp, Undo2, Users, X } from 'lucide-react'
+import { Banknote, Coins, Crown, DoorClosed, FileText, Flame, Gavel, Hourglass, Lock, Sprout, TrendingUp, Undo2, UserCheck, Users, X, Zap } from 'lucide-react'
 import { EmptyState, Notice, Skeleton } from '../../components/ui/feedback'
 import OnlineCrest from './components/OnlineCrest'
 import { OvrBadge, PlayerFace } from './components/PlayerFut'
@@ -46,13 +46,14 @@ function Auction({ lot, now, busy, wallet, coins, closed, onBid, onCancel, onShe
   const kind = KIND_LABEL(lot)
   const state = lot.leading ? 'is-leading' : lot.bidding ? 'is-outbid' : ''
   return (
-    <article className={`omk-card t-${cardTier(p)} ${kind ? 'is-featured' : ''} ${locked ? 'is-locked' : ''} ${hot ? 'is-hot' : ''} ${state}`}>
+    <article className={`omk-card t-${cardTier(p)} ${kind ? 'is-featured' : ''} ${lot.flash ? 'is-flash' : ''} ${locked ? 'is-locked' : ''} ${hot ? 'is-hot' : ''} ${state}`}>
       <div className="omk-head">
         <button type="button" className="omk-tile-btn" onClick={() => onSheet(lot)} aria-label={`Ver a ficha de ${p.name}`}>
           <MarketTile p={p} club={lot.seller} />
         </button>
         <div className="omk-who">
           <span className="omk-tags">
+            {lot.flash && <em className="omk-tag is-flash"><Zap size={10} /> Relâmpago</em>}
             {kind && <em className={`omk-tag ${p.legend ? 'is-legend' : 'is-star'}`}><Crown size={10} /> {kind}</em>}
             {isProspect(lot) && <em className="omk-tag is-prospect"><Sprout size={10} /> Promessa</em>}
             {lot.seller && <em className="omk-tag is-seller"><OnlineCrest club={lot.seller} size={13} /> {lot.seller.short}</em>}
@@ -84,7 +85,8 @@ function Auction({ lot, now, busy, wallet, coins, closed, onBid, onCancel, onShe
         <button type="button" className="omk-ghost" disabled={busy} onClick={() => onCancel(lot)}><Undo2 size={14} /> Retirar do leilão</button>
       )}
       {!lot.mine && !locked && closed && <p className="omk-note"><DoorClosed size={12} /> Mercado fechado</p>}
-      {!lot.mine && !locked && !closed && (
+      {!lot.mine && !locked && !closed && lot.owned && <p className="omk-note"><UserCheck size={12} /> Você já tem esse jogador no elenco</p>}
+      {!lot.mine && !locked && !closed && !lot.owned && (
         <div className="omk-act">
           <div className="omk-steps" role="group" aria-label="Valor do lance">
             {STEPS.map(([v, label]) => <button key={v} type="button" className={step === v ? 'is-on' : ''} onClick={() => setStep(v)}>{label}</button>)}
@@ -204,7 +206,8 @@ const KINDS = [
   ['all', 'Todos', () => true],
   ['legend', 'Lendas', (l) => l.featured >= 8 && l.player.legend],
   ['star', 'Destaques', (l) => l.featured >= 8 && !l.player.legend],
-  ['base', 'Base', (l) => l.featured < 8],
+  ['flash', 'Relâmpago', (l) => l.flash],
+  ['base', 'Base', (l) => l.featured < 8 && !l.flash],
 ]
 export default function OnlineMarket({ notify, onChanged }) {
   const [data, setData] = useState(null)
@@ -257,7 +260,7 @@ export default function OnlineMarket({ notify, onChanged }) {
   const coins = data.coins || { wallet: 0, bid_rate: 1, cap: 0, converted: 0 }
   const wallet = { free: c.cash - c.reserved }
   const lists = {
-    featured: open.filter((l) => !l.mine),
+    featured: open.filter((l) => !l.mine).sort((a, b) => Number(Boolean(b.flash)) - Number(Boolean(a.flash))),
     mine: open.filter((l) => l.mine || l.bidding),
   }
   const hours = data.hours

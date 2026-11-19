@@ -78,8 +78,8 @@ export function asSeasonPlayer(p, posFit) {
 }
 
 // Tipo da carta: normal (até 80), especial (81 ou mais) ou lenda. Cada tipo tem uma cor própria.
-export const cardTier = (p) => (p?.legend ? 'legend' : Number(p?.ovr) >= 80.5 ? 'special' : 'normal')
-export const TIER_LABEL = { normal: 'Normal', special: 'Especial', legend: 'Lenda' }
+export const cardTier = (p) => (p?.tier === 'bigtime' || p?.bt ? 'bigtime' : p?.legend ? 'legend' : Number(p?.ovr) >= 80.5 ? 'special' : 'normal')
+export const TIER_LABEL = { normal: 'Normal', special: 'Especial', legend: 'Lenda', bigtime: 'Big Time' }
 // "$ 150 mil", "$ 1,2 mi" (para espaços curtos)
 export function moneyShort(n) {
   const v = Math.round(Number(n || 0))

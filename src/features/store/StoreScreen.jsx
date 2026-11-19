@@ -8,7 +8,8 @@ import EnergyTab from './components/EnergyTab'
 import VisualTab from './components/VisualTab'
 import TrainEnergyTab from './components/TrainEnergyTab'
 import ItemsTab from './components/ItemsTab'
-import { fetchOnlineItems, fetchOnlineStatus } from '../online/services/onlineApi'
+import PacksTab from './components/PacksTab'
+import { fetchOnlineItems, fetchOnlineStatus, fetchPacks } from '../online/services/onlineApi'
 import WalletHistory from './components/WalletHistory'
 import DiamondExchange from '../cards/components/DiamondExchange'
 import '../cards/cards.css'
@@ -25,25 +26,30 @@ const fmt = (n) => Number(n ?? 0).toLocaleString('pt-BR')
 export default function StoreScreen({ career, params, onBack }) {
   const { player } = career
   const wallet = useWallet({ coins: player.coins, energy: player.energy, diamonds: player.diamonds })
-  const [tab, setTab] = useState(TABS.some((t) => t.id === params?.tab) || ['training', 'items'].includes(params?.tab) ? params.tab : 'energy')
+  const [pick, setTab] = useState(TABS.some((t) => t.id === params?.tab) || ['training', 'items', 'bigtime'].includes(params?.tab) ? params.tab : 'bigtime')
   const [history, setHistory] = useState(false)
   const [exchange, setExchange] = useState(false)
   // Energia de treino: só para quem tem clube no modo Online
   const [online, setOnline] = useState(false)
   // Itens (Apito de Ouro): aparece quando o servidor libera (online_items.enabled)
   const [items, setItems] = useState(false)
+  // Caixas Big Time: aba principal quando o servidor libera (online_packs.enabled)
+  const [packs, setPacks] = useState(null)
   useEffect(() => {
+    fetchPacks().then((d) => setPacks(Boolean(d?.enabled))).catch(() => setPacks(false))
     fetchOnlineStatus().then((s) => setOnline(s?.access === 'playing' && s.club?.draft_step >= 3)).catch(() => {})
     fetchOnlineItems().then((d) => setItems(Boolean(d?.enabled))).catch(() => {})
   }, [])
-  const tabs = [TABS[0], ...(online ? [{ id: 'training', label: 'Treino', icon: 'energy' }] : []), ...(online && items ? [{ id: 'items', label: 'Itens', icon: 'diamond' }] : []), ...TABS.slice(1)]
+  // sem caixas liberadas, a aba Big Time vira Energia
+  const tab = pick === 'bigtime' && packs === false ? 'energy' : pick
+  const tabs = [...(packs ? [{ id: 'bigtime', label: 'Big Time', icon: 'highlight' }] : []), TABS[0], ...(online ? [{ id: 'training', label: 'Treino', icon: 'energy' }] : []), ...(online && items ? [{ id: 'items', label: 'Itens', icon: 'diamond' }] : []), ...TABS.slice(1)]
   return (
     <AppShell left={<button type="button" className="icon-btn" onClick={onBack} aria-label="Voltar ao menu"><BackIcon /></button>} title="Loja">
       <div className="cx-screen sh-screen" style={{ '--store-bg': `url(${storeBg})` }}>
         <span className="sh-backdrop" aria-hidden="true" />
         <header className="sh-hero">
           <small>Loja do clube</small>
-          <b>Energia, visual e recompensas</b>
+          <b>{packs ? 'Caixas Big Time, energia e itens' : 'Energia, visual e recompensas'}</b>
           <span>Tudo é comprado com moedas e diamantes do jogo — nenhum pagamento real.</span>
         </header>
         <div className="cx-wallet">
@@ -60,6 +66,7 @@ export default function StoreScreen({ career, params, onBack }) {
           ))}
         </nav>
         <div className="cx-scroll">
+          {tab === 'bigtime' && packs && <PacksTab onChanged={wallet.refresh} onEmpty={() => setTab('energy')} />}
           {tab === 'energy' && <><EnergyTab onChanged={wallet.refresh} /><button type="button" className="gx-btn-ghost" onClick={() => setExchange(true)}>Trocar diamantes por energia</button></>}
           {tab === 'training' && online && <TrainEnergyTab onChanged={wallet.refresh} />}
           {tab === 'items' && online && items && <ItemsTab onChanged={wallet.refresh} />}

@@ -91,3 +91,7 @@ export const fetchOnlineCup = () => rpc('on_cup')
 export const fetchOnlineItems = () => rpc('online_items')
 export const buyOnlineItem = (item = 'golden_whistle') => rpc('online_item_buy', { p_item: item })
 export const applyOnlineItem = (playerId, item = 'golden_whistle') => rpc('online_item_use', { p_player: playerId, p_item: item })
+
+// Loja: caixas Big Time (supabase/online/46_big_time.sql)
+export const fetchPacks = () => rpc('online_packs')
+export const drawPack = (packId) => rpc('online_pack_draw', { p_pack: packId })

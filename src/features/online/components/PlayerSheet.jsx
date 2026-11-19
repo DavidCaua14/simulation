@@ -6,6 +6,8 @@ import { ARROWS } from '../conditions'
 import PlayerDetails from './PlayerDetails'
 import { POS_NAME } from '../../seasons/utils/managerUtils'
 import { FutCard } from './PlayerFut'
+import BigTimeCard from './BigTime'
+import { btDate } from './bigtimeUtils'
 import { money } from '../onlineUtils'
 import { styleName } from '../styles'
 import './player-menu.css'
@@ -63,6 +65,7 @@ export default function PlayerSheet({ p, club, seasonId, busy, listed, onClose, 
   const styleOff = styleName(p.style_off)
   const styleDef = styleName(p.style_def)
   const arrow = ARROWS[p.arrow]
+  const bt = p.tier === 'bigtime' ? p.bt : null
   return (
     <div className="on-modal opm" role="dialog" aria-modal="true" aria-label={p.name} onClick={onClose}>
       <div className="opm-card" onClick={(e) => e.stopPropagation()}>
@@ -72,7 +75,7 @@ export default function PlayerSheet({ p, club, seasonId, busy, listed, onClose, 
         </header>
         <div className="opm-body">
           <section className="opm-hero">
-            <FutCard p={p} club={club} size="sm" />
+            {bt ? <BigTimeCard bt={bt} ovr={p.ovr} pos={p.pos} size="sm" /> : <FutCard p={p} club={club} size="sm" />}
             <div className="opm-id">
               <small className="opm-pos">{positions}</small>
               {(styleOff || styleDef) && (
@@ -86,6 +89,16 @@ export default function PlayerSheet({ p, club, seasonId, busy, listed, onClose, 
               {listed && <span className="opm-tag"><Gavel size={12} /> Em leilão</span>}
             </div>
           </section>
+          {bt ? (
+            <dl className="opm-facts">
+              <div><dt>Físico</dt><dd>{Math.round(p.cond)}%</dd></div>
+              <div><dt>Atuação</dt><dd>{btDate(bt.match_date)}</dd></div>
+              <div><dt>Adversário</dt><dd>{bt.opponent}</dd></div>
+              <div><dt>Idade no jogo</dt><dd>{bt.age} anos</dd></div>
+              <div><dt>Regularidade</dt><dd>B</dd></div>
+              <div><dt>Salário</dt><dd>{money(p.wage)}<small>/dia</small></dd></div>
+            </dl>
+          ) : (
           <dl className="opm-facts">
             <div><dt>Físico</dt><dd>{Math.round(p.cond)}%</dd></div>
             <div><dt>Evolução</dt><dd>{ovr} <TrendingUp size={13} /> {pot}</dd></div>
@@ -94,6 +107,7 @@ export default function PlayerSheet({ p, club, seasonId, busy, listed, onClose, 
             <div><dt>Salário</dt><dd>{money(p.wage)}<small>/dia</small></dd></div>
             <div><dt>Idade</dt><dd>{p.age} anos</dd></div>
           </dl>
+          )}
           <div className="opm-right">
             {maxed && (
               <div className="on-ps-maxed" role="status">
@@ -106,14 +120,16 @@ export default function PlayerSheet({ p, club, seasonId, busy, listed, onClose, 
                 <Row Icon={ListChecks} label="Detalhes do jogador" sub="Estilos e qualidade" onClick={() => setMode('details')} />
                 {onSwap && <Row Icon={ArrowLeftRight} label="Trocar de lugar" sub={where ? `Hoje: ${where}` : 'Escolha com quem trocar'} disabled={busy} onClick={() => onSwap(p)} />}
                 {onRoles && <Row Icon={Flag} label="Funções" sub="Capitão e cobradores" onClick={() => onRoles(p)} />}
-                {whistle && (
+                {whistle && !bt && (
                   <Row label="Treino de elite" sub={room > 0 ? `Apito de Ouro · você tem ${whistle.qty}` : 'Já no nível máximo'} disabled={busy || room <= 0} onClick={() => { setItemErr(''); setMode('item') }}>
                     <GoldenWhistle size={20} />
                   </Row>
                 )}
+                {bt ? <p className="opm-btnote">Carta Big Time: fica no seu clube para sempre. Não pode ser vendida, leiloada nem dispensada.</p> : <>
                 <Row Icon={FileSignature} label="Renovar contrato" sub={left >= 3 ? 'Contrato já no máximo' : `Salário novo ${money(wageFor(p.ovr, p.age))}/dia`} disabled={busy || left >= 3} onClick={() => setMode('renew')} />
                 <Row Icon={Gavel} label="Leiloar" sub={listed ? 'Já está no mercado' : '1 hora no mercado'} disabled={busy || listed} onClick={() => setMode('auction')} />
                 <Row Icon={UserMinus} label="Dispensar" sub={`Volta ao mercado · +${money(p.sell ?? Math.round(p.value * 0.6))}`} disabled={busy || listed} danger onClick={() => setMode('sell')} />
+                </>}
               </nav>
             )}
           {mode === 'item' && whistle && (

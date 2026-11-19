@@ -172,7 +172,7 @@ export function PlayerCard({ p, tag, colors, selected, onClick, compact }) {
       <span className="on-card-shirt" style={{ '--c1': colors[0], '--c2': colors[1] }}>{p.number ?? ''}</span>
       <span className="on-card-who">
         <strong>{p.star && <Star size={11} aria-label="Craque" />}{p.name}</strong>
-        <small>{tag ? `${tag} · ` : ''}{p.age} anos · {money(p.value)}</small>
+        <small>{p.bt ? `Big Time · ${p.bt.year} × ${p.bt.opponent}` : <>{tag ? `${tag} · ` : ''}{p.age} anos · {money(p.value)}</>}</small>
       </span>
       <span className="on-card-flags">
         {p.injured > 0 && <Ambulance size={13} aria-label="Lesionado" />}

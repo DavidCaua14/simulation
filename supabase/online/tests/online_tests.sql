@@ -377,12 +377,12 @@ begin
    and not p.legend and p.level>=81 and x.start_price>400000 and x.opens_at<=timestamptz '2026-11-12 13:20+00')<>5 then raise exception 'destaques da hora';end if;
  if (select count(*) from public.on_lots x join public.on_players p on p.id=x.player_id where x.season_id=s.id and x.status='open' and x.featured=8
    and p.legend and x.start_price>=600000)<>5 then raise exception 'lendas da hora';end if;
- if exists(select 1 from public.on_lots x join public.on_players p on p.id=x.player_id where x.status='open' and x.seller is null
+ if exists(select 1 from public.on_lots x join public.on_players p on p.id=x.player_id where x.status='open' and x.seller is null and x.featured not in(6,7) -- relâmpago e reposição de setor são extras (fase 41)
    group by case when x.featured>=8 then x.featured else 1 end having count(distinct p.pos)<>count(*)) then raise exception 'posições repetidas no mercado';end if;
- select * into l from public.on_lots where season_id=s.id and featured=9 and status='open' order by id limit 1;
- -- bot nunca disputa destaque ou lenda
- begin perform public.on_bid_as((select id from public.on_clubs where season_id=s.id and user_id is null limit 1),l.id,l.start_price,timestamptz '2026-11-12 13:30+00');raise exception 'bot deu lance em destaque';
- exception when others then if sqlerrm not like 'Destaque e lenda%' then raise;end if;end;
+ select * into l from public.on_lots where season_id=s.id and featured=8 and status='open' order by id limit 1;
+ -- bot nunca disputa lenda (destaque pode, fase 41)
+ begin perform public.on_bid_as((select id from public.on_clubs where season_id=s.id and user_id is null limit 1),l.id,l.start_price,timestamptz '2026-11-12 13:30+00');raise exception 'bot deu lance em lenda';
+ exception when others then if sqlerrm not like 'Lendas são só%' then raise;end if;end;
  -- hora seguinte: os sem lance saem e entram outros 5 de cada
  select array_agg(player_id) into ids from public.on_lots where status='open' and featured>=8;
  perform public.on_market_tick(timestamptz '2026-11-12 14:00+00',false);
@@ -1054,11 +1054,11 @@ declare s public.on_seasons;weak text;strong text;lw bigint;ls bigint;n int;v bi
 begin
  select * into s from public.on_seasons where status='live';
  insert into public.on_players(club_id,name,pos,age,level,pot,ovr,wage,contract_end) values(null,'Fraco Teste','MC',25,45,45,45,10,s.id+1) returning id into weak;
- insert into public.on_players(club_id,name,pos,age,level,pot,ovr,wage,contract_end) values(null,'Forte Teste','MC',25,88,88,88,10,s.id+1) returning id into strong;
+ insert into public.on_players(club_id,name,pos,age,level,pot,ovr,wage,contract_end) values(null,'Forte Teste','MC',25,79,79,79,10,s.id+1) returning id into strong;
  insert into public.on_lots(season_id,player_id,start_price,opens_at,ends_at,hard_end) values(s.id,weak,500,now(),now()+interval '1 hour',now()+interval '2 hours') returning id into lw;
  insert into public.on_lots(season_id,player_id,start_price,opens_at,ends_at,hard_end) values(s.id,strong,500,now(),now()+interval '1 hour',now()+interval '2 hours') returning id into ls;
  if exists(select 1 from public.on_clubs c where c.season_id=s.id and c.user_id is null and public.on_bot_limit(c.id,lw,weak)>0) then raise exception 'bot interessado em jogador fraco';end if;
- v:=public.on_value(88,25,88);
+ v:=public.on_value(79,25,79); -- carta base (destaque 81+ segue o lance inicial: series_tests, fase 41)
  select count(*) into n from public.on_clubs c where c.season_id=s.id and c.user_id is null and public.on_bot_limit(c.id,ls,strong)>0;
  if exists(select 1 from public.on_clubs c where c.season_id=s.id and c.user_id is null and public.on_bot_limit(c.id,ls,strong)>0
    and public.on_bot_limit(c.id,ls,strong) not between round(v*.5) and round(v*.9)) then raise exception 'teto do bot fora de 50%% a 90%%';end if;

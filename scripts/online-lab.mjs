@@ -11,6 +11,7 @@
 //     --arrows N       condição: N jogos por seta (1 a 5) do time A contra o mesmo elenco com seta amarela.
 //     --styles N       estilos: N jogos por plano com estilos que combinam com o plano contra o mesmo elenco sem estilo.
 //     --marks N        marcação individual: N jogos com o melhor defensor marcando o melhor atacante rival, e N sem marcação.
+//     --bigtime N      cartas Big Time: N jogos com o centroavante de A como Big Time (106 e 110), como 99 comum e sem troca.
 //
 // Cada temporada: elencos gerados como no online (19 genéricos + 3 craques), força espalhada de -5 a +5 por clube,
 // e um "técnico" por clube:
@@ -27,7 +28,7 @@ import { pathToFileURL } from 'node:url'
 const ROOT = new URL('..', import.meta.url).pathname
 const ONLINE = join(ROOT, 'supabase', 'online')
 const arg = (k, d) => { const i = process.argv.indexOf('--' + k); return i > 0 ? process.argv[i + 1] : d }
-const SEASONS = +arg('seasons', 10), DUELS = +arg('duels', 0), ARROWS = +arg('arrows', 0), STYLES = +arg('styles', 0), MARKS = +arg('marks', 0), EXTRA = arg('extra', null), OUT = arg('out', null)
+const SEASONS = +arg('seasons', 10), DUELS = +arg('duels', 0), ARROWS = +arg('arrows', 0), STYLES = +arg('styles', 0), MARKS = +arg('marks', 0), BIGTIME = +arg('bigtime', 0), EXTRA = arg('extra', null), OUT = arg('out', null)
 const LABEL = arg('label', EXTRA ? EXTRA.split('/').pop() : 'motor atual')
 const PROFILES = ['bot', 'ativo', 'passivo', 'aleatorio']
 
@@ -150,9 +151,9 @@ const PLANS = HAS_PLANS ? Object.fromEntries(PLAN_IDS.map((p) => [p, { plan: p }
   pressao: { style: 'neutral', marking: 'high' },
   pontas: { style: 'neutral', attack: 'both', crossing: 'byline' },
 }
-const duels = {}, arrowsTest = {}, stylesTest = {}, marksTest = {}
+const duels = {}, arrowsTest = {}, stylesTest = {}, marksTest = {}, btTest = {}
 const HAS_STYLES = (await db.query(`select to_regprocedure('public.on_arrow_next(char,int,numeric,boolean,float8)') is not null ok`)).rows[0].ok
-if (DUELS > 0 || ARROWS > 0 || STYLES > 0 || MARKS > 0) {
+if (DUELS > 0 || ARROWS > 0 || STYLES > 0 || MARKS > 0 || BIGTIME > 0) {
   await db.exec(`update public.on_seasons set status='closed' where status='live';`)
   const sid = (await db.query(`select public.on_season_bootstrap('{}'::uuid[],date '2020-01-06') s`)).rows[0].s
   const [A, B] = (await db.query('select id from public.on_clubs where season_id=$1 order by id limit 2', [sid])).rows.map((r) => r.id)
@@ -238,6 +239,31 @@ if (DUELS > 0 || ARROWS > 0 || STYLES > 0 || MARKS > 0) {
       process.stderr.write(`marcação ${k}: ${r.w}-${r.d}-${r.l}, alvo ${JSON.stringify(marksTest[k].target)}\n`)
     }
   }
+  // Big Time: o centroavante de A vira carta Big Time (atributos acima de 99) ou um 99 comum; B é o mesmo elenco original
+  if (BIGTIME > 0) {
+    const atk = (await db.query(`select id,level,ovr,pot,tier from public.on_players where club_id=$1 and pos='ATA' order by ovr desc limit 1`, [A])).rows[0]
+    const gk = (await db.query(`select id from public.on_players where club_id=$1 and pos='GOL' order by ovr desc limit 1`, [A])).rows[0]
+    await db.exec(`create table if not exists public.lab_bt(goals int,shots int);
+     create or replace function public.lab_bt_keep() returns trigger language plpgsql as $f$ begin
+      if new.status='finished' and old.status<>'finished' then
+       insert into public.lab_bt select goals,shots from public.on_match_players where fixture_id=new.fixture_id and player_id='${atk.id}';
+      end if;return new;end $f$;
+     drop trigger if exists lab_bt on public.on_matches;
+     create trigger lab_bt after update on public.on_matches for each row execute function public.lab_bt_keep();`)
+    const cases = [['original', atk.level, null], ['99 comum', 99, null], ['Big Time 106', 106, 'bigtime'], ['Big Time 110', 110, 'bigtime'], ['GOL Big Time 108', 108, 'gk']]
+    for (const [k, lvl, tier] of cases) {
+      const id = tier === 'gk' ? gk.id : atk.id
+      await db.query(`update public.on_players set level=$2::int,pot=$3::int,ovr=$4::numeric,tier=$5 where id=$1`, [atk.id, atk.level, atk.pot, atk.ovr, atk.tier])
+      await db.query(`update public.on_players set level=$2::int,pot=$2::int,ovr=$2::int,g='{0,0,0,0}',tier=$3 where id=$1`, [id, lvl, tier === 'gk' ? 'bigtime' : tier])
+      await db.exec('delete from public.lab_bt')
+      const r = await play(BIGTIME, { plan: 'posse' }, { plan: 'posse' })
+      const t = (await db.query('select coalesce(sum(goals),0)::int g,coalesce(sum(shots),0)::int s from public.lab_bt')).rows[0]
+      btTest[k] = { ...r, scorer: t }
+      process.stderr.write(`${k}: ${r.w}-${r.d}-${r.l} gols ${r.gf}-${r.ga} · centroavante ${t.g} gols em ${t.s} chutes\n`)
+      if (tier === 'gk') await db.query(`update public.on_players set tier=null where id=$1`, [gk.id])
+    }
+    await db.query(`update public.on_players set level=$2::int,pot=$3::int,ovr=$4::numeric,tier=$5 where id=$1`, [atk.id, atk.level, atk.pot, atk.ovr, atk.tier])
+  }
 }
 
 // ── Resumo ──
@@ -293,6 +319,7 @@ summary.champion = {
 const rho = seasons.map((s) => { const n = s.table.length; let d2 = 0; s.table.forEach((t, i) => { d2 += (i + 1 - t.strRank) ** 2 }); return 1 - (6 * d2) / (n * (n * n - 1)) })
 summary.rankCorr = +(rho.reduce((a, b) => a + b, 0) / rho.length).toFixed(2)
 summary.duels = duels
+summary.bigtime = btTest
 summary.arrows = arrowsTest
 summary.styles = stylesTest
 summary.marks = marksTest

@@ -57,3 +57,4 @@
   .opm-facts div { padding: 8px; }
   .opm-facts dd { font-size: 0.84rem; }
 }
+.opm-btnote { margin: 0; padding: 12px; border-radius: 10px; background: #fef2f2; box-shadow: inset 0 0 0 1px #fca5a5; font: 600 .82rem/1.4 var(--font-body); color: #991b1b; }

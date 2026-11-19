@@ -1,5 +1,6 @@
 import ConditionArrow from './ConditionArrow'
 import { PlayerFace } from './PlayerFut'
+import { BtPhoto } from './BigTime'
 import { cardTier } from '../onlineUtils'
 
 // CARTA QUADRADA no estilo eFootball: posição e nota no canto, rosto, seta de condição e o nome embaixo.
@@ -36,7 +37,7 @@ export default function EfTile({ player, pos, colors, selected, onClick, label, 
       <span className="ef-tile-box">
         <span className="ef-tile-ovr"><small>{at}</small><b>{rating}</b></span>
         {player.arrow != null && <ConditionArrow arrow={player.arrow} size={14} className="ef-tile-arrow" />}
-        <span className="ef-tile-face"><PlayerFace seed={name} colors={colors ? { a: colors[0], b: colors[1] } : undefined} size={Math.round(size * 0.88)} /></span>
+        {player.bt?.photo ? <BtPhoto bt={player.bt} className="is-tile" /> : <span className="ef-tile-face"><PlayerFace seed={name} colors={colors ? { a: colors[0], b: colors[1] } : undefined} size={Math.round(size * 0.88)} /></span>}
         {(injured || susp) && <i className={`ef-tile-flag ${injured ? 'inj' : 'susp'}`}>{injured ? '+' : 'S'}</i>}
         {badge && <em className="ef-tile-badge">{badge}</em>}
       </span>

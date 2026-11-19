@@ -1,0 +1,21 @@
+/* Painel: cartas Big Time e caixas */
+.abt-form { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 16px; align-items: start; }
+.abt-preview { position: sticky; top: 16px; display: grid; justify-items: center; gap: 14px; background: #120607; color: #fff; }
+.abt-preview h3 { justify-self: start; color: #fecaca; }
+.abt-preview .btf { width: 100%; }
+.abt-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 0 12px; }
+.abt-grid select, .abt-others select, .abt-others input { padding: 8px 10px; border: 1px solid var(--gx-line); border-radius: 9px; background: var(--gx-panel); color: var(--gx-ink); font: 500 .9rem var(--font-body); }
+.abt-others input { width: 110px; }
+.abt-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.abt-chips button { padding: 5px 10px; border: 1px solid var(--gx-line); border-radius: 999px; background: var(--gx-panel); color: var(--gx-ink); font: 700 .78rem var(--font-body); cursor: pointer; }
+.abt-chips button.is-on { border-color: #e01e2b; background: #e01e2b; color: #fff; }
+.abt-photo { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; }
+.abt-photo label:not(.abt-upload) { display: flex; flex-direction: column; gap: 4px; font-size: .76rem; font-weight: 700; color: var(--gx-ink-2); }
+.abt-upload { cursor: pointer; }
+.abt-pick, .abt-list { display: flex; flex-wrap: wrap; gap: 12px; }
+.abt-pick button { padding: 4px; border: 2px solid transparent; border-radius: 14px; background: none; cursor: pointer; opacity: .55; }
+.abt-pick button.is-on { border-color: #e01e2b; opacity: 1; }
+.abt-item { display: grid; justify-items: center; gap: 4px; }
+.abt-item small { color: var(--gx-ink-2); font-size: .74rem; }
+.abt-live { margin-left: 8px; padding: 2px 8px; border-radius: 999px; background: #16a34a; color: #fff; font: 800 .66rem var(--font-body); text-transform: uppercase; }
+@media (max-width: 980px) { .abt-form { grid-template-columns: 1fr; } .abt-preview { position: static; } }

@@ -1,6 +1,7 @@
-import { Crown } from 'lucide-react'
+import { Crown, Flame } from 'lucide-react'
 import ConditionArrow from './ConditionArrow'
 import { TIER_LABEL, cardLabels, cardTier } from '../onlineUtils'
+import { BtPhoto } from './BigTime'
 import './pitch-card.css'
 
 // Carta do jogador (retrato, nota, posição e os seis atributos) e peças menores usadas no mercado e no elenco.
@@ -60,11 +61,11 @@ export function FutCard({ p, club, size = 'md', onClick, selected = false, disab
       style={{ animationDelay: `${delay}ms` }}
     >
       <span className="fut-shine" aria-hidden="true" />
-      {tier !== 'normal' && <span className="fut-kind">{tier === 'legend' && <Crown size={9} />}{TIER_LABEL[tier]}</span>}
+      {tier !== 'normal' && <span className="fut-kind">{tier === 'legend' && <Crown size={9} />}{tier === 'bigtime' && <Flame size={9} />}{TIER_LABEL[tier]}</span>}
       {selected && <span className="fut-check" aria-hidden="true">✓</span>}
       <span className="fut-top">
         <span className="fut-ovr"><b>{Math.round(p.ovr)}</b><small>{p.pos}</small><i className="fut-nat">{p.nat || 'BRA'}</i></span>
-        <PlayerFace seed={p.name} colors={club?.colors} size={size === 'lg' ? 96 : size === 'sm' ? 54 : 78} />
+        {p.bt?.photo ? <BtPhoto bt={p.bt} className="is-fut" /> : <PlayerFace seed={p.name} colors={club?.colors} size={size === 'lg' ? 96 : size === 'sm' ? 54 : 78} />}
       </span>
       <strong className={`fut-name ${nameSize(p.name)}`}>{p.name}</strong>
       {p.card && size !== 'sm' && (
@@ -74,7 +75,7 @@ export function FutCard({ p, club, size = 'md', onClick, selected = false, disab
           ))}
         </span>
       )}
-      <span className="fut-meta">{tier === 'legend' ? <>Lenda{p.pot != null && <> · POT <b>{p.pot}</b></>}</> : <>{p.age} anos{p.pot != null && <> · POT <b>{p.pot}</b></>}</>}</span>
+      <span className="fut-meta">{tier === 'bigtime' && p.bt ? <>{p.bt.year} · × {p.bt.opponent}</> : tier === 'legend' ? <>Lenda{p.pot != null && <> · POT <b>{p.pot}</b></>}</> : <>{p.age} anos{p.pot != null && <> · POT <b>{p.pot}</b></>}</>}</span>
       {footer}
     </Tag>
   )
@@ -119,7 +120,7 @@ export function PitchCard({ player, pos, colors, selected, live, onClick, label,
         <span className="fut-pitch-ovr"><b>{rating}</b><small>{pos || player.position}</small></span>
         {player.arrow != null && <ConditionArrow arrow={player.arrow} size={13} className="fut-pitch-arrow" />}
         {tier === 'legend' && <Crown className="fut-pitch-crown" size={9} aria-hidden="true" />}
-        <PlayerFace seed={name} colors={colors ? { a: colors[0], b: colors[1] } : undefined} size={34} />
+        {player.bt?.photo ? <BtPhoto bt={player.bt} className="is-pitch" /> : <PlayerFace seed={name} colors={colors ? { a: colors[0], b: colors[1] } : undefined} size={34} />}
         <strong className={`fut-pitch-name ${name.length > 12 ? 'is-long' : ''}`}>{name}</strong>
         {(injured || susp || (live && player.yellow > 0) || player.yellows > 0) && (
           <span className="fut-pitch-flags">

@@ -289,3 +289,147 @@ begin
  if l.id is not null and (public.on_player_sheet(l.player_id)->>'id')<>l.player_id then raise exception 'ficha do leilão';end if;
  raise notice 'PASS já vi por conta e ficha do mercado';
 end $$;
+
+-- fase 41: cópias (uma por clube), quarentena e limite por temporada; bots que compram
+do $$
+declare s public.on_seasons;a public.on_clubs;b public.on_clubs;k int;v_src text;pid text;lot bigint;r public.on_lots;v bigint;ok boolean;
+begin
+ select * into s from public.on_seasons where status='live';
+ select * into a from public.on_clubs where season_id=s.id and user_id is not null order by id limit 1;
+ -- jogador base de algum bot: pode virar nova cópia no mercado
+ select p.src,p.club_id into v_src,k from public.on_players p join public.on_pool q on q.id=p.src and not q.legend and q.rating<81
+  join public.on_clubs c on c.id=p.club_id and c.season_id=s.id and c.user_id is null
+  where not exists(select 1 from public.on_players o where o.src=p.src and o.club_id=a.id) order by p.id limit 1;
+ if v_src is null then raise exception 'nenhum jogador real em bot';end if;
+ select * into b from public.on_clubs where id=k;
+ if not public.on_src_free(v_src,false,70) then raise exception 'jogador com dono deveria poder ter nova cópia';end if;
+ pid:=public.on_real_insert(v_src,null,null,s.id+1);
+ if public.on_src_free(v_src,false,70) then raise exception 'duas cópias livres ao mesmo tempo';end if;
+ insert into public.on_lots(season_id,player_id,start_price,opens_at,ends_at,hard_end) values(s.id,pid,500,now(),now()+interval '1 hour',now()+interval '2 hours') returning id into lot;
+ -- o dono não dá lance na própria cópia; bot dono também não quer
+ begin perform public.on_bid_as(b.id,lot,500,now());raise exception 'clube com o jogador deu lance';
+ exception when others then if sqlerrm not like 'Você já tem esse jogador%' and sqlerrm not like 'Caixa livre%' then raise;end if;end;
+ if public.on_bot_limit(b.id,lot,pid)<>0 then raise exception 'bot que já tem o jogador quer outra cópia';end if;
+ -- técnico compra: vira registro da quarentena (7 dias para base)
+ update public.on_clubs set cash=greatest(cash,10000000),reserved=0,debt=0 where id=a.id;
+ delete from public.on_players where club_id=a.id and src=v_src;
+ perform public.on_bid_as(a.id,lot,1000,now());
+ update public.on_lots set ends_at=now()-interval '1 second' where id=lot;
+ perform public.on_lot_settle(lot,now());
+ if (select club_id from public.on_players where id=pid)<>a.id then raise exception 'cópia não foi para o comprador';end if;
+ if not exists(select 1 from public.on_src_log where src=v_src and club_id=a.id) then raise exception 'compra sem registro';end if;
+ if exists(select 1 from public.on_players o where o.src=v_src and o.club_id=b.id)=false then raise exception 'cópia do bot sumiu';end if;
+ if public.on_src_free(v_src,false,70) then raise exception 'base voltou antes de 7 dias';end if;
+ perform set_config('on.now',(now()+interval '7 days 1 minute')::text,true);
+ if not public.on_src_free(v_src,false,70) then raise exception 'base não voltou depois de 7 dias';end if;
+ if public.on_src_free(v_src,false,85) then raise exception 'destaque voltou antes de 14 dias';end if;
+ perform set_config('on.now',(now()+interval '14 days 1 minute')::text,true);
+ if not public.on_src_free(v_src,false,85) then raise exception 'destaque não voltou depois de 14 dias';end if;
+ -- limite de cópias de lenda por temporada (3)
+ insert into public.on_src_log(v_src,club_id,season_id,at) select 'lg-teste',a.id,s.id,now()-interval '60 days' from generate_series(1,3);
+ perform set_config('on.now',(now()+interval '30 days')::text,true);
+ if public.on_src_free('lg-teste',true,90) then raise exception 'lenda passou de 3 cópias';end if;
+ delete from public.on_src_log where src='lg-teste';
+ if not public.on_src_free('lg-teste',true,90) then raise exception 'lenda sem cópias deveria voltar';end if;
+ perform set_config('on.now','',true);
+ -- montagem de elenco (fora do mercado) continua sem repetir dono
+ if public.on_real_pick(null,0,200,'x'||v_src) in(select v_src from public.on_players where v_src is not null and club_id is not null) then raise exception 'elenco novo pegou jogador com dono';end if;
+ -- destaque: bot rico com teto acima do lance inicial; bot sem caixa fora
+ insert into public.on_players(club_id,name,pos,age,level,pot,ovr,wage,contract_end) values(null,'Destaque Teste','ATA',26,86,86,86,10,s.id+1) returning id into pid;
+ insert into public.on_lots(season_id,player_id,start_price,opens_at,ends_at,hard_end,featured) values(s.id,pid,600000,now(),now()+interval '1 hour',now()+interval '2 hours',9) returning id into lot;
+ select bool_or(public.on_bot_limit(c.id,lot,pid)>=public.on_start_price(p)) into ok
+  from public.on_clubs c,public.on_players p where p.id=pid and c.season_id=s.id and c.user_id is null and c.cash>=5000000;
+ update public.on_clubs set cash=10000000 where id=b.id;
+ if exists(select 1 from public.on_clubs c where c.season_id=s.id and c.user_id is null and public.on_bot_limit(c.id,lot,pid)>(c.cash-c.reserved)*.4+1) then raise exception 'bot passou de 40%% do caixa';end if;
+ delete from public.on_players where id=pid;
+ raise notice 'PASS cópias, quarentena e teto dos bots (destaque com bot interessado: %)',coalesce(ok,false);
+end $$;
+
+-- fase 41: dia de mercado agitado — relâmpago no horário, setores cheios, bots dando lance e anunciando
+do $$
+declare s public.on_seasons;t timestamptz;n int;day0 timestamptz:=date_trunc('day',now()+interval '3 days')+interval '11 hours';
+begin
+ select * into s from public.on_seasons where status='live';
+ update public.on_config set market_open=8,market_close=18,market_close_min=30,flash_per_day=3;
+ for n in 0..62 loop
+  t:=day0+n*interval '10 minutes';
+  perform public.on_market_buzz(t,false);
+ end loop;
+ if (select count(*) from public.on_lots where flash_key like to_char(day0 at time zone 'America/Sao_Paulo','YYYYMMDD')||':%')<>3 then
+  raise exception 'relâmpagos do dia: %',(select count(*) from public.on_lots where flash_key like to_char(day0 at time zone 'America/Sao_Paulo','YYYYMMDD')||':%');end if;
+ if exists(select 1 from public.on_lots l join public.on_players p on p.id=l.player_id where l.featured=7
+   and l.start_price>round(public.on_start_price(p)*.7)+1) then raise exception 'relâmpago sem desconto';end if;
+ if exists(select 1 from public.on_lots where featured=7 and ends_at-opens_at>interval '30 minutes') then raise exception 'relâmpago longo';end if;
+ if not exists(select 1 from public.on_news where text like 'Promoção relâmpago%') then raise exception 'sem aviso do relâmpago';end if;
+ if exists(select 1 from(values('{GOL}'::text[],1),('{LD,ZAG,LE}',2),('{VOL,MC,MEI}',2),('{PD,PE,ATA}',2)) g(ps,k)
+   where(select count(*) from public.on_lots x join public.on_players q on q.id=x.player_id where x.status='open' and q.pos=any(g.ps))<g.k) then
+  raise exception 'setor sem lote';end if;
+ if exists(select 1 from public.on_players p join public.on_lots l on l.player_id=p.id and l.status='open' where p.club_id is null
+   group by p.src having p.src is not null and count(*)>1) then raise exception 'duas cópias livres no mercado';end if;
+ if exists(select club_id,src from public.on_players where club_id is not null and src is not null group by 1,2 having count(*)>1) then raise exception 'clube com duas cópias';end if;
+ update public.on_config set market_open=0,market_close=24,market_close_min=0;
+ raise notice 'PASS dia agitado (% lances de bots)',(select count(*) from public.on_bids b join public.on_clubs c on c.id=b.club_id where c.user_id is null);
+end $$;
+
+-- fase 42: Big Time — cadastro no painel, caixa sem reposição, carta vermelha no elenco
+do $$
+declare s public.on_seasons;u uuid;c public.on_clubs;bt jsonb;bt2 jsonb;pk jsonb;r jsonb;n int;p public.on_players;d0 int;sk numeric[];
+begin
+ select * into s from public.on_seasons where status='live';
+ select * into c from public.on_clubs where season_id=s.id and user_id is not null order by id limit 1;
+ u:=c.user_id;
+ perform set_config('request.jwt.claim.sub',u::text,true);
+ perform set_config('request.jwt.claims','{"email":"contatodavidcaua@gmail.com"}',true);
+ insert into public.admins(user_id) values(u) on conflict do nothing;
+ if not exists(select 1 from public.careers where user_id=u) then insert into public.careers(user_id,nickname) values(u,'bt-'||left(u::text,8));end if;
+ update public.careers set diamonds=5000 where user_id=u;
+ -- painel
+ begin perform public.admin_bt_save('{"name":"Fraco","pos":"ATA","rating":104,"match_date":"2005-11-19","opponent":"X"}');raise exception 'overall 104 aceito';
+ exception when others then if sqlerrm not like 'Overall entre%' then raise;end if;end;
+ bt:=public.admin_bt_save(jsonb_build_object('name','Ronaldinho','pos','PE','sec',jsonb_build_array('MEI','PD'),'rating',108,'age',25,
+  'match_date','2005-11-19','opponent','Real Madrid','team','Barcelona','competition','La Liga','score','3 x 0',
+  'story','Aplaudido de pé no Bernabéu.','photo','https://exemplo/r10.jpg','traits',jsonb_build_array('drible','finalizacao'),'style_off','x'));
+ bt2:=public.admin_bt_save(jsonb_build_object('name','Romário','pos','ATA','rating',107,'age',27,'match_date','1993-09-19','opponent','Uruguai','team','Brasil'));
+ if (bt->>'year')::int<>2005 or bt->'skills'->>0 is null then raise exception 'carta: %',bt;end if;
+ pk:=public.admin_pack_save(jsonb_build_object('title','Big Time da semana','price',100,'starts_at',now()-interval '1 hour','ends_at',now()+interval '7 days',
+  'items',jsonb_build_array(jsonb_build_object('kind','bigtime','ref',bt->>'id'),jsonb_build_object('kind','bigtime','ref',bt2->>'id'),
+   jsonb_build_object('kind','energy','qty',5,'balls',2),jsonb_build_object('kind','coins','qty',300,'balls',1))));
+ if (pk->>'total')::int<>5 then raise exception 'caixa: %',pk;end if;
+ -- loja
+ r:=public.online_packs();
+ if not (r->>'enabled')::boolean or jsonb_array_length(r->'packs')<1 then raise exception 'loja: %',r;end if;
+ d0:=(select diamonds from public.careers where user_id=u order by created_at desc limit 1);
+ for n in 1..5 loop r:=public.online_pack_draw((pk->>'id')::bigint);end loop;
+ if (select diamonds from public.careers where user_id=u order by created_at desc limit 1)<>d0-500 then raise exception 'diamantes cobrados errado';end if;
+ begin perform public.online_pack_draw((pk->>'id')::bigint);raise exception 'caixa vazia deu prêmio';
+ exception when others then if sqlerrm not like 'Você já tirou tudo%' then raise;end if;end;
+ -- as duas cartas estão no elenco, vermelhas, regularidade B, atributos acima de 99
+ if (select count(*) from public.on_players where club_id=c.id and tier='bigtime')<>2 then raise exception 'cartas no elenco';end if;
+ select * into p from public.on_players where club_id=c.id and src=bt->>'id';
+ if p.form<>'B' or p.ovr<>108 or p.legend or not ('drible'=any(p.traits)) then raise exception 'carta no elenco: % % %',p.form,p.ovr,p.traits;end if;
+ sk:=public.on_comp_skill(p);
+ if (select max(x) from unnest(sk) x)<=99 or (select max(x) from unnest(sk) x)>99+(108-99)*.7+.01 then raise exception 'atributos: %',sk;end if;
+ if (public.on_sheet(p)->'attrs'->0->>'value')::int is null or not exists(select 1 from jsonb_array_elements(public.on_sheet(p)->'attrs') a where (a->>'value')::int>99) then raise exception 'ficha sem valor acima de 99';end if;
+ if (select x->'bt'->>'opponent' from jsonb_array_elements(public.on_squad()->'players') x where x->>'id'=p.id)<>'Real Madrid' then raise exception 'elenco sem dados da atuação';end if;
+ if public.on_player_sheet(p.id)->'bt'->>'team'<>'Barcelona' then raise exception 'ficha sem a atuação';end if;
+ -- não sai do clube
+ begin perform public.on_sell(p.id);raise exception 'vendeu Big Time';exception when others then if sqlerrm not like 'Cartas Big Time%' and sqlerrm not like 'Elenco com 16%' then raise;end if;end;
+ begin perform public.on_lot_create(p.id,1000000);raise exception 'leiloou Big Time';exception when others then if sqlerrm not like 'Cartas Big Time%' and sqlerrm not like 'Mercado fechado%' and sqlerrm not like 'Elenco com 16%' then raise;end if;end;
+ if public.on_bot_limit((select id from public.on_clubs where season_id=s.id and user_id is null limit 1),0,p.id)<>0 then raise exception 'bot quer Big Time';end if;
+ -- nova caixa com a mesma carta: quem já tem não tira de novo
+ pk:=public.admin_pack_save(jsonb_build_object('title','Repeteco','price',50,'starts_at',now()-interval '1 hour','ends_at',now()+interval '1 day',
+  'items',jsonb_build_array(jsonb_build_object('kind','bigtime','ref',bt->>'id'),jsonb_build_object('kind','cash','qty',1000))));
+ if (pk->>'left')::int<>2 then raise exception 'caixa do admin conta tudo: %',pk;end if;
+ r:=public.online_packs();
+ if (select (x->>'left')::int from jsonb_array_elements(r->'packs') x where x->>'id'=pk->>'id')<>1 then raise exception 'carta repetida na caixa';end if;
+ r:=public.online_pack_draw((pk->>'id')::bigint);
+ if r->'prize'->>'kind'<>'cash' then raise exception 'tirou repetida: %',r->'prize';end if;
+ -- edição no painel chega na carta entregue
+ perform public.admin_bt_save(bt||jsonb_build_object('rating',110,'traits',jsonb_build_array('drible')));
+ if (select ovr from public.on_players where id=p.id)<>110 then raise exception 'edição não chegou ao elenco';end if;
+ -- sem admin: painel fechado
+ perform set_config('request.jwt.claims','{"email":"outro@x.com"}',true);
+ begin perform public.admin_bt_list();raise exception 'painel aberto';exception when others then if sqlerrm not like 'Acesso restrito%' then raise;end if;end;
+ perform set_config('request.jwt.claims','',true);
+ raise notice 'PASS Big Time e caixas';
+end $$;
