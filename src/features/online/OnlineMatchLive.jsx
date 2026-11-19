@@ -11,6 +11,8 @@ import useMatchAudio from '../audio/useMatchAudio'
 import LineupsSheet, { LineupsView } from './components/LineupsSheet'
 import OnlineCrest from './components/OnlineCrest'
 import { compOf } from './competitions'
+import Shootout from './components/Shootout'
+import { shootoutText } from './shootoutText'
 import { OvrBadge } from './components/PlayerFut'
 import { actOnlineMatch, fetchOnlineScout, fetchOnlineSquad, fetchPlanFit, pollOnlineMatch, sendOnlineHalftimeTalk } from './services/onlineApi'
 import PlanPanel from './components/PlanPanel'
@@ -159,7 +161,10 @@ export default function OnlineMatchLive({ fixtureId = null, onClose, notify }) {
   // o relógio da tela nunca passa do servidor (a não ser que o jogo já tenha acabado)
   const clock = finished ? Math.max(0, raw) : Math.max(-1, Math.min(raw, data?.minute ?? 0))
   const shownMinute = Math.floor(Math.max(0, clock))
-  const ended = finished && raw >= endMin
+  // disputa de pênaltis (fase 36): cada lance tem o segundo em que aparece (at_s); o fim só depois do último
+  const elapsedS = kick ? (serverNow - SCREEN_LAG_MS - kick) / 1000 : -1
+  const soPending = events.some((e) => e.at_s != null && elapsedS < e.at_s)
+  const ended = finished && raw >= endMin && !soPending
   const phase = kick ? clockPhase(kick, serverNow - SCREEN_LAG_MS, et) : 'pre'
 
   // Fim do jogo que deu o título (final da copa ou última rodada da liga): o servidor premia na hora e manda o
@@ -201,11 +206,13 @@ export default function OnlineMatchLive({ fixtureId = null, onClose, notify }) {
   const visible = useMemo(
     () =>
       events.filter((e) => {
+        if (e.at_s != null) return elapsedS >= e.at_s
+        if (e.kind === 'ft' && soPending) return false
         if (ended || revealed.has(e.seq)) return true
         if (fieldOn && HOLD_KINDS.has(e.kind)) return e.minute < shownMinute - FIELD_LAG_MAX
         return e.minute <= shownMinute
       }),
-    [events, shownMinute, revealed, ended, fieldOn],
+    [events, shownMinute, revealed, ended, fieldOn, elapsedS, soPending],
   )
   const upcoming = useMemo(() => events.filter((e) => e.minute <= shownMinute + 1), [events, shownMinute])
   // atraso do campo em minutos de jogo: o lance mais antigo que ele ainda não mostrou
@@ -233,7 +240,7 @@ export default function OnlineMatchLive({ fixtureId = null, onClose, notify }) {
       if (e.kind === 'yellow') yel[e.side] += 1
       if (e.kind === 'red' || e.kind === 'second_yellow') red[e.side] += 1
       if (e.kind === 'so_goal') (pens[e.side] += 1), (so = true)
-      if (e.kind === 'so_miss') so = true
+      if (e.kind?.startsWith('so_')) so = true
     }
     return { sc, pens, shots, sot, yel, red, so }
   }, [visible])
@@ -404,7 +411,7 @@ export default function OnlineMatchLive({ fixtureId = null, onClose, notify }) {
               onHold={() => {}}
               onReveal={onReveal}
               onUnavailable={() => setFieldFailed(true)}
-              paused={phase === 'ht' || ended}
+              paused={phase === 'ht' || ended || live.so}
               speed={fieldSpeed}
               score={live.sc}
               finished={ended}
@@ -445,6 +452,7 @@ export default function OnlineMatchLive({ fixtureId = null, onClose, notify }) {
         </div>
       </header>
 
+      {live.so && <Shootout events={visible} home={data.home} away={data.away} mySide={side} />}
       {side && !ended && (
         // técnicos lado a lado: eu (sempre no comando) e o adversário — online, offline ou bot (auxiliar)
         <div className="onm-presence">
@@ -484,7 +492,7 @@ export default function OnlineMatchLive({ fixtureId = null, onClose, notify }) {
               <li key={e.seq} className={`ml-ev k-${e.kind} ${e.side ? `s-${e.side === side ? 'me' : 'opp'}` : ''} ${MAJOR_EVENTS.has(e.kind) ? 'is-major' : ''}`}>
                 <span className="ml-min">{e.minute}'</span>
                 {e.side && <OnlineCrest club={e.side === 'h' ? data.home : data.away} size={16} />}
-                <span className="ml-txt">{e.kind === 'ft' ? 'Fim de jogo!' : eventText(e, e.side === side ? 'Seu time' : name(e.side))}</span>
+                <span className="ml-txt">{e.kind === 'ft' ? 'Fim de jogo!' : e.kind?.startsWith('so_') ? shootoutText(e) : eventText(e, e.side === side ? 'Seu time' : name(e.side))}</span>
               </li>
             ))}
           </ol>

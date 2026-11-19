@@ -33,6 +33,11 @@ const historyBefore = (await one('select count(*)::int n from public.on_history'
 const usersBefore = await q('select k.user_id,k.cash::bigint cash,(select count(*)::int from public.on_players p where p.club_id=k.id) roster from public.on_clubs k join public.on_seasons s on s.id=k.season_id and s.status=\'live\' where k.user_id is not null order by k.user_id')
 
 await q(`update public.on_config set tick_hooks='{}',join_instant=true`)
+// os lances da partida são apagados na virada; guarda os da disputa de pênaltis para medir
+await db.exec(`create table public.lab_so as select e.*,0::smallint season_id from public.on_match_events e where false;
+create function public.lab_so_keep() returns trigger language plpgsql as $f$ begin
+ if new.kind in('so_goal','so_save','so_miss') then insert into public.lab_so select new.*,(select season_id from public.on_fixtures where id=new.fixture_id);end if;return new;end $f$;
+create trigger lab_so after insert on public.on_match_events for each row execute function public.lab_so_keep();`)
 const START = '2026-12-01'
 let t0 = Date.now()
 const sid = (await one(`select public.on_series_bootstrap(date '${START}')::int s`)).s
@@ -103,6 +108,10 @@ for (let season = 0; season < SEASONS; season++) {
   check(cnt('B', 'champion') + cnt('B', 'promoted') === 4 && cnt('C', 'champion') + cnt('C', 'promoted') === 4 && cnt('D', 'champion') + cnt('D', 'promoted') === 4,
     'sobem 4 da B, da C e da D')
   check((await one(`select count(*)::int n from public.on_history where season_id=$1 and cup='champion'`, [cur])).n === 1, 'copa tem um campeão')
+  const so = await one(`select count(distinct fixture_id)::int games,count(*) filter(where kind='so_goal')::int goals,count(*) filter(where kind='so_save')::int saves,count(*) filter(where kind='so_miss')::int misses
+   from public.lab_so e where e.season_id=$1`, [cur])
+  console.log('pênaltis:', so, 'conversão', (so.goals / Math.max(1, so.goals + so.saves + so.misses)).toFixed(3))
+  check(so.games === (await one(`select count(*)::int n from public.on_fixtures where season_id=$1 and pens is not null`, [cur])).n, 'toda disputa de pênaltis tem os lances registrados')
   const goals = await one(`select round(avg(hg+ag),2)::float g,round(avg((hg>ag)::int),3)::float home from public.on_fixtures where season_id=$1`, [cur])
   const cards = await one(`select count(*) filter(where (susp->>'L')::int>0 or (susp->>'C')::int>0)::int susp from public.on_players`)
   const champs = await q(`select h.div,h.name,h.pts from public.on_history h where h.season_id=$1 and h.result='champion' order by h.div`, [cur])

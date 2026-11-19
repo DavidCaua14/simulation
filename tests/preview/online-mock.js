@@ -149,20 +149,39 @@ function advance(m, now) {
     if (min === 45) m.events.push({ seq: ++m.seq, minute: 45, side: null, kind: 'ht' })
     for (const p of m.players) if (p.status === 'on') { p.cond = Math.max(40, p.cond - 0.45); p.minutes += 1 }
   }
+  // ?shootout: jogo de copa empatado vai para os pênaltis lance a lance (cada lance com at_s, como no banco)
+  if (target >= 90 && params.has('shootout') && !m.so) {
+    m.score[1] = m.score[0]
+    m.so = { end: 0 }
+    const el = (n) => 720 + 25 + n * 18
+    const order = { h: m.players.filter((p) => p.side === 'h' && p.status === 'on').sort((x, y) => (x.pos === 'GOL') - (y.pos === 'GOL')), a: m.players.filter((p) => p.side === 'a' && p.status === 'on').sort((x, y) => (x.pos === 'GOL') - (y.pos === 'GOL')) }
+    const gk = (sd) => m.players.find((p) => p.side !== sd && p.pos === 'GOL')
+    m.events.push({ seq: ++m.seq, minute: 90, side: null, kind: 'so_start', at_s: 728, detail: 'h' })
+    const res = ['so_goal', 'so_goal', 'so_save', 'so_goal', 'so_goal', 'so_miss', 'so_goal', 'so_goal', 'so_goal', 'so_goal']
+    const det = ['gol|esquerdo|direito', 'gol|direito|meio', 'defesa|esquerdo|esquerdo', 'gol|meio|esquerdo', 'gol|direito|esquerdo', 'trave|esquerdo|direito', 'gol|esquerdo|esquerdo', 'gol|direito|esquerdo', 'gol|meio|direito', 'gol|esquerdo|meio']
+    for (let n = 0; n < 10; n++) {
+      const sd = n % 2 ? 'a' : 'h'
+      const t = order[sd][Math.floor(n / 2)]
+      m.events.push({ seq: ++m.seq, minute: 90, side: sd, kind: 'so_ready', at_s: el(n), player: t.id, player_name: t.name, player2: gk(sd)?.id, player2_name: gk(sd)?.name, detail: `${Math.floor(n / 2) + 1}|${Math.round(t.cond)}` })
+      m.events.push({ seq: ++m.seq, minute: 90, side: sd, kind: res[n], at_s: el(n) + 7, player: t.id, player_name: t.name, player2: gk(sd)?.id, player2_name: gk(sd)?.name, detail: det[n] })
+    }
+    m.so.end = el(9) + 7 + 6
+  }
+  if (target >= 90 && m.so && (now - new Date(m.f.kickoff).getTime()) / 1000 < m.so.end) return
   if (target >= 90 && !m.done) { m.done = true; m.events.push({ seq: ++m.seq, minute: 90, side: null, kind: 'ft' }); m.f.status = 'done'; m.f.hg = m.score[0]; m.f.ag = m.score[1] }
 }
 function payload(m, after) {
   const f = m.f
   return {
-    server_now: new Date().toISOString(), fixture_id: f.id, kickoff: f.kickoff, comp: f.comp, round: f.round, stage: f.stage,
+    server_now: new Date().toISOString(), fixture_id: f.id, kickoff: f.kickoff, round: f.round,
     status: new Date(f.kickoff).getTime() > Date.now() ? 'sched' : m.done ? 'finished' : 'live', minute: m.minute, my_side: m.mineSide,
     home: { ...clubs[f.home - 1], ...(f.home === 1 ? { name: state.name } : {}) }, away: { ...clubs[f.away - 1], ...(f.away === 1 ? { name: state.name } : {}) },
-    present: { h: m.mineSide === 'h' || !clubs[f.home - 1].bot, a: m.mineSide === 'a' }, score: m.score, et: false, pens: null, decisive: false,
+    present: { h: m.mineSide === 'h' || !clubs[f.home - 1].bot, a: m.mineSide === 'a' }, score: m.score, et: false, pens: null, decisive: params.has('shootout'), comp: params.has('shootout') ? 'C' : f.comp, stage: params.has('shootout') ? 'f2' : f.stage,
     ht_talk: m.ht_talk || null, prep: m.mineSide === 'h' ? [{ score: 85, bonus: 2.55 }, null] : [null, { score: 85, bonus: 2.55 }],
     tactics: m.tactics, formation: m.formation, subs: m.subs, max_subs: 5, max_windows: 3, fixes: [],
     events: m.events.filter((e) => e.seq > (after || 0)),
     stats: { poss: [Math.round((100 * m.poss[0]) / Math.max(1, m.poss[0] + m.poss[1])), 100 - Math.round((100 * m.poss[0]) / Math.max(1, m.poss[0] + m.poss[1]))], fouls: [3, 4], saves: [1, 2], corners: [2, 3], offsides: [1, 0] },
-    players: m.players.map((p) => ({ ...p, cond: Math.round(p.cond) })), summary: m.done ? { home_goals: m.score[0], away_goals: m.score[1], motm: { name: m.players[9].name, rating: 7.8 } } : null,
+    players: m.players.map((p) => ({ ...p, cond: Math.round(p.cond) })), summary: m.done ? { home_goals: m.score[0], away_goals: m.score[1], pens: m.so ? [4, 5] : null, motm: { name: m.players[9].name, rating: 7.8 } } : null,
   }
 }
 function poll({ p_fixture, p_after_seq }) {

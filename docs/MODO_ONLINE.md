@@ -445,3 +445,21 @@ caixa, cria os 94 clubes (bots com nomes reais) e sorteia o calendário e a 1ª 
   79,9), B com 458 (61), C 60 e D 56; os 4 técnicos foram para a D com elenco e caixa (força 80 a 82).
 - Testes rápidos: `supabase/online/tests/series_tests.sql` (no `scripts/test-online-db.mjs`) passa por todas as fases com
   resultados marcados direto e testa a suspensão por competição.
+
+## Fase 36 — Disputa de pênaltis lance a lance
+
+`supabase/online/39_shootout.sql` (migração `20261119170000`). Antes o placar dos pênaltis aparecia de uma vez no apito
+final. Agora, quando o jogo decisivo termina empatado (no agregado, na volta), a disputa acontece em tempo real:
+
+- A cada 18 s uma cobrança: "Fulano ajeita a bola para a 3ª cobrança. Goleiro X no gol" (`so_ready`, com o fôlego do
+  batedor) e, 7 s depois, o resultado: gol, defesa do goleiro ou para fora, na trave ou por cima, com o canto da batida e
+  o lado do pulo (`so_goal`, `so_save`, `so_miss`; detalhe `resultado|canto|pulo`).
+- 5 cobranças para cada lado, alternadas (quem começa é sorteado); depois alternadas até um errar. Ordem: o cobrador
+  oficial, depois os melhores batedores em campo, o goleiro por último.
+- Cada cobrança (`on_pen_odds`) usa, no momento: finalização, controle e nota do batedor, condição física (abaixo de
+  70% pesa), especialidade "Pênalti", pressão (cobrança que decide ou alternadas) e, do outro lado, a nota de goleiro e a
+  especialidade "Pega pênalti". Os atributos do motor já trazem a seta de condição do dia. Média: batedor 70 contra
+  goleiro 70, descansado, converte ~75%.
+- Cada lance tem `at_s` (segundo desde o pontapé em que a tela mostra). A tela (`components/Shootout.jsx`) mostra o
+  placar das cobranças com bolinhas e a narração; o "Fim de jogo" só aparece depois da última cobrança. Sem ninguém
+  assistindo, a disputa sai inteira de uma vez.

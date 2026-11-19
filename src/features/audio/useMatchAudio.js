@@ -9,7 +9,7 @@ export function soundFor(e, userSide) {
     case 'ht': case 'et': return 'whistle_half'
     case 'ft': return 'whistle_end'
     case 'goal': case 'pen_goal': case 'so_goal': return e.side === userSide ? 'goal_for' : 'goal_against'
-    case 'pen_miss': case 'so_miss': return 'chance'
+    case 'pen_miss': case 'so_miss': case 'so_save': return 'chance'
     case 'save': case 'shot_off': return e.detail === 'grande chance' ? 'chance' : null
     case 'yellow': return 'card_yellow'
     case 'second_yellow': case 'red': return 'card_red'

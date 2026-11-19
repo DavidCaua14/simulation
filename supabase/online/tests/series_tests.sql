@@ -118,3 +118,42 @@ begin
  if (select (susp->>'L')::int from public.on_players where id=p1)<>0 or (select (susp->>'L')::int from public.on_players where id=p2)<>0 then raise exception 'suspensão não foi cumprida';end if;
  raise notice 'PASS séries: suspensão por competição';
 end $$;
+
+-- pênaltis lance a lance (fase 36): jogo de copa empatado no apito final
+do $$
+declare f public.on_fixtures;m public.on_matches;n int;
+begin
+ select * into f from public.on_fixtures x where x.season_id=(select id from public.on_seasons where status='live') and x.comp='C' and x.leg is null and x.status='sched' order by kickoff limit 1;
+ perform public.on_match_open(f);
+ perform public.on_advance(f.id,f.kickoff+interval '700 seconds','h');
+ update public.on_matches set state=jsonb_set(state,'{score}',jsonb_build_array(1,1)) where fixture_id=f.id;
+ perform public.on_advance(f.id,f.kickoff+interval '730 seconds','h');
+ select * into m from public.on_matches where fixture_id=f.id;
+ if m.status<>'live' or m.state->'so' is null then raise exception 'disputa não começou: % %',m.status,m.state->'so';end if;
+ if exists(select 1 from public.on_match_events where fixture_id=f.id and kind in('ft','so_ready')) then raise exception 'pênaltis saíram de uma vez';end if;
+ perform public.on_advance(f.id,f.kickoff+interval '790 seconds','h');
+ select count(*) into n from public.on_match_events where fixture_id=f.id and kind='so_ready';
+ if n<>3 then raise exception 'cobranças até 790 s: %',n;end if;
+ if exists(select 1 from public.on_match_events where fixture_id=f.id and kind like 'so_%' and kind<>'so_start' and at_s is null) then raise exception 'lance sem segundo';end if;
+ perform public.on_advance(f.id,f.kickoff+interval '1 day',null);
+ select * into m from public.on_matches where fixture_id=f.id;
+ select * into f from public.on_fixtures where id=f.id;
+ if m.status<>'finished' or f.pens is null then raise exception 'disputa não terminou';end if;
+ if (f.pens->>0)::int=(f.pens->>1)::int then raise exception 'pênaltis empatados';end if;
+ if (f.pens->>0)::int<>(select count(*) from public.on_match_events where fixture_id=f.id and kind='so_goal' and side='h') then raise exception 'placar dos pênaltis não bate com os lances';end if;
+ if (select count(*) from public.on_match_events where fixture_id=f.id and kind='so_ready')<>(select count(*) from public.on_match_events where fixture_id=f.id and kind in('so_goal','so_save','so_miss')) then
+  raise exception 'cobrança sem resultado';
+ end if;
+ raise notice 'PASS pênaltis lance a lance (% x %)',f.pens->>0,f.pens->>1;
+end $$;
+
+-- taxa de conversão do modelo: batedor 70 contra goleiro 70, descansado, sem pressão ≈ 72% a 78%
+do $$
+declare o jsonb:=public.on_pen_odds(70,70,70,100,false,70,false,false);v numeric;
+begin
+ v:=(o->>'aim')::numeric*(1-(o->>'save')::numeric*1.11);
+ if v not between .70 and .80 then raise exception 'conversão média fora do real: %',v;end if;
+ if (public.on_pen_odds(70,70,70,45,false,70,false,true)->>'aim')::numeric>=(o->>'aim')::numeric then raise exception 'cansaço e pressão não pesam';end if;
+ if (public.on_pen_odds(70,70,70,100,false,85,true,false)->>'save')::numeric<=(o->>'save')::numeric then raise exception 'goleiro bom não pesa';end if;
+ raise notice 'PASS chances da cobrança (média %)',round(v,3);
+end $$;
