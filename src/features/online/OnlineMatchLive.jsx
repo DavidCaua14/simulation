@@ -568,12 +568,12 @@ export default function OnlineMatchLive({ fixtureId = null, onClose, notify }) {
         <>
           {side && (
             <div className="onm-plan-bar">
-              <p className="onm-plan-opp">Plano de jogo · toque para mudar na hora</p>
-              <div className="onm-plans" role="group" aria-label="Plano de jogo">
-                {PLANS.map(({ id, label, Icon }) => {
+              <p className="onm-plan-opp">Estilo de jogo · toque para mudar na hora</p>
+              <div className="onm-plans" role="group" aria-label="Estilo de jogo">
+                {PLANS.map(({ id, label, short, Icon }) => {
                   return (
-                    <button key={id} type="button" className={myPlan === id ? 'is-on' : ''} disabled={busy || myPlan === id} onClick={() => apply({ tactics: { plan: id } })}>
-                      <Icon size={15} /><small>{label}</small>
+                    <button key={id} type="button" title={label} className={myPlan === id ? 'is-on' : ''} disabled={busy || myPlan === id} onClick={() => apply({ tactics: { plan: id } })}>
+                      <Icon size={15} /><small>{short}</small>
                     </button>
                   )
                 })}
@@ -629,7 +629,7 @@ export default function OnlineMatchLive({ fixtureId = null, onClose, notify }) {
         <MatchLineupEditor
           initialView={panel === 'tactics' ? 'tactics' : 'lineup'}
           engineVersion={2}
-          renderTactics={(t, setT) => <PlanPanel compact tactics={t} fit={planFit} onChange={setT} />}
+          renderTactics={(t, setT) => <PlanPanel compact tactics={t} fit={planFit} onChange={setT} mine={players.filter((p) => p.side === side && p.status === 'on')} />}
           catalog={catalog}
           players={players}
           squadById={squadById}

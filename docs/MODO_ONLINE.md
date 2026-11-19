@@ -495,3 +495,35 @@ python3 scripts/build-lower-squads.py          # gera supabase/online/41_lower_s
 - O escudo fica em `on_real_clubs.crest` e em `on_clubs.colors.crest`, então todas as telas que já mostram escudo
   (`OnlineCrest`) mostram o oficial. Clubes de técnicos continuam com o escudo desenhado e personalizável; quando um
   técnico assume um clube de bot, o escudo oficial sai (`on_take_seat`). `on_club_identity` não aceita `crest`.
+
+## Fase 39 — Horários espalhados, bots no máximo, estilos de jogo, marcação individual e funções
+
+`supabase/online/43_schedule_styles_roles.sql` (migração `20261119200000`).
+
+- **Horários**: cada jogo tem um horário só dele. Manhã das 08:00 às 13:22, tarde das 14:00 às 16:55 e das 18:40 às
+  21:08 (nada entre 17:00 e 18:40), um jogo a cada 7 minutos. As vagas das séries se intercalam (`on_lane_min`) e,
+  à tarde, quem jogou cedo de manhã joga cedo de novo (`on_retime`): o descanso entre os dois jogos do dia fica entre
+  ~3 h 20 e ~10 h (média ~6 h 45 na temporada atual). Jogos novos (mata-matas, copa) reordenam o turno ao entrar
+  (`on_fx_add`). A temporada em andamento foi reordenada pela migração (`on_retime_season`).
+- **Bots**: todo jogador de clube bot está no nível máximo da carta (nota = potencial) desde o primeiro jogo
+  (`on_bot_max`, chamado em `on_bot_squad`).
+- **Estilos de jogo** (`tactics.plan`): Posse de bola (`posse`), Contra-ataque rápido (`contra`), Contra-ataque com
+  bolas longas (`contra_longo`), Pelas pontas (`pontas`), Bola longa (`direto`) e Sobrecarga (`sobrecarga`).
+  Cada um vence dois, perde para dois e empata com um (`on_plan_vs`); a aderência do elenco vem dos atributos-chave
+  contra os do adversário (`on_plan_edge`) e dos estilos dos titulares (`on_style_synergy`). Planos antigos viram o
+  estilo mais próximo (equilibrado → posse, pressão → contra rápido, retranca → contra longo, ataque total →
+  sobrecarga). A tela mostra um ícone de informação em cada estilo com a explicação e os atributos que ele mais usa.
+- **Bola parada**: a instrução sai. Falta perigosa: o batedor de faltas chuta direto (mais vezes quanto melhores a
+  finalização e a técnica) ou cruza; escanteio: o batedor do lado (direita ou esquerda) cruza e ganha a assistência
+  no gol de cabeça. Sem batedor definido em campo, cobra quem cruza/chuta melhor.
+- **Marcação individual** (`tactics.marks`, até 2 pares `{by, on}`): substitui "marcar o craque". O alvo aparece
+  menos nas finalizações (×0,75) e finaliza pior (−0,03 a −0,16 na qualidade, pela defesa/desarme/velocidade do
+  marcador contra o ataque/velocidade do alvo); o marcador ataca e cria menos e cansa ~8% mais.
+- **Funções** (`on_lineups.roles = {captain, pen:[ordem], fk, ck_r, ck_l}`): ordem dos pênaltis (o 1º em campo cobra
+  no jogo; na disputa, a ordem, depois os melhores e o goleiro por último), faltas e escanteio de cada lado. Quem sai
+  substituído passa função e marcação para quem entra (`on_roles_inherit` em `on_do_sub`); no pontapé, o titular
+  trocado por lesão ou suspensão também passa (`on_roles_remap` em `on_kickoff_lineup`).
+- **Elenco**: o banco aparece inteiro em grade (filtro de posição e físico em %); o botão Jogadores lista só os não
+  relacionados. No campo e no banco, encostar e arrastar já move a carta (sem esperar); tocar sem arrastar abre o menu.
+- **Correção**: `on_standings` dava "column reference d is ambiguous" (variável `d` com o mesmo nome da coluna de
+  empates); a variável virou `v_div`.

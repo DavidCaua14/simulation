@@ -1098,32 +1098,32 @@ drop function if exists public.on_standings();
 -- Tabelas de uma série (padrão: a do técnico): fases, grupos, zonas e mata-matas.
 create or replace function public.on_standings(p_div text default null) returns jsonb
 language plpgsql stable security definer set search_path=public as $$
-declare c public.on_clubs:=public.on_me();s public.on_seasons;d text;
+declare c public.on_clubs:=public.on_me();s public.on_seasons;v_div text;
 begin
  select * into s from public.on_seasons where id=c.season_id;
  if not coalesce(s.series,false) then
   return jsonb_build_object('my_club',c.id,'rows',(select jsonb_agg(public.on_club_json(k)||jsonb_build_object('club_id',k.id,'p',t.p,'w',t.w,'d',t.d,'l',t.l,'gf',t.gf,'ga',t.ga,'pts',t.pts)
     order by t.pts desc,t.gf-t.ga desc,t.gf desc,k.name) from public.on_table t join public.on_clubs k on k.id=t.club_id where t.season_id=c.season_id));
  end if;
- d:=coalesce(upper(p_div),c.div,'D');
- return jsonb_build_object('my_club',c.id,'my_div',c.div,'div',d,'name',public.on_div_name(d),'size',public.on_div_size(d),
-  'rounds',public.on_div_rounds(d),
-  'current_round',coalesce((select min(f.round) from public.on_fixtures f where f.season_id=s.id and f.div=d and f.status<>'done'),public.on_div_rounds(d)),
+ v_div:=coalesce(upper(p_div),c.div,'D');
+ return jsonb_build_object('my_club',c.id,'my_div',c.div,'div',v_div,'name',public.on_div_name(v_div),'size',public.on_div_size(v_div),
+  'rounds',public.on_div_rounds(v_div),
+  'current_round',coalesce((select min(f.round) from public.on_fixtures f where f.season_id=s.id and f.div=v_div and f.status<>'done'),public.on_div_rounds(v_div)),
   'divisions',(select jsonb_agg(jsonb_build_object('div',x,'name',public.on_div_name(x),'size',public.on_div_size(x))) from unnest(array['A','B','C','D']) x),
   'tables',coalesce((select jsonb_agg(jsonb_build_object('phase',g.phase,'grp',g.grp,'rows',(
      select jsonb_agg(public.on_club_json(k)||jsonb_build_object('pos',r.pos,'p',t.p,'w',t.w,'d',t.d,'l',t.l,'gf',t.gf,'ga',t.ga,'pts',t.pts,
        'form',(select jsonb_agg(z.r order by z.kickoff) from(select f.kickoff,case when f.hg=f.ag then 'D' when (f.hg>f.ag)=(f.home=k.id) then 'W' else 'L' end r
         from public.on_fixtures f where f.season_id=s.id and f.comp='L' and f.status='done' and k.id in(f.home,f.away) order by f.kickoff desc limit 5) z))
       order by r.pos)
-     from public.on_table_rank(s.id,d,g.phase,g.grp) r join public.on_table t on t.season_id=s.id and t.club_id=r.club_id and t.phase=g.phase
+     from public.on_table_rank(s.id,v_div,g.phase,g.grp) r join public.on_table t on t.season_id=s.id and t.club_id=r.club_id and t.phase=g.phase
      join public.on_clubs k on k.id=r.club_id)) order by g.phase,g.grp)
-   from(select distinct t.phase,t.grp from public.on_table t where t.season_id=s.id and t.div=d) g),'[]'::jsonb),
+   from(select distinct t.phase,t.grp from public.on_table t where t.season_id=s.id and t.div=v_div) g),'[]'::jsonb),
   'ties',coalesce((select jsonb_agg(x order by x->>'stage_order',(x->>'tie')::int) from(
     select jsonb_build_object('tie',f.tie,'stage',min(f.stage),'stage_order',min(case f.stage when 'po' then 1 when 'qf' then 1 when 'sf' then 2 when 'final' then 3 end)::text,
      'winner',public.on_tie_winner(s.id,'L',f.tie),'adv',min(f.adv),
      'legs',jsonb_agg(jsonb_build_object('id',f.id,'leg',f.leg,'home',f.home,'away',f.away,'hg',f.hg,'ag',f.ag,'status',f.status,'kickoff',f.kickoff) order by f.leg),
      'clubs',(select jsonb_agg(public.on_club_json(k)) from public.on_clubs k where k.id in(min(f.home),min(f.away)))) x
-    from public.on_fixtures f where f.season_id=s.id and f.div=d and f.tie is not null group by f.tie) q),'[]'::jsonb));
+    from public.on_fixtures f where f.season_id=s.id and f.div=v_div and f.tie is not null group by f.tie) q),'[]'::jsonb));
 end $$;
 
 -- Jogos de uma rodada de uma série (padrão: a rodada atual da série do técnico).

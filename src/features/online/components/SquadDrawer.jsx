@@ -19,7 +19,7 @@ const BADGE = { slot: 'T', bench: 'R' }
 
 // GAVETA DO ELENCO (estilo eFootball): todos os jogadores em cartas, com filtro por setor e ordenação.
 // statusOf(id) devolve 'slot' (titular), 'bench' (reserva) ou 'out'. onPick(id) abre a ficha ou completa a troca.
-export default function SquadDrawer({ players, statusOf, colors, onPick, onClose, swapping = null, bind = null }) {
+export default function SquadDrawer({ players, statusOf, colors, onPick, onClose, swapping = null, bind = null, title = 'Jogadores' }) {
   const [group, setGroup] = useState('all')
   const [sort, setSort] = useState('ovr')
   const list = useMemo(() => {
@@ -35,6 +35,7 @@ export default function SquadDrawer({ players, statusOf, colors, onPick, onClose
   return (
     <div className="ef-drawer-veil" role="dialog" aria-modal="true" aria-label="Jogadores do elenco" onClick={onClose}>
       <aside className="ef-drawer" onClick={(e) => e.stopPropagation()}>
+        <h3 className="ef-drawer-title">{title} <small>{players.length}</small></h3>
         <header>
           <div className="ef-drawer-filters" role="group" aria-label="Filtro">
             {GROUPS.map(([id, label]) => (
@@ -50,17 +51,18 @@ export default function SquadDrawer({ players, statusOf, colors, onPick, onClose
           ))}
         </div>
         {swapping && <p className="ef-drawer-hint">Escolha quem troca com <b>{swapping}</b></p>}
+        {list.length === 0 && <p className="ef-drawer-hint">Todo o elenco está relacionado (titulares e banco).</p>}
         <div className="ef-drawer-grid">
           {list.map((p) => {
             const st = statusOf(p.id)
             return (
               <div key={p.id} className="ef-dslot" {...(bind ? bind(`p:${p.id}`, p.id) : {})}>
-                <EfTile player={p} colors={colors} badge={BADGE[st]} dim={st === 'out'} onClick={() => onPick(p.id)} />
+                <EfTile player={p} colors={colors} badge={BADGE[st]} dim={Boolean(swapping) && st === 'out'} onClick={() => onPick(p.id)} />
               </div>
             )
           })}
         </div>
-        <p className="ef-drawer-legend"><b>T</b> titular · <b>R</b> reserva · apagado: fora da lista · segure e arraste uma carta até o campo</p>
+        <p className="ef-drawer-legend">{swapping ? <><b>T</b> titular · <b>R</b> banco · </> : null}puxe uma carta para o lado (ou segure) e arraste até o campo ou o banco</p>
       </aside>
     </div>
   )

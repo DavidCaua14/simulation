@@ -1239,17 +1239,20 @@ begin
  -- formato antigo vira plano
  if public.on_tactics_clean('{"style":"counter"}')->>'plan'<>'contra' then raise exception 'legado contra';end if;
  if public.on_tactics_clean('{"style":"neutral","passing":"short"}')->>'plan'<>'posse' then raise exception 'legado posse';end if;
- if public.on_tactics_clean('{"marking":"high"}')->>'plan'<>'pressao' then raise exception 'legado pressão';end if;
- t:=public.on_tactics_clean('{"plan":"retranca","manage":"keep","tackling":"heavy","mark":"o12","long_shots":"often"}');
- if t->>'manage'<>'keep' or t->>'tackles'<>'aggressive' or t->>'mark'<>'o12' or (t->>'mentality')::int<>-1 then raise exception 'instruções: %',t;end if;
- if public.on_tactics_clean('{"mark":"x;drop"}')->>'mark' is not null then raise exception 'marcação aceitou id inválido';end if;
+ if public.on_tactics_clean('{"marking":"high"}')->>'plan'<>'contra' then raise exception 'legado pressão';end if;
+ -- planos antigos (fase 31) viram os estilos da fase 39
+ if public.on_tactics_clean('{"plan":"equilibrado"}')->>'plan'<>'posse' or public.on_tactics_clean('{"plan":"total"}')->>'plan'<>'sobrecarga' then raise exception 'plano antigo';end if;
+ t:=public.on_tactics_clean('{"plan":"retranca","manage":"keep","tackling":"heavy","marks":[{"by":"m1","on":"o12"},{"by":"m1","on":"o13"},{"by":"m2","on":"o14"},{"by":"m3","on":"o15"}],"long_shots":"often","set_pieces":"short"}');
+ if t->>'plan'<>'contra_longo' or t->>'manage'<>'keep' or t->>'tackles'<>'aggressive' or (t->>'mentality')::int<>-1 or t ? 'set_pieces' then raise exception 'instruções: %',t;end if;
+ if t->'marks'<>'[{"by":"m1","on":"o12"},{"by":"m2","on":"o14"}]'::jsonb then raise exception 'marcações: %',t->'marks';end if;
+ if jsonb_array_length(public.on_tactics_clean('{"marks":[{"by":"x;drop","on":"a"}]}')->'marks')<>0 then raise exception 'marcação aceitou id inválido';end if;
  -- escalação salva com plano; aderência do próximo jogo
  select c.* into k from public.on_clubs c join public.on_seasons s on s.id=c.season_id and s.status='live' where c.user_id is not null order by c.id limit 1;
  perform set_config('request.jwt.claim.sub',k.user_id::text,true);
  update public.on_lineups set tactics=public.on_tactics_clean('{"plan":"pontas"}') where club_id=k.id;
  if (select tactics->>'plan' from public.on_lineups where club_id=k.id)<>'pontas' then raise exception 'plano não salvo';end if;
  j:=public.on_plan_fit();
- if j->'plans' is not null and (select count(*) from jsonb_object_keys(j->'plans'))<>8 then raise exception 'aderência: %',j;end if;
+ if j->'plans' is not null and (select count(*) from jsonb_object_keys(j->'plans'))<>6 then raise exception 'aderência: %',j;end if;
  -- IA escolhe um plano válido
  if not (public.on_ai_plan(k.id,k.id,0,true)->>'plan')=any(public.on_plans()) then raise exception 'plano da IA';end if;
  raise notice 'PASS fase 31';

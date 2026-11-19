@@ -39,8 +39,24 @@ begin
  end if;
  if (select count(*) from public.on_clubs where season_id=v_s and div='D' and user_id is not null)<>users then raise exception 'técnicos fora da D';end if;
  if (select count(*) from public.on_fixtures where season_id=v_s)<>380+380+276+420+30 then raise exception 'jogos: %',(select count(*) from public.on_fixtures where season_id=v_s);end if;
- if exists(select 1 from public.on_fixtures where season_id=v_s and ((kickoff at time zone 'America/Sao_Paulo')::time<'08:00' or (kickoff at time zone 'America/Sao_Paulo')::time>'16:00')) then
-  raise exception 'jogo fora das 08:00 às 16:00';
+ -- fase 39: cada jogo num horário só dele, das 08:00 às 21:30 e nunca entre 17:00 e 18:40
+ if exists(select 1 from public.on_fixtures where season_id=v_s and ((kickoff at time zone 'America/Sao_Paulo')::time<'08:00' or (kickoff at time zone 'America/Sao_Paulo')::time>'21:30'
+   or (kickoff at time zone 'America/Sao_Paulo')::time>='17:00' and (kickoff at time zone 'America/Sao_Paulo')::time<'18:40')) then
+  raise exception 'jogo fora da janela 08:00–21:30 (ou entre 17:00 e 18:40)';
+ end if;
+ if exists(select 1 from public.on_fixtures where season_id=v_s group by kickoff having count(*)>1) then
+  raise exception 'dois jogos no mesmo horário: %',(select kickoff from public.on_fixtures where season_id=v_s group by kickoff having count(*)>1 limit 1);
+ end if;
+ -- manhã antes das 14:00, tarde depois; descanso entre os dois jogos do dia de pelo menos 3 horas para todo clube
+ if exists(select 1 from public.on_fixtures where season_id=v_s and (slot%2=0)<>((kickoff at time zone 'America/Sao_Paulo')::time<'14:00')) then raise exception 'jogo no turno errado';end if;
+ if (select min(b.kickoff-a.kickoff) from public.on_fixtures a join public.on_fixtures b on b.season_id=a.season_id and b.slot=a.slot+1 and a.slot%2=0
+   and (b.home in(a.home,a.away) or b.away in(a.home,a.away)) where a.season_id=v_s)<interval '3 hours' then
+  raise exception 'descanso curto entre jogos do dia: %',(select min(b.kickoff-a.kickoff) from public.on_fixtures a join public.on_fixtures b on b.season_id=a.season_id and b.slot=a.slot+1 and a.slot%2=0
+   and (b.home in(a.home,a.away) or b.away in(a.home,a.away)) where a.season_id=v_s);
+ end if;
+ -- bots no nível máximo da carta
+ if exists(select 1 from public.on_players p join public.on_clubs k on k.id=p.club_id where k.season_id=v_s and k.user_id is null and p.ovr<greatest(p.pot,p.level)) then
+  raise exception 'bot abaixo do nível máximo';
  end if;
  if exists(select 1 from public.on_fixtures f cross join lateral(values(f.home),(f.away)) v(c) where season_id=v_s group by v.c,f.slot having count(*)>1) then
   raise exception 'clube duas vezes no mesmo turno';
@@ -173,4 +189,46 @@ do $$ begin
  if exists(select 1 from public.on_clubs k join public.on_seasons s on s.id=k.season_id and s.status='live'
   where k.user_id is not null and k.colors ? 'crest') then raise exception 'clube de técnico com escudo oficial';end if;
  raise notice 'PASS escudos oficiais';
+end $$;
+
+-- leituras do app como técnico (pega nome de variável que colide com coluna, ex.: "d" de empates)
+do $$
+declare u uuid;x text;
+begin
+ select k.user_id into u from public.on_clubs k join public.on_seasons s on s.id=k.season_id and s.status='live' where k.user_id is not null limit 1;
+ perform set_config('request.jwt.claim.sub',u::text,true);
+ foreach x in array array['A','B','C','D'] loop
+  perform public.on_standings(x);perform public.on_standings(x);perform public.on_round(x,null);perform public.on_round(x,1);
+ end loop;
+ perform public.on_standings(null);perform public.on_calendar();perform public.on_cup();perform public.on_status();
+ raise notice 'PASS leituras do app';
+end $$;
+
+-- fase 39: funções (ordem de pênaltis, escanteio por lado) e herança na substituição
+do $$
+declare st jsonb;r jsonb;u uuid;k public.on_clubs;ids text[];
+begin
+ r:=public.on_roles_norm('{"pen":"p1","ck":"p2","captain":"p3"}');
+ if r->'pen'<>'["p1"]' or r->>'ck_r'<>'p2' or r->>'ck_l'<>'p2' or r ? 'ck' then raise exception 'funções antigas: %',r;end if;
+ if public.on_roles_remap('{"pen":["a","b"],"fk":"a","ck_r":"c"}','[{"slot":"ATA","out":"a","in":"z"}]')<>'{"pen":["z","b"],"fk":"z","ck_r":"c"}' then
+  raise exception 'pontapé não passou a função: %',public.on_roles_remap('{"pen":["a","b"],"fk":"a","ck_r":"c"}','[{"slot":"ATA","out":"a","in":"z"}]');
+ end if;
+ st:=public.on_roles_inherit('{"pen_taker":{"h":"a"},"pen_order":{"h":["a","b"],"a":["a2"]},"ck_r":{"h":"a","a":"x"},"ck_l":{"h":"b"},"captain":{"h":"a"},
+   "fk_taker":{"h":"c"},"tactics":{"h":{"marks":[{"by":"a","on":"o1"}]},"a":{"marks":[{"by":"o2","on":"a"}]}}}','h','a','n');
+ if st->'pen_order'->'h'<>'["n","b"]' or st->'pen_taker'->>'h'<>'n' or st->'ck_r'->>'h'<>'n' or st->'ck_l'->>'h'<>'b' or st->'captain'->>'h'<>'n'
+  or st->'fk_taker'->>'h'<>'c' or st->'tactics'->'h'->'marks'->0->>'by'<>'n' or st->'tactics'->'a'->'marks'->0->>'on'<>'n' or st->'pen_order'->'a'<>'["a2"]' then
+  raise exception 'herança na substituição: %',st;
+ end if;
+ -- salvar: ordem com repetido ou jogador de fora é recusada
+ select c.* into k from public.on_clubs c join public.on_seasons s on s.id=c.season_id and s.status='live' where c.user_id is not null
+  and exists(select 1 from public.on_lineups l where l.club_id=c.id) order by (select count(*) from public.on_players p where p.club_id=c.id) desc,c.id limit 1;
+ perform set_config('request.jwt.claim.sub',k.user_id::text,true);
+ ids:=array(select id from public.on_players where club_id=k.id order by ovr desc limit 3);
+ perform public.on_roles_save(jsonb_build_object('pen',to_jsonb(ids),'ck_r',ids[1],'ck_l',ids[2],'fk',ids[3]));
+ if (select roles->'pen' from public.on_lineups where club_id=k.id)<>to_jsonb(ids) then raise exception 'ordem dos pênaltis não salva';end if;
+ begin perform public.on_roles_save(jsonb_build_object('pen',jsonb_build_array(ids[1],ids[1])));raise exception 'aceitou repetido';
+ exception when others then if sqlerrm='aceitou repetido' then raise;end if;end;
+ begin perform public.on_roles_save('{"ck_r":"nao-existe"}');raise exception 'aceitou de fora';
+ exception when others then if sqlerrm='aceitou de fora' then raise;end if;end;
+ raise notice 'PASS funções e herança';
 end $$;

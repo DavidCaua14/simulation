@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { AlertTriangle, Ambulance, Ban, ClipboardList, Crown, Radio, RotateCcw, Save, Shirt, Star, Target, Users, Wand2 } from 'lucide-react'
+import { AlertTriangle, Ambulance, ArrowDown, ArrowUp, Ban, ClipboardList, CornerDownLeft, CornerDownRight, Crown, Radio, RotateCcw, Save, Shirt, Star, Target, Users, Wand2, X } from 'lucide-react'
 import { Notice, Skeleton } from '../../components/ui/feedback'
 import Pitch from '../seasons/components/Pitch'
 import PlanPanel from './components/PlanPanel'
@@ -7,7 +7,9 @@ import EfTile from './components/EfTile'
 import SquadDrawer from './components/SquadDrawer'
 import useHoldDrag from './hooks/useHoldDrag'
 import { PitchTokenContext } from '../seasons/components/pitchToken'
-import { planLabel, planOf } from './plans'
+import { planShort, planOf } from './plans'
+import PositionFilter from '../seasons/components/PositionFilter'
+import '../seasons/components/position-filter.css'
 import './components/squad-board.css'
 import useCatalog from '../seasons/hooks/useCatalog'
 import { POS_NAME, condTone, posFit } from '../seasons/utils/managerUtils'
@@ -80,12 +82,22 @@ function spreadRows(formation, tol = 6) {
 }
 
 const SCARCITY = { GOL: 1, ZAG: 2, LD: 3, LE: 3, VOL: 4, ATA: 5, MC: 6, MEI: 7, PD: 8, PE: 8 }
+// Funções de um jogador só. A ordem dos pênaltis é uma lista (o primeiro em campo cobra no jogo; na disputa, a ordem).
 const ROLES = [
-  { id: 'captain', label: 'Capitão', Icon: Crown },
-  { id: 'pen', label: 'Pênaltis', Icon: Target },
-  { id: 'fk', label: 'Faltas', Icon: Target },
-  { id: 'ck', label: 'Escanteios', Icon: Target },
+  { id: 'captain', label: 'Capitão', Icon: Crown, hint: 'Usa a braçadeira.' },
+  { id: 'fk', label: 'Faltas', Icon: Target, hint: 'Chuta direto ou cruza nas faltas perto da área (finalização e técnica).' },
+  { id: 'ck_r', label: 'Escanteio pela direita', Icon: CornerDownLeft, hint: 'Cruza os escanteios do lado direito (criação).' },
+  { id: 'ck_l', label: 'Escanteio pela esquerda', Icon: CornerDownRight, hint: 'Cruza os escanteios do lado esquerdo (criação).' },
 ]
+const PEN_SLOTS = 5
+// funções salvas no formato antigo (pen e ck únicos) → formato novo
+const normRoles = (r = {}) => ({
+  captain: r.captain || '',
+  fk: r.fk || '',
+  ck_r: r.ck_r || r.ck || '',
+  ck_l: r.ck_l || r.ck || '',
+  pen: Array.isArray(r.pen) ? r.pen : r.pen ? [r.pen] : [],
+})
 
 // Mantém os mesmos 11 na troca de formação: cada um vai para a vaga nova onde rende mais.
 function remap(slots, formation, byId) {
@@ -188,7 +200,8 @@ export default function OnlineSquad({ onOpenMatch, notify, seasonId }) {
   const [listed, setListed] = useState(() => new Set())
   const [sheet, setSheet] = useState(null) // ficha aberta: {id, where}
   const [items, setItems] = useState(null) // Apito de Ouro (online_items)
-  const [planFit, setPlanFit] = useState(null) // aderência dos planos contra o próximo adversário (escalação salva)
+  const [planFit, setPlanFit] = useState(null) // aderência dos estilos e titulares do próximo adversário (escalação salva)
+  const [benchPos, setBenchPos] = useState('') // filtro de posição do banco
   // segurar e arrastar: soltar uma carta sobre outra troca os dois de lugar (campo, banco ou gaveta)
   const { drag, bind } = useHoldDrag({
     onDrop: (from, to) => {
@@ -284,9 +297,27 @@ export default function OnlineSquad({ onOpenMatch, notify, seasonId }) {
       },
     })
   }
-  const setRole = (role, id) => {
-    const roles = { ...(squad.lineup.roles || {}), [role]: id || undefined }
-    saveOnlineRoles(roles).then(load).catch((e) => setError(e.message))
+  const roles = normRoles(squad.lineup.roles)
+  const saveRoles = (next) => {
+    const clean = { ...next, pen: next.pen.filter(Boolean) }
+    for (const k of ['captain', 'fk', 'ck_r', 'ck_l']) if (!clean[k]) delete clean[k]
+    saveOnlineRoles(clean).then(load).catch((e) => setError(e.message))
+  }
+  const setRole = (role, id) => saveRoles({ ...roles, [role]: id })
+  const setPen = (i, id) => {
+    const pen = [...roles.pen]
+    while (pen.length < i) pen.push('')
+    const at = pen.indexOf(id)
+    if (id && at >= 0 && at !== i) pen[at] = pen[i] || '' // já estava na lista: troca de lugar
+    pen[i] = id
+    saveRoles({ ...roles, pen })
+  }
+  const movePen = (i, d) => {
+    const pen = [...roles.pen]
+    const j = i + d
+    if (j < 0 || j >= pen.length) return
+    ;[pen[i], pen[j]] = [pen[j], pen[i]]
+    saveRoles({ ...roles, pen })
   }
 
   const fieldIds = Object.values(draft.slots)
@@ -320,7 +351,7 @@ export default function OnlineSquad({ onOpenMatch, notify, seasonId }) {
                 {catalog.formations.map((f) => <option key={f.id} value={f.id}>{f.name}</option>)}
               </select>
             </label>
-            <button type="button" className="ef-plan" onClick={() => setView('tactics')}>{planLabel(planOf(draft.tactics))}</button>
+            <button type="button" className="ef-plan" onClick={() => setView('tactics')}>{planShort(planOf(draft.tactics))}</button>
             <span className="ef-power" title={`Média ${squadStrength ? squadStrength.toFixed(1) : '–'} com as reservas`}>
               <small>Força coletiva</small><b>{Math.round(xiOvr.reduce((a, b) => a + b, 0))}</b>
             </span>
@@ -347,24 +378,29 @@ export default function OnlineSquad({ onOpenMatch, notify, seasonId }) {
             </PitchTokenContext.Provider>
           </div>
           <div className="ef-tools">
-            <button type="button" className="ef-tool" onClick={() => setDrawer(true)}><Users size={17} /> Jogadores <small>{squad.players.length}</small></button>
+            <button type="button" className="ef-tool" onClick={() => setDrawer(true)}><Users size={17} /> Jogadores <small>{out.length}</small></button>
             <button type="button" className="ef-tool" disabled={busy} onClick={auto}><Wand2 size={17} /> Escolha automática</button>
           </div>
-          <h3 className="ef-h">Reservas <small>{draft.bench.length}/12</small></h3>
-          <div className="ef-bench">
-            {draft.bench.map((id, i) => byId[id] && (
-              <div key={id} className={`ef-bslot ${drag?.over === `bench:${i}` ? 'is-drop' : ''} ${drag?.from === `bench:${i}` ? 'is-dragging' : ''}`} {...bind(`bench:${i}`, id)}>
-                <EfTile player={byId[id]} colors={colors} selected={sel?.kind === 'bench' && sel.key === i} onClick={() => tap({ kind: 'bench', key: i })} />
-              </div>
-            ))}
-            {draft.bench.length < 12 && (
-              <div className={`ef-bslot ${drag?.over === 'bench:new' ? 'is-drop' : ''}`} {...bind('bench:new', null)}>
-                <EfTile player={null} label="Vaga" selected={sel?.kind === 'bench' && sel.key === draft.bench.length} onClick={() => tap({ kind: 'bench', key: draft.bench.length })} />
-              </div>
-            )}
+          <div className="ef-benchbox">
+            <h3 className="ef-h">Banco <small>{draft.bench.length}/12 · arraste até o jogador que vai sair</small></h3>
+            <PositionFilter value={benchPos} onChange={setBenchPos} label="Posição no banco" />
+            <div className={`ef-bench ${drag ? 'is-dragging' : ''}`}>
+              {draft.bench.map((id, i) => byId[id] && (!benchPos || byId[id].pos === benchPos) && (
+                <div key={id} className={`ef-bslot ${drag?.over === `bench:${i}` ? 'is-drop' : ''} ${drag?.from === `bench:${i}` ? 'is-dragging' : ''}`} {...bind(`bench:${i}`, id)}>
+                  <EfTile player={byId[id]} colors={colors} size={62} selected={sel?.kind === 'bench' && sel.key === i} onClick={() => tap({ kind: 'bench', key: i })} />
+                  <span className={`ef-pct ${condTone(byId[id].cond)}`}>{Math.round(byId[id].cond ?? 100)}%</span>
+                </div>
+              ))}
+              {draft.bench.length < 12 && !benchPos && (
+                <div className={`ef-bslot ${drag?.over === 'bench:new' ? 'is-drop' : ''}`} {...bind('bench:new', null)}>
+                  <EfTile player={null} label="Vaga" size={62} selected={sel?.kind === 'bench' && sel.key === draft.bench.length} onClick={() => tap({ kind: 'bench', key: draft.bench.length })} />
+                </div>
+              )}
+              {benchPos && !draft.bench.some((id) => byId[id]?.pos === benchPos) && <p className="ef-note">Nenhum {benchPos} no banco.</p>}
+            </div>
           </div>
-          <p className="ef-note">Toque no jogador para abrir o menu · segure e arraste para trocar de lugar</p>
-          {out.length > 0 && <p className="ef-note">{out.length} fora da lista · abra <b>Jogadores</b> para ver todos</p>}
+          <p className="ef-note">Toque no jogador para abrir o menu · encoste e arraste para trocar de lugar</p>
+          {out.length > 0 && <p className="ef-note">{out.length} não relacionado(s) · abra <b>Jogadores</b> para trazer alguém</p>}
           {drag && byId[drag.pid] && (
             <div className="ef-ghost" style={{ left: drag.x, top: drag.y }} aria-hidden="true"><EfTile player={byId[drag.pid]} colors={colors} /></div>
           )}
@@ -373,21 +409,45 @@ export default function OnlineSquad({ onOpenMatch, notify, seasonId }) {
 
       {view === 'tactics' && (
         <div className="on-panel-dark">
-          <PlanPanel tactics={draft.tactics} fit={planFit} onChange={(t) => setDraft({ ...draft, tactics: t })} />
+          <PlanPanel tactics={draft.tactics} fit={planFit} onChange={(t) => setDraft({ ...draft, tactics: t })}
+            mine={fieldIds.map((id) => byId[id]).filter(Boolean).map((p) => ({ id: p.id, name: p.name, pos: p.pos, ovr: p.ovr }))} />
         </div>
       )}
 
       {view === 'roles' && (
         <div className="on-roles">
-          {ROLES.map(({ id, label, Icon }) => (
+          {ROLES.map(({ id, label, Icon, hint }) => (
             <label key={id} className="on-role">
               <span><Icon size={16} /> {label}</span>
-              <select value={squad.lineup.roles?.[id] || ''} onChange={(e) => setRole(id, e.target.value)}>
+              <select value={roles[id] || ''} onChange={(e) => setRole(id, e.target.value)}>
                 <option value="">Automático</option>
                 {fieldIds.map((pid) => byId[pid] && <option key={pid} value={pid}>{byId[pid].name} · {byId[pid].pos} {Math.round(byId[pid].ovr)}</option>)}
               </select>
+              <small>{hint}</small>
             </label>
           ))}
+          <section className="on-role on-pens" aria-label="Ordem dos pênaltis">
+            <span><Target size={16} /> Ordem dos pênaltis</span>
+            <ol>
+              {Array.from({ length: PEN_SLOTS }, (_, i) => {
+                const cur = roles.pen[i] || ''
+                return (
+                  <li key={i}>
+                    <b>{i + 1}º</b>
+                    <select value={cur} onChange={(e) => setPen(i, e.target.value)} aria-label={`${i + 1}º cobrador`}>
+                      <option value="">{i === 0 ? 'Automático' : '—'}</option>
+                      {fieldIds.map((pid) => byId[pid] && <option key={pid} value={pid}>{byId[pid].name} · {byId[pid].pos} {Math.round(byId[pid].ovr)}</option>)}
+                    </select>
+                    <button type="button" disabled={!cur || i === 0} onClick={() => movePen(i, -1)} aria-label="Subir"><ArrowUp size={14} /></button>
+                    <button type="button" disabled={!cur || i >= roles.pen.length - 1} onClick={() => movePen(i, 1)} aria-label="Descer"><ArrowDown size={14} /></button>
+                    <button type="button" disabled={!cur} onClick={() => setPen(i, '')} aria-label="Tirar"><X size={14} /></button>
+                  </li>
+                )
+              })}
+            </ol>
+            <small>O 1º em campo cobra os pênaltis do jogo. Na disputa, a ordem é esta; depois vêm os melhores batedores e o goleiro por último.</small>
+          </section>
+          <p className="ef-note">Se um cobrador ou o capitão for substituído, quem entrar no lugar dele assume a função.</p>
         </div>
       )}
 
@@ -410,7 +470,8 @@ export default function OnlineSquad({ onOpenMatch, notify, seasonId }) {
 
       {drawer && (
         <SquadDrawer
-          players={squad.players.map((p) => byId[p.id])}
+          title="Não relacionados"
+          players={(sel ? squad.players : out).map((p) => byId[p.id])}
           statusOf={(id) => whereOf(id).kind}
           colors={colors}
           swapping={sel ? (idAt(sel) ? byId[idAt(sel)]?.name : 'a vaga escolhida') : null}

@@ -10,6 +10,7 @@
 //     --upto NN        só aplica as fases até o arquivo NN (ex.: 32 = motor antes dos planos de jogo).
 //     --arrows N       condição: N jogos por seta (1 a 5) do time A contra o mesmo elenco com seta amarela.
 //     --styles N       estilos: N jogos por plano com estilos que combinam com o plano contra o mesmo elenco sem estilo.
+//     --marks N        marcação individual: N jogos com o melhor defensor marcando o melhor atacante rival, e N sem marcação.
 //
 // Cada temporada: elencos gerados como no online (19 genéricos + 3 craques), força espalhada de -5 a +5 por clube,
 // e um "técnico" por clube:
@@ -26,7 +27,7 @@ import { pathToFileURL } from 'node:url'
 const ROOT = new URL('..', import.meta.url).pathname
 const ONLINE = join(ROOT, 'supabase', 'online')
 const arg = (k, d) => { const i = process.argv.indexOf('--' + k); return i > 0 ? process.argv[i + 1] : d }
-const SEASONS = +arg('seasons', 10), DUELS = +arg('duels', 0), ARROWS = +arg('arrows', 0), STYLES = +arg('styles', 0), EXTRA = arg('extra', null), OUT = arg('out', null)
+const SEASONS = +arg('seasons', 10), DUELS = +arg('duels', 0), ARROWS = +arg('arrows', 0), STYLES = +arg('styles', 0), MARKS = +arg('marks', 0), EXTRA = arg('extra', null), OUT = arg('out', null)
 const LABEL = arg('label', EXTRA ? EXTRA.split('/').pop() : 'motor atual')
 const PROFILES = ['bot', 'ativo', 'passivo', 'aleatorio']
 
@@ -64,13 +65,16 @@ create or replace function public.lab_strength(p_club int) returns numeric langu
 
 const rnd = (a) => a[Math.floor(Math.random() * a.length)]
 const HAS_PLANS = (await db.query(`select to_regprocedure('public.on_ai_plan(int,int,numeric,boolean)') is not null ok`)).rows[0].ok
+// estilos de jogo do banco (fase 39: posse, contra, contra_longo, pontas, direto, sobrecarga)
+const PLAN_IDS = HAS_PLANS ? (await db.query('select public.on_plans() p')).rows[0].p : []
+const NEUTRAL = PLAN_IDS.includes('equilibrado') ? 'equilibrado' : PLAN_IDS[0]
 // tática "de quem sabe": a mesma regra da IA (pela diferença de força e, com planos, pela aderência do elenco)
 const smartTactics = async (c, o, diff, home) => HAS_PLANS
   ? (await db.query('select public.on_ai_plan($1,$2,$3,$4) t', [c, o, diff, home])).rows[0].t
   : (await db.query('select public.mgr_ai_tactics($1,$2) t', [diff, home])).rows[0].t
 // combinação qualquer das opções da tela
 const randomTactics = () => HAS_PLANS ? ({
-  plan: rnd(['equilibrado', 'posse', 'pressao', 'contra', 'retranca', 'direto', 'pontas', 'total']),
+  plan: rnd(PLAN_IDS),
   tackling: rnd(['light', 'balanced', 'heavy']),
   manage: rnd(['normal', 'keep', 'chase']),
 }) : ({
@@ -136,7 +140,7 @@ for (let s = 0; s < SEASONS; s++) {
 }
 
 // ── Matriz de táticas: dois clubes de força igual, a mesma partida repetida com o mando alternado ──
-const PLANS = HAS_PLANS ? Object.fromEntries(['equilibrado', 'posse', 'pressao', 'contra', 'retranca', 'direto', 'pontas', 'total'].map((p) => [p, { plan: p }])) : {
+const PLANS = HAS_PLANS ? Object.fromEntries(PLAN_IDS.map((p) => [p, { plan: p }])) : {
   equilibrado: { style: 'neutral' },
   defensivo: { style: 'defensive', marking: 'low' },
   ofensivo: { style: 'attacking' },
@@ -146,9 +150,9 @@ const PLANS = HAS_PLANS ? Object.fromEntries(['equilibrado', 'posse', 'pressao',
   pressao: { style: 'neutral', marking: 'high' },
   pontas: { style: 'neutral', attack: 'both', crossing: 'byline' },
 }
-const duels = {}, arrowsTest = {}, stylesTest = {}
+const duels = {}, arrowsTest = {}, stylesTest = {}, marksTest = {}
 const HAS_STYLES = (await db.query(`select to_regprocedure('public.on_arrow_next(char,int,numeric,boolean,float8)') is not null ok`)).rows[0].ok
-if (DUELS > 0 || ARROWS > 0 || STYLES > 0) {
+if (DUELS > 0 || ARROWS > 0 || STYLES > 0 || MARKS > 0) {
   await db.exec(`update public.on_seasons set status='closed' where status='live';`)
   const sid = (await db.query(`select public.on_season_bootstrap('{}'::uuid[],date '2020-01-06') s`)).rows[0].s
   const [A, B] = (await db.query('select id from public.on_clubs where season_id=$1 order by id limit 2', [sid])).rows.map((r) => r.id)
@@ -194,7 +198,7 @@ if (DUELS > 0 || ARROWS > 0 || STYLES > 0) {
   }
   // condição: o time A com cada seta contra o mesmo elenco com seta amarela
   if (ARROWS > 0 && HAS_STYLES) for (const a of [1, 2, 3, 4, 5]) {
-    arrowsTest[a] = await play(ARROWS, { plan: 'equilibrado' }, { plan: 'equilibrado' }, a)
+    arrowsTest[a] = await play(ARROWS, { plan: NEUTRAL }, { plan: NEUTRAL }, a)
     process.stderr.write(`seta ${a}: ${arrowsTest[a].w}-${arrowsTest[a].d}-${arrowsTest[a].l}\n`)
   }
   // estilos: o time A joga o plano com estilos que combinam (melhor estilo da posição para o plano) contra o mesmo
@@ -202,18 +206,37 @@ if (DUELS > 0 || ARROWS > 0 || STYLES > 0) {
   if (STYLES > 0 && HAS_STYLES) {
     const save = (await db.query('select id,style_off,style_def,ai_styles from public.on_players where club_id in($1,$2)', [A, B])).rows
     await db.query(`update public.on_players set style_off=null,style_def=null,ai_styles='{}' where club_id=$1`, [B])
-    for (const plan of ['posse', 'pressao', 'contra', 'retranca', 'direto', 'pontas', 'total']) {
+    for (const plan of PLAN_IDS.filter((p) => p !== 'equilibrado')) {
       await db.query(`update public.on_players p set
         style_off=(select s.code from public.on_styles s where s.kind='off' and p.pos=any(s.pos) and $2=any(s.plans) order by s.code limit 1),
         style_def=(select s.code from public.on_styles s where s.kind='def' and p.pos=any(s.pos) and $2=any(s.plans) order by s.code limit 1),
         ai_styles='{}' where club_id=$1`, [A, plan])
-      const withS = await play(STYLES, { plan }, { plan: 'equilibrado' })
+      const withS = await play(STYLES, { plan }, { plan })
       await db.query(`update public.on_players set style_off=null,style_def=null,ai_styles='{}' where club_id=$1`, [A])
-      const noS = await play(STYLES, { plan }, { plan: 'equilibrado' })
+      const noS = await play(STYLES, { plan }, { plan })
       stylesTest[plan] = { with: withS, without: noS }
       process.stderr.write(`estilos ${plan}: com ${withS.w}-${withS.d}-${withS.l} sem ${noS.w}-${noS.d}-${noS.l}\n`)
     }
     for (const r of save) await db.query('update public.on_players set style_off=$2,style_def=$3,ai_styles=$4 where id=$1', [r.id, r.style_off, r.style_def, r.ai_styles])
+  }
+  // marcação individual: o melhor defensor de A (zagueiro ou volante) marca o atacante de B que mais finaliza; gols do alvo
+  if (MARKS > 0) {
+    const by = (await db.query(`select id from public.on_players where club_id=$1 and pos in('ZAG','VOL') order by ovr desc limit 1`, [A])).rows[0].id
+    const on = (await db.query(`select id from public.on_players where club_id=$1 and pos='ATA' order by ovr desc limit 1`, [B])).rows[0].id
+    const goalsOf = async () => (await db.query(`select coalesce(sum(goals),0)::int g,coalesce(sum(shots),0)::int s from public.lab_marks`)).rows[0]
+    await db.exec(`create table if not exists public.lab_marks(goals int,shots int);
+     create or replace function public.lab_marks_keep() returns trigger language plpgsql as $f$ begin
+      if new.status='finished' and old.status<>'finished' then
+       insert into public.lab_marks select goals,shots from public.on_match_players where fixture_id=new.fixture_id and player_id='${on}';
+      end if;return new;end $f$;
+     drop trigger if exists lab_marks on public.on_matches;
+     create trigger lab_marks after update on public.on_matches for each row execute function public.lab_marks_keep();`)
+    for (const [k, ta] of [['sem', { plan: 'posse' }], ['com', { plan: 'posse', marks: [{ by, on }] }]]) {
+      await db.exec('delete from public.lab_marks')
+      const r = await play(MARKS, ta, { plan: 'posse' })
+      marksTest[k] = { ...r, target: await goalsOf() }
+      process.stderr.write(`marcação ${k}: ${r.w}-${r.d}-${r.l}, alvo ${JSON.stringify(marksTest[k].target)}\n`)
+    }
   }
 }
 
@@ -272,6 +295,7 @@ summary.rankCorr = +(rho.reduce((a, b) => a + b, 0) / rho.length).toFixed(2)
 summary.duels = duels
 summary.arrows = arrowsTest
 summary.styles = stylesTest
+summary.marks = marksTest
 summary.secs = Math.round((Date.now() - t0) / 1000)
 console.log(JSON.stringify(summary, null, 1))
 if (OUT) writeFileSync(OUT, JSON.stringify({ summary, games, seasons }, null, 0))

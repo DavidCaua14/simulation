@@ -103,9 +103,22 @@
 .ef-tool small { padding: 1px 6px; border-radius: 999px; background: rgba(255, 255, 255, 0.12); font-size: 0.66rem; }
 .ef-h { margin: 2px 0 0; display: flex; align-items: baseline; gap: 6px; font: 900 0.86rem var(--font-heading, inherit); letter-spacing: 0.04em; text-transform: uppercase; color: #e6ecf8; }
 .ef-h small { font-size: 0.7rem; color: #9fb0d2; }
-.ef-bench { display: flex; gap: 8px; overflow-x: auto; padding: 2px 2px 8px; scrollbar-width: none; }
-.ef-bench::-webkit-scrollbar { display: none; }
-.ef-bench .ef-tile { flex: 0 0 auto; }
+/* banco completo em grade (como o banco da partida): filtro de posição, carta e físico em % */
+.ef-benchbox { display: flex; flex-direction: column; gap: 8px; padding: 12px 10px; border-radius: 14px; border: 1px solid rgba(255, 255, 255, 0.1); background: rgba(8, 14, 30, 0.55); }
+.ef-benchbox .pf-chips { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+.ef-benchbox .pf-chips::-webkit-scrollbar { display: none; }
+.ef-bench { display: grid; grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); gap: 12px 6px; justify-items: center; padding: 4px 0 2px; }
+.ef-bench .ef-bslot { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.ef-bench .ef-note { grid-column: 1 / -1; }
+.ef-pct { min-width: 46px; padding: 1px 8px; border-radius: 999px; font: 800 0.7rem/1.4 var(--font-body, inherit); text-align: center; color: #06240f; background: #3dd68c; }
+.ef-pct.warn { background: #f5c542; color: #2a1d00; }
+.ef-pct.bad { background: #ff6b6b; color: #2a0505; }
+.ef-drawer-title { margin: 0 0 6px; font: 900 0.9rem var(--font-heading, inherit); text-transform: uppercase; letter-spacing: 0.04em; color: inherit; }
+.ef-drawer-title small { opacity: .7; }
+.ef-drawer-title small { font-size: 0.72rem; }
+/* arrastar: no campo e no banco o dedo arrasta a carta na hora; na gaveta, rolar na vertical continua valendo */
+.ef-bslot, .ef-pitch .pt-slot { touch-action: none; }
+.ef-dslot { touch-action: pan-y; }
 .ef-note { margin: 0; font-size: 0.72rem; color: #9fb0d2; }
 
 /* gaveta da esquerda com todos os jogadores */

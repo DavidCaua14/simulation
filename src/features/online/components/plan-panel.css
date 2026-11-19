@@ -1,16 +1,29 @@
-/* Planos de jogo do modo online (PlanPanel) — mesmo visual escuro do painel de táticas. */
+/* Estilos de jogo do modo online (PlanPanel) — mesmo visual escuro do painel de táticas. */
 .pln { display: flex; flex-direction: column; gap: 12px; }
+.pln-h { margin: 0 2px; font: 900 0.76rem var(--font-display); letter-spacing: 0.05em; text-transform: uppercase; color: var(--cm-yellow, #ffd23f); }
 .pln-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
-@media (min-width: 560px) { .pln-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+@media (min-width: 560px) { .pln-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+/* card do estilo: área de escolha + ícone de informação no canto; o nome quebra linha em vez de sair do card */
 .pln-card {
-  display: flex; flex-direction: column; align-items: flex-start; gap: 8px; min-height: 64px; padding: 10px 12px;
-  border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.12); background: rgba(255, 255, 255, 0.04); color: #e6ecf8;
-  text-align: left; cursor: pointer; transition: background 0.12s, transform 0.1s;
+  position: relative; min-width: 0; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.12); background: rgba(255, 255, 255, 0.04);
+  transition: background 0.12s, transform 0.1s;
+}
+.pln-card-pick {
+  width: 100%; height: 100%; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 8px; min-height: 70px;
+  padding: 10px 34px 10px 12px; border: 0; background: none; color: #e6ecf8; text-align: left; cursor: pointer;
 }
 .pln-card:active { transform: scale(0.97); }
-.pln-card-top { width: 100%; display: flex; align-items: center; justify-content: space-between; }
-.pln-card-top svg { color: var(--cm-yellow, #ffd23f); }
-.pln-card strong { font: 800 0.8rem/1.15 var(--font-body); text-transform: uppercase; letter-spacing: 0.02em; }
+.pln-card-top { width: 100%; display: flex; align-items: center; gap: 8px; }
+.pln-card-top svg { flex: 0 0 auto; color: var(--cm-yellow, #ffd23f); }
+.pln-card strong {
+  max-width: 100%; font: 800 0.76rem/1.2 var(--font-body); text-transform: uppercase; letter-spacing: 0.01em;
+  overflow-wrap: anywhere; hyphens: auto; white-space: normal;
+}
+.pln-card-info {
+  position: absolute; top: 6px; right: 6px; width: 28px; height: 28px; display: grid; place-items: center; border-radius: 50%;
+  border: 0; background: rgba(255, 255, 255, 0.08); color: #c8d3ea; cursor: pointer;
+}
+.pln-card-info:hover { background: rgba(255, 255, 255, 0.16); color: #fff; }
 .pln-card.is-on { border-color: var(--cm-yellow, #ffd23f); background: color-mix(in srgb, var(--cm-yellow, #ffd23f) 14%, transparent); box-shadow: 0 0 0 1px var(--cm-yellow, #ffd23f) inset; }
 .pln-dots { display: inline-flex; gap: 3px; }
 .pln-dots i { width: 7px; height: 7px; border-radius: 50%; background: rgba(255, 255, 255, 0.18); }
@@ -18,10 +31,7 @@
 .pln-info { display: flex; flex-direction: column; gap: 8px; padding: 14px; border-radius: 14px; border: 1px solid rgba(255, 210, 63, 0.35); background: var(--cm-panel, #0b1222); text-align: left; }
 .pln-info h4 { margin: 0; display: flex; align-items: center; gap: 8px; font: 900 0.95rem var(--font-display); letter-spacing: 0.04em; text-transform: uppercase; color: var(--cm-yellow, #ffd23f); }
 .pln-what { margin: 0; font-size: 0.92rem; line-height: 1.4; color: #fff; }
-.pln-info ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
-.pln-info li { display: grid; grid-template-columns: 104px 1fr; gap: 8px; align-items: baseline; font-size: 0.8rem; line-height: 1.35; }
-.pln-info li span { color: #8fa1c4; }
-.pln-info li b { font-weight: 700; color: #e6ecf8; }
+.pln-attrline { margin: 0; font-size: 0.76rem; font-weight: 700; color: #ffd23f; }
 .pln-fitline { display: inline-flex; align-items: center; gap: 6px; }
 .pln-legend { margin: -4px 2px 0; display: flex; align-items: center; gap: 6px; font-size: 0.72rem; color: #8fa1c4; }
 .pln-ins { display: flex; flex-direction: column; gap: 6px; padding: 10px 12px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); background: var(--cm-panel, #0b1222); text-align: left; }
@@ -35,7 +45,36 @@
 .pln-ins p { margin: 0; font-size: 0.76rem; color: #a9b8d6; line-height: 1.35; }
 .pln-ins select { min-height: 40px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.2); background: #0e1730; color: #e6ecf8; padding: 0 10px; font-size: 0.82rem; }
 .pln.is-compact { gap: 8px; }
-.pln.is-compact .pln-card { min-height: 54px; padding: 8px 10px; }
+.pln.is-compact .pln-card-pick { min-height: 56px; padding: 8px 32px 8px 10px; }
+
+/* explicação do estilo */
+.pln-modal { position: fixed; inset: 0; z-index: 80; display: grid; place-items: center; padding: 16px; background: rgba(2, 6, 16, 0.72); }
+.pln-modal-card {
+  width: min(420px, 100%); max-height: calc(100dvh - 32px); overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding: 16px;
+  border-radius: 16px; border: 1px solid rgba(255, 210, 63, 0.45); background: linear-gradient(180deg, #13203d, #0b1222); color: #e6ecf8; text-align: left;
+}
+.pln-modal-card header { display: flex; align-items: center; gap: 10px; }
+.pln-modal-card h4 { flex: 1; min-width: 0; margin: 0; font: 900 1rem/1.2 var(--font-display); text-transform: uppercase; letter-spacing: 0.03em; color: #ffd23f; }
+.pln-modal-ic { width: 40px; height: 40px; flex: 0 0 auto; display: grid; place-items: center; border-radius: 12px; background: rgba(255, 210, 63, 0.14); color: #ffd23f; }
+.pln-x { width: 32px; height: 32px; display: grid; place-items: center; border-radius: 50%; border: 0; background: rgba(255, 255, 255, 0.08); color: #fff; cursor: pointer; }
+.pln-modal-card h5 { margin: 4px 0 0; font: 900 0.7rem var(--font-display); letter-spacing: 0.06em; text-transform: uppercase; color: #8fa1c4; }
+.pln-attrs { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+.pln-attrs li { padding: 5px 10px; border-radius: 999px; background: rgba(255, 210, 63, 0.12); border: 1px solid rgba(255, 210, 63, 0.35); font-size: 0.76rem; font-weight: 700; }
+.pln-modal-card dl { margin: 0; display: flex; flex-direction: column; gap: 8px; }
+.pln-modal-card dl div { display: flex; flex-direction: column; gap: 2px; }
+.pln-modal-card dt { font-size: 0.7rem; color: #8fa1c4; text-transform: uppercase; letter-spacing: 0.04em; font-weight: 800; }
+.pln-modal-card dd { margin: 0; font-size: 0.84rem; line-height: 1.35; }
+
+/* marcação individual */
+.pln-pair { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px; align-items: center; padding: 8px; border-radius: 10px; background: rgba(255, 255, 255, 0.04); }
+.pln-pair-on { grid-column: 1 / -1; display: flex; align-items: baseline; gap: 6px; min-width: 0; }
+.pln-pair-on small { font-size: 0.66rem; font-weight: 900; color: #ff8a8a; }
+.pln-pair-on b { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.86rem; }
+.pln-pair-on em { font-style: normal; font-weight: 900; color: #ffd23f; }
+.pln-pair-by-l { grid-column: 1 / -1; font-size: 0.68rem; color: #8fa1c4; text-transform: uppercase; letter-spacing: 0.04em; }
+.pln-pair select { min-width: 0; width: 100%; }
+.pln-pair-x { width: 40px; height: 40px; display: grid; place-items: center; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.14); background: none; color: #ff8a8a; cursor: pointer; }
+.pln-pair.is-new { grid-template-columns: 1fr; background: none; padding: 0; }
 
 /* Linha de planos na partida ao vivo */
 .onm-plans { display: flex; gap: 6px; overflow-x: auto; padding: 2px 2px 6px; scrollbar-width: none; }
@@ -44,7 +83,7 @@
   flex: 0 0 auto; display: flex; flex-direction: column; align-items: center; gap: 2px; min-width: 74px; padding: 6px 8px; border-radius: 10px;
   border: 1px solid rgba(255, 255, 255, 0.16); background: rgba(8, 14, 30, 0.75); color: #e6ecf8; cursor: pointer; position: relative;
 }
-.onm-plans button small { font: 800 0.6rem/1.1 var(--font-body); text-transform: uppercase; white-space: nowrap; }
+.onm-plans button small { font: 800 0.6rem/1.1 var(--font-body); text-transform: uppercase; white-space: nowrap; max-width: 92px; overflow: hidden; text-overflow: ellipsis; }
 .onm-plans button.is-on { border-color: var(--cm-yellow, #ffd23f); color: #fff; background: color-mix(in srgb, var(--cm-yellow, #ffd23f) 22%, rgba(8, 14, 30, 0.9)); }
 .onm-plan-opp { margin: 0 0 4px; font-size: 0.7rem; color: #c8d3ea; text-align: center; }
 .onm-plan-opp b { color: #ffd23f; }

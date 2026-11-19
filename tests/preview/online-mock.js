@@ -284,7 +284,7 @@ const RPC = {
     return draft()
   },
   on_squad: squad,
-  on_plan_fit: () => ({ fixture: 1, live: false, plans: { equilibrado: { edge: 0 }, posse: { edge: 0.6 }, pressao: { edge: 0.1 }, contra: { edge: -0.5 }, retranca: { edge: 0.2 }, direto: { edge: -0.7 }, pontas: { edge: 0.45 }, total: { edge: 0 } }, mark: [{ id: 'm1', name: 'Rafael Lima', pos: 'ATA', ovr: 84 }, { id: 'm2', name: 'Tiago Melo', pos: 'MEI', ovr: 80 }] }),
+  on_plan_fit: () => ({ fixture: 1, live: false, opponent: { id: 9, name: 'Rival FC', short: 'RIV' }, plans: { posse: { edge: 0.6 }, contra: { edge: 0.1 }, contra_longo: { edge: -0.5 }, pontas: { edge: 0.45 }, direto: { edge: -0.7 }, sobrecarga: { edge: 0.2 } }, mark: [{ id: 'm1', name: 'Rafael Lima', pos: 'ATA', ovr: 84 }, { id: 'm2', name: 'Tiago Melo', pos: 'MEI', ovr: 80 }, { id: 'm3', name: 'Caio Prates', pos: 'PE', ovr: 78 }, { id: 'm4', name: 'Bruno Sá', pos: 'VOL', ovr: 76 }] }),
   on_lineup_save: ({ p_formation, p_slots, p_bench, p_tactics }) => { lineup = { ...lineup, formation: p_formation, slots: p_slots, bench: p_bench, tactics: p_tactics || lineup.tactics }; return squad() },
   on_lineup_auto: ({ p_formation }) => { autoLineup(p_formation || lineup?.formation); return squad() },
   on_club_identity: ({ p }) => {
