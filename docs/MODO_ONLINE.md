@@ -396,3 +396,45 @@ Pelas pontas finaliza um pouco melhor, vantagem de casa 1,10 → 1,07 (mandante 
 - Bot × usuário: com o mesmo elenco duplicado, ser bot não dá vantagem na partida (A fez 43,6% dos pontos com os dois
   usuários, 46,6% como bot e 47,6% quando o outro era bot). A diferença que o laboratório mostra em temporadas
   (média de +0,05 ponto por jogo em 9 rodadas) é variação; quem perde de verdade é o usuário que nunca mexe no time.
+
+## Fase 35 — Séries A, B, C e D, Copa Online de todas as séries e calendário de dois jogos por dia
+
+`supabase/online/38_series.sql` (migração `20261119160000`). Para ligar em produção, depois da migração:
+`select public.on_series_bootstrap(date 'AAAA-MM-DD');` (`supabase/releases/online_series.sql`). Ela fecha a temporada ao
+vivo sem premiar (títulos, insígnias e histórico ficam), leva os clubes dos técnicos para a Série D com o mesmo elenco e
+caixa, cria os 94 clubes (bots com nomes reais) e sorteia o calendário e a 1ª fase da copa.
+
+| Série | Clubes | Formato | Elenco dos bots |
+|---|---|---|---|
+| A | 20 (Série A 2026) | Turno e returno, 38 rodadas. Os 4 últimos caem | Elenco real do catálogo em cartas de destaque: potencial pelo menos 5 acima da nota, +0,5 por jogo com 45 minutos ou mais (`on_star_grow`) |
+| B | 20 (Série B 2026) | 38 rodadas; 1º e 2º sobem; 3º×6º e 4º×5º em ida e volta (empate no agregado: melhor campanha). Os 4 últimos caem | Elenco real em cartas base |
+| C | 24 (Série C 2027) | Turno único (23 rodadas); 8 primeiros em dois quadrangulares (1-4-5-8 e 2-3-6-7) em ida e volta; 2 de cada grupo sobem; final em ida e volta. Os 4 últimos caem (a real rebaixa 2) | Cartas base geradas (nível 60) |
+| D | 30 (técnicos + clubes reais da D) | 2 grupos de 15 em turno e returno (30 rodadas, 1 folga por turno); 4 de cada grupo nas quartas (1A×4B, 2A×3B, 1B×4A, 2B×3A) em ida e volta: quem vence sobe; semifinal e final | Cartas base geradas (nível 56) |
+
+- **Clubes reais**: `on_real_clubs` (nome, sigla, cores, cidade, `crest` para o escudo oficial quando houver). A e B
+  apontam para `sim_clubs` (elenco real). A Série C 2027 tem 24 clubes; os 4 que caíram da B 2026 (Avaí, Londrina,
+  América-MG e Ponte Preta) ficam na B do catálogo, e as 4 vagas foram para quem subiu da C 2026 (Maringá, Ferroviária,
+  Inter de Limeira e Santa Cruz). A lista da D pode ser editada na tabela.
+- **Técnicos**: começam na D. Quem chega depois assume o bot pior colocado da D (`on_take_seat`). Mais de 30 técnicos
+  na D não cabem (a função recusa).
+- **Copa Online**: 1ª fase com C, D e os 6 piores da B (60, jogo único, mando de quem é de série mais baixa); 2ª fase com
+  A e o resto da B (64); 3ª fase (32); oitavas, quartas, semifinal e final em ida e volta. Jogo único empatado ou volta
+  empatada no agregado vai direto para os pênaltis (sem prorrogação). Prêmios por fase em `prize_cup` (r1, r2, r3, r16,
+  qf, sf, final, champion).
+- **Calendário** (`on_round_slot`, `on_slot_kick`): 51 turnos (25 dias e meio), dois por dia — manhã (08:00 a 10:30) e
+  tarde (13:00 a 15:30), com horários que mudam a cada dia (`kick_am`, `kick_pm`) e alguns minutos entre as séries
+  (A +0, B +5, C +10, D +15). Último pontapé às 15:45. Copa nos turnos 3, 8, 13, 18, 22, 27, 31, 36, 40, 45 e 49; A e B
+  usam os outros 40 em sequência, C e D se espalham por eles. As fases seguintes (playoffs, quadrangulares, mata-mata,
+  copa) são sorteadas pelo gancho `on_series_hook` quando a fase anterior termina.
+- **Suspensão por competição** (`on_players.susp`, `ylw`): vermelho tira do próximo jogo; cada 2 amarelos acumulados
+  também. Liga e copa contam separado.
+- **Fim de temporada** (`on_series_end`): histórico com série, posição e resultado; prêmios da liga pela posição
+  (tabela de `prize_league`, proporcional ao tamanho da série, vezes `series_mult`: A 1, B 0,6, C 0,4, D 0,25); insígnias
+  "Campeão da Liga Online A/B/C/D" (`on_honors.comp` LA, LB, LC, LD; a primeira de cada é a rara); acesso e rebaixamento
+  (4 entre cada par de séries); bots que mudam de série trocam de elenco; nova temporada dois dias depois.
+- **Telas**: aba **Partidas** (`OnlineMatches.jsx`, `matches.css`): calendário do mês com os dois jogos de cada dia (casa,
+  fora, copa e resultado), ingresso do jogo do dia, rodada de qualquer série, tabelas com zonas de acesso, playoff e
+  rebaixamento, mata-matas e a copa por fase. Logos das séries em `assets/online/serie_[a-d].webp`.
+- **Laboratório**: `PGLITE_DIR=<pasta> node scripts/series-lab.mjs` cria a estrutura em cima da suíte antiga (mesmo
+  caminho da migração), joga a temporada inteira pelo relógio (`on_tick`) e confere tamanhos, horários, fases,
+  acesso e rebaixamento, copa e a virada.

@@ -32,7 +32,7 @@ const files = [
 ]
 // Reaplica o esquema: precisa funcionar duas vezes seguidas.
 files.push(...files.slice(1))
-files.push(join(ONLINE, 'tests', 'online_tests.sql'))
+files.push(join(ONLINE, 'tests', 'online_tests.sql'), join(ONLINE, 'tests', 'series_tests.sql'))
 const calibrate = process.argv.includes('--calibrate')
 
 for (const file of files) {

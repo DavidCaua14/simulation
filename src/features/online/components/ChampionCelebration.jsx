@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Check, Sparkles } from 'lucide-react'
 import GameIcon from '../../../components/ui/GameIcon'
 import { useAudio } from '../../audio/AudioContext'
-import { COMP_LOGO, HONOR_ART, honorOf } from '../honors'
+import { COMP_LOGO, HONOR_ART, compName, honorOf } from '../honors'
 import GoldenWhistle from './GoldenWhistle'
 import './champion.css'
 
@@ -123,9 +123,9 @@ export default function ChampionCelebration({ notice, onClaim, onClose }) {
       .catch((e) => setError(e.message))
       .finally(() => setBusy(false))
   }
-  const comp = honor?.comp === 'L' ? 'Liga Online' : 'Copa Online'
+  const comp = compName(honor?.comp)
   return (
-    <div className={`ch-wrap s${stage} ${honor?.first ? 'is-first' : ''} ${honor?.comp === 'L' ? 'is-league' : 'is-cup'}`} role="dialog" aria-modal="true" aria-label={notice.title}>
+    <div className={`ch-wrap s${stage} ${honor?.first ? 'is-first' : ''} ${honor?.comp === 'C' ? 'is-cup' : `is-league is-${(honor?.comp || 'L').toLowerCase()}`}`} role="dialog" aria-modal="true" aria-label={notice.title}>
       <div className="ch-sky" aria-hidden="true">
         <span className="ch-beam b1" /><span className="ch-beam b2" /><span className="ch-beam b3" /><span className="ch-beam b4" />
         {[0, 1, 2, 3, 4].map((i) => <span key={i} className="ch-firework" style={{ left: `${12 + i * 19}%`, top: `${10 + ((i * 17) % 22)}%`, animationDelay: `${0.8 + i * 0.55}s` }} />)}

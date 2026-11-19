@@ -10,6 +10,7 @@ import { MAJOR_EVENTS, collapseTactics, condTone, eventText, isGoal, posFit } fr
 import useMatchAudio from '../audio/useMatchAudio'
 import LineupsSheet, { LineupsView } from './components/LineupsSheet'
 import OnlineCrest from './components/OnlineCrest'
+import { compOf } from './competitions'
 import { OvrBadge } from './components/PlayerFut'
 import { actOnlineMatch, fetchOnlineScout, fetchOnlineSquad, fetchPlanFit, pollOnlineMatch, sendOnlineHalftimeTalk } from './services/onlineApi'
 import PlanPanel from './components/PlanPanel'
@@ -321,7 +322,7 @@ export default function OnlineMatchLive({ fixtureId = null, onClose, notify }) {
       <div className="onm onm-pre" role="dialog" aria-modal="true" aria-label="Vestiário">
         <header className="onm-pre-top">
           <button type="button" className="on-back" onClick={onClose} aria-label="Voltar"><ArrowLeft size={20} /></button>
-          <span className="on-match-comp">{data.comp === 'C' ? 'Copa Online' : `Liga · Rodada ${data.round}`}</span>
+          <span className="on-match-comp">{compOf(data)?.name} · {compOf(data)?.detail}</span>
         </header>
         <div className="onm-vs">
           {teamCol('h', data.home)}
@@ -416,8 +417,8 @@ export default function OnlineMatchLive({ fixtureId = null, onClose, notify }) {
       <header className="ml-top onm-top" style={{ '--hc': home.colors[0], '--ac': away.colors[0] }}>
         <div className="ml-comp">
           <button type="button" className="onm-x" onClick={onClose} aria-label="Sair da partida"><ArrowLeft size={16} /></button>
-          <span>{data.comp === 'C' ? 'Copa Online' : 'Liga Online'}</span>
-          <em>{data.comp === 'C' ? data.stage : `Rodada ${data.round}`}</em>
+          <span>{compOf(data)?.name}</span>
+          <em>{compOf(data)?.short}{data.leg === 2 && data.agg ? ` · ida ${data.agg[1]}-${data.agg[0]}` : ''}</em>
           <span className={`pm-live ${ended ? 'is-done' : ''}`}>{ended ? 'Encerrado' : <><Radio size={11} /> Ao vivo</>}</span>
         </div>
         <div className="ml-board">

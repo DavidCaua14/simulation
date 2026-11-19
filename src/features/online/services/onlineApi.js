@@ -33,7 +33,9 @@ export const saveOnlineIdentity = (identity) => rpc('on_club_identity', { p: ide
 
 // Calendário e classificação da liga compartilhada
 export const fetchOnlineCalendar = () => rpc('on_calendar')
-export const fetchOnlineStandings = () => rpc('on_standings')
+// Séries A a D (fase 35): tabela de uma série (padrão: a do técnico) e jogos de uma rodada.
+export const fetchOnlineStandings = (div = null) => rpc('on_standings', { p_div: div })
+export const fetchOnlineRound = (div = null, round = null) => rpc('on_round', { p_div: div, p_round: round })
 
 // Catálogo de formações (o mesmo do modo Temporadas)
 export const fetchFormations = () => unwrap(supabase.from('sim_formations').select('id,name,slots').order('sort'))

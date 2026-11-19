@@ -2,6 +2,7 @@
 // Estado inicial pela URL: ?access=none | queued | unavailable | playing (padrão) e ?step=0..3 (craques já escolhidos).
 // ?live=<segundos desde o pontapé> põe o próximo jogo em andamento (ex.: live=200 → minuto 28 no servidor).
 import REAL_FORMATIONS from './formations.json'
+import { ME, seriesRpc, seriesStatus } from './series-mock'
 const params = new URLSearchParams(window.location.search)
 const state = { access: params.get('access') || 'playing', step: Number(params.get('step') ?? 0), name: 'FC davidcaua' }
 
@@ -215,6 +216,11 @@ const market = () => ({ server_now: new Date().toISOString(), my_club: 1, hours:
 
 const prepState = { scout: false, talk: null }
 const status = () => {
+  const l = legacyStatus()
+  return SERIES_ON && state.access === 'playing' ? { ...l, ...seriesStatus(), season: { ...l.season, id: 7 }, club: { ...l.club, id: ME.id } } : l
+}
+const SERIES_ON = !params.has('legacy') // ?legacy: liga única antiga
+const legacyStatus = () => {
   const playing = state.access === 'playing'
   const next = fixtures.find((f) => f.status !== 'done' && (f.home === 1 || f.away === 1))
   return {
@@ -333,6 +339,7 @@ const RPC = {
     return { player: { id: p.id, name: p.name, before, ovr: p.ovr, pot: p.pot }, items: RPC.online_items().items }
   },
 }
+if (!params.has('legacy')) Object.assign(RPC, seriesRpc)
 const itemState = { diamonds: 645, qty: 1 }
 
 const json = (body, status = 200) => new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } })

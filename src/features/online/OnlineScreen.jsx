@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useState } from 'react'
-import { ArrowLeft, Banknote, Clock, Coins, Gavel, Home, Landmark, LogOut, Radio, Shirt, Swords, Trophy } from 'lucide-react'
+import { ArrowLeft, Banknote, CalendarDays, Clock, Coins, Gavel, Home, Landmark, LogOut, Radio, Shirt, Swords } from 'lucide-react'
 import AppShell from '../../components/layout/AppShell'
 import { EmptyState, Notice, Skeleton } from '../../components/ui/feedback'
 import OnlineCrest from './components/OnlineCrest'
 import OnlineClub from './OnlineClub'
 import OnlineDraft from './OnlineDraft'
 import OnlineHome from './OnlineHome'
-import OnlineLeague from './OnlineLeague'
+import OnlineMatches from './OnlineMatches'
 import OnlineMarket from './OnlineMarket'
 import OnlineMatchLive from './OnlineMatchLive'
 import { PitchTokenContext } from '../seasons/components/pitchToken'
@@ -25,9 +25,9 @@ const TABS = [
   { id: 'squad', label: 'Elenco', Icon: Shirt },
   { id: 'market', label: 'Mercado', Icon: Gavel },
   { id: 'club', label: 'Clube', Icon: Landmark },
-  { id: 'league', label: 'Liga', Icon: Trophy },
+  { id: 'league', label: 'Partidas', Icon: CalendarDays },
 ]
-const TITLES = { squad: 'Elenco', market: 'Mercado', club: 'Clube', league: 'Competições' }
+const TITLES = { squad: 'Elenco', market: 'Mercado', club: 'Clube', league: 'Partidas' }
 
 export default function OnlineScreen({ onBack, params }) {
   const [toast, setToast] = useState(null)
@@ -99,7 +99,7 @@ export default function OnlineScreen({ onBack, params }) {
       <>
         {tab === 'home' && <OnlineHome status={status} now={now} go={go} onOpenMatch={setMatch} onExit={onBack} onReload={load} notify={notify} />}
         {tab === 'squad' && <OnlineSquad onOpenMatch={setMatch} notify={notify} seasonId={status.season?.id} />}
-        {tab === 'league' && <OnlineLeague now={now} onOpenMatch={setMatch} />}
+        {tab === 'league' && <OnlineMatches now={now} onOpenMatch={setMatch} status={status} />}
         {tab === 'market' && <OnlineMarket notify={notify} onChanged={load} />}
         {tab === 'club' && <OnlineClub key={nav.n} initialView={nav.view} status={status} notify={notify} onChanged={load} onStatus={apply} />}
       </>
@@ -128,7 +128,7 @@ export default function OnlineScreen({ onBack, params }) {
         <button type="button" className="on-back" onClick={onBack} aria-label="Sair do modo online"><ArrowLeft size={20} /></button>
       )}
       <div className="on-top-title">
-        <strong>{drafting ? 'Monte seu time' : ready && tab !== 'home' ? TITLES[tab] : 'Liga Online'}</strong>
+        <strong>{drafting ? 'Monte seu time' : ready && tab !== 'home' ? TITLES[tab] : status?.league?.name || 'Liga Online'}</strong>
         {ready && status.season && <small>Temporada {status.season.id} · {status.day?.round ? `Rodada ${status.day.n}/${status.day.of}` : `Dia ${status.day?.n ?? 1}`}</small>}
       </div>
       {liveNow && match == null && (

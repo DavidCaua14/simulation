@@ -1,5 +1,6 @@
-import { Building2, CalendarDays, ChevronRight, Clock, Dumbbell, Gavel, LogOut, MapPin, Radio, Shirt, Trophy } from 'lucide-react'
+import { Building2, CalendarDays, ChevronRight, Clock, Dumbbell, Gavel, LogOut, MapPin, Radio, Shirt } from 'lucide-react'
 import OnlineCrest from './components/OnlineCrest'
+import { compOf } from './competitions'
 import OnlinePrep from './OnlinePrep'
 import { OvrBadge } from './components/PlayerFut'
 import { kickoffDay, kickoffTime, moneyShort, timeLeft, untilKickoff } from './onlineUtils'
@@ -26,6 +27,7 @@ function BidRow({ lot, now, onOpen }) {
 export default function OnlineHome({ status, now, go, onOpenMatch, onExit, onReload, notify }) {
   const { club, next, position, last, standing, form = [], bids = [], news = [], featured, train } = status
   const live = next && new Date(next.kickoff).getTime() <= now
+  const nextComp = compOf(next)
   const homeClub = next ? (next.at_home ? club : next.opp) : null
   const awayClub = next ? (next.at_home ? next.opp : club) : null
   const stadium = next ? (next.at_home ? club : next.opp).colors?.stadium : null
@@ -43,7 +45,7 @@ export default function OnlineHome({ status, now, go, onOpenMatch, onExit, onRel
               {form.map((r, i) => <i key={i} className={`is-${r}`}>{FORM[r]}</i>)}
             </span>
           </div>
-          <div className="on-hero-pos"><b>{ordinal(position)}</b><small>Liga</small></div>
+          <div className="on-hero-pos"><b>{ordinal(position)}</b><small>{status.league ? `Série ${status.league.div}` : 'Liga'}</small></div>
         </div>
         <dl className="on-hero-stats">
           <div><dt>Pontos</dt><dd>{standing?.pts ?? 0}</dd></div>
@@ -56,7 +58,7 @@ export default function OnlineHome({ status, now, go, onOpenMatch, onExit, onRel
       {next ? (
         <div className={`on-match-card ${live ? 'is-live' : ''}`}>
           <div className="on-match-head">
-            <span className="on-match-comp">{next.comp === 'C' ? <><Trophy size={12} /> Copa Online</> : `Liga · Rodada ${next.round}`}</span>
+            <span className="on-match-comp">{nextComp && <img src={nextComp.logo} alt="" width={16} height={16} />}{nextComp ? `${nextComp.name} · ${nextComp.detail}` : 'Liga Online'}</span>
             {live ? <span className="on-live-dot"><Radio size={12} /> AO VIVO</span> : <span className="on-when">{kickoffDay(next.kickoff)} · {kickoffTime(next.kickoff)}</span>}
           </div>
           <div className="on-match-teams">

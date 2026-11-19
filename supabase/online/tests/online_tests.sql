@@ -289,9 +289,8 @@ begin
  update public.on_matches set summary=null where fixture_id=f.id; -- força o caminho de fim repetido
  perform public.on_match_finish(f.id);
  if (select sum(p) from public.on_table t where t.club_id in(f.home,f.away))<>2 then raise exception 'fim repetido somou de novo';end if;
- select min(o.round) into v_round from public.on_fixtures o where o.season_id=f.season_id and o.comp='L' and o.kickoff>f.kickoff
-  and (select club_id from public.on_match_players where fixture_id=f.id and player_id=pid) in(o.home,o.away);
- if (select susp_round from public.on_players where id=pid) is distinct from v_round then raise exception 'suspensão';end if;
+ -- suspensão por competição (fase 35): vermelho = 1 jogo de liga
+ if (select (susp->>'L')::int from public.on_players where id=pid) is distinct from 1 then raise exception 'suspensão';end if;
  if exists(select 1 from public.on_players p join public.on_match_players mp on mp.player_id=p.id and mp.fixture_id=f.id
   where mp.status<>'bench' and p.cond<>round(mp.cond)) then raise exception 'condição não voltou ao elenco';end if;
  if (select hg from public.on_fixtures where id=f.id)<>(m.state->'score'->>0)::int then raise exception 'placar';end if;

@@ -1,0 +1,120 @@
+-- Testes das séries (fase 35). Rodam depois de online_tests.sql, que deixa uma temporada de liga única com técnicos,
+-- títulos e elencos (mesmo caminho da migração). Os resultados são marcados direto (sem o motor) para passar por todas
+-- as fases em segundos; o motor de verdade fica no laboratório scripts/series-lab.mjs.
+
+update public.on_config set tick_hooks='{}';
+
+-- resultado de mentira: placar pelo hash, tabela como em on_match_finish e o gancho das séries
+create or replace function public.t_fake(p_fx bigint) returns void language plpgsql as $$
+declare f public.on_fixtures;vh int;va int;v_agg int[];
+begin
+ select * into f from public.on_fixtures where id=p_fx;
+ vh:=floor(public.sim_hash01('h'||p_fx)*4);va:=floor(public.sim_hash01('a'||p_fx)*3);
+ update public.on_fixtures set status='done',hg=vh,ag=va where id=p_fx;
+ -- pênaltis: copa empatada (no agregado, na volta)
+ if f.comp='C' and coalesce(f.leg,2)=2 then
+  select array[coalesce(sum(case when x.home=f.home then x.hg else x.ag end),0),coalesce(sum(case when x.home=f.home then x.ag else x.hg end),0)] into v_agg
+   from public.on_fixtures x where x.season_id=f.season_id and x.comp='C' and x.tie=f.tie and x.id<>f.id;
+  if vh+v_agg[1]=va+v_agg[2] then update public.on_fixtures set pens='[5,4]' where id=p_fx;end if;
+ end if;
+ if f.comp='L' and f.tphase is not null then
+  update public.on_table t set p=t.p+1,w=t.w+(x.gf>x.ga)::int,d=t.d+(x.gf=x.ga)::int,l=t.l+(x.gf<x.ga)::int,gf=t.gf+x.gf,ga=t.ga+x.ga,
+   pts=t.pts+case when x.gf>x.ga then 3 when x.gf=x.ga then 1 else 0 end
+  from(values(f.home,vh,va),(f.away,va,vh)) x(club,gf,ga) where t.season_id=f.season_id and t.club_id=x.club and t.phase=f.tphase;
+ end if;
+ perform public.on_series_hook(p_fx);
+end $$;
+
+create or replace function public.t_sizes(p smallint) returns text language sql as $$
+ select string_agg(x.div||x.n,',' order by x.div) from(select div,count(*) n from public.on_clubs where season_id=p group by div) x $$;
+
+do $$
+declare v_s smallint;n int;users int;h0 int;
+begin
+ h0:=(select count(*) from public.on_honors);
+ users:=(select count(*) from public.on_clubs k join public.on_seasons s on s.id=k.season_id and s.status='live' where k.user_id is not null);
+ v_s:=public.on_series_bootstrap(date '2026-12-01');
+ if public.t_sizes(v_s)<>'A20,B20,C24,D30' then
+  raise exception 'tamanhos: %',public.t_sizes(v_s);
+ end if;
+ if (select count(*) from public.on_clubs where season_id=v_s and div='D' and user_id is not null)<>users then raise exception 'técnicos fora da D';end if;
+ if (select count(*) from public.on_fixtures where season_id=v_s)<>380+380+276+420+30 then raise exception 'jogos: %',(select count(*) from public.on_fixtures where season_id=v_s);end if;
+ if exists(select 1 from public.on_fixtures where season_id=v_s and ((kickoff at time zone 'America/Sao_Paulo')::time<'08:00' or (kickoff at time zone 'America/Sao_Paulo')::time>'16:00')) then
+  raise exception 'jogo fora das 08:00 às 16:00';
+ end if;
+ if exists(select 1 from public.on_fixtures f cross join lateral(values(f.home),(f.away)) v(c) where season_id=v_s group by v.c,f.slot having count(*)>1) then
+  raise exception 'clube duas vezes no mesmo turno';
+ end if;
+ -- segunda chamada do sorteio da copa não duplica
+ if public.on_cup_draw(v_s,1,'{}')<>0 then raise exception 'copa sorteada de novo';end if;
+ raise notice 'PASS séries: estrutura e calendário';
+
+ -- temporada inteira com resultados de mentira (as fases seguintes nascem no gancho)
+ for n in 1..4000 loop
+  perform public.t_fake(f.id) from(select id from public.on_fixtures where season_id=v_s and status<>'done' order by kickoff,id limit 1) f;
+  exit when (select status from public.on_seasons where id=v_s)<>'live';
+ end loop;
+ if (select status from public.on_seasons where id=v_s)<>'closed' then raise exception 'temporada não fechou (% jogos abertos)',(select count(*) from public.on_fixtures where season_id=v_s and status<>'done');end if;
+ -- fases: B playoff (4 jogos), C quadrangulares (24) e final (2), D quartas (8), semi (4), final (2); copa 30+32+16+16+8+4+2
+ if (select count(*) from public.on_fixtures where season_id=v_s and div='B' and stage='po')<>4 then raise exception 'playoff da B';end if;
+ if (select count(*) from public.on_fixtures where season_id=v_s and div='C' and tphase=2)<>24 then raise exception 'quadrangulares da C';end if;
+ if (select count(*) from public.on_fixtures where season_id=v_s and div='C' and stage='final')<>2 then raise exception 'final da C';end if;
+ if (select string_agg(x.stage||x.n,',' order by x.stage) from(select stage,count(*) n from public.on_fixtures where season_id=v_s and div='D' and tie is not null group by stage) x)
+  is distinct from 'final2,qf8,sf4' then raise exception 'mata-mata da D';end if;
+ if (select count(*) from public.on_fixtures where season_id=v_s and comp='C')<>30+32+16+16+8+4+2 then
+  raise exception 'copa: %',(select string_agg(x.stage||x.n,',') from(select stage,count(*) n from public.on_fixtures where season_id=v_s and comp='C' group by stage) x);
+ end if;
+ if (select count(*) from public.on_history where season_id=v_s and cup='champion')<>1 then raise exception 'campeão da copa';end if;
+ -- acesso e rebaixamento
+ if (select count(*) from public.on_history where season_id=v_s and result='relegated')<>12 then raise exception 'rebaixados';end if;
+ if (select count(*) from public.on_history where season_id=v_s and result in('promoted','champion') and div<>'A')<>12 then raise exception 'promovidos';end if;
+ if (select count(*) from public.on_history where season_id=v_s and result='champion')<>4 then raise exception 'campeões';end if;
+ if (select count(*) from public.on_history where season_id=v_s and div='D' and result in('promoted','champion'))<>4 then raise exception 'acesso da D';end if;
+ -- insígnias só para técnicos campeões; bots não ganham
+ if exists(select 1 from public.on_honors h join public.on_clubs k on k.id=h.club_id where k.user_id is null) then raise exception 'bot com insígnia';end if;
+ if (select count(*) from public.on_honors)<h0 then raise exception 'insígnias antigas sumiram';end if;
+ raise notice 'PASS séries: temporada inteira, fases, copa, acesso e rebaixamento';
+
+ -- virada: tamanhos mantidos, 24 clubes trocaram de série, bots com o elenco da série nova, copa sorteada
+ select id into v_s from public.on_seasons where status='live';
+ if public.t_sizes(v_s)<>'A20,B20,C24,D30' then raise exception 'tamanhos da nova temporada';end if;
+ if (select count(*) from public.on_clubs k join public.on_history h on h.club_id=k.id and h.season_id=v_s-1 where k.season_id=v_s and k.div<>h.div)<>24 then
+  raise exception 'clubes que mudaram de série';
+ end if;
+ if exists(select 1 from public.on_clubs where season_id=v_s and user_id is null and sq='star' and div<>'A') then raise exception 'destaque fora da A';end if;
+ if (select count(*) from public.on_fixtures where season_id=v_s and comp='C')<>30 then raise exception 'copa nova';end if;
+ if exists(select 1 from public.on_players p join public.on_clubs k on k.id=p.club_id where k.season_id=v_s and (p.susp<>'{}' or p.ylw<>'{}')) then raise exception 'suspensão não zerou';end if;
+ raise notice 'PASS séries: virada da temporada';
+end $$;
+
+-- suspensão por competição: vermelho tira 1 jogo; 2 amarelos acumulados também; quem cumpriu desconta
+do $$
+declare s public.on_seasons;f public.on_fixtures;k int;p1 text;p2 text;p3 text;
+begin
+ select * into s from public.on_seasons where status='live';
+ select * into f from public.on_fixtures where season_id=s.id and comp='L' and status='sched' order by kickoff limit 1;
+ k:=f.home;
+ perform public.on_match_open(f);
+ select player_id into p1 from public.on_match_players where fixture_id=f.id and club_id=k and status='on' and pos<>'GOL' order by player_id limit 1;
+ select player_id into p2 from public.on_match_players where fixture_id=f.id and club_id=k and status='on' and pos<>'GOL' and player_id<>p1 order by player_id limit 1;
+ update public.on_players set ylw='{"L":1}' where id=p2;
+ update public.on_match_players set red=1,status='sent_off',slot=null,left_min=30 where fixture_id=f.id and player_id=p1;
+ update public.on_match_players set yellow=1 where fixture_id=f.id and player_id=p2;
+ perform public.on_advance(f.id,f.kickoff+interval '1 day',null);
+ perform public.on_advance(f.id,f.kickoff+interval '1 day',null);
+ if (select status from public.on_fixtures where id=f.id)<>'done' then raise exception 'jogo não terminou';end if;
+ if (select (susp->>'L')::int from public.on_players where id=p1)<>1 then raise exception 'vermelho não suspendeu';end if;
+ if (select (susp->>'L')::int from public.on_players where id=p2)<>1 or (select (ylw->>'L')::int from public.on_players where id=p2)<>0 then
+  raise exception '2º amarelo não suspendeu: %',(select susp||ylw from public.on_players where id=p2);
+ end if;
+ if exists(select 1 from public.on_players where id=p1 and coalesce((susp->>'C')::int,0)>0) then raise exception 'suspensão vazou para a copa';end if;
+ -- próximo jogo de liga do clube: os dois ficam fora e depois voltam
+ select * into f from public.on_fixtures where season_id=s.id and comp='L' and status='sched' and k in(home,away) order by kickoff limit 1;
+ if public.on_can_play((select p from public.on_players p where id=p1),k,f) then raise exception 'suspenso pode jogar';end if;
+ perform public.on_match_open(f);
+ if exists(select 1 from public.on_match_players where fixture_id=f.id and player_id in(p1,p2)) then raise exception 'suspenso relacionado';end if;
+ perform public.on_advance(f.id,f.kickoff+interval '1 day',null);
+ perform public.on_advance(f.id,f.kickoff+interval '1 day',null);
+ if (select (susp->>'L')::int from public.on_players where id=p1)<>0 or (select (susp->>'L')::int from public.on_players where id=p2)<>0 then raise exception 'suspensão não foi cumprida';end if;
+ raise notice 'PASS séries: suspensão por competição';
+end $$;
