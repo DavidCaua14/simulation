@@ -222,12 +222,14 @@ declare me text:=public.on_plan_legacy(p_t);op text:=public.on_plan_legacy(p_opp
 begin
  -- jeito de jogar (somado ao que a pressão, a linha e a postura do estilo já fazem no motor)
  case me
+  -- calibrado no laboratório (elencos idênticos, 200 jogos por confronto): contra rápido já ganha muito com a
+  -- pressão, o ritmo e a linha alta do motor, então o ajuste dele é para baixo; bola longa e pontas, para cima
   when 'posse' then ctl:=1.07;freq:=0.95;qual:=0.03;drain:=0.90;ofreq:=0.96;
-  when 'contra' then ctl:=0.98;freq:=0.98;qual:=0.02;drain:=0.92;
-  when 'contra_longo' then ctl:=0.86;freq:=0.98;qual:=0.08;ofreq:=0.86;oqual:=-0.03;drain:=0.95;
-  when 'pontas' then qual:=0.03;hdr:=0.34;
-  when 'direto' then ctl:=0.92;freq:=1.10;qual:=0.00;hdr:=0.30;
-  when 'sobrecarga' then ctl:=1.03;freq:=0.94;qual:=0.01;drain:=0.95;oqual:=0.02;
+  when 'contra' then ctl:=0.98;freq:=0.91;qual:=0.00;drain:=0.92;
+  when 'contra_longo' then ctl:=0.86;freq:=0.98;qual:=0.05;ofreq:=0.89;oqual:=-0.02;drain:=0.95;
+  when 'pontas' then freq:=1.03;qual:=0.06;hdr:=0.34;
+  when 'direto' then ctl:=0.92;freq:=1.17;qual:=0.03;hdr:=0.30;
+  when 'sobrecarga' then ctl:=1.03;freq:=0.97;qual:=0.01;drain:=0.95;oqual:=0.02;
   else null;
  end case;
  -- confronto
