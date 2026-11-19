@@ -527,3 +527,10 @@ python3 scripts/build-lower-squads.py          # gera supabase/online/41_lower_s
   relacionados. No campo e no banco, encostar e arrastar já move a carta (sem esperar); tocar sem arrastar abre o menu.
 - **Correção**: `on_standings` dava "column reference d is ambiguous" (variável `d` com o mesmo nome da coluna de
   empates); a variável virou `v_div`.
+- **Laboratório** (`scripts/online-lab.mjs --duels 160`, elencos idênticos): os 15 confrontos de estilos saem para o
+  lado previsto (quem tem vantagem leva 61–71% dos pontos); média por estilo entre 1,26 e 1,51 ponto por jogo.
+  Três temporadas completas (`scripts/series-lab.mjs --seasons 3`, 4.824 partidas): vantagem no confronto 1,68 ponto
+  por jogo, empate de estilos 1,35, desvantagem 1,07; nenhum suspenso/lesionado em campo, ordem dos pênaltis e
+  batedores de escanteio respeitados, função herdada em todas as substituições, 2,2–2,4 gols por jogo.
+- **Correções**: Série A voltou a ter cartas de destaque (a regra tinha ficado só no ramo dos elencos reais desde a
+  fase 37); escalação de emergência nunca usa suspenso (o time joga com menos gente).

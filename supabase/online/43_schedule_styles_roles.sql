@@ -115,7 +115,9 @@ $$;
 do $$ begin
  perform public.on_patch('public.on_bot_squad(integer,text)',
   ' update public.on_players p set number=x.rn from(',
-  ' perform public.on_bot_max(p_club); -- fase 39: bot no nível máximo da carta
+  ' -- fase 39: Série A em cartas de destaque (a regra tinha ficado só no ramo dos elencos reais) e bot no nível máximo
+ if k.sq=''star'' then update public.on_players set tier=''destaque'',pot=least(95,greatest(pot,level+5)) where club_id=p_club and tier is distinct from ''destaque'';end if;
+ perform public.on_bot_max(p_club);
  update public.on_players p set number=x.rn from(');
 end $$;
 
@@ -967,6 +969,8 @@ $function$;
 do $$ declare v smallint;k int;
 begin
  for v in select id from public.on_seasons where status='live' and series loop perform public.on_retime_season(v);end loop;
+ update public.on_players p set tier='destaque',pot=least(95,greatest(p.pot,p.level+5)) from public.on_clubs c join public.on_seasons s on s.id=c.season_id and s.status='live'
+  where p.club_id=c.id and c.user_id is null and c.sq='star' and p.tier is distinct from 'destaque';
  for k in select c.id from public.on_clubs c join public.on_seasons s on s.id=c.season_id and s.status='live' where c.user_id is null loop
   perform public.on_bot_max(k);
  end loop;

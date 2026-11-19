@@ -54,6 +54,11 @@ begin
   raise exception 'descanso curto entre jogos do dia: %',(select min(b.kickoff-a.kickoff) from public.on_fixtures a join public.on_fixtures b on b.season_id=a.season_id and b.slot=a.slot+1 and a.slot%2=0
    and (b.home in(a.home,a.away) or b.away in(a.home,a.away)) where a.season_id=v_s);
  end if;
+ -- Série A em cartas de destaque
+ if not exists(select 1 from public.on_players p join public.on_clubs k on k.id=p.club_id where k.season_id=v_s and k.div='A' and k.user_id is null and p.tier='destaque')
+  or exists(select 1 from public.on_players p join public.on_clubs k on k.id=p.club_id where k.season_id=v_s and k.div<>'A' and k.user_id is null and p.tier='destaque') then
+  raise exception 'cartas de destaque fora da Série A (ou faltando nela)';
+ end if;
  -- bots no nível máximo da carta
  if exists(select 1 from public.on_players p join public.on_clubs k on k.id=p.club_id where k.season_id=v_s and k.user_id is null and p.ovr<greatest(p.pot,p.level)) then
   raise exception 'bot abaixo do nível máximo';
