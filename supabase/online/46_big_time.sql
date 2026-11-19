@@ -190,7 +190,7 @@ language sql stable security definer set search_path=public as $$
   'total',case when p_admin then (select sum(i.balls) from public.on_pack_items i where i.pack_id=k.id) end,
   'items',coalesce((select jsonb_agg(jsonb_build_object('id',i.id,'kind',i.kind,'qty',i.qty,
      'balls',case when p_admin then i.balls end,
-     'got',i.kind in('bigtime','player') and public.on_pack_left(i,p_user,p_club)=0,
+     'got',public.on_pack_left(i,p_user,p_club)=0, -- carta tirada ou item esgotado para este técnico
      'bt',case when i.kind='bigtime' then public.on_bt_json(i.ref) end,
      'player',case when i.kind='player' then public.on_pool_json(i.src) end)
     order by (i.kind='bigtime') desc,(i.kind='player') desc,i.sort,i.id) from public.on_pack_items i where i.pack_id=k.id),'[]'))

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { CircleAlert, Clock, Coins, Flame, Gem, Package, Sparkles, Wallet, X, Zap } from 'lucide-react'
+import { Check, CircleAlert, Clock, Coins, Flame, Gem, Package, Sparkles, Wallet, X, Zap } from 'lucide-react'
 import { Skeleton } from '../../../components/ui/feedback'
 import { useAudio } from '../../audio/AudioContext'
 import { drawPack, fetchPacks } from '../../online/services/onlineApi'
@@ -121,7 +121,12 @@ function PackDetail({ pack, diamonds, now, busy, error, onDraw, onClose }) {
   const [card, setCard] = useState(null)
   const cards = pack.items.filter((i) => i.kind === 'bigtime')
   const base = pack.items.filter((i) => i.kind === 'player' && i.player)
-  const other = [...new Map(pack.items.filter((i) => !['bigtime', 'player'].includes(i.kind)).map((i) => [`${i.kind}:${i.qty}`, i])).values()]
+  // itens iguais aparecem uma vez; riscado só quando todos daquele tipo já saíram
+  const other = Object.values(pack.items.filter((i) => !['bigtime', 'player'].includes(i.kind)).reduce((m, i) => {
+    const k = `${i.kind}:${i.qty}`
+    m[k] = m[k] ? { ...m[k], got: m[k].got && i.got } : i
+    return m
+  }, {}))
   const poor = diamonds < pack.price
   return (
     <div className="pk-sheet" role="dialog" aria-modal="true" aria-label={pack.title} onClick={onClose}>
@@ -152,6 +157,7 @@ function PackDetail({ pack, diamonds, now, busy, error, onDraw, onClose }) {
                 {base.map((i) => (
                   <li key={i.id} className={i.got ? 'is-out' : ''}>
                     <b>{i.player.ovr}</b><small>{i.player.pos}</small><span>{i.player.name}</span>
+                    {i.got && <Check size={13} className="pk-got" aria-label="Já ganhou" />}
                   </li>
                 ))}
               </ul>
@@ -162,9 +168,10 @@ function PackDetail({ pack, diamonds, now, busy, error, onDraw, onClose }) {
               <h4>Itens</h4>
               <ul className="pk-others">
                 {other.map((i) => (
-                  <li key={i.id}>
+                  <li key={i.id} className={i.got ? 'is-out' : ''}>
                     <span className="pk-others-ico"><PrizeIcon kind={i.kind} size={18} /></span>
                     <span>{PRIZE[i.kind]?.label(i.qty)}</span>
+                    {i.got && <em className="pk-gotlabel"><Check size={12} /> Já ganhou</em>}
                   </li>
                 ))}
               </ul>

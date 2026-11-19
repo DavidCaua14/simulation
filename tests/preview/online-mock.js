@@ -383,7 +383,7 @@ const packItems = () => [
   { id: 11, kind: 'coins', qty: 300, balls: 18, left: 18 - packState.got.filter((x) => x === 11).length },
   { id: 13, kind: 'cash', qty: 50000, balls: 15, left: 15 - packState.got.filter((x) => x === 13).length },
   { id: 12, kind: 'whistle', qty: 1, balls: 3, left: 3 - packState.got.filter((x) => x === 12).length },
-].map((i) => ({ ...i, got: ['bigtime', 'player'].includes(i.kind) && i.left === 0 }))
+].map((i) => ({ ...i, got: i.left === 0 }))
 const packState = { got: [], diamonds: 2400 }
 const pack = () => {
   const items = packItems()
