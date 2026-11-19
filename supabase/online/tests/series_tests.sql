@@ -165,3 +165,12 @@ begin
  if (public.on_pen_odds(70,70,70,100,false,85,true,false)->>'save')::numeric<=(o->>'save')::numeric then raise exception 'goleiro bom não pesa';end if;
  raise notice 'PASS chances da cobrança (média %)',round(v,3);
 end $$;
+
+-- escudos oficiais (fase 38): todo bot de clube real tem escudo; clube de técnico não
+do $$ begin
+ if exists(select 1 from public.on_clubs k join public.on_seasons s on s.id=k.season_id and s.status='live'
+  where k.user_id is null and k.real_key is not null and k.colors->>'crest' is null) then raise exception 'bot sem escudo oficial';end if;
+ if exists(select 1 from public.on_clubs k join public.on_seasons s on s.id=k.season_id and s.status='live'
+  where k.user_id is not null and k.colors ? 'crest') then raise exception 'clube de técnico com escudo oficial';end if;
+ raise notice 'PASS escudos oficiais';
+end $$;

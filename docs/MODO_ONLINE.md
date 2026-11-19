@@ -408,7 +408,7 @@ caixa, cria os 94 clubes (bots com nomes reais) e sorteia o calendário e a 1ª 
 |---|---|---|---|
 | A | 20 (Série A 2026) | Turno e returno, 38 rodadas. Os 4 últimos caem | Elenco real do catálogo em cartas de destaque: potencial pelo menos 5 acima da nota, +0,5 por jogo com 45 minutos ou mais (`on_star_grow`) |
 | B | 20 (Série B 2026) | 38 rodadas; 1º e 2º sobem; 3º×6º e 4º×5º em ida e volta (empate no agregado: melhor campanha). Os 4 últimos caem | Elenco real em cartas base |
-| C | 24 (Série C 2027) | Turno único (23 rodadas); 8 primeiros em dois quadrangulares (1-4-5-8 e 2-3-6-7) em ida e volta; 2 de cada grupo sobem; final em ida e volta. Os 4 últimos caem (a real rebaixa 2) | Elenco real da Wikipédia em cartas base (16 clubes); os outros 8, cartas geradas (nível 60) |
+| C | 24 (Série C 2027) | Turno único (23 rodadas); 8 primeiros em dois quadrangulares (1-4-5-8 e 2-3-6-7) em ida e volta; 2 de cada grupo sobem; final em ida e volta. Os 4 últimos caem (a real rebaixa 2) | Elenco real da Wikipédia em cartas base (18 clubes); os outros 6, cartas geradas (nível 60) |
 | D | 30 (técnicos + participantes reais da Série D 2026) | 2 grupos de 15 em turno e returno (30 rodadas, 1 folga por turno); 4 de cada grupo nas quartas (1A×4B, 2A×3B, 1B×4A, 2B×3A) em ida e volta: quem vence sobe; semifinal e final | Elenco real da Wikipédia em cartas base (17 clubes, que entram primeiro); os outros, cartas geradas (nível 56) |
 
 - **Clubes reais**: `on_real_clubs` (nome, sigla, cores, cidade, `crest` para o escudo oficial quando houver). A e B
@@ -480,7 +480,18 @@ python3 scripts/build-lower-squads.py          # gera supabase/online/41_lower_s
   pontas, 9 centroavante) e pelo que falta no elenco (`on_lower_players.pos_est`). Nota e idade são estimativas de jogo:
   nível da série no jogo + papel no elenco (camisa 1 a 11 e capitão um pouco acima, números de base abaixo).
 - Elenco com data anterior a 2025 fica de fora. Alguns elencos não têm data na fonte (marcados `unknown`).
-- Resultado em 19/11/2026: 33 clubes, 919 jogadores. Série C: 16 de 24 (Amazonas, Anápolis, Barra, Floresta,
-  Uberlândia, Gama, Goiatuba e Nacional-AM não têm elenco publicado). Série D: a lista passou a priorizar participantes
+- Resultado em 19/11/2026: 35 clubes, 991 jogadores. Série C: 18 de 24 (Anápolis, Floresta, Uberlândia, Gama,
+  Goiatuba e Nacional-AM não têm elenco publicado). Série D: a lista passou a priorizar participantes
   reais da Série D 2026 com elenco publicado (17 de 30). Os demais seguem com cartas base geradas e nome real.
 - Ao mudar de série, o elenco real é refeito no nível da série nova (cartas base).
+
+## Fase 38 — Escudos oficiais
+
+`supabase/online/42_crests.sql` (migração `20261119190000`, gerado por `scripts/build-online-crests.py`).
+
+- Todos os 94 clubes reais (bots) usam o escudo oficial: A e B, os do modo Temporadas (`public/crests/<id>.svg`);
+  C e D, baixados da Wikipédia (`scripts/fetch-online-crests.py` → `public/crests/online/<clube>.webp`, miniatura de
+  250 px; fontes em `data/clubs/online_crest_sources.json`).
+- O escudo fica em `on_real_clubs.crest` e em `on_clubs.colors.crest`, então todas as telas que já mostram escudo
+  (`OnlineCrest`) mostram o oficial. Clubes de técnicos continuam com o escudo desenhado e personalizável; quando um
+  técnico assume um clube de bot, o escudo oficial sai (`on_take_seat`). `on_club_identity` não aceita `crest`.

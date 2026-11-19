@@ -25,3 +25,4 @@ dist-ssr
 
 # Snapshots locais (contêm .env)
 *.zip
+data/clubs/.online_crest_urls.json

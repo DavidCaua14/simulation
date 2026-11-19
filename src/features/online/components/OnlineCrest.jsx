@@ -1,3 +1,4 @@
+import { useState } from 'react'
 // Escudo do clube do modo online: desenhado com as cores, o desenho e o formato escolhidos pelo técnico
 // (colors: { a, b, pattern, shape }). Não há escudo de catálogo para esses clubes.
 const light = (hex) => {
@@ -36,6 +37,16 @@ function Pattern({ kind, a, b }) {
 }
 
 export default function OnlineCrest({ club, size = 40, className = '' }) {
+  // clube real (bot): escudo oficial em public/crests (colors.crest). Clube de técnico: escudo desenhado e personalizável.
+  const [broken, setBroken] = useState(false)
+  const crest = club?.colors?.crest || club?.crest
+  if (crest && !broken) {
+    return (
+      <img className={`on-crest is-official ${className}`} src={`${import.meta.env.BASE_URL}${crest}`} width={size} height={size * 1.15}
+        alt={`Escudo do ${club?.name || 'clube'}`} loading="lazy" decoding="async" onError={() => setBroken(true)}
+        style={{ objectFit: 'contain' }} />
+    )
+  }
   const a = club?.colors?.a || '#334155'
   const b = club?.colors?.b || '#ffffff'
   const pattern = club?.colors?.pattern || 'stripes'

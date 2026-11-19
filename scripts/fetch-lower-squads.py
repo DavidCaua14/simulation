@@ -28,7 +28,7 @@ CLUBS = {
  # Série C 2027
  'maringa': ['Maringá FC'], 'ferroviaria': ['Associação Ferroviária de Esportes'],
  'inter-limeira': ['Associação Atlética Internacional (Limeira)'], 'santa-cruz': ['Santa Cruz Futebol Clube'],
- 'amazonas': ['Amazonas FC'], 'anapolis': ['Anápolis Futebol Clube'], 'barra': ['Barra Futebol Clube', 'Barra FC'],
+ 'amazonas': ['Amazonas Futebol Clube'], 'anapolis': ['Anápolis Futebol Clube'], 'barra': ['Barra Futebol Clube (SC)'],
  'botafogo-pb': ['Botafogo Futebol Clube (PB)'], 'brusque': ['Brusque Futebol Clube'],
  'caxias': ['Sociedade Esportiva e Recreativa Caxias do Sul'], 'figueirense': ['Figueirense FC'],
  'floresta': ['Floresta Esporte Clube'], 'guarani': ['Guarani FC'], 'ituano': ['Ituano FC'],
@@ -55,7 +55,7 @@ CLUBS = {
 def api(params, lang='en'):
     """Chamada à API; respeita o limite de requisições (HTTP 429 + Retry-After). Falha de rede vira exceção."""
     url = f'https://{lang}.wikipedia.org/w/api.php?' + urllib.parse.urlencode({**params, 'format': 'json', 'formatversion': 2})
-    for attempt in range(8):
+    for attempt in range(40):
         try:
             time.sleep(2)
             with urllib.request.urlopen(urllib.request.Request(url, headers={'User-Agent': UA}), timeout=30) as r:

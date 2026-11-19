@@ -1,0 +1,41 @@
+# club: amazonas
+# source: https://en.wikipedia.org/wiki/Amazonas_Futebol_Clube
+# accessed: 2026-11-19
+# as_of: 26 August 2026
+-|GK|BRA|João Lopes|
+-|GK|BRA|Renan|captain
+-|GK|BRA|Victor Lube|
+-|GK|BRA|Axel Lopes|
+-|DF|BRA|Joílson|
+-|DF|BRA|Bruno Ramires|
+-|DF|BRA|Marcondes|
+-|DF|BRA|Diego Ivo|
+-|DF|BRA|Bryan|
+-|DF|BRA|Rafael Furlan|
+-|DF|BRA|Ítalo Silva|
+-|DF|BRA|Alyson|
+-|DF|BRA|Kauan Vitor|
+-|DF|BRA|Cicinho|
+-|DF|BRA|Iury|
+-|DF|BRA|Raylison|
+-|DF|BRA|Iverton|
+-|MF|BRA|Jhonny Lucas|
+-|MF|BRA|Phillipe Guimarães|
+-|MF|BRA|Riquelme|
+-|MF|BRA|Fabinho|
+-|MF|BRA|Pablo|
+-|MF|BRA|Cauê Araújo|
+-|MF|BRA|Tonhão|
+-|MF|COL|Yaider Mena|
+-|MF|BRA|Felipe Pelles|
+-|MF|BRA|Júlio Simas|
+-|MF|BRA|Guga|
+-|MF|BRA|Guilherme Brito|
+-|FW|USA|Adrien Graffin|
+-|FW|BRA|Ronan|
+-|FW|BRA|Kauê Fernandes|
+-|FW|BRA|Geuvânio|
+-|FW|BRA|Vinícius Leite|
+-|FW|BRA|Ronaldo|
+-|FW|BRA|Bernardo Daciolo|
+-|FW|BRA|Ezequiel|

@@ -1,0 +1,39 @@
+# club: barra
+# source: https://en.wikipedia.org/wiki/Barra_Futebol_Clube_%28SC%29
+# accessed: 2026-11-19
+# as_of: 1 September 2026
+-|GK|BRA|Matheus Keyser|<small>on loan from Brasiliense</small>
+-|GK|BRA|Luiz Fabiano|
+-|GK|BRA|Fabian Volpi|
+-|DF|BRA|Éverton Alemão|
+-|DF|BRA|Léo Duarte|
+-|DF|BRA|Jackson|
+-|DF|BRA|Jean Pierre|
+-|DF|BRA|Gabriel Jesus|
+-|DF|BRA|Kayque|
+-|DF|BRA|Guilherme Lazaroni|
+-|DF|BRA|Da Rocha|
+-|DF|BRA|Vavá|
+-|DF|BRA|Vitão|
+-|DF|BRA|João Vinícius|<small>on loan from Novo Hamburgo</small>
+-|DF|BRA|Augusto Potiguar|
+-|MF|BRA|Barba|
+-|MF|BRA|Matheus Barbosa|
+-|MF|BRA|Marquinho|
+-|MF|BRA|Gaudencio|
+-|MF|BRA|Pedro Peçanha|<small>on loan from Cascavel</small>
+-|MF|BRA|Esquerdinha|
+-|MF|BRA|Elvinho|
+-|MF|BRA|Rick|
+-|MF|BRA|Warley|
+-|FW|BRA|Giovani Albuquerque|
+-|FW|BRA|Renan Bernabé|
+-|FW|BRA|Betinho|<small>on loan from Horizonte</small>
+-|FW|BRA|Marcelinho|<small>on loan from Tombense</small>
+-|FW|BRA|Matheuzinho|<small>on loan from Camboriú</small>
+-|FW|BRA|Nicolas|
+-|FW|BRA|Vinícius Popó|<small>on loan from Capivariano</small>
+-|FW|BRA|Saymon|
+-|FW|BRA|Cléo Silva|
+-|FW|BRA|Gabriel Silva|
+-|FW|BRA|Lucas Vargas|

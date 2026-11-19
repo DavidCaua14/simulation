@@ -702,7 +702,7 @@ begin
  delete from public.on_lineups where club_id=p_club;
  update public.on_clubs set user_id=p_user,name=v_name,real_key=null,sq=null,
   short=upper(left(coalesce(nullif(regexp_replace(coalesce(v_nick,''),'[^A-Za-z0-9]','','g'),''),'CLB'),3)),
-  colors=colors||jsonb_build_object('stadium','Arena '||left(coalesce(v_nick,'do Clube'),20)),
+  colors=(colors-'crest')||jsonb_build_object('stadium','Arena '||left(coalesce(v_nick,'do Clube'),20)), -- escudo oficial fica com o clube real
   cash=150000,debt=0,reserved=0,draft_step=0,prep='{}',prep_streak=0,train_used=0,train_day=null,coins_conv=0
  where id=p_club;
  perform public.on_gen_squad(p_club,p_seed||':join:'||p_club,62,k.season_id+1);
@@ -740,7 +740,8 @@ begin
  if v_users>30 then raise exception 'Mais de 30 técnicos: a Série D não comporta';end if;
  -- bots: A, B e C inteiras; D completa os 30 com os técnicos
  insert into public.on_clubs(season_id,seat,name,short,colors,cash,draft_step,div,real_key)
- select v_s,(row_number() over(order by x.div0,x.key))::smallint,x.name,x.short,x.colors,
+ select v_s,(row_number() over(order by x.div0,x.key))::smallint,x.name,x.short,
+  x.colors||case when x.crest is not null then jsonb_build_object('crest',x.crest) else '{}'::jsonb end,
   case x.div0 when 'A' then 3000000 when 'B' then 1500000 when 'C' then 800000 else 500000 end,3,x.div0,x.key
  from(select rc.*,row_number() over(partition by rc.div0 order by (rc.key in(select club_key from public.on_lower_players)) desc,public.sim_hash01(v_seed||':real:'||rc.key)) rn
   from public.on_real_clubs rc) x

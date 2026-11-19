@@ -1,0 +1,221 @@
+{
+ "crests": {
+  "abc": {
+   "file": "crests/online/abc.webp",
+   "source": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/df/ABC_FC_-_RN.svg/250px-ABC_FC_-_RN.svg.png"
+  },
+  "agua-santa": {
+   "file": "crests/online/agua-santa.webp",
+   "source": "https://thumb.wikimedia.org/wikipedia/en/thumb/a/a4/Esporte_Clube_%C3%81gua_Santa.svg/250px-Esporte_Clube_%C3%81gua_Santa.svg.png"
+  },
+  "altos": {
+   "file": "crests/online/altos.webp",
+   "source": "https://thumb.wikimedia.org/wikipedia/en/thumb/5/53/Associa%C3%A7%C3%A3o_Atl%C3%A9tica_de_Altos.svg/250px-Associa%C3%A7%C3%A3o_Atl%C3%A9tica_de_Altos.svg.png"
+  },
+  "america-rj": {
+   "file": "crests/online/america-rj.webp",
+   "source": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/38/America_Football_Club_%28Rio_de_Janeiro%2C_Brazil%29_logo.svg/250px-America_Football_Club_%28Rio_de_Janeiro%2C_Brazil%29_logo.svg.png"
+  },
+  "america-rn": {
+   "file": "crests/online/america-rn.webp",
+   "source": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f3/Am%C3%A9rica_Futebol_Clube_%28Natal%2C_Rio_Grande_do_Norte%29_logo.svg/250px-Am%C3%A9rica_Futebol_Clube_%28Natal%2C_Rio_Grande_do_Norte%29_logo.svg.png"
+  },
+  "anapolis": {
+   "file": "crests/online/anapolis.webp",
+   "source": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/ed/An%C3%A1polis_Futebol_Clube_logo_%28official%29.svg/250px-An%C3%A1polis_Futebol_Clube_logo_%28official%29.svg.png"
+  },
+  "asa": {
+   "file": "crests/online/asa.webp",
+   "source": "https://thumb.wikimedia.org/wikipedia/en/thumb/e/e0/Agremia%C3%A7%C3%A3o_Sportiva_Arapiraquense.svg/250px-Agremia%C3%A7%C3%A3o_Sportiva_Arapiraquense.svg.png"
+  },
+  "atletico-alagoinhas": {
+   "file": "crests/online/atletico-alagoinhas.webp",
+   "source": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/ea/AA_Alagoinhas_-_BA.svg/250px-AA_Alagoinhas_-_BA.svg.png"
+  },
+  "botafogo-pb": {
+   "file": "crests/online/botafogo-pb.webp",
+   "source": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d3/Botafogo_Futebol_Clube_%28Jo%C3%A3o_Pessoa%2C_Para%C3%ADba%29_logo.svg/250px-Botafogo_Futebol_Clube_%28Jo%C3%A3o_Pessoa%2C_Para%C3%ADba%29_logo.svg.png"
+  },
+  "brasiliense": {
+   "file": "crests/online/brasiliense.webp",
+   "source": "https://thumb.wikimedia.org/wikipedia/en/thumb/c/cf/Brasiliense_FC_logo.svg/250px-Brasiliense_FC_logo.svg.png"
+  },
+  "brusque": {
+   "file": "crests/online/brusque.webp",
+   "source": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/ba/Brusque_Futebol_Clube_logo.svg/250px-Brusque_Futebol_Clube_logo.svg.png"
+  },
+  "campinense": {
+   "file": "crests/online/campinense.webp",
+   "source": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/ec/Campinense_Clube_logo.svg/250px-Campinense_Clube_logo.svg.png"
+  },
+  "caxias": {
+   "file": "crests/online/caxias.webp",
+   "source": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/92/Escudo_Oficial_da_Sociedade_Esportiva_e_Recreativa_Caxias_do_Sul.svg/250px-Escudo_Oficial_da_Sociedade_Esportiva_e_Recreativa_Caxias_do_Sul.svg.png"
+  },
+  "cianorte": {
+   "file": "crests/online/cianorte.webp",
+   "source": "https://thumb.wikimedia.org/wikipedia/en/thumb/6/6e/Cianorte_Futebol_Clube.svg/250px-Cianorte_Futebol_Clube.svg.png"
+  },
+  "confianca": {
+   "file": "crests/online/confianca.webp",
+   "source": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/18/Associa%C3%A7%C3%A3o_Desportiva_Confian%C3%A7a_logo.svg/250px-Associa%C3%A7%C3%A3o_Desportiva_Confian%C3%A7a_logo.svg.png"
+  },
+  "crac": {
+   "file": "crests/online/crac.webp",
+   "source": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d2/Escudo_do_Clube_Recreativo_e_Atl%C3%A9tico_Catalano_%28CRAC%29.svg/250px-Escudo_do_Clube_Recreativo_e_Atl%C3%A9tico_Catalano_%28CRAC%29.svg.png"
+  },
+  "decisao": {
+   "file": "crests/online/decisao.webp",
+   "source": "https://thumb.wikimedia.org/wikipedia/en/thumb/9/9e/Decis%C3%A3o_Goiana_Futebol_Clube.svg/250px-Decis%C3%A3o_Goiana_Futebol_Clube.svg.png"
+  },
+  "democrata-gv": {
+   "file": "crests/online/democrata-gv.webp",
+   "source": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e2/Esporte_Clube_Democrata_logo.svg/250px-Esporte_Clube_Democrata_logo.svg.png"
+  },
+  "ferroviaria": {
+   "file": "crests/online/ferroviaria.webp",
+   "source": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/20/Associa%C3%A7%C3%A3o_Ferrovi%C3%A1ria_de_Esportes_logo.svg/250px-Associa%C3%A7%C3%A3o_Ferrovi%C3%A1ria_de_Esportes_logo.svg.png"
+  },
+  "ferroviario": {
+   "file": "crests/online/ferroviario.webp",
+   "source": "https://thumb.wikimedia.org/wikipedia/en/thumb/1/1b/Ferrovi%C3%A1rio_CE_logo.svg/250px-Ferrovi%C3%A1rio_CE_logo.svg.png"
+  },
+  "figueirense": {
+   "file": "crests/online/figueirense.webp",
+   "source": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/da/Figueirense_Futebol_Clube_logo.svg/250px-Figueirense_Futebol_Clube_logo.svg.png"
+  },
+  "floresta": {
+   "file": "crests/online/floresta.webp",
+   "source": "https://thumb.wikimedia.org/wikipedia/en/thumb/6/66/Floresta_Esporte_Clube_logo.svg/250px-Floresta_Esporte_Clube_logo.svg.png"
+  },
+  "fluminense-pi": {
+   "file": "crests/online/fluminense-pi.webp",
+   "source": "https://thumb.wikimedia.org/wikipedia/en/thumb/1/19/Fluminense_Esporte_Clube.svg/250px-Fluminense_Esporte_Clube.svg.png"
+  },
+  "gama": {
+   "file": "crests/online/gama.webp",
+   "source": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/7d/Sociedade_Esportiva_do_Gama_logo_%281_gold_star%29.svg/250px-Sociedade_Esportiva_do_Gama_logo_%281_gold_star%29.svg.png"
+  },
+  "goiatuba": {
+   "file": "crests/online/goiatuba.webp",
+   "source": "https://thumb.wikimedia.org/wikipedia/en/thumb/b/bc/Goiatuba_Esporte_Clube.svg/250px-Goiatuba_Esporte_Clube.svg.png"
+  },
+  "guarani": {
+   "file": "crests/online/guarani.webp",
+   "source": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/04/Guarani_Futebol_Clube_logo.svg/250px-Guarani_Futebol_Clube_logo.svg.png"
+  },
+  "inter-limeira": {
+   "file": "crests/online/inter-limeira.webp",
+   "source": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b4/Inter_de_Limeira.svg/250px-Inter_de_Limeira.svg.png"
+  },
+  "itabaiana": {
+   "file": "crests/online/itabaiana.webp",
+   "source": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f5/Associa%C3%A7%C3%A3o_Ol%C3%ADmpica_de_Itabaiana_logo.svg/250px-Associa%C3%A7%C3%A3o_Ol%C3%ADmpica_de_Itabaiana_logo.svg.png"
+  },
+  "ituano": {
+   "file": "crests/online/ituano.webp",
+   "source": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/6e/Escudo_Oficial_do_Ituano_Futebol_Clube.svg/250px-Escudo_Oficial_do_Ituano_Futebol_Clube.svg.png"
+  },
+  "jacuipense": {
+   "file": "crests/online/jacuipense.webp",
+   "source": "https://thumb.wikimedia.org/wikipedia/en/thumb/a/a6/Esporte_Clube_Jacuipense.svg/250px-Esporte_Clube_Jacuipense.svg.png"
+  },
+  "joinville": {
+   "file": "crests/online/joinville.webp",
+   "source": "https://thumb.wikimedia.org/wikipedia/en/thumb/1/14/Joinville_Esporte_Clube_logo.svg/250px-Joinville_Esporte_Clube_logo.svg.png"
+  },
+  "juazeirense": {
+   "file": "crests/online/juazeirense.webp",
+   "source": "https://thumb.wikimedia.org/wikipedia/en/thumb/4/42/Sociedade_Desportiva_Juazeirense.svg/250px-Sociedade_Desportiva_Juazeirense.svg.png"
+  },
+  "madureira": {
+   "file": "crests/online/madureira.webp",
+   "source": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/ed/Madureira_EC_%28RJ%29.svg/250px-Madureira_EC_%28RJ%29.svg.png"
+  },
+  "maranhao": {
+   "file": "crests/online/maranhao.webp",
+   "source": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a8/Maranh%C3%A3o_Atl%C3%A9tico_Clube_logo.svg/250px-Maranh%C3%A3o_Atl%C3%A9tico_Clube_logo.svg.png"
+  },
+  "marcilio-dias": {
+   "file": "crests/online/marcilio-dias.webp",
+   "source": "https://thumb.wikimedia.org/wikipedia/en/thumb/5/51/Clube_N%C3%A1utico_Marc%C3%ADlio_Dias.svg/250px-Clube_N%C3%A1utico_Marc%C3%ADlio_Dias.svg.png"
+  },
+  "marica": {
+   "file": "crests/online/marica.webp",
+   "source": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/19/Maric%C3%A1_Futebol_Clube_logo.png/250px-Maric%C3%A1_Futebol_Clube_logo.png"
+  },
+  "maringa": {
+   "file": "crests/online/maringa.webp",
+   "source": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b0/Escudo_do_Maring%C3%A1_FC_2026.png/250px-Escudo_do_Maring%C3%A1_FC_2026.png"
+  },
+  "moto-club": {
+   "file": "crests/online/moto-club.webp",
+   "source": "https://thumb.wikimedia.org/wikipedia/en/thumb/c/c0/Moto_Club_de_S%C3%A3o_Lu%C3%ADs_logo.svg/250px-Moto_Club_de_S%C3%A3o_Lu%C3%ADs_logo.svg.png"
+  },
+  "nacional-am": {
+   "file": "crests/online/nacional-am.webp",
+   "source": "https://thumb.wikimedia.org/wikipedia/en/thumb/9/9d/Nacional_Futebol_Clube.svg/250px-Nacional_Futebol_Clube.svg.png"
+  },
+  "noroeste": {
+   "file": "crests/online/noroeste.webp",
+   "source": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e6/Esporte_Clube_Noroeste.svg/250px-Esporte_Clube_Noroeste.svg.png"
+  },
+  "paysandu": {
+   "file": "crests/online/paysandu.webp",
+   "source": "https://thumb.wikimedia.org/wikipedia/en/thumb/d/db/Paysandu_Sport_Club_logo.svg/250px-Paysandu_Sport_Club_logo.svg.png"
+  },
+  "portuguesa": {
+   "file": "crests/online/portuguesa.webp",
+   "source": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/61/Associa%C3%A7%C3%A3o_Portuguesa_de_Desportos.svg/250px-Associa%C3%A7%C3%A3o_Portuguesa_de_Desportos.svg.png"
+  },
+  "santa-cruz": {
+   "file": "crests/online/santa-cruz.webp",
+   "source": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/69/Santa_Cruz_Futebol_Clube_logo.svg/250px-Santa_Cruz_Futebol_Clube_logo.svg.png"
+  },
+  "sao-jose-rs": {
+   "file": "crests/online/sao-jose-rs.webp",
+   "source": "https://thumb.wikimedia.org/wikipedia/en/thumb/9/9c/Esporte_Clube_S%C3%A3o_Jos%C3%A9.svg/250px-Esporte_Clube_S%C3%A3o_Jos%C3%A9.svg.png"
+  },
+  "sao-luiz": {
+   "file": "crests/online/sao-luiz.webp",
+   "source": "https://thumb.wikimedia.org/wikipedia/en/thumb/0/00/Esporte_Clube_S%C3%A3o_Luiz_logo.svg/250px-Esporte_Clube_S%C3%A3o_Luiz_logo.svg.png"
+  },
+  "sergipe": {
+   "file": "crests/online/sergipe.webp",
+   "source": "https://thumb.wikimedia.org/wikipedia/en/thumb/7/79/Club_Sportivo_Sergipe_logo.svg/250px-Club_Sportivo_Sergipe_logo.svg.png"
+  },
+  "treze": {
+   "file": "crests/online/treze.webp",
+   "source": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/04/Treze_Futebol_Clube_logo.svg/250px-Treze_Futebol_Clube_logo.svg.png"
+  },
+  "uberlandia": {
+   "file": "crests/online/uberlandia.webp",
+   "source": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d0/Uberl%C3%A2ndia_Esporte_Clube_logo.svg/250px-Uberl%C3%A2ndia_Esporte_Clube_logo.svg.png"
+  },
+  "velo-clube": {
+   "file": "crests/online/velo-clube.webp",
+   "source": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/74/Escudo_Oficial_da_Associa%C3%A7%C3%A3o_Esportiva_Velo_Clube_Rioclarense.svg/250px-Escudo_Oficial_da_Associa%C3%A7%C3%A3o_Esportiva_Velo_Clube_Rioclarense.svg.png"
+  },
+  "volta-redonda": {
+   "file": "crests/online/volta-redonda.webp",
+   "source": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/2e/Volta_Redonda_Futebol_Clube_logo.svg/250px-Volta_Redonda_Futebol_Clube_logo.svg.png"
+  },
+  "xv-piracicaba": {
+   "file": "crests/online/xv-piracicaba.webp",
+   "source": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c5/Esporte_Clube_XV_de_Novembro_de_Piracicaba_logo.svg/250px-Esporte_Clube_XV_de_Novembro_de_Piracicaba_logo.svg.png"
+  },
+  "ypiranga-rs": {
+   "file": "crests/online/ypiranga-rs.webp",
+   "source": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f6/Ypiranga_Futebol_Clube_%28Erechim%2C_Rio_Grande_do_Sul%29_logo.svg/250px-Ypiranga_Futebol_Clube_%28Erechim%2C_Rio_Grande_do_Sul%29_logo.svg.png"
+  },
+  "amazonas": {
+   "file": "crests/online/amazonas.webp",
+   "source": "https://thumb.wikimedia.org/wikipedia/en/thumb/0/08/Amazonas_Futebol_Clube_logo.svg/250px-Amazonas_Futebol_Clube_logo.svg.png"
+  },
+  "barra": {
+   "file": "crests/online/barra.webp",
+   "source": "https://thumb.wikimedia.org/wikipedia/en/thumb/d/d1/Barra_Futebol_Clube_%28SC%29_logo.svg/250px-Barra_Futebol_Clube_%28SC%29_logo.svg.png"
+  }
+ },
+ "missing": []
+}
