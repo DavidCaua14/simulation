@@ -368,6 +368,11 @@ do $$ begin
  perform public.on_patch('public.on_squad()','''roles'',l.roles)','''roles'',public.on_roles_norm(l.roles))');
  -- pontapé: quem entra no lugar de um titular fora herda a função dele
  perform public.on_patch('public.on_kickoff_lineup(integer,public.on_fixtures)','''roles'',l.roles,','''roles'',public.on_roles_remap(public.on_roles_norm(l.roles),fixes),');
+ -- pontapé sem gente apta suficiente: a escalação de emergência pode usar lesionado, mas nunca suspenso
+ -- (suspenso que entrava em campo não cumpria a suspensão e seguia suspenso para sempre)
+ perform public.on_patch('public.on_kickoff_lineup(integer,public.on_fixtures)',
+  'select p.id into pid from public.on_players p where p.club_id=p_club and p.id<>all(used) order by p.inj_until nulls first,p.ovr desc,p.id limit 1;',
+  'select p.id into pid from public.on_players p where p.club_id=p_club and p.id<>all(used) and coalesce((p.susp->>p_fx.comp)::int,0)=0 order by p.inj_until nulls first,p.ovr desc,p.id limit 1;');
  -- abertura: ordem dos pênaltis e escanteio de cada lado
  perform public.on_patch('public.on_match_open(public.on_fixtures)',
   '''pen_taker'',jsonb_build_object(''h'',lh->''roles''->>''pen'',''a'',la->''roles''->>''pen''),',

@@ -232,3 +232,17 @@ begin
  exception when others then if sqlerrm='aceitou de fora' then raise;end if;end;
  raise notice 'PASS funções e herança';
 end $$;
+
+-- fase 39: elenco curto no pontapé — suspenso nunca entra (o time joga com menos gente)
+do $$
+declare k int;f public.on_fixtures;j jsonb;
+begin
+ select c.id into k from public.on_clubs c join public.on_seasons s on s.id=c.season_id and s.status='live' where c.user_id is null order by c.id limit 1;
+ select * into f from public.on_fixtures where comp='L' and k in(home,away) and status<>'done' order by kickoff limit 1;
+ update public.on_players set susp=jsonb_build_object('L',1) where club_id=k and id not in(select id from public.on_players where club_id=k order by ovr desc limit 8);
+ j:=public.on_kickoff_lineup(k,f);
+ if exists(select 1 from jsonb_each_text(j->'slots') e join public.on_players p on p.id=e.value where (p.susp->>'L')::int>0) then raise exception 'suspenso escalado: %',j->'slots';end if;
+ if (select count(*) from jsonb_object_keys(j->'slots'))<>8 then raise exception 'esperava 8 titulares: %',j->'slots';end if;
+ update public.on_players set susp='{}' where club_id=k;
+ raise notice 'PASS suspenso fora mesmo com elenco curto';
+end $$;
