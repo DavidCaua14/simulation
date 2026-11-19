@@ -189,7 +189,9 @@ language sql stable security definer set search_path=public as $$
   'empty',coalesce((select sum(public.on_pack_left(i,p_user,p_club)) from public.on_pack_items i where i.pack_id=k.id),0)=0,
   'total',case when p_admin then (select sum(i.balls) from public.on_pack_items i where i.pack_id=k.id) end,
   'items',coalesce((select jsonb_agg(jsonb_build_object('id',i.id,'kind',i.kind,'qty',i.qty,
-     'balls',case when p_admin then i.balls end,
+     'balls',case when p_admin or i.kind not in('bigtime','player') then i.balls end, -- itens: quantos existem na caixa
+     'won',case when i.kind not in('bigtime','player') and p_user is not null then
+       (select count(*) from public.on_pack_draws d where d.item_id=i.id and d.user_id=p_user) end, -- e quantos este técnico já ganhou
      'got',public.on_pack_left(i,p_user,p_club)=0, -- carta tirada ou item esgotado para este técnico
      'bt',case when i.kind='bigtime' then public.on_bt_json(i.ref) end,
      'player',case when i.kind='player' then public.on_pool_json(i.src) end)

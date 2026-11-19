@@ -121,10 +121,10 @@ function PackDetail({ pack, diamonds, now, busy, error, onDraw, onClose }) {
   const [card, setCard] = useState(null)
   const cards = pack.items.filter((i) => i.kind === 'bigtime')
   const base = pack.items.filter((i) => i.kind === 'player' && i.player)
-  // itens iguais aparecem uma vez; riscado só quando todos daquele tipo já saíram
+  // itens iguais aparecem uma vez, com quantos existem na caixa e quantos você já ganhou; riscado quando todos saíram
   const other = Object.values(pack.items.filter((i) => !['bigtime', 'player'].includes(i.kind)).reduce((m, i) => {
     const k = `${i.kind}:${i.qty}`
-    m[k] = m[k] ? { ...m[k], got: m[k].got && i.got } : i
+    m[k] = m[k] ? { ...m[k], got: m[k].got && i.got, balls: (m[k].balls || 0) + (i.balls || 0), won: (m[k].won || 0) + (i.won || 0) } : { ...i }
     return m
   }, {}))
   const poor = diamonds < pack.price
@@ -165,13 +165,17 @@ function PackDetail({ pack, diamonds, now, busy, error, onDraw, onClose }) {
           )}
           {other.length > 0 && (
             <>
-              <h4>Itens</h4>
+              <h4>Itens <small className="pk-h4-note">ganhos / na caixa</small></h4>
               <ul className="pk-others">
                 {other.map((i) => (
                   <li key={i.id} className={i.got ? 'is-out' : ''}>
                     <span className="pk-others-ico"><PrizeIcon kind={i.kind} size={18} /></span>
                     <span>{PRIZE[i.kind]?.label(i.qty)}</span>
-                    {i.got && <em className="pk-gotlabel"><Check size={12} /> Já ganhou</em>}
+                    {i.balls != null && (
+                      <em className={`pk-count ${i.got ? 'is-done' : ''}`} aria-label={`Você ganhou ${i.won || 0} de ${i.balls}`}>
+                        {i.got && <Check size={12} />} {i.won || 0}/{i.balls}
+                      </em>
+                    )}
                   </li>
                 ))}
               </ul>
@@ -221,7 +225,8 @@ export default function PacksTab({ onChanged, onEmpty }) {
         const store = r.store || data
         const packs = store.packs.map((p) => (p.id !== openId ? p : {
           ...p,
-          items: p.items.map((i) => (i.id === r.prize?.item && ['bigtime', 'player'].includes(i.kind) ? { ...i, got: true } : i)),
+          items: p.items.map((i) => (r.store || i.id !== r.prize?.item ? i
+            : ['bigtime', 'player'].includes(i.kind) ? { ...i, got: true } : { ...i, won: (i.won || 0) + 1, got: (i.won || 0) + 1 >= i.balls })),
         }))
         setPrize(r.prize)
         setData({ ...store, packs })

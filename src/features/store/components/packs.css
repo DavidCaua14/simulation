@@ -86,3 +86,6 @@
 .pk-base li.is-out { padding-right: 24px; }
 .pk-prize-kicker.is-base { background: #475569; }
 .pk-prize-fut { width: 170px; }
+.pk-count { display: inline-flex; align-items: center; gap: 3px; padding: 3px 9px; border-radius: 999px; background: rgba(255, 255, 255, .08); font: 900 .76rem var(--font-heading); font-style: normal; font-variant-numeric: tabular-nums; color: #fecaca; }
+.pk-count.is-done { background: rgba(74, 222, 128, .15); color: #4ade80; }
+.pk-h4-note { margin-left: 6px; font: 700 .64rem var(--font-body); letter-spacing: .02em; text-transform: none; color: #b8a4a5; }
