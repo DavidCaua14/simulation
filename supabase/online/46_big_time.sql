@@ -398,7 +398,8 @@ begin
   order by case when p_query is null then random() else 0 end,q.rating desc limit least(greatest(p_n,1),200)) q),'[]');
 end $$;
 
--- Aviso de caixa nova para cada técnico do modo Online (com o nome dele e o fim da caixa). Roda no tick.
+-- Aviso de caixa nova para cada jogador com acesso ao modo Online (com o nome dele e o fim da caixa). Roda no tick.
+-- Modo aberto: todas as contas. Fechado: só o administrador.
 create or replace function public.on_pack_notify(p_now timestamptz,p_new_day boolean) returns void
 language plpgsql security definer set search_path=public as $$
 declare pk public.on_packs;v_cards text;v_end text;
@@ -410,9 +411,9 @@ begin
   if to_regclass('public.player_notices') is not null then
    execute 'insert into public.player_notices(career_id,kind,title,body)
     select k.id,''info'',$1,format(''%s, %s chegou à Loja: %s. Cartas vermelhas com overall acima de 105 que entram direto no seu elenco do modo Online. A caixa fica disponível até %s e depois sai da Loja.'',k.nickname,$2,$3,$4)
-    from public.on_clubs c join lateral(select x.id,x.nickname from public.careers x where x.user_id=c.user_id order by (x.status=''active'') desc,x.created_at desc limit 1) k on true
-    where c.user_id is not null and c.season_id=(select max(id) from public.on_seasons where status=''live'')
-     and (coalesce((select public_open from public.on_config),false) or exists(select 1 from public.admins a where a.user_id=c.user_id))'
+    from(select distinct on(x.user_id) x.id,x.nickname from public.careers x
+     where coalesce((select public_open from public.on_config),false) or exists(select 1 from public.admins a where a.user_id=x.user_id)
+     order by x.user_id,(x.status=''active'') desc,x.created_at desc) k'
    using 'Big Time: '||coalesce(v_cards,pk.title),'a caixa “'||pk.title||'”',coalesce(v_cards,'atuações históricas'),v_end;
   end if;
   insert into public.on_news(club_id,kind,text,data)
@@ -422,6 +423,11 @@ begin
  end loop;
 end $$;
 update public.on_config set tick_hooks=array(select distinct x from unnest(tick_hooks||'on_pack_notify'::text) x);
+
+-- Itens da loja (Apito de Ouro) acompanham a abertura do modo Online.
+create or replace function public.on_item_gate() returns boolean
+language sql stable security definer set search_path=public as $$
+ select coalesce(public.is_admin(),false) or (auth.uid() is not null and coalesce((select public_open from public.on_config),false)) $$;
 
 -- Elenco sem limite de jogadores (lances e caixas).
 do $$ begin
