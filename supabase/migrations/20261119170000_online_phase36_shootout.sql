@@ -18,11 +18,12 @@ alter table public.on_match_events add column if not exists at_s int;
 create or replace function public.on_pen_odds(p_fin numeric,p_ctl numeric,p_ovr numeric,p_cond numeric,p_spec boolean,
  p_gk numeric,p_gk_spec boolean,p_pressure boolean) returns jsonb
 language sql immutable as $$
+ -- batedor contra goleiro (diferença entre os dois): o mesmo duelo vale igual na Série A e na D
  select jsonb_build_object(
-  'aim',round(greatest(.78,least(.97,.90+(t.v-70)*.004-greatest(0,70-coalesce(p_cond,100))*.0025-case when p_pressure then .025 else 0 end))::numeric,3),
-  'save',round(greatest(.08,least(.40,.18+(coalesce(p_gk,50)+case when p_gk_spec then 6 else 0 end-t.v)*.007
-   +greatest(0,70-coalesce(p_cond,100))*.002))::numeric,3))
- from(select .55*coalesce(p_fin,50)+.20*coalesce(p_ctl,50)+.25*coalesce(p_ovr,60)+case when p_spec then 6 else 0 end v) t
+  'aim',round(greatest(.80,least(.97,.92+(t.v-t.k)*.002-greatest(0,70-coalesce(p_cond,100))*.0015-case when p_pressure then .02 else 0 end))::numeric,3),
+  'save',round(greatest(.06,least(.34,.15+(t.k-t.v)*.004+greatest(0,70-coalesce(p_cond,100))*.0015))::numeric,3))
+ from(select .45*coalesce(p_fin,50)+.15*coalesce(p_ctl,50)+.40*coalesce(p_ovr,60)+case when p_spec then 6 else 0 end v,
+  coalesce(p_gk,50)+case when p_gk_spec then 6 else 0 end k) t
 $$;
 
 -- Avança a disputa até p_now. Devolve verdadeiro quando terminou e o resultado já pode aparecer (último lance mostrado).

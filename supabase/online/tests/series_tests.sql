@@ -152,7 +152,7 @@ do $$
 declare o jsonb:=public.on_pen_odds(70,70,70,100,false,70,false,false);v numeric;
 begin
  v:=(o->>'aim')::numeric*(1-(o->>'save')::numeric*1.11);
- if v not between .70 and .80 then raise exception 'conversão média fora do real: %',v;end if;
+ if v not between .72 and .80 then raise exception 'conversão média fora do real: %',v;end if;
  if (public.on_pen_odds(70,70,70,45,false,70,false,true)->>'aim')::numeric>=(o->>'aim')::numeric then raise exception 'cansaço e pressão não pesam';end if;
  if (public.on_pen_odds(70,70,70,100,false,85,true,false)->>'save')::numeric<=(o->>'save')::numeric then raise exception 'goleiro bom não pesa';end if;
  raise notice 'PASS chances da cobrança (média %)',round(v,3);

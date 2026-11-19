@@ -458,8 +458,9 @@ final. Agora, quando o jogo decisivo termina empatado (no agregado, na volta), a
   oficial, depois os melhores batedores em campo, o goleiro por último.
 - Cada cobrança (`on_pen_odds`) usa, no momento: finalização, controle e nota do batedor, condição física (abaixo de
   70% pesa), especialidade "Pênalti", pressão (cobrança que decide ou alternadas) e, do outro lado, a nota de goleiro e a
-  especialidade "Pega pênalti". Os atributos do motor já trazem a seta de condição do dia. Média: batedor 70 contra
-  goleiro 70, descansado, converte ~75%.
+  especialidade "Pega pênalti". Os atributos do motor já trazem a seta de condição do dia. Conta a diferença entre
+  batedor e goleiro (o mesmo duelo vale igual na A e na D). Batedor e goleiro do mesmo nível, descansado: ~77%.
+  Laboratório (temporada inteira, 23 disputas): 72% de conversão, 19% defendidos, 9% para fora ou na trave.
 - Cada lance tem `at_s` (segundo desde o pontapé em que a tela mostra). A tela (`components/Shootout.jsx`) mostra o
   placar das cobranças com bolinhas e a narração; o "Fim de jogo" só aparece depois da última cobrança. Sem ninguém
   assistindo, a disputa sai inteira de uma vez.
