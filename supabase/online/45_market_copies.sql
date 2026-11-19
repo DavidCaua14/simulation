@@ -186,7 +186,7 @@ begin
    and(l.best_club is null or exists(select 1 from public.on_clubs h where h.id=l.best_club and h.user_id is not null))
    and random()<case when l.best_club is null then .12 else .35 end
   order by l.ends_at limit 20 loop
-  v_bid:=public.on_min_bid(r);
+  v_bid:=public.on_min_bid((select x from public.on_lots x where x.id=r.id));
   select c.id into k from public.on_clubs c where c.season_id=s.id and c.user_id is null and c.id is distinct from r.seller
    and c.cash-c.reserved>=v_bid and public.on_bot_limit(c.id,r.id,r.player_id)>=v_bid
    order by random() limit 1;

@@ -4,13 +4,14 @@ import { Skeleton } from '../../../components/ui/feedback'
 import { useAudio } from '../../audio/AudioContext'
 import { drawPack, fetchPacks } from '../../online/services/onlineApi'
 import BigTimeCard, { BigTimeFacts } from '../../online/components/BigTime'
+import { FutCard } from '../../online/components/PlayerFut'
 import { btDate, btMatch } from '../../online/components/bigtimeUtils'
 import GoldenWhistle from '../../online/components/GoldenWhistle'
 import { fmt } from './storeUtils'
 import './packs.css'
 
 // CAIXAS BIG TIME: cada caixa tem um número fixo de prêmios. Cada tiragem custa diamantes e o prêmio sai da caixa
-// (sorteio sem reposição, por técnico). Carta Big Time que o clube já tem não sai de novo.
+// (sorteio sem reposição, por técnico). Carta que o clube já tem não sai de novo. A loja não mostra quantidades nem chances.
 
 const PRIZE = {
   energy: { Icon: Zap, label: (q) => `${q} de energia de treino` },
@@ -19,15 +20,17 @@ const PRIZE = {
   whistle: { Icon: null, label: (q) => `${q} Apito${q > 1 ? 's' : ''} de Ouro` },
 }
 
+// Contador: "6d 23:59:12" (ou "23:59:12" no último dia)
+const two = (n) => String(n).padStart(2, '0')
 function left(ms) {
   if (!(ms > 0)) return 'encerrada'
-  const m = Math.floor(ms / 60000)
-  const d = Math.floor(m / 1440)
-  const h = Math.floor((m % 1440) / 60)
-  return d > 0 ? `${d}d ${h}h` : h > 0 ? `${h}h ${String(m % 60).padStart(2, '0')}min` : `${m % 60}min`
+  const t = Math.floor(ms / 1000)
+  const d = Math.floor(t / 86400)
+  const hms = `${two(Math.floor((t % 86400) / 3600))}:${two(Math.floor((t % 3600) / 60))}:${two(t % 60)}`
+  return d > 0 ? `${d}d ${hms}` : hms
 }
 
-function useNow(ms = 30000) {
+function useNow(ms = 1000) {
   const [now, setNow] = useState(() => Date.now())
   useEffect(() => {
     const id = setInterval(() => setNow(Date.now()), ms)
@@ -54,8 +57,8 @@ function PackBanner({ pack, now, onOpen }) {
         <strong>{pack.title}</strong>
         {pack.subtitle && <em>{pack.subtitle}</em>}
         <span className="pk-banner-meta">
-          <span><Clock size={12} /> {left(new Date(pack.ends_at).getTime() - now)}</span>
-          <span><Package size={12} /> {pack.left}/{pack.total} na caixa</span>
+          <span className="pk-clock"><Clock size={12} /> Termina em {left(new Date(pack.ends_at).getTime() - now)}</span>
+          <span>{cards.length} Big Time · cartas base · itens</span>
         </span>
         <span className="pk-banner-cta"><Gem size={14} /> {fmt(pack.price)} por tiragem</span>
       </span>
@@ -88,7 +91,13 @@ function Reveal({ prize, onClose, onAgain, canAgain, price }) {
               <small className="pk-prize-kicker"><Sparkles size={13} /> Big Time!</small>
               <BigTimeCard bt={bt} size="lg" />
               <p>{btMatch(bt)} · {btDate(bt.match_date)}</p>
-              <p className="pk-prize-note">Já está no seu elenco do modo Online.</p>
+              <p className="pk-prize-note">Chega ao seu elenco com overall {bt.start_rating}. Treine para levar ao máximo, {bt.rating}.</p>
+            </>
+          ) : prize.card ? (
+            <>
+              <small className="pk-prize-kicker is-base">Carta base</small>
+              <div className="pk-prize-fut"><FutCard p={prize.card} size="md" /></div>
+              <p className="pk-prize-note">Já está no seu elenco. Se não quiser, dispense pela ficha dele.</p>
             </>
           ) : (
             <>
@@ -107,47 +116,55 @@ function Reveal({ prize, onClose, onAgain, canAgain, price }) {
   )
 }
 
-// Detalhe da caixa: tudo o que tem dentro e o que já saiu para você.
+// Detalhe da caixa: tudo o que tem dentro e o que já saiu para você (sem quantidades).
 function PackDetail({ pack, diamonds, now, busy, error, onDraw, onClose }) {
   const [card, setCard] = useState(null)
   const cards = pack.items.filter((i) => i.kind === 'bigtime')
-  const other = pack.items.filter((i) => i.kind !== 'bigtime')
-  const empty = pack.left <= 0
+  const base = pack.items.filter((i) => i.kind === 'player' && i.player)
+  const other = [...new Map(pack.items.filter((i) => !['bigtime', 'player'].includes(i.kind)).map((i) => [`${i.kind}:${i.qty}`, i])).values()]
   const poor = diamonds < pack.price
   return (
     <div className="pk-sheet" role="dialog" aria-modal="true" aria-label={pack.title} onClick={onClose}>
       <div className="pk-sheet-card" onClick={(e) => e.stopPropagation()}>
         <header>
           <span>
-            <small><Flame size={12} /> Big Time · termina em {left(new Date(pack.ends_at).getTime() - now)}</small>
+            <small><Flame size={12} /> Big Time</small>
             <h3>{pack.title}</h3>
+            <span className="pk-clock is-big"><Clock size={13} /> Termina em {left(new Date(pack.ends_at).getTime() - now)}</span>
           </span>
           <button type="button" className="pk-x" onClick={onClose} aria-label="Fechar"><X size={18} /></button>
         </header>
         <div className="pk-sheet-body">
-          <div className="pk-meter" aria-label={`${pack.left} de ${pack.total} prêmios na caixa`}>
-            <i style={{ width: `${pack.total ? (pack.left / pack.total) * 100 : 0}%` }} />
-            <span><Package size={13} /> {pack.left} de {pack.total} prêmios na sua caixa</span>
-          </div>
-          <p className="pk-rule">Cada tiragem tira um prêmio da caixa, ao acaso. O que saiu não volta, e Big Time que você já tem não sai de novo.</p>
+          <p className="pk-rule">Cada tiragem tira um prêmio da caixa, ao acaso. O que saiu não volta, e carta que você já tem não sai de novo. A Big Time chega com overall menor: treine para levar ao máximo.</p>
           <h4>Cartas Big Time</h4>
           <div className="pk-cards">
             {cards.map((i) => (
-              <div key={i.id} className={`pk-cardslot ${i.left <= 0 ? 'is-out' : ''}`}>
+              <div key={i.id} className={`pk-cardslot ${i.got ? 'is-out' : ''}`}>
                 <BigTimeCard bt={i.bt} size="sm" onClick={() => setCard(i.bt)} />
-                {i.left <= 0 && <em>Já é seu</em>}
+                {i.got && <em>Já é sua</em>}
               </div>
             ))}
           </div>
+          {base.length > 0 && (
+            <>
+              <h4>Cartas base</h4>
+              <ul className="pk-base">
+                {base.map((i) => (
+                  <li key={i.id} className={i.got ? 'is-out' : ''}>
+                    <b>{i.player.ovr}</b><small>{i.player.pos}</small><span>{i.player.name}</span>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
           {other.length > 0 && (
             <>
-              <h4>Outros prêmios</h4>
+              <h4>Itens</h4>
               <ul className="pk-others">
                 {other.map((i) => (
-                  <li key={i.id} className={i.left <= 0 ? 'is-out' : ''}>
+                  <li key={i.id}>
                     <span className="pk-others-ico"><PrizeIcon kind={i.kind} size={18} /></span>
                     <span>{PRIZE[i.kind]?.label(i.qty)}</span>
-                    <em>{i.left}/{i.balls}</em>
                   </li>
                 ))}
               </ul>
@@ -157,14 +174,15 @@ function PackDetail({ pack, diamonds, now, busy, error, onDraw, onClose }) {
         </div>
         <footer>
           <span className="pk-wallet"><Gem size={14} /> {fmt(diamonds)}</span>
-          <button type="button" className="pk-draw" disabled={busy || empty || poor} onClick={onDraw}>
-            {empty ? 'Você já tirou tudo' : poor ? 'Diamantes insuficientes' : busy ? 'Abrindo…' : <>Abrir · <Gem size={15} /> {fmt(pack.price)}</>}
+          <button type="button" className="pk-draw" disabled={busy || pack.empty || poor} onClick={onDraw}>
+            {pack.empty ? 'Você já tirou tudo' : poor ? 'Diamantes insuficientes' : busy ? 'Abrindo…' : <>Abrir · <Gem size={15} /> {fmt(pack.price)}</>}
           </button>
         </footer>
         {card && (
           <div className="pk-cardview" onClick={() => setCard(null)}>
             <div onClick={(e) => e.stopPropagation()}>
               <BigTimeCard bt={card} size="lg" />
+              <p className="pk-rule">Overall máximo {card.rating}. Chega com {card.start_rating} e evolui com treino.</p>
               <BigTimeFacts bt={card} />
               <button type="button" className="gx-btn-ghost" onClick={() => setCard(null)}>Voltar</button>
             </div>
@@ -217,7 +235,7 @@ export default function PacksTab({ onChanged, onEmpty }) {
         <Reveal
           prize={prize}
           price={pack?.price}
-          canAgain={Boolean(pack && pack.left > 0 && data.diamonds >= pack.price)}
+          canAgain={Boolean(pack && !pack.empty && data.diamonds >= pack.price)}
           onClose={() => setPrize(null)}
           onAgain={() => { setPrize(null); draw() }}
         />

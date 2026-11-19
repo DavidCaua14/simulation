@@ -593,17 +593,24 @@ python3 scripts/build-lower-squads.py          # gera supabase/online/41_lower_s
 `supabase/online/46_big_time.sql` (migração `20261120090100`).
 
 - **Big Time** (`on_bigtime`): carta vermelha de uma atuação real num dia (ex.: Ronaldinho × Real Madrid, 19/11/2005).
-  Overall de 106 a 115, regularidade sempre B, foto real, data, adversário, time, competição, placar, idade naquele dia,
-  história, posições, estilos e habilidades. No motor, os atributos passam do teto de 99 até `99 + 70%` do que o
-  overall passa de 99 (`on_attr_cap`, `on_comp_cap`); a ficha mostra os valores acima de 99. Não pode ser vendida,
-  leiloada nem dispensada, e bots nunca têm.
-- **Caixas** (`on_packs`, `on_pack_items`, `on_pack_draws`): período, preço em diamantes por tiragem e conteúdo (cartas
-  e outros prêmios: energia de treino, moedas, dinheiro do clube, Apito de Ouro, cada um com quantas vezes está na
-  caixa). Sorteio sem reposição por técnico; Big Time que o clube já tem sai da caixa dele. A carta entra direto no
-  elenco do modo Online. Liberado para quem o modo Online libera (`on_pack_gate`).
-- **Painel → Big Time**: cadastro da carta com envio da foto (reduzida para 1000 px e guardada no Storage, bucket
-  público `bigtime`, gravação só do administrador), enquadramento (horizontal, vertical, zoom) e prévia da carta ao
-  vivo; montagem da caixa da semana (cartas, outros prêmios, preço e período) e números de cada caixa (tiragens e
-  diamantes). Editar a carta atualiza as cópias já entregues.
-- **Loja**: nova aba principal "Big Time" com o banner da caixa (cartas em leque, contagem regressiva, quantos prêmios
-  restam), detalhe da caixa e a revelação animada do prêmio.
+  Overall máximo de 106 a 115, regularidade sempre B, foto real, data, adversário, time, competição, placar, idade naquele
+  dia, história, posições, estilos e habilidades. **Chega com o overall inicial** (`start_rating`, padrão máximo − 10) e
+  o técnico treina até o máximo, como as outras cartas (o Apito de Ouro também vale). Na loja a carta aparece com o
+  máximo. No motor, a força acompanha o overall atual, e acima de 99 os atributos passam do teto até `99 + 70%` do que
+  passa de 99 (`on_attr_cap`, `on_comp_cap`). Não pode ser vendida, leiloada nem dispensada; bots nunca têm.
+- **Caixas** (`on_packs`, `on_pack_items`, `on_pack_draws`): período, preço em diamantes por giro e conteúdo: cartas
+  Big Time, **cartas base** do catálogo (vão para o elenco e podem ser dispensadas) e itens (energia de treino, moedas,
+  dinheiro do clube, Apito de Ouro, cada um com quantas vezes está na caixa). Sorteio sem reposição por técnico; carta
+  que o clube já tem sai da caixa dele. **A loja não mostra quantidades nem chances.** Padrão do painel: 100 diamantes
+  por giro, 7 dias, ~70 cartas base e ~60 itens; com 2 Big Time, a média para tirar as duas fica perto de 9 mil
+  diamantes (média de giros para k cartas entre N prêmios = k(N+1)/(k+1); pior caso N). Os números só aparecem no painel.
+- **Caixa da semana**: ao criar uma caixa nova, a anterior sai da loja quando a nova começa. Quando a caixa começa,
+  `on_pack_notify` (tick) manda a cada técnico do modo Online um aviso na caixa de entrada com o nome dele, as cartas e
+  a data de fim, e uma notícia no clube. A loja mostra o contador ao vivo (dias, horas, minutos e segundos).
+- **Elenco sem limite** de jogadores (lances no mercado e caixas).
+- **Painel → Big Time**: cadastro da carta (overall máximo e inicial), envio da foto (reduzida para 1000 px, Storage,
+  bucket público `bigtime`, gravação só do administrador), enquadramento e prévia ao vivo; montagem da caixa (cartas,
+  sorteio de cartas base por faixa de overall, itens, preço e período) com a média e o pior caso de diamantes; números de
+  cada caixa (giros e diamantes). Editar a carta atualiza as cópias entregues, mantendo o treino feito.
+- **Loja**: aba principal "Big Time" com o banner (cartas em leque e contador), conteúdo da caixa (Big Time, cartas base e
+  itens, sem quantidades) e a revelação animada do prêmio.

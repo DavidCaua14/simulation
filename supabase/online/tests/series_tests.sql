@@ -392,20 +392,31 @@ begin
  if (bt->>'year')::int<>2005 or bt->'skills'->>0 is null then raise exception 'carta: %',bt;end if;
  pk:=public.admin_pack_save(jsonb_build_object('title','Big Time da semana','price',100,'starts_at',now()-interval '1 hour','ends_at',now()+interval '7 days',
   'items',jsonb_build_array(jsonb_build_object('kind','bigtime','ref',bt->>'id'),jsonb_build_object('kind','bigtime','ref',bt2->>'id'),
+   jsonb_build_object('kind','player','src',(select q.id from public.on_pool q where not q.legend and q.rating<75
+     and not exists(select 1 from public.on_players o where o.src=q.id and o.club_id=c.id) order by q.id limit 1)),
    jsonb_build_object('kind','energy','qty',5,'balls',2),jsonb_build_object('kind','coins','qty',300,'balls',1))));
- if (pk->>'total')::int<>5 then raise exception 'caixa: %',pk;end if;
+ if (pk->>'total')::int<>6 then raise exception 'caixa: %',pk;end if;
+ if (select count(*) from public.on_players where club_id=c.id)<28 then
+  insert into public.on_players(club_id,name,pos,age,level,pot,ovr,wage,contract_end) select c.id,'Extra '||g,'MC',25,60,60,60,10,s.id+1 from generate_series(1,30-(select count(*)::int from public.on_players where club_id=c.id)) g;
+ end if;
  -- loja
  r:=public.online_packs();
  if not (r->>'enabled')::boolean or jsonb_array_length(r->'packs')<1 then raise exception 'loja: %',r;end if;
+ if r::text like '%"balls": 2%' or (r->'packs'->0->>'total') is not null then raise exception 'loja mostra quantidades';end if;
  d0:=(select diamonds from public.careers where user_id=u order by created_at desc limit 1);
- for n in 1..5 loop r:=public.online_pack_draw((pk->>'id')::bigint);end loop;
- if (select diamonds from public.careers where user_id=u order by created_at desc limit 1)<>d0-500 then raise exception 'diamantes cobrados errado';end if;
+ for n in 1..6 loop r:=public.online_pack_draw((pk->>'id')::bigint);end loop; -- elenco com 30+: sem limite
+ if (select diamonds from public.careers where user_id=u order by created_at desc limit 1)<>d0-600 then raise exception 'diamantes cobrados errado';end if;
+ if not (r->'store'->'packs'->0->>'empty')::boolean then raise exception 'caixa deveria estar vazia';end if;
  begin perform public.online_pack_draw((pk->>'id')::bigint);raise exception 'caixa vazia deu prêmio';
  exception when others then if sqlerrm not like 'Você já tirou tudo%' then raise;end if;end;
  -- as duas cartas estão no elenco, vermelhas, regularidade B, atributos acima de 99
  if (select count(*) from public.on_players where club_id=c.id and tier='bigtime')<>2 then raise exception 'cartas no elenco';end if;
  select * into p from public.on_players where club_id=c.id and src=bt->>'id';
- if p.form<>'B' or p.ovr<>108 or p.legend or not ('drible'=any(p.traits)) then raise exception 'carta no elenco: % % %',p.form,p.ovr,p.traits;end if;
+ -- chega no overall inicial (máximo − 10) e treina até o máximo
+ if p.form<>'B' or p.ovr<>98 or p.pot<>108 or p.legend or not ('drible'=any(p.traits)) then raise exception 'carta no elenco: % % % %',p.form,p.ovr,p.pot,p.traits;end if;
+ if (select max(x) from unnest(public.on_comp_skill(p)) x)>99 then raise exception 'carta sem treino passou de 99';end if;
+ update public.on_players set g='{6,6,6,6}',ovr=public.on_ovr(level,pot,'{6,6,6,6}') where id=p.id returning * into p;
+ if p.ovr<>108 then raise exception 'treino não leva ao máximo: %',p.ovr;end if;
  sk:=public.on_comp_skill(p);
  if (select max(x) from unnest(sk) x)<=99 or (select max(x) from unnest(sk) x)>99+(108-99)*.7+.01 then raise exception 'atributos: %',sk;end if;
  if (public.on_sheet(p)->'attrs'->0->>'value')::int is null or not exists(select 1 from jsonb_array_elements(public.on_sheet(p)->'attrs') a where (a->>'value')::int>99) then raise exception 'ficha sem valor acima de 99';end if;
@@ -416,16 +427,23 @@ begin
  begin perform public.on_lot_create(p.id,1000000);raise exception 'leiloou Big Time';exception when others then if sqlerrm not like 'Cartas Big Time%' and sqlerrm not like 'Mercado fechado%' and sqlerrm not like 'Elenco com 16%' then raise;end if;end;
  if public.on_bot_limit((select id from public.on_clubs where season_id=s.id and user_id is null limit 1),0,p.id)<>0 then raise exception 'bot quer Big Time';end if;
  -- nova caixa com a mesma carta: quem já tem não tira de novo
- pk:=public.admin_pack_save(jsonb_build_object('title','Repeteco','price',50,'starts_at',now()-interval '1 hour','ends_at',now()+interval '1 day',
+ pk:=public.admin_pack_save(jsonb_build_object('title','Repeteco','price',50,'starts_at',now()-interval '30 minutes','ends_at',now()+interval '1 day',
   'items',jsonb_build_array(jsonb_build_object('kind','bigtime','ref',bt->>'id'),jsonb_build_object('kind','cash','qty',1000))));
- if (pk->>'left')::int<>2 then raise exception 'caixa do admin conta tudo: %',pk;end if;
  r:=public.online_packs();
- if (select (x->>'left')::int from jsonb_array_elements(r->'packs') x where x->>'id'=pk->>'id')<>1 then raise exception 'carta repetida na caixa';end if;
+ if not exists(select 1 from jsonb_array_elements(r->'packs') x,jsonb_array_elements(x->'items') i where x->>'id'=pk->>'id' and i->>'kind'='bigtime' and (i->>'got')::boolean) then raise exception 'carta já tirada não aparece como sua';end if;
+ -- a caixa nova tirou a anterior da loja
+ if jsonb_array_length(r->'packs')<>1 then raise exception 'caixa anterior continua na loja';end if;
  r:=public.online_pack_draw((pk->>'id')::bigint);
  if r->'prize'->>'kind'<>'cash' then raise exception 'tirou repetida: %',r->'prize';end if;
  -- edição no painel chega na carta entregue
  perform public.admin_bt_save(bt||jsonb_build_object('rating',110,'traits',jsonb_build_array('drible')));
- if (select ovr from public.on_players where id=p.id)<>110 then raise exception 'edição não chegou ao elenco';end if;
+ if (select pot from public.on_players where id=p.id)<>110 then raise exception 'edição não chegou ao elenco';end if;
+ -- aviso de caixa nova (uma vez, com o nome do técnico)
+ perform public.on_pack_notify(now(),false);
+ perform public.on_pack_notify(now(),false);
+ if (select count(*) from public.player_notices x join public.careers k on k.id=x.career_id where k.user_id=u and x.title like 'Big Time%')<>1 then raise exception 'aviso da caixa';end if;
+ if not exists(select 1 from public.player_notices x join public.careers k on k.id=x.career_id where k.user_id=u and x.body like k.nickname||',%') then raise exception 'aviso sem nome';end if;
+ if jsonb_array_length(public.admin_pool_pick(5,70,80))<>5 then raise exception 'sorteio de cartas base';end if;
  -- sem admin: painel fechado
  perform set_config('request.jwt.claims','{"email":"outro@x.com"}',true);
  begin perform public.admin_bt_list();raise exception 'painel aberto';exception when others then if sqlerrm not like 'Acesso restrito%' then raise;end if;end;

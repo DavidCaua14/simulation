@@ -453,7 +453,7 @@ export default function OnlineSquad({ onOpenMatch, notify, seasonId }) {
 
       {view === 'players' && (
         <div className="on-deals">
-          <h3 className="on-h">Elenco <small>{squad.players.length}/28</small></h3>
+          <h3 className="on-h">Elenco <small>{squad.players.length} jogadores</small></h3>
           {squad.players.map((p) => {
             const left = (p.contract_end ?? 0) - (seasonId || 0)
             return <PlayerCard key={p.id} p={byId[p.id]} colors={colors} tag={listed.has(p.id) ? 'em leilão' : left <= 0 ? 'último ano' : `contrato +${left}`} onClick={() => setSheet({ id: p.id, where: whereOf(p.id) })} />

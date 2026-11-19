@@ -95,7 +95,7 @@ export default function PlayerSheet({ p, club, seasonId, busy, listed, onClose, 
               <div><dt>Atuação</dt><dd>{btDate(bt.match_date)}</dd></div>
               <div><dt>Adversário</dt><dd>{bt.opponent}</dd></div>
               <div><dt>Idade no jogo</dt><dd>{bt.age} anos</dd></div>
-              <div><dt>Regularidade</dt><dd>B</dd></div>
+              <div><dt>Evolução</dt><dd>{ovr} <TrendingUp size={13} /> {pot}</dd></div>
               <div><dt>Salário</dt><dd>{money(p.wage)}<small>/dia</small></dd></div>
             </dl>
           ) : (
@@ -120,12 +120,12 @@ export default function PlayerSheet({ p, club, seasonId, busy, listed, onClose, 
                 <Row Icon={ListChecks} label="Detalhes do jogador" sub="Estilos e qualidade" onClick={() => setMode('details')} />
                 {onSwap && <Row Icon={ArrowLeftRight} label="Trocar de lugar" sub={where ? `Hoje: ${where}` : 'Escolha com quem trocar'} disabled={busy} onClick={() => onSwap(p)} />}
                 {onRoles && <Row Icon={Flag} label="Funções" sub="Capitão e cobradores" onClick={() => onRoles(p)} />}
-                {whistle && !bt && (
+                {whistle && (
                   <Row label="Treino de elite" sub={room > 0 ? `Apito de Ouro · você tem ${whistle.qty}` : 'Já no nível máximo'} disabled={busy || room <= 0} onClick={() => { setItemErr(''); setMode('item') }}>
                     <GoldenWhistle size={20} />
                   </Row>
                 )}
-                {bt ? <p className="opm-btnote">Carta Big Time: fica no seu clube para sempre. Não pode ser vendida, leiloada nem dispensada.</p> : <>
+                {bt ? <p className="opm-btnote">Carta Big Time: fica no seu clube para sempre (não pode ser vendida, leiloada nem dispensada). Regularidade B. Treine para chegar ao overall máximo, {pot}.</p> : <>
                 <Row Icon={FileSignature} label="Renovar contrato" sub={left >= 3 ? 'Contrato já no máximo' : `Salário novo ${money(wageFor(p.ovr, p.age))}/dia`} disabled={busy || left >= 3} onClick={() => setMode('renew')} />
                 <Row Icon={Gavel} label="Leiloar" sub={listed ? 'Já está no mercado' : '1 hora no mercado'} disabled={busy || listed} onClick={() => setMode('auction')} />
                 <Row Icon={UserMinus} label="Dispensar" sub={`Volta ao mercado · +${money(p.sell ?? Math.round(p.value * 0.6))}`} disabled={busy || listed} danger onClick={() => setMode('sell')} />

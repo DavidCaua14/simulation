@@ -366,33 +366,38 @@ if (!params.has('legacy')) Object.assign(RPC, seriesRpc)
 
 // Big Time (?bt=1 põe as duas cartas no elenco). Fotos só na prévia local: tests/preview/tmp-*.jpg (fora do git).
 const BT = [
-  { id: 'bt-1', name: 'Ronaldinho', full_name: 'Ronaldo de Assis Moreira', pos: 'PE', sec: ['MEI', 'PD'], nat: 'BRA', rating: 108, age: 25, match_date: '2005-11-19', year: 2005, opponent: 'Real Madrid', team: 'Barcelona', competition: 'La Liga', score: '3 x 0', story: 'Dois gols arrancando do meio-campo e o Santiago Bernabéu aplaudindo de pé.', photo: '/tests/preview/tmp-r10.png', photo_pos: { x: 50, y: 18, zoom: 1.1 }, skills: ['Drible', 'Finalização', 'Chute de longe', 'Passe'], active: true, owners: 3 },
-  { id: 'bt-2', name: 'Romário', full_name: 'Romário de Souza Faria', pos: 'ATA', sec: [], nat: 'BRA', rating: 107, age: 27, match_date: '1993-09-19', year: 1993, opponent: 'Uruguai', team: 'Brasil', competition: 'Eliminatórias', score: '2 x 0', story: 'Os dois gols que levaram o Brasil à Copa de 1994, no Maracanã.', photo: '/tests/preview/tmp-romario.jpg', photo_pos: { x: 42, y: 10, zoom: 1.2 }, skills: ['Finalização', 'Velocidade', 'Drible'], active: true, owners: 1 },
-  { id: 'bt-3', name: 'Zico', pos: 'MEI', sec: ['MC'], nat: 'BRA', rating: 106, age: 28, match_date: '1981-12-13', year: 1981, opponent: 'Liverpool', team: 'Flamengo', competition: 'Mundial', score: '3 x 0', story: 'Três assistências na final em Tóquio.', photo: '', photo_pos: { x: 50, y: 20, zoom: 1 }, skills: ['Falta', 'Passe'], active: true, owners: 0 },
+  { id: 'bt-1', name: 'Ronaldinho', full_name: 'Ronaldo de Assis Moreira', pos: 'PE', sec: ['MEI', 'PD'], nat: 'BRA', rating: 108, start_rating: 98, age: 25, match_date: '2005-11-19', year: 2005, opponent: 'Real Madrid', team: 'Barcelona', competition: 'La Liga', score: '3 x 0', story: 'Dois gols arrancando do meio-campo e o Santiago Bernabéu aplaudindo de pé.', photo: '/tests/preview/tmp-r10.png', photo_pos: { x: 50, y: 18, zoom: 1.1 }, skills: ['Drible', 'Finalização', 'Chute de longe', 'Passe'], active: true, owners: 3 },
+  { id: 'bt-2', name: 'Romário', full_name: 'Romário de Souza Faria', pos: 'ATA', sec: [], nat: 'BRA', rating: 107, start_rating: 97, age: 27, match_date: '1993-09-19', year: 1993, opponent: 'Uruguai', team: 'Brasil', competition: 'Eliminatórias', score: '2 x 0', story: 'Os dois gols que levaram o Brasil à Copa de 1994, no Maracanã.', photo: '/tests/preview/tmp-romario.jpg', photo_pos: { x: 42, y: 10, zoom: 1.2 }, skills: ['Finalização', 'Velocidade', 'Drible'], active: true, owners: 1 },
+  { id: 'bt-3', name: 'Zico', pos: 'MEI', sec: ['MC'], nat: 'BRA', rating: 106, start_rating: 96, age: 28, match_date: '1981-12-13', year: 1981, opponent: 'Liverpool', team: 'Flamengo', competition: 'Mundial', score: '3 x 0', story: 'Três assistências na final em Tóquio.', photo: '', photo_pos: { x: 50, y: 20, zoom: 1 }, skills: ['Falta', 'Passe'], active: true, owners: 0 },
 ]
 if (params.has('bt')) {
-  players.push({ ...players.find((p) => p.pos === 'PE'), id: 'pbt1', name: 'Ronaldinho', pos: 'PE', ovr: 108, pot: 108, age: 25, form: 'B', arrow: 4, tier: 'bigtime', bt: BT[0], value: 0, wage: 4017 })
-  players.push({ ...players.find((p) => p.pos === 'ATA'), id: 'pbt2', name: 'Romário', pos: 'ATA', ovr: 107, pot: 107, age: 27, form: 'B', arrow: 3, tier: 'bigtime', bt: BT[1], value: 0, wage: 4017 })
+  players.push({ ...players.find((p) => p.pos === 'PE'), id: 'pbt1', name: 'Ronaldinho', pos: 'PE', ovr: 101, pot: 108, age: 25, form: 'B', arrow: 4, tier: 'bigtime', bt: BT[0], value: 0, wage: 4017 })
+  players.push({ ...players.find((p) => p.pos === 'ATA'), id: 'pbt2', name: 'Romário', pos: 'ATA', ovr: 97, pot: 107, age: 27, form: 'B', arrow: 3, tier: 'bigtime', bt: BT[1], value: 0, wage: 4017 })
+  if (state.step >= 3) autoLineup()
 }
+const BASE = Array.from({ length: 70 }, (_, i) => ({ src: `r${i}`, name: person(200 + i), pos: POS[i % POS.length], ovr: 68 + (i * 7) % 15, age: 20 + (i % 12), nat: 'BRA' }))
 const packItems = () => [
-  ...BT.map((b, i) => ({ id: i + 1, kind: 'bigtime', qty: 1, balls: 1, left: i === 1 && packState.got.includes(2) ? 0 : packState.got.includes(i + 1) ? 0 : 1, bt: b })),
-  { id: 10, kind: 'energy', qty: 5, balls: 3, left: 3 - packState.got.filter((x) => x === 10).length },
-  { id: 11, kind: 'coins', qty: 500, balls: 3, left: 3 - packState.got.filter((x) => x === 11).length },
-  { id: 12, kind: 'whistle', qty: 1, balls: 1, left: 1 - packState.got.filter((x) => x === 12).length },
-]
+  ...BT.slice(0, 2).map((b, i) => ({ id: i + 1, kind: 'bigtime', qty: 1, balls: 1, left: i === 1 && packState.got.includes(2) ? 0 : packState.got.includes(i + 1) ? 0 : 1, bt: b })),
+  ...BASE.map((b, i) => ({ id: 100 + i, kind: 'player', qty: 1, balls: 1, left: packState.got.includes(100 + i) ? 0 : 1, player: b })),
+  { id: 10, kind: 'energy', qty: 3, balls: 20, left: 20 - packState.got.filter((x) => x === 10).length },
+  { id: 11, kind: 'coins', qty: 300, balls: 18, left: 18 - packState.got.filter((x) => x === 11).length },
+  { id: 13, kind: 'cash', qty: 50000, balls: 15, left: 15 - packState.got.filter((x) => x === 13).length },
+  { id: 12, kind: 'whistle', qty: 1, balls: 3, left: 3 - packState.got.filter((x) => x === 12).length },
+].map((i) => ({ ...i, got: ['bigtime', 'player'].includes(i.kind) && i.left === 0 }))
 const packState = { got: [], diamonds: 2400 }
 const pack = () => {
   const items = packItems()
-  return { id: 1, title: 'Big Time · Noites mágicas', subtitle: 'Atuações que pararam estádios', price: 150, starts_at: new Date(Date.now() - 3600e3).toISOString(), ends_at: new Date(Date.now() + 4 * 864e5 + 5 * 3600e3).toISOString(), left: items.reduce((s, i) => s + i.left, 0), total: items.reduce((s, i) => s + i.balls, 0), items }
+  return { id: 1, title: 'Big Time · Noites mágicas', subtitle: 'Atuações que pararam estádios', price: 100, empty: items.every((i) => !i.left), starts_at: new Date(Date.now() - 3600e3).toISOString(), ends_at: new Date(Date.now() + 4 * 864e5 + 5 * 3600e3).toISOString(), left: items.reduce((s, i) => s + i.left, 0), total: items.reduce((s, i) => s + i.balls, 0), items }
 }
 Object.assign(RPC, {
   online_packs: () => ({ enabled: true, has_club: true, diamonds: packState.diamonds, packs: params.has('nopack') ? [] : [pack()] }),
   online_pack_draw: () => {
     const items = packItems().flatMap((i) => Array(i.left).fill(i))
-    const it = params.has('force') ? items.find((i) => i.kind === 'bigtime') : items[Math.floor(Math.random() * items.length)]
+    const it = params.has('force') ? items.find((i) => i.kind === 'bigtime') : params.has('forcebase') ? items.find((i) => i.kind === 'player') : items[Math.floor(Math.random() * items.length)]
     packState.got.push(it.id)
-    packState.diamonds -= 150
-    return { prize: { kind: it.kind, qty: it.qty, bt: it.bt }, store: RPC.online_packs() }
+    packState.diamonds -= 100
+    const card = it.player && { id: it.player.src, ...it.player, pot: it.player.ovr + 3, card: cardOf(it.player.pos, it.player.ovr, 1) }
+    return { prize: { kind: it.kind, qty: it.qty, bt: it.bt, card }, store: RPC.online_packs() }
   },
   admin_bt_list: () => ({ cards: BT, packs: [{ ...pack(), draws: 42, diamonds: 6300 }], traits: [{ code: 'drible', name: 'Drible' }, { code: 'finalizacao', name: 'Finalização' }, { code: 'passe', name: 'Passe' }, { code: 'velocidade', name: 'Velocidade' }, { code: 'falta', name: 'Falta' }], styles: [{ code: 'artilheiro', kind: 'off', name: 'Artilheiro' }, { code: 'criativo', kind: 'off', name: 'Criativo' }, { code: 'pressao', kind: 'def', name: 'Pressão' }, { code: 'drib_ia', kind: 'ai', name: 'Driblador' }], positions: ['GOL', 'LD', 'ZAG', 'LE', 'VOL', 'MC', 'MEI', 'PD', 'PE', 'ATA'] }),
   on_player_sheet: ((orig) => (args) => {

@@ -33,3 +33,4 @@ export async function uploadBigTimePhoto(file) {
   if (error) throw new Error(error.message || 'Falha ao enviar a foto')
   return supabase.storage.from('bigtime').getPublicUrl(path).data.publicUrl
 }
+export const pickPoolPlayers = (n, lo, hi, query = null) => rpc('admin_pool_pick', { p_n: n, p_lo: lo, p_hi: hi, p_query: query })

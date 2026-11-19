@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Flame, ImageUp, Package, Plus, Save, Trash2 } from 'lucide-react'
 import { Notice, Skeleton } from '../../components/ui/feedback'
 import BigTimeCard, { BigTimeFacts } from '../online/components/BigTime'
-import { fetchBigTime, saveBigTime, savePack, uploadBigTimePhoto } from './adminApi'
+import { fetchBigTime, pickPoolPlayers, saveBigTime, savePack, uploadBigTimePhoto } from './adminApi'
 import './admin-bigtime.css'
 
 // PAINEL: cartas BIG TIME e caixas da loja. A carta é gerada na hora a partir do cadastro e da foto.
@@ -11,10 +11,12 @@ const toLocal = (iso) => (iso ? new Date(new Date(iso).getTime() - 3 * 3600000).
 const fromLocal = (v) => (v ? `${v}:00-03:00` : null)
 const PRIZES = { energy: 'Energia de treino', coins: 'Moedas', cash: 'Dinheiro do clube ($)', whistle: 'Apito de Ouro' }
 
-const blankCard = () => ({ id: '', name: '', full_name: '', pos: 'ATA', sec: [], nat: 'BRA', rating: 106, age: 25, match_date: '', opponent: '', team: '', competition: '', score: '', story: '', photo: '', photo_pos: { x: 50, y: 20, zoom: 1 }, style_off: '', style_def: '', ai_styles: [], traits: [], active: true })
+const blankCard = () => ({ id: '', name: '', full_name: '', pos: 'ATA', sec: [], nat: 'BRA', rating: 106, start_rating: 96, age: 25, match_date: '', opponent: '', team: '', competition: '', score: '', story: '', photo: '', photo_pos: { x: 50, y: 20, zoom: 1 }, style_off: '', style_def: '', ai_styles: [], traits: [], active: true })
 const blankPack = () => {
   const now = new Date()
-  return { id: '', title: '', subtitle: '', price: 150, starts_at: toLocal(now.toISOString()), ends_at: toLocal(new Date(now.getTime() + 7 * 864e5).toISOString()), cards: [], others: [{ kind: 'energy', qty: 5, balls: 3 }, { kind: 'coins', qty: 500, balls: 3 }] }
+  // padrão: 100 diamantes por giro, 7 dias, ~70 cartas base e ~60 itens; com 2 Big Time a média para tirar as duas fica perto de 9 mil
+  return { id: '', title: '', subtitle: '', price: 100, starts_at: toLocal(now.toISOString()), ends_at: toLocal(new Date(now.getTime() + 7 * 864e5).toISOString()), cards: [], base: [],
+    others: [{ kind: 'energy', qty: 3, balls: 20 }, { kind: 'coins', qty: 300, balls: 18 }, { kind: 'cash', qty: 50000, balls: 15 }, { kind: 'energy', qty: 10, balls: 4 }, { kind: 'whistle', qty: 1, balls: 3 }] }
 }
 
 // Reduz a foto para no máximo 1000 px (webp) antes de enviar.
@@ -48,7 +50,7 @@ function CardForm({ meta, initial, onSaved, onCancel }) {
     ...f, rating: Number(f.rating), year: f.match_date ? Number(f.match_date.slice(0, 4)) : '',
     skills: meta.traits.filter((t) => f.traits.includes(t.code)).map((t) => t.name),
   }), [f, meta.traits])
-  const valid = f.name.trim() && f.opponent.trim() && f.match_date && Number(f.rating) >= 106 && Number(f.rating) <= 115
+  const valid = f.name.trim() && f.opponent.trim() && f.match_date && Number(f.rating) >= 106 && Number(f.rating) <= 115 && Number(f.start_rating) >= 85 && Number(f.start_rating) <= Number(f.rating)
   const pick = async (e) => {
     const file = e.target.files?.[0]
     e.target.value = ''
@@ -67,7 +69,7 @@ function CardForm({ meta, initial, onSaved, onCancel }) {
     setBusy(true)
     setMsg(null)
     try {
-      const card = await saveBigTime({ ...f, rating: Number(f.rating), age: Number(f.age) })
+      const card = await saveBigTime({ ...f, rating: Number(f.rating), start_rating: Number(f.start_rating), age: Number(f.age) })
       onSaved(card)
     } catch (e) {
       setMsg({ kind: 'error', text: e.message })
@@ -83,7 +85,8 @@ function CardForm({ meta, initial, onSaved, onCancel }) {
         <div className="abt-grid">
           <label className="ad-field">Nome na carta<input value={f.name} maxLength={28} onChange={(e) => set('name', e.target.value)} placeholder="Ronaldinho" /></label>
           <label className="ad-field">Nome completo<input value={f.full_name} maxLength={80} onChange={(e) => set('full_name', e.target.value)} placeholder="Ronaldo de Assis Moreira" /></label>
-          <label className="ad-field">Overall (106 a 115)<input type="number" min={106} max={115} value={f.rating} onChange={(e) => set('rating', e.target.value)} /></label>
+          <label className="ad-field">Overall máximo (106 a 115)<input type="number" min={106} max={115} value={f.rating} onChange={(e) => setF((x) => ({ ...x, rating: e.target.value, start_rating: Math.max(85, Number(e.target.value) - 10) }))} /></label>
+          <label className="ad-field">Overall inicial (treina até o máximo)<input type="number" min={85} max={f.rating} value={f.start_rating} onChange={(e) => set('start_rating', e.target.value)} /></label>
           <label className="ad-field">Posição<select value={f.pos} onChange={(e) => set('pos', e.target.value)}>{meta.positions.map((p) => <option key={p}>{p}</option>)}</select></label>
           <label className="ad-field">Nacionalidade (sigla)<input value={f.nat} maxLength={3} onChange={(e) => set('nat', e.target.value.toUpperCase())} /></label>
           <label className="ad-field">Idade no dia do jogo<input type="number" min={15} max={45} value={f.age} onChange={(e) => set('age', e.target.value)} /></label>
@@ -147,7 +150,24 @@ function PackForm({ cards, initial, onSaved, onCancel }) {
   const set = (k, v) => setF((x) => ({ ...x, [k]: v }))
   const toggleCard = (id) => set('cards', f.cards.includes(id) ? f.cards.filter((x) => x !== id) : [...f.cards, id])
   const setOther = (i, k, v) => set('others', f.others.map((o, j) => (j === i ? { ...o, [k]: v } : o)))
-  const total = f.cards.length + f.others.reduce((s, o) => s + Number(o.balls || 0), 0)
+  const [pick, setPick] = useState({ n: 70, lo: 68, hi: 82 })
+  const [picking, setPicking] = useState(false)
+  const total = f.cards.length + f.base.length + f.others.reduce((s, o) => s + Number(o.balls || 0), 0)
+  // sem reposição: média de tiragens para tirar todas as k Big Time = k(N+1)/(k+1); pior caso = N
+  const k = f.cards.length
+  const avg = k ? Math.round((k * (total + 1)) / (k + 1)) : 0
+  const addBase = async () => {
+    setPicking(true)
+    try {
+      const got = await pickPoolPlayers(Number(pick.n), Number(pick.lo), Number(pick.hi))
+      const have = new Set(f.base.map((b) => b.src))
+      set('base', [...f.base, ...got.filter((g) => !have.has(g.src))])
+    } catch (e) {
+      setMsg({ kind: 'error', text: e.message })
+    } finally {
+      setPicking(false)
+    }
+  }
   const valid = f.title.trim() && f.cards.length > 0 && Number(f.price) > 0 && f.ends_at > f.starts_at
   const save = async () => {
     setBusy(true)
@@ -155,6 +175,7 @@ function PackForm({ cards, initial, onSaved, onCancel }) {
     try {
       const items = [
         ...f.cards.map((ref) => ({ id: f.itemIds?.[ref] || '', kind: 'bigtime', ref })),
+        ...f.base.map((b) => ({ id: b.itemId || '', kind: 'player', src: b.src })),
         ...f.others.filter((o) => Number(o.qty) > 0 && Number(o.balls) > 0).map((o) => ({ id: o.id || '', kind: o.kind, qty: Number(o.qty), balls: Number(o.balls) })),
       ]
       await savePack({ id: f.id, title: f.title, subtitle: f.subtitle, price: Number(f.price), starts_at: fromLocal(f.starts_at), ends_at: fromLocal(f.ends_at), items })
@@ -185,6 +206,19 @@ function PackForm({ cards, initial, onSaved, onCancel }) {
         ))}
         {cards.length === 0 && <p className="ad-muted">Cadastre uma carta primeiro.</p>}
       </div>
+      <h3 className="ad-sub">Cartas base ({f.base.length})</h3>
+      <div className="abt-photo">
+        <label>Quantas<input type="number" min={1} max={200} value={pick.n} onChange={(e) => setPick({ ...pick, n: e.target.value })} /></label>
+        <label>Overall de<input type="number" min={40} max={95} value={pick.lo} onChange={(e) => setPick({ ...pick, lo: e.target.value })} /></label>
+        <label>até<input type="number" min={40} max={99} value={pick.hi} onChange={(e) => setPick({ ...pick, hi: e.target.value })} /></label>
+        <button type="button" className="ad-btn-ghost" disabled={picking} onClick={addBase}><Plus size={14} /> {picking ? 'Sorteando…' : 'Sortear cartas base'}</button>
+        {f.base.some((b) => !b.itemId) && <button type="button" className="ad-btn-ghost" onClick={() => set('base', f.base.filter((b) => b.itemId))}><Trash2 size={14} /> Limpar novas</button>}
+      </div>
+      <div className="abt-base">
+        {f.base.map((b) => (
+          <span key={b.src}><b>{b.ovr}</b> {b.pos} · {b.name}{!b.itemId && <button type="button" aria-label={`Tirar ${b.name}`} onClick={() => set('base', f.base.filter((x) => x.src !== b.src))}>×</button>}</span>
+        ))}
+      </div>
       <h3 className="ad-sub">Outros prêmios</h3>
       <table className="ad-table abt-others">
         <thead><tr><th>Prêmio</th><th className="num">Quantidade</th><th className="num">Vezes na caixa</th><th /></tr></thead>
@@ -200,7 +234,7 @@ function PackForm({ cards, initial, onSaved, onCancel }) {
         </tbody>
       </table>
       <button type="button" className="ad-btn-ghost" onClick={() => set('others', [...f.others, { kind: 'cash', qty: 100000, balls: 2 }])}><Plus size={14} /> Prêmio</button>
-      <p className="ad-muted">Cada técnico tem a própria caixa com {total} prêmio(s). Para tirar todas as cartas, no pior caso, ele gasta {fmt(total * Number(f.price || 0))} diamantes.</p>
+      <p className="ad-muted">Só aqui no painel: cada técnico tem a própria caixa com {total} prêmio(s). Para tirar {k > 1 ? `as ${k} Big Time` : 'a Big Time'}, em média {fmt(avg)} giros ({fmt(avg * Number(f.price || 0))} diamantes); no pior caso {fmt(total)} giros ({fmt(total * Number(f.price || 0))}). A loja não mostra esses números.</p>
       <div className="ad-actions">
         {onCancel ? <button type="button" className="ad-btn-ghost" onClick={onCancel}>Cancelar</button> : <span />}
         <button type="button" className="ad-btn" disabled={!valid || busy} onClick={save}><Save size={15} /> {busy ? 'Salvando…' : f.id ? 'Salvar caixa' : 'Publicar caixa'}</button>
@@ -223,8 +257,9 @@ export default function AdminBigTime() {
   const editPack = (p) => setPack({
     id: p.id, title: p.title, subtitle: p.subtitle || '', price: p.price, starts_at: toLocal(p.starts_at), ends_at: toLocal(p.ends_at),
     cards: p.items.filter((i) => i.kind === 'bigtime').map((i) => i.bt.id),
+    base: p.items.filter((i) => i.kind === 'player' && i.player).map((i) => ({ ...i.player, itemId: i.id })),
     itemIds: Object.fromEntries(p.items.filter((i) => i.kind === 'bigtime').map((i) => [i.bt.id, i.id])),
-    others: p.items.filter((i) => i.kind !== 'bigtime').map((i) => ({ id: i.id, kind: i.kind, qty: i.qty, balls: i.balls })),
+    others: p.items.filter((i) => !['bigtime', 'player'].includes(i.kind)).map((i) => ({ id: i.id, kind: i.kind, qty: i.qty, balls: i.balls })),
   })
   return (
     <>

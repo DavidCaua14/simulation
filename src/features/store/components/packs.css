@@ -70,3 +70,13 @@
 @keyframes pk-pop { from { opacity: 0; transform: scale(.6); } to { opacity: 1; transform: none; } }
 @keyframes pk-spin { to { transform: rotate(360deg); } }
 @media (prefers-reduced-motion: reduce) { .pk-box, .pk-reveal-rays, .pk-prize { animation: none; } }
+.pk-clock { font-variant-numeric: tabular-nums; }
+.pk-clock.is-big { display: inline-flex; align-items: center; gap: 5px; margin-top: 6px; padding: 4px 10px; border-radius: 999px; background: rgba(0, 0, 0, .35); font: 900 .82rem var(--font-heading); }
+.pk-base { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 6px; margin: 0; padding: 0; list-style: none; }
+.pk-base li { display: grid; grid-template-columns: auto auto minmax(0, 1fr); align-items: center; gap: 6px; padding: 6px 8px; border-radius: 9px; background: rgba(255, 255, 255, .05); font: 700 .78rem var(--font-body); }
+.pk-base li b { font: 900 .9rem var(--font-heading); color: #fde68a; }
+.pk-base li small { font: 800 .62rem var(--font-body); color: #fca5a5; }
+.pk-base li span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pk-base li.is-out { opacity: .4; text-decoration: line-through; }
+.pk-prize-kicker.is-base { background: #475569; }
+.pk-prize-fut { width: 170px; }

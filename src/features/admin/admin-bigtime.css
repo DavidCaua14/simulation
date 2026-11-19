@@ -19,3 +19,8 @@
 .abt-item small { color: var(--gx-ink-2); font-size: .74rem; }
 .abt-live { margin-left: 8px; padding: 2px 8px; border-radius: 999px; background: #16a34a; color: #fff; font: 800 .66rem var(--font-body); text-transform: uppercase; }
 @media (max-width: 980px) { .abt-form { grid-template-columns: 1fr; } .abt-preview { position: static; } }
+.abt-photo input[type='number'] { width: 90px; padding: 6px 8px; border: 1px solid var(--gx-line); border-radius: 8px; background: var(--gx-panel); color: var(--gx-ink); }
+.abt-base { display: flex; flex-wrap: wrap; gap: 6px; max-height: 220px; overflow-y: auto; margin: 10px 0; }
+.abt-base span { display: inline-flex; align-items: center; gap: 4px; padding: 4px 8px; border-radius: 8px; background: var(--gx-panel-2); font-size: .78rem; }
+.abt-base span b { color: var(--gx-gold); }
+.abt-base button { border: 0; background: none; color: var(--gx-ink-2); cursor: pointer; font-size: .9rem; }
