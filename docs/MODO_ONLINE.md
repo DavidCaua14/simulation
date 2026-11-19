@@ -438,3 +438,10 @@ caixa, cria os 94 clubes (bots com nomes reais) e sorteia o calendário e a 1ª 
 - **Laboratório**: `PGLITE_DIR=<pasta> node scripts/series-lab.mjs` cria a estrutura em cima da suíte antiga (mesmo
   caminho da migração), joga a temporada inteira pelo relógio (`on_tick`) e confere tamanhos, horários, fases,
   acesso e rebaixamento, copa e a virada.
+  Resultado em 19/11/2026 (catálogo fictício dos testes): 1.596 jogos em 204 ticks; todas as fases nasceram sozinhas
+  (playoff da B, quadrangulares e final da C, quartas/semi/final da D, copa da 1ª fase à final); caíram 4 de A, B e C e
+  subiram 4 de B, C e D; 24 clubes trocaram de série na virada; 2,46 gols por jogo, mandante vence 41%.
+  Em produção, ensaio com rollback: estrutura criada em 8 s; bots da A com 457 jogadores reais (força média 73, Palmeiras
+  79,9), B com 458 (61), C 60 e D 56; os 4 técnicos foram para a D com elenco e caixa (força 80 a 82).
+- Testes rápidos: `supabase/online/tests/series_tests.sql` (no `scripts/test-online-db.mjs`) passa por todas as fases com
+  resultados marcados direto e testa a suspensão por competição.
