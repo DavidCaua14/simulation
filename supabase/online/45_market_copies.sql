@@ -235,3 +235,12 @@ do $$ begin
  end if;
 end $$;
 update public.on_config set tick_hooks=array(select distinct x from unnest(tick_hooks||'on_market_buzz'::text) x);
+
+-- Pênaltis: lado sem batedor em campo não quebra a disputa (lista vazia em vez de nulo).
+do $$ begin
+ if position('nullif(so->''order''->sd' in pg_get_functiondef('public.on_so_step(bigint,timestamp with time zone,timestamp with time zone)'::regprocedure))=0 then
+  perform public.on_patch('public.on_so_step(bigint,timestamp with time zone,timestamp with time zone)',
+   'jsonb_array_length(so->''order''->sd)',
+   'jsonb_array_length(coalesce(nullif(so->''order''->sd,''null''::jsonb),''[]''))');
+ end if;
+end $$;
