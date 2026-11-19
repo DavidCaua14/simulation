@@ -37,8 +37,8 @@ export default function BigTimeCard({ bt, ovr, pos, size = 'md', onClick, delay 
         <span className="btc-rays" aria-hidden="true" />
         <span className="btc-shine" aria-hidden="true" />
         <span className="btc-ovr"><b>{rating}</b><small>{at}</small></span>
-        <span className="btc-tag"><Flame size={11} /> Big Time</span>
         <span className="btc-foot">
+          <i className="btc-label">Big Time</i>
           <strong>{bt.name}</strong>
           <small>{bt.year} · {bt.team ? `× ${bt.opponent}` : `contra ${bt.opponent}`}</small>
         </span>
