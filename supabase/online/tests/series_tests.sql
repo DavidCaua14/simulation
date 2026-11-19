@@ -384,7 +384,7 @@ begin
  update public.careers set diamonds=5000 where user_id=u;
  -- painel
  begin perform public.admin_bt_save('{"name":"Fraco","pos":"ATA","rating":104,"match_date":"2005-11-19","opponent":"X"}');raise exception 'overall 104 aceito';
- exception when others then if sqlerrm not like 'Overall entre%' then raise;end if;end;
+ exception when others then if sqlerrm not like 'Overall máximo entre%' then raise;end if;end;
  bt:=public.admin_bt_save(jsonb_build_object('name','Ronaldinho','pos','PE','sec',jsonb_build_array('MEI','PD'),'rating',108,'age',25,
   'match_date','2005-11-19','opponent','Real Madrid','team','Barcelona','competition','La Liga','score','3 x 0',
   'story','Aplaudido de pé no Bernabéu.','photo','https://exemplo/r10.jpg','traits',jsonb_build_array('drible','finalizacao'),'style_off','x'));
