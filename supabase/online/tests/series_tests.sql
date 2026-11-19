@@ -325,14 +325,14 @@ begin
  perform set_config('on.now',(now()+interval '14 days 1 minute')::text,true);
  if not public.on_src_free(v_src,false,85) then raise exception 'destaque não voltou depois de 14 dias';end if;
  -- limite de cópias de lenda por temporada (3)
- insert into public.on_src_log(v_src,club_id,season_id,at) select 'lg-teste',a.id,s.id,now()-interval '60 days' from generate_series(1,3);
+ insert into public.on_src_log(src,club_id,season_id,at) select 'lg-teste',a.id,s.id,now()-interval '60 days' from generate_series(1,3);
  perform set_config('on.now',(now()+interval '30 days')::text,true);
  if public.on_src_free('lg-teste',true,90) then raise exception 'lenda passou de 3 cópias';end if;
  delete from public.on_src_log where src='lg-teste';
  if not public.on_src_free('lg-teste',true,90) then raise exception 'lenda sem cópias deveria voltar';end if;
  perform set_config('on.now','',true);
  -- montagem de elenco (fora do mercado) continua sem repetir dono
- if public.on_real_pick(null,0,200,'x'||v_src) in(select v_src from public.on_players where v_src is not null and club_id is not null) then raise exception 'elenco novo pegou jogador com dono';end if;
+ if public.on_real_pick(null,0,200,'x'||v_src) in(select src from public.on_players where src is not null and club_id is not null) then raise exception 'elenco novo pegou jogador com dono';end if;
  -- destaque: bot rico com teto acima do lance inicial; bot sem caixa fora
  insert into public.on_players(club_id,name,pos,age,level,pot,ovr,wage,contract_end) values(null,'Destaque Teste','ATA',26,86,86,86,10,s.id+1) returning id into pid;
  insert into public.on_lots(season_id,player_id,start_price,opens_at,ends_at,hard_end,featured) values(s.id,pid,600000,now(),now()+interval '1 hour',now()+interval '2 hours',9) returning id into lot;
