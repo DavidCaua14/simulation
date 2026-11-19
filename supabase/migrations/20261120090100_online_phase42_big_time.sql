@@ -252,7 +252,7 @@ begin
    on conflict(user_id,item) do update set qty=public.on_items.qty+excluded.qty;
  end if;
  insert into public.on_pack_draws(pack_id,item_id,user_id,club_id,price,player_id) values(pk.id,it.id,auth.uid(),c.id,pk.price,v_pid);
- return jsonb_build_object('prize',jsonb_build_object('kind',it.kind,'qty',it.qty,'player',v_pid,
+ return jsonb_build_object('prize',jsonb_build_object('item',it.id,'kind',it.kind,'qty',it.qty,'player',v_pid,
    'bt',case when it.kind='bigtime' then public.on_bt_json(it.ref) end,
    'card',case when it.kind='player' then (select jsonb_build_object('id',p.id,'name',p.name,'pos',p.pos,'ovr',p.ovr,'pot',p.pot,'age',p.age,'nat',p.nat,
      'card',public.on_card(p.id,p.pos,p.level,p.g)) from public.on_players p where p.id=v_pid) end),'store',public.online_packs());

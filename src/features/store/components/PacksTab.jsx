@@ -217,8 +217,14 @@ export default function PacksTab({ onChanged, onEmpty }) {
     setError('')
     drawPack(openId)
       .then((r) => {
+        // marca o prêmio na hora (carta ganha) e usa a lista nova que o servidor devolveu
+        const store = r.store || data
+        const packs = store.packs.map((p) => (p.id !== openId ? p : {
+          ...p,
+          items: p.items.map((i) => (i.id === r.prize?.item && ['bigtime', 'player'].includes(i.kind) ? { ...i, got: true } : i)),
+        }))
         setPrize(r.prize)
-        setData(r.store)
+        setData({ ...store, packs })
         onChanged?.()
       })
       .catch((e) => setError(e.message))
@@ -243,7 +249,7 @@ export default function PacksTab({ onChanged, onEmpty }) {
           prize={prize}
           price={pack?.price}
           canAgain={Boolean(pack && !pack.empty && data.diamonds >= pack.price)}
-          onClose={() => setPrize(null)}
+          onClose={() => { setPrize(null); load() }}
           onAgain={() => { setPrize(null); draw() }}
         />
       )}

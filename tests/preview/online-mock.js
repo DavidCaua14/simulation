@@ -397,7 +397,7 @@ Object.assign(RPC, {
     packState.got.push(it.id)
     packState.diamonds -= 100
     const card = it.player && { id: it.player.src, ...it.player, pot: it.player.ovr + 3, card: cardOf(it.player.pos, it.player.ovr, 1) }
-    return { prize: { kind: it.kind, qty: it.qty, bt: it.bt, card }, store: RPC.online_packs() }
+    return { prize: { item: it.id, kind: it.kind, qty: it.qty, bt: it.bt, card }, store: RPC.online_packs() }
   },
   admin_bt_list: () => ({ cards: BT, packs: [{ ...pack(), draws: 42, diamonds: 6300 }], traits: [{ code: 'drible', name: 'Drible' }, { code: 'finalizacao', name: 'Finalização' }, { code: 'passe', name: 'Passe' }, { code: 'velocidade', name: 'Velocidade' }, { code: 'falta', name: 'Falta' }], styles: [{ code: 'artilheiro', kind: 'off', name: 'Artilheiro' }, { code: 'criativo', kind: 'off', name: 'Criativo' }, { code: 'pressao', kind: 'def', name: 'Pressão' }, { code: 'drib_ia', kind: 'ai', name: 'Driblador' }], positions: ['GOL', 'LD', 'ZAG', 'LE', 'VOL', 'MC', 'MEI', 'PD', 'PE', 'ATA'] }),
   on_player_sheet: ((orig) => (args) => {
