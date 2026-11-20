@@ -9,8 +9,8 @@ const RUN_X = 10
 const RUN_Y = 8
 const PPM = 4 // pixels por metro no gramado (pixel bem marcado)
 
-// Gramado turquesa com listras diagonais e luz em degradê, linhas de 1 pixel.
-export function pixelPitchTexture() {
+// Gramado em pixel art com o padrão do estádio (listras, diagonal, xadrez, círculos ou liso), linhas de 1 pixel.
+export function pixelPitchTexture(grass = { pattern: 'diagonal', colors: ['#3fd3b0', '#2fb39a'] }) {
   const tw = L + RUN_X * 2
   const th = W + RUN_Y * 2
   const cv = document.createElement('canvas')
@@ -19,21 +19,38 @@ export function pixelPitchTexture() {
   const g = cv.getContext('2d')
   const w = cv.width
   const h = cv.height
-  // degradê: mais claro perto da câmera (embaixo), mais escuro no fundo
-  const grad = g.createLinearGradient(0, 0, 0, h)
-  grad.addColorStop(0, '#2aa7b8')
-  grad.addColorStop(1, '#3fd3b0')
-  g.fillStyle = grad
+  const [ca, cb] = grass.colors
+  g.fillStyle = ca
   g.fillRect(0, 0, w, h)
-  // listras diagonais (degraus de 1 pixel)
-  const band = 26
-  for (let y = 0; y < h; y += 1) {
-    for (let k = -h; k < w + h; k += band * 2) {
-      const x0 = k + y * 0.55
-      g.fillStyle = 'rgba(0,40,70,0.10)'
-      g.fillRect(Math.round(x0), y, band, 1)
+  g.fillStyle = cb
+  const x0 = RUN_X * PPM
+  const y0 = RUN_Y * PPM
+  const cx0 = x0 + (L / 2) * PPM
+  const cy0 = y0 + (W / 2) * PPM
+  if (grass.pattern === 'stripes') {
+    const band = (L / 14) * PPM
+    for (let k = -4; k < 20; k += 2) g.fillRect(Math.round(x0 + k * band), 0, Math.round(band), h)
+  } else if (grass.pattern === 'diagonal') {
+    const band = 26
+    for (let y = 0; y < h; y += 1) for (let k = -h; k < w + h; k += band * 2) g.fillRect(Math.round(k + y * 0.55), y, band, 1)
+  } else if (grass.pattern === 'checker') {
+    const bx = (L / 12) * PPM
+    const by = (W / 8) * PPM
+    for (let i = -2; i < 16; i += 1) for (let jj = -2; jj < 12; jj += 1) if ((i + jj) % 2) g.fillRect(Math.round(x0 + i * bx), Math.round(y0 + jj * by), Math.ceil(bx), Math.ceil(by))
+  } else if (grass.pattern === 'circles') {
+    const ring = 5 * PPM
+    for (let y = 0; y < h; y += 1) {
+      for (let x = 0; x < w; x += 1) {
+        if (Math.floor(Math.hypot(x - cx0, (y - cy0) * 1.0) / ring) % 2) g.fillRect(x, y, 1, 1)
+      }
     }
   }
+  // luz: um pouco mais escuro no fundo do campo (longe da câmera)
+  const shadeG = g.createLinearGradient(0, 0, 0, h)
+  shadeG.addColorStop(0, 'rgba(0,20,40,0.16)')
+  shadeG.addColorStop(1, 'rgba(255,255,255,0.04)')
+  g.fillStyle = shadeG
+  g.fillRect(0, 0, w, h)
   // granulado em pixels soltos
   let s = 7
   const rnd = () => ((s = (s * 16807) % 2147483647) / 2147483647)

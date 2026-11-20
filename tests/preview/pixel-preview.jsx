@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import '../../src/styles/theme.css'
 import MatchBroadcast3D from '../../src/features/match3d/MatchBroadcast3D'
+import { STADIUMS } from '../../src/features/match3d/stadiums'
 import formations from './formations.json'
 import roster from './players.json'
 
@@ -49,6 +50,7 @@ const SPEEDS = [
 function App() {
   const params = new URLSearchParams(location.search)
   const [speed, setSpeed] = useState(Number(params.get('speed') || 1))
+  const [stadium, setStadium] = useState(params.get('stadium') || 'arena')
   const ms = Number(params.get('ms')) || SPEEDS.find((s) => s.id === speed)?.ms || 700
   const start = Number(params.get('start') || 0)
   const [clock, setClock] = useState(start)
@@ -83,10 +85,13 @@ function App() {
   return (
     <div style={{ maxWidth: params.get('w') ? Number(params.get('w')) : 1400, margin: '0 auto' }}>
       <div style={{ height: params.get('h') || 'calc(100vh - 44px)' }}>
-      <MatchBroadcast3D pixel={params.get('pixel') !== '0'} data={data} catalog={catalog} clock={clock} minute={shown} events={upcoming} paused={clock >= server.minute} speed={speed}
+      <MatchBroadcast3D key={stadium} stadium={stadium} pixel={params.get('pixel') !== '0'} data={data} catalog={catalog} clock={clock} minute={shown} events={upcoming} paused={clock >= server.minute} speed={speed}
         score={score} finished={clock >= 90} clockLabel={`${shown}'`} userSide="h" onHold={setHoldAt} onReveal={onReveal} />
       </div>
       <div style={{ display: 'flex', gap: 8, padding: 8 }}>
+        {STADIUMS.map((st) => (
+          <button key={st.id} type="button" aria-pressed={stadium === st.id} onClick={() => setStadium(st.id)}>{st.name}</button>
+        ))}
         {SPEEDS.map((s) => (
           <button key={s.id} type="button" aria-pressed={speed === s.id} onClick={() => setSpeed(s.id)}>
             {s.id}x

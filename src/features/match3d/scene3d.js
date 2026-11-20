@@ -5,6 +5,7 @@
 import * as THREE from 'three'
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js'
 import { L, W } from '../match2d/director'
+import { buildStadiumFromDef } from './stadiums'
 
 const GOAL_W = 7.32
 const GOAL_H = 2.44
@@ -704,7 +705,8 @@ export function createScene(canvas, opts) {
   pitch.receiveShadow = true
   scene.add(pitch)
 
-  const stadium = buildStadium(scene, opts)
+  // modo pixel: estádio montado a partir da ficha (stadiums.js)
+  const stadium = opts.stadiumDef ? buildStadiumFromDef(scene, opts.stadiumDef, opts) : buildStadium(scene, opts)
   const goals = [buildGoal(scene, 0), buildGoal(scene, 1)]
 
   // bola

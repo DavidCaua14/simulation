@@ -196,3 +196,9 @@
   animation: m3d-goalbig 2.2s steps(12) both; }
 @keyframes m3d-goalbig { 0% { transform: translate(-160%, -50%); } 18%, 82% { transform: translate(-50%, -50%) scale(1); } 100% { transform: translate(60%, -50%); } }
 @media (prefers-reduced-motion: reduce) { .m3d-goalbig { animation: none; } }
+.m3d-stadium { position: absolute; left: 50%; bottom: 12%; z-index: 6; transform: translateX(-50%); display: grid; justify-items: center; gap: 2px; padding: 8px 18px; pointer-events: none;
+  background: #0b1020; color: #fff; box-shadow: 0 0 0 2px #fff, 0 0 0 4px #0b1020; font-family: ui-monospace, Menlo, Consolas, monospace; text-transform: uppercase; animation: m3d-stadium 5.2s steps(10) both; }
+.m3d-stadium small { font-size: 10px; letter-spacing: .2em; color: #facc15; }
+.m3d-stadium b { font-size: 18px; letter-spacing: .06em; }
+.m3d-stadium span { font-size: 11px; color: #cbd5e1; }
+@keyframes m3d-stadium { 0% { opacity: 0; } 10%, 85% { opacity: 1; } 100% { opacity: 0; } }

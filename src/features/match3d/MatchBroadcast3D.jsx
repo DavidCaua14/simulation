@@ -7,6 +7,7 @@ import { eventText } from '../seasons/utils/managerUtils'
 import { THREE, colorDist, createAthlete, createKitMaterials, createScene, poseAthlete, toWorld } from './scene3d'
 import { createPlayerRig, loadPlayerAssets, poseKayPlayer } from './players3d'
 import { createBallTrail, createKickRing, createSpriteFactory, pixelPitchTexture } from './pixel3d'
+import { stadiumById, stadiumFor } from './stadiums'
 import './match3d.css'
 
 // Transmissão 3D (protótipo). Mesmas props do campo 2D (MatchTactical2D): o diretor é o mesmo,
@@ -53,7 +54,7 @@ function kitsFor(hc, ac) {
 
 // onUnavailable(): o aparelho não abriu o WebGL — a tela segue só com o placar
 // pixel: modo 2.5D (gramado e atletas em pixel art, imagem em baixa resolução ampliada sem suavizar)
-export default function MatchBroadcast3D({ data, catalog, clock, events, paused, speed = 1, minute, score, finished, clockLabel, userSide, onHold, onReveal, onUnavailable, clubs, pixel = false }) {
+export default function MatchBroadcast3D({ data, catalog, clock, events, paused, speed = 1, minute, score, finished, clockLabel, userSide, onHold, onReveal, onUnavailable, clubs, pixel = false, stadium = null }) {
   const wrap = useRef(null)
   const canvas = useRef(null)
   const labelRef = useRef(null)
@@ -67,6 +68,7 @@ export default function MatchBroadcast3D({ data, catalog, clock, events, paused,
   const [ready, setReady] = useState(false)
   const [failed, setFailed] = useState(false)
   const [caption, setCaption] = useState(null)
+  const [fly, setFly] = useState(Boolean(pixel))
   const live = useRef({ paused, speed, minute, clockLabel })
   useEffect(() => {
     live.current = { paused, speed, minute, clockLabel }
@@ -78,6 +80,8 @@ export default function MatchBroadcast3D({ data, catalog, clock, events, paused,
   const ac = (clubs?.away?.colors || getClubById(data.away)?.colors || []).join()
   const kits = useMemo(() => kitsFor(hc ? hc.split(',') : [], ac ? ac.split(',') : []), [hc, ac])
   const names = useMemo(() => ({ h: home?.short || home?.name || 'Casa', a: away?.short || away?.name || 'Visitante' }), [home?.short, home?.name, away?.short, away?.name])
+  // estádio do modo pixel: o pedido (id) ou o do mandante (sempre o mesmo para o mesmo clube)
+  const stadiumDef = useMemo(() => (stadium ? stadiumById(stadium) : stadiumFor(data.home)), [stadium, data.home])
   const view = useRef({ userSide })
   useEffect(() => {
     view.current = { userSide }
@@ -163,7 +167,8 @@ export default function MatchBroadcast3D({ data, catalog, clock, events, paused,
         crowdColors: [kits.h[0], kits.h[1], kits.a[0]],
         ads: [names.h.toUpperCase(), 'AO VIVO', names.a.toUpperCase(), 'FUTEBOL'],
         pixel,
-        pitch: pixel ? pixelPitchTexture() : null,
+        stadiumDef: pixel ? stadiumDef : null,
+        pitch: pixel ? pixelPitchTexture(stadiumDef.grass) : null,
       })
     } catch (err) {
       console.error('[campo 3D]', err)
@@ -232,6 +237,10 @@ export default function MatchBroadcast3D({ data, catalog, clock, events, paused,
     let cheer = 0
     const fieldAudio = createFieldAudio()
     const cam = { x: 0, z: 0, fov: 20, ox: 0 }
+    // modo pixel: sobrevoo do estádio na abertura (o jogo espera)
+    const flyMs = pixel ? 5200 : 0
+    const flyStart = performance.now()
+    let flying = flyMs > 0
     const ballPrev = new THREE.Vector3()
     const tmp = new THREE.Vector3()
     const axis = new THREE.Vector3()
@@ -311,7 +320,12 @@ export default function MatchBroadcast3D({ data, catalog, clock, events, paused,
       }
       // no lance: a velocidade escolhida (1x, 2x, 4x nas Temporadas; o online acelera quando atrasa)
       const mult = Math.max(1, Number(sp) || 1)
-      const step = isPaused ? 0 : hl ? dtReal * mult * (slowMo ? 0.45 : 1) : dtReal * Math.max(6, mult * 3)
+      if (flying && now - flyStart >= flyMs) {
+        flying = false
+        snapCam = true
+        setFly(false)
+      }
+      const step = isPaused || flying ? 0 : hl ? dtReal * mult * (slowMo ? 0.45 : 1) : dtReal * Math.max(6, mult * 3)
       if (hl) hlSec += step
       // fora de lance roteirizado (saída de bola), o relógio parte do minuto atual da partida
       if (hl && !sc0 && !introSynced) {
@@ -431,6 +445,17 @@ export default function MatchBroadcast3D({ data, catalog, clock, events, paused,
       camera.updateProjectionMatrix()
       camera.position.set(cam.x * 0.82 + cam.ox, celebrating ? 15 : 20, W / 2 + 30)
       camera.lookAt(cam.x, 0, cam.z * 0.7)
+      if (flying) {
+        // volta de câmera: começa alta, atrás do estádio, e desce até a posição da TV
+        const u = Math.min(1, (now - flyStart) / flyMs)
+        const e = u * u * (3 - 2 * u)
+        const a = lerp(-2.5, 0, e)
+        const R = lerp(150, W / 2 + 30, e)
+        camera.position.set(Math.sin(a) * R, lerp(75, 20, e), Math.cos(a) * R)
+        camera.fov = lerp(42, cam.fov, e)
+        camera.updateProjectionMatrix()
+        camera.lookAt(0, 0, 0)
+      }
 
       // torcida pula no gol
       const goalNow = script?.phase === 'celebrate' && script.kind === 'attack'
@@ -582,6 +607,13 @@ export default function MatchBroadcast3D({ data, catalog, clock, events, paused,
         {cap && (cap.who || cap.rest) && (
           <div key={caption.id} className={`m3d-caption k-${caption.kind} ${capMine ? 'is-mine' : ''}`}>
             {cap.who && <b>{cap.who}</b>} <span>{cap.rest}</span>
+          </div>
+        )}
+        {pixel && fly && (
+          <div className="m3d-stadium" aria-live="polite">
+            <small>Estádio</small>
+            <b>{stadiumDef.name}</b>
+            <span>{stadiumDef.capacity} lugares</span>
           </div>
         )}
         {pixel && caption && (caption.kind === 'goal' || caption.kind === 'pen_goal') && <div key={`g-${caption.id}`} className="m3d-goalbig" aria-hidden="true">GOOOOOL!</div>}
