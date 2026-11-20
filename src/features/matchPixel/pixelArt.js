@@ -1,4 +1,4 @@
-// ARTE EM PIXEL do campo 2D (desenhada por código, sem arquivos): atletas em camadas (pele, cabelo, camisa, calção,
+// ARTE EM PIXEL dos atletas e do estádio (desenhada por código, sem arquivos; usada pelo modo pixel da transmissão 3D): atletas em camadas (pele, cabelo, camisa, calção,
 // meião e chuteira) com as cores de cada time, gramado com listras, gols com rede, placas, arquibancada com torcida e
 // bancos de reservas. Tudo sai em <canvas> pequenos; o Pixi amplia sem suavizar (pixel nítido).
 

@@ -668,7 +668,7 @@ export function poseAthlete(rig, p, ballPos, dt, time) {
 
 // ---------- montagem ----------
 export function createScene(canvas, opts) {
-  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' })
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: !opts.pixel, powerPreference: 'high-performance' })
   renderer.shadowMap.enabled = true
   renderer.shadowMap.type = THREE.PCFSoftShadowMap
   renderer.toneMapping = THREE.ACESFilmicToneMapping
@@ -697,7 +697,8 @@ export function createScene(canvas, opts) {
   scene.add(sun)
 
   // gramado
-  const { tex, tw, th } = pitchTexture(renderer)
+  // modo pixel: o gramado vem pronto (pixel3d.js), com textura sem suavização
+  const { tex, tw, th } = opts.pitch || pitchTexture(renderer)
   const pitch = new THREE.Mesh(new THREE.PlaneGeometry(tw, th), new THREE.MeshLambertMaterial({ map: tex }))
   pitch.rotation.x = -Math.PI / 2
   pitch.receiveShadow = true

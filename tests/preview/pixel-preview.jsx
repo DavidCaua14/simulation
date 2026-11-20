@@ -1,10 +1,10 @@
-// Prévia local (somente desenvolvimento) do campo em pixel art (PixiJS) com dados fictícios. Não entra no build do jogo.
+// Prévia local (somente desenvolvimento) do campo em pixel art (modo pixel da transmissão 3D) com dados fictícios. Não entra no build do jogo.
 // Reproduz a lógica de relógio do MatchLive: o relógio espera o lance em campo (onHold) e o placar conta
 // o lance assim que ele é mostrado (onReveal). Inclui dois gols no mesmo minuto (17') e gols seguidos (52', 53').
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import '../../src/styles/theme.css'
-import MatchPixel from '../../src/features/matchPixel/MatchPixel'
+import MatchBroadcast3D from '../../src/features/match3d/MatchBroadcast3D'
 import formations from './formations.json'
 import roster from './players.json'
 
@@ -83,7 +83,7 @@ function App() {
   return (
     <div style={{ maxWidth: params.get('w') ? Number(params.get('w')) : 1400, margin: '0 auto' }}>
       <div style={{ height: params.get('h') || 'calc(100vh - 44px)' }}>
-      <MatchPixel data={data} catalog={catalog} clock={clock} minute={shown} events={upcoming} paused={clock >= server.minute} speed={speed}
+      <MatchBroadcast3D pixel={params.get('pixel') !== '0'} data={data} catalog={catalog} clock={clock} minute={shown} events={upcoming} paused={clock >= server.minute} speed={speed}
         score={score} finished={clock >= 90} clockLabel={`${shown}'`} userSide="h" onHold={setHoldAt} onReveal={onReveal} />
       </div>
       <div style={{ display: 'flex', gap: 8, padding: 8 }}>

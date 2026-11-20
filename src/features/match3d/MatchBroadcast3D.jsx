@@ -6,6 +6,7 @@ import { createFieldAudio, dangerOf } from '../audio/fieldSounds'
 import { eventText } from '../seasons/utils/managerUtils'
 import { THREE, colorDist, createAthlete, createKitMaterials, createScene, poseAthlete, toWorld } from './scene3d'
 import { createPlayerRig, loadPlayerAssets, poseKayPlayer } from './players3d'
+import { createBallTrail, createKickRing, createSpriteFactory, pixelPitchTexture } from './pixel3d'
 import './match3d.css'
 
 // Transmissão 3D (protótipo). Mesmas props do campo 2D (MatchTactical2D): o diretor é o mesmo,
@@ -51,7 +52,8 @@ function kitsFor(hc, ac) {
 }
 
 // onUnavailable(): o aparelho não abriu o WebGL — a tela segue só com o placar
-export default function MatchBroadcast3D({ data, catalog, clock, events, paused, speed = 1, minute, score, finished, clockLabel, userSide, onHold, onReveal, onUnavailable, clubs }) {
+// pixel: modo 2.5D (gramado e atletas em pixel art, imagem em baixa resolução ampliada sem suavizar)
+export default function MatchBroadcast3D({ data, catalog, clock, events, paused, speed = 1, minute, score, finished, clockLabel, userSide, onHold, onReveal, onUnavailable, clubs, pixel = false }) {
   const wrap = useRef(null)
   const canvas = useRef(null)
   const labelRef = useRef(null)
@@ -160,6 +162,8 @@ export default function MatchBroadcast3D({ data, catalog, clock, events, paused,
       ctx = createScene(canvas.current, {
         crowdColors: [kits.h[0], kits.h[1], kits.a[0]],
         ads: [names.h.toUpperCase(), 'AO VIVO', names.a.toUpperCase(), 'FUTEBOL'],
+        pixel,
+        pitch: pixel ? pixelPitchTexture() : null,
       })
     } catch (err) {
       console.error('[campo 3D]', err)
@@ -169,8 +173,8 @@ export default function MatchBroadcast3D({ data, catalog, clock, events, paused,
     }
     const { renderer, scene, camera, stadium, goals, ball } = ctx
     // bola mais visível no celular (o tamanho físico do diretor não muda) e sombra no chão que mostra a altura
-    ball.scale.setScalar(1.12)
-    ball.material.emissive = new THREE.Color('#2a2a2a')
+    ball.scale.setScalar(pixel ? 1.9 : 1.12)
+    ball.material.emissive = new THREE.Color(pixel ? '#9a9a9a' : '#2a2a2a')
     const ballShadow = new THREE.Mesh(new THREE.CircleGeometry(0.34, 20), new THREE.MeshBasicMaterial({ color: '#000000', transparent: true, opacity: 0.45, depthWrite: false }))
     ballShadow.rotation.x = -Math.PI / 2
     scene.add(ballShadow)
@@ -183,19 +187,22 @@ export default function MatchBroadcast3D({ data, catalog, clock, events, paused,
     }
     const rigs = new Map()
     const referee = { x: L / 2 - 6, y: W / 2 + 8, vx: 0, vy: 0, stride: 0, anim: null }
-    let refRig = createAthlete(kitMats.ref, { id: 'referee', number: null })
+    const sprites = pixel ? createSpriteFactory() : null
+    const trail = pixel ? createBallTrail(scene) : null
+    const kickRing = pixel ? createKickRing(scene) : null
+    let refRig = sprites ? sprites.create('ref', { shirt: kits.ref, shorts: '#111827', socks: '#111827' }, 'referee') : createAthlete(kitMats.ref, { id: 'referee', number: null })
     scene.add(refRig.root)
     // atletas novos (protótipo): quando o boneco e as animações chegam, todos são refeitos com eles
     let kay = null
     const kayKits = {
       h: { shirt: kits.h[0], shorts: kits.h[1], socks: kits.h[2] },
       a: { shirt: kits.a[0], shorts: kits.a[1], socks: kits.a[2] },
-      gk_h: { shirt: kits.gkH, shorts: '#1f2937', socks: kits.gkH },
-      gk_a: { shirt: kits.gkA, shorts: '#1f2937', socks: kits.gkA },
+      gk_h: { shirt: kits.gkH, shorts: '#1f2937', socks: kits.gkH, gloves: true },
+      gk_a: { shirt: kits.gkA, shorts: '#1f2937', socks: kits.gkA, gloves: true },
       ref: { shirt: kits.ref, shorts: '#111827', socks: '#111827' },
     }
     // atletas com animação capturada (KayKit) em todas as partidas; o boneco antigo só fica se os arquivos não carregarem
-    {
+    if (!pixel) {
       loadPlayerAssets().then((a) => {
         if (!a || disposed) return
         kay = a
@@ -231,7 +238,8 @@ export default function MatchBroadcast3D({ data, catalog, clock, events, paused,
 
     const resize = () => {
       const r = wrap.current.getBoundingClientRect()
-      const dpr = Math.min(1.75, window.devicePixelRatio || 1)
+      // modo pixel: ~300 linhas de imagem, ampliadas sem suavizar (o pixel aparece)
+      const dpr = pixel ? Math.min(1, 300 / Math.max(1, r.height)) : Math.min(1.75, window.devicePixelRatio || 1)
       renderer.setPixelRatio(dpr)
       renderer.setSize(Math.max(1, r.width), Math.max(1, r.height), false)
       camera.aspect = Math.max(0.3, r.width / Math.max(1, r.height))
@@ -252,7 +260,7 @@ export default function MatchBroadcast3D({ data, catalog, clock, events, paused,
           r = null
         }
         if (!r) {
-          r = kay ? createPlayerRig(kay, kayKits[kitKey], p.id) : createAthlete(kitMats[kitKey], { id: p.id, number: p.number })
+          r = sprites ? sprites.create(kitKey, kayKits[kitKey], p.id) : kay ? createPlayerRig(kay, kayKits[kitKey], p.id) : createAthlete(kitMats[kitKey], { id: p.id, number: p.number })
           r.kitKey = kitKey
           r.yaw = p.side === 'h' ? Math.PI / 2 : -Math.PI / 2
           scene.add(r.root)
@@ -328,7 +336,8 @@ export default function MatchBroadcast3D({ data, catalog, clock, events, paused,
       for (const p of st.players) {
         const r = rigs.get(p.id)
         r.root.position.set(p.x - L / 2, 0, p.y - W / 2)
-        if (r.kay) poseKayPlayer(r, p, b, step)
+        if (r.sprite) r.pose(p)
+        else if (r.kay) poseKayPlayer(r, p, b, step)
         else poseAthlete(r, p, b, step || dtReal * 0.0001, t)
       }
 
@@ -347,7 +356,10 @@ export default function MatchBroadcast3D({ data, catalog, clock, events, paused,
         referee.y += referee.vy * step
         referee.stride = (referee.stride + (Math.hypot(referee.vx, referee.vy) * step * 8) / 2.6) % 8
         refRig.root.position.set(referee.x - L / 2, 0, referee.y - W / 2)
-        if (refRig.kay) poseKayPlayer(refRig, referee, b, step)
+        if (refRig.sprite) {
+          if (Math.hypot(referee.vx, referee.vy) > 0.6) referee.face = [2, 1, 0, 7, 6, 5, 4, 3][((Math.round(Math.atan2(referee.vy, referee.vx) / (Math.PI / 4)) % 8) + 8) % 8]
+          refRig.pose(referee)
+        } else if (refRig.kay) poseKayPlayer(refRig, referee, b, step)
         else poseAthlete(refRig, referee, b, step, t)
       }
 
@@ -361,6 +373,8 @@ export default function MatchBroadcast3D({ data, catalog, clock, events, paused,
         axis.set(mz, 0, -mx).normalize()
         ball.rotateOnWorldAxis(axis, md / 0.16)
       }
+      if (trail) trail.update(tmp, step > 0 ? md / step : 0, step)
+      if (kickRing) kickRing.update(dtReal)
       ball.position.copy(tmp)
       ballPrev.copy(tmp)
       ballShadow.visible = !b.hidden
@@ -393,7 +407,8 @@ export default function MatchBroadcast3D({ data, catalog, clock, events, paused,
       const fx = focus.x - L / 2 + lead
       const fz = focus.y - W / 2
       const narrow = camera.aspect < 1.3
-      const wantFov = (celebrating ? 11 : nearGoal ? (slowMo ? 18 : 20) : slowMo ? 13 : attacking ? 16 : 19) * (narrow ? 1.5 : 1)
+      // modo pixel: câmera mais fechada (atletas grandes, como nos jogos de futebol em pixel art)
+      const wantFov = (celebrating ? 11 : nearGoal ? (slowMo ? 18 : 20) : slowMo ? 13 : attacking ? 16 : 19) * (narrow ? 1.5 : 1) * (pixel ? 0.72 : 1)
       const tx = Math.max(-L / 2 + 8, Math.min(L / 2 - 8, fx))
       const dead = celebrating || attacking ? 2 : 7
       const gapX = tx - cam.x
@@ -469,6 +484,7 @@ export default function MatchBroadcast3D({ data, catalog, clock, events, paused,
       // sons de campo no mesmo quadro do desenho (chute, bote, defesa, rede, apito, expectativa da torcida)
       const fxs = d.takeFx()
       if (hl) fieldAudio.play(fxs, now)
+      if (kickRing && fxs) for (const f of fxs) if (f.type === 'shot' || f.type === 'kick') kickRing.fire(f.x - L / 2, f.y - W / 2)
       fieldAudio.tick(dtReal, step > 0 && hl ? dangerOf(st, d.goalX) : 0)
 
       // faixa de narração: lance em destaque, senão quem conduz a bola
@@ -514,6 +530,7 @@ export default function MatchBroadcast3D({ data, catalog, clock, events, paused,
           m.dispose?.()
         }
       })
+      sprites?.dispose()
       renderer.dispose()
     }
     // a cena é montada uma vez por partida (cores e nomes não mudam no meio do jogo)
@@ -545,7 +562,7 @@ export default function MatchBroadcast3D({ data, catalog, clock, events, paused,
   return (
     <div className="m3d">
       <div className="m3d-view" ref={wrap}>
-        <canvas ref={canvas} className="m3d-canvas" aria-label="Transmissão 3D da partida" role="img" />
+        <canvas ref={canvas} className={`m3d-canvas ${pixel ? 'is-pixel' : ''}`} aria-label="Transmissão 3D da partida" role="img" />
         <div className="m3d-bug">
           <span ref={clockRef} className={`m3d-clock ${finished ? 'is-done' : ''}`}>{clockLabel}</span>
           <span className="m3d-team">
@@ -567,6 +584,7 @@ export default function MatchBroadcast3D({ data, catalog, clock, events, paused,
             {cap.who && <b>{cap.who}</b>} <span>{cap.rest}</span>
           </div>
         )}
+        {pixel && caption && (caption.kind === 'goal' || caption.kind === 'pen_goal') && <div key={`g-${caption.id}`} className="m3d-goalbig" aria-hidden="true">GOOOOOL!</div>}
         <div className={`m3d-cut ${cut && !finished ? 'is-on' : ''}`} aria-hidden={!cut}>
           <small>Melhores momentos</small>
           <b>{clockLabel}</b>
