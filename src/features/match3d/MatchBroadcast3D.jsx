@@ -8,8 +8,6 @@ import { THREE, colorDist, createAthlete, createKitMaterials, createScene, poseA
 import { createPlayerRig, loadPlayerAssets, poseKayPlayer } from './players3d'
 import { createBallTrail, createKickRing, createSpriteFactory, pixelPitchTexture } from './pixel3d'
 import { stadiumById, stadiumFor } from './stadiums'
-import { supabase } from '../../lib/supabaseClient'
-import { isMaintenanceAdmin } from '../maintenance/policy'
 import './match3d.css'
 
 // Transmissão 3D (protótipo). Mesmas props do campo 2D (MatchTactical2D): o diretor é o mesmo,
@@ -673,8 +671,8 @@ function Broadcast({ data, catalog, clock, events, paused, speed = 1, minute, sc
   )
 }
 
-// Modo pixel em teste: ligado por padrão só para o dono do jogo, que troca entre 3D e pixel no botão do campo
-// (a escolha fica salva neste aparelho). Quem passa `pixel` (prévia) decide sozinho.
+// Modo pixel: ligado por padrão para todos; o botão do campo troca entre pixel e 3D (a escolha fica salva neste
+// aparelho). Quem passa `pixel` (prévia) decide sozinho.
 const PIXEL_KEY = 'sim.fieldPixel'
 function readPixelChoice() {
   try {
@@ -686,18 +684,9 @@ function readPixelChoice() {
 }
 export default function MatchBroadcast3D(props) {
   const forced = props.pixel
-  const [owner, setOwner] = useState(false)
   const [choice, setChoice] = useState(readPixelChoice)
-  useEffect(() => {
-    if (forced !== undefined || !supabase) return undefined
-    let alive = true
-    supabase.auth.getSession().then(({ data }) => alive && setOwner(isMaintenanceAdmin(data?.session?.user))).catch(() => {})
-    return () => {
-      alive = false
-    }
-  }, [forced])
   if (forced !== undefined) return <Broadcast {...props} />
-  const pixel = owner && (choice ?? true)
+  const pixel = choice ?? true
   const toggle = () => {
     const next = !pixel
     setChoice(next)
@@ -710,11 +699,9 @@ export default function MatchBroadcast3D(props) {
   return (
     <div className="m3d-switch-wrap">
       <Broadcast key={pixel ? 'pixel' : '3d'} {...props} pixel={pixel} />
-      {owner && (
-        <button type="button" className="m3d-switch" onClick={toggle} aria-label={pixel ? 'Trocar para o campo 3D' : 'Trocar para o campo em pixel'}>
-          {pixel ? '3D' : 'Pixel'}
-        </button>
-      )}
+      <button type="button" className="m3d-switch" onClick={toggle} aria-label={pixel ? 'Trocar para o campo 3D' : 'Trocar para o campo em pixel'}>
+        {pixel ? '3D' : 'Pixel'}
+      </button>
     </div>
   )
 }

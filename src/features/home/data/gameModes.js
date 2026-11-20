@@ -35,7 +35,7 @@ export const GAME_MODES = [
     desc: 'Liga compartilhada: um jogo por dia contra outros técnicos!',
     Icon: OnlineMatchIcon,
     image: confronto,
-    locked: true, testerOnly: true, // reinício do Online (20/11/2026)
+    locked: false, // aberto para todos (20/11/2026)
   },
   {
     id: 'seasons',
