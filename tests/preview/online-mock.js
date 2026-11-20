@@ -264,6 +264,8 @@ const legacyStatus = () => {
     })(),
   }
 }
+const arenaState = { diamonds: 950, current: 'interior', list: [['interior', 0], ['concreto', 300], ['circulos', 500], ['praia', 800], ['arena', 1200], ['neon', 1500]].map(([id, price]) => ({ id, price, owned: id === 'interior' || id === 'concreto' })) }
+const arenaShop = () => ({ current: arenaState.current, diamonds: arenaState.diamonds, arenas: arenaState.list.map((x) => ({ ...x })) })
 const draft = () => ({ club: myClub(), step: state.step, done: state.step >= 3, line: ['DEF', 'MID', 'ATT'][state.step] ?? null, options: state.step >= 3 ? [] : [1, 2, 3].map((i) => option(state.step, i)), picked })
 const squad = () => {
   const next = fixtures.find((f) => f.status !== 'done' && (f.home === 1 || f.away === 1))
@@ -287,7 +289,17 @@ const RPC = {
   on_plan_fit: () => ({ fixture: 1, live: false, opponent: { id: 9, name: 'Rival FC', short: 'RIV' }, plans: { posse: { edge: 0.6 }, contra: { edge: 0.1 }, contra_longo: { edge: -0.5 }, pontas: { edge: 0.45 }, direto: { edge: -0.7 }, sobrecarga: { edge: 0.2 } }, mark: [{ id: 'm1', name: 'Rafael Lima', pos: 'ATA', ovr: 84 }, { id: 'm2', name: 'Tiago Melo', pos: 'MEI', ovr: 80 }, { id: 'm3', name: 'Caio Prates', pos: 'PE', ovr: 78 }, { id: 'm4', name: 'Bruno Sá', pos: 'VOL', ovr: 76 }] }),
   on_lineup_save: ({ p_formation, p_slots, p_bench, p_tactics }) => { lineup = { ...lineup, formation: p_formation, slots: p_slots, bench: p_bench, tactics: p_tactics || lineup.tactics }; return squad() },
   on_lineup_auto: ({ p_formation }) => { autoLineup(p_formation || lineup?.formation); return squad() },
+  online_arenas: () => arenaShop(),
+  online_arena_buy: ({ p_arena }) => {
+    const a = arenaState.list.find((x) => x.id === p_arena)
+    if (arenaState.diamonds < a.price) throw new Error('Diamantes insuficientes.')
+    arenaState.diamonds -= a.price
+    a.owned = true
+    arenaState.current = p_arena
+    return arenaShop()
+  },
   on_club_identity: ({ p }) => {
+    if (p.arena) arenaState.current = p.arena
     if (p.name) state.name = p.name
     if (p.short) clubs[0].short = p.short
     clubs[0].colors = { ...clubs[0].colors, ...Object.fromEntries(Object.entries(p).filter(([k]) => ['a', 'b', 'pattern', 'shape', 'stadium', 'arena'].includes(k))) }

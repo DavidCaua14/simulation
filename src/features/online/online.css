@@ -1262,8 +1262,22 @@ button.fut:disabled { cursor: default; }
 /* Modelo do estádio (modo pixel) */
 .on-arena-hint { margin: -4px 0 0; font: 500 .78rem/1.35 var(--font-body); color: #93a3c4; }
 .on-arenas { display: grid; grid-template-columns: repeat(auto-fill, minmax(132px, 1fr)); gap: 8px; }
-.on-arenas button { display: grid; gap: 3px; padding: 6px 6px 8px; border-radius: 12px; border: 1px solid rgba(148, 186, 255, .14); background: rgba(255, 255, 255, .04); color: #e2e8f0; text-align: left; cursor: pointer; }
-.on-arenas button.is-on { border-color: #22d3ee; background: rgba(34, 211, 238, .16); }
+.on-arena { display: grid; gap: 3px; padding: 6px 6px 8px; border-radius: 12px; border: 1px solid rgba(148, 186, 255, .14); background: rgba(255, 255, 255, .04); color: #e2e8f0; }
+.on-arena.is-on { border-color: #22d3ee; background: rgba(34, 211, 238, .16); }
+.on-arena-shop { margin-top: 14px; }
+.on-arena-gems { margin-left: auto; display: inline-flex; align-items: center; gap: 4px; color: #a5f3fc; font-weight: 800; }
+.on-arena-btn { margin-top: 4px; display: inline-flex; align-items: center; justify-content: center; gap: 4px; padding: 6px 8px; border: 0; border-radius: 8px; background: rgba(148, 186, 255, .16); color: #fff; font: 800 .78rem var(--font-body); cursor: pointer; }
+.on-arena-btn.is-buy { background: linear-gradient(180deg, #22d3ee, #0891b2); color: #04222b; }
+.on-arena-btn:disabled { opacity: .55; cursor: default; }
+.on-arena-tag { margin-top: 4px; display: inline-flex; align-items: center; justify-content: center; gap: 4px; padding: 6px 8px; font: 800 .74rem var(--font-body); color: #67e8f9; }
+.on-arena-confirm { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; padding: 16px; background: rgba(3, 8, 20, .72); }
+.on-arena-confirm > div { display: grid; gap: 10px; width: min(360px, 100%); padding: 16px; border-radius: 16px; background: #0f1a33; box-shadow: 0 0 0 1px rgba(148, 186, 255, .2); color: #e2e8f0; }
+.on-arena-confirm .on-arena-thumb { height: 90px; }
+.on-arena-confirm strong { font: 900 1.05rem var(--font-heading); }
+.on-arena-confirm p { margin: 0; font: 500 .86rem/1.45 var(--font-body); }
+.on-arena-confirm p b { display: inline-flex; align-items: center; gap: 3px; color: #a5f3fc; }
+.on-arena-low { color: #fbbf24 !important; }
+.on-arena-confirm footer { display: flex; justify-content: flex-end; gap: 8px; }
 .on-arenas b { font: 800 .8rem var(--font-body); }
 .on-arenas small { font: 600 .7rem var(--font-body); color: #93a3c4; }
 .on-arena-thumb { position: relative; display: block; height: 62px; overflow: hidden; border-radius: 8px; image-rendering: pixelated; }

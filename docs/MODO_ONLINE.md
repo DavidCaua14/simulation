@@ -647,3 +647,12 @@ transferências fechado". Ligada em 20/11/2026; os 17 leilões abertos (sem lanc
 estádio (os 6 de `src/features/match3d/stadiumData.js`); fica em `on_clubs.colors.arena` e o `on_club_identity` só aceita
 os ids de `on_arenas()`. Nas partidas em casa, o modo pixel monta esse estádio e o sobrevoo mostra o nome que o técnico deu
 (`colors.stadium`). Clube sem escolha (bots) recebe um modelo fixo sorteado pelo id.
+
+## Fase 46 — Estádio pago com diamantes
+
+`supabase/online/50_arena_shop.sql` (migração `20261120233000`). O Campo do Interior é o estádio inicial e grátis de todo
+clube de técnico. Os outros modelos são comprados uma vez por conta, com diamantes (`on_config.arena_prices`: Estádio do
+Povo 300, Municipal 500, Orla 800, Arena Central 1.200, Arena Neon 1.500), e ficam em `on_arena_owned` (valem em todas as
+temporadas). `online_arenas()` devolve a vitrine (preço, comprado, atual e saldo); `online_arena_buy(p_arena)` cobra pelo
+`econ_apply` (motivo `online_arena`) e já coloca o estádio no clube. Trocar entre estádios comprados é grátis
+(`on_club_identity` recusa modelo não comprado). Tela: Clube → Identidade → Estádio do clube.

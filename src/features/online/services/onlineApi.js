@@ -30,6 +30,9 @@ export const autoOnlineLineup = (formation = null) => rpc('on_lineup_auto', { p_
 export const renameOnlineClub = (name) => rpc('on_club_rename', { p_name: name })
 // Identidade do clube: nome, sigla, cores, desenho e formato do escudo, estádio. Só as chaves enviadas mudam.
 export const saveOnlineIdentity = (identity) => rpc('on_club_identity', { p: identity })
+// estádios do modo pixel: vitrine (preço em diamantes, comprados, atual) e compra
+export const fetchArenas = () => rpc('online_arenas')
+export const buyArena = (arena) => rpc('online_arena_buy', { p_arena: arena })
 
 // Calendário e classificação da liga compartilhada
 export const fetchOnlineCalendar = () => rpc('on_calendar')

@@ -291,7 +291,7 @@ export default function OnlineMatchLive({ fixtureId = null, onClose, notify }) {
   }
 
   // estádio do mandante no modo pixel: modelo escolhido pelo clube e o nome que o técnico deu
-  const home = { ...data.home, colors: clubColors(data.home), arena: data.home.colors?.arena, stadiumName: data.home.colors?.stadium }
+  const home = { ...data.home, colors: clubColors(data.home), arena: data.home.colors?.arena || (data.home.bot ? undefined : 'interior'), stadiumName: data.home.colors?.stadium }
   const away = { ...data.away, colors: clubColors(data.away) }
   const clubs = { home, away, crest: (sd, size = 18) => <OnlineCrest club={sd === 'h' ? data.home : data.away} size={size} /> }
   const players = data.players || []

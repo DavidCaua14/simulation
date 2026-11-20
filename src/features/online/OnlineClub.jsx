@@ -5,9 +5,9 @@ import MiniGame from './components/MiniGames'
 import { GAMES } from './components/miniGamesInfo'
 import OnlineCrest from './components/OnlineCrest'
 import { PlayerFace } from './components/PlayerFut'
-import { buildOnline, buyOnlineTrainEnergy, convertOnlineCoins, fetchOnlineClub, fetchOnlineFinance, fetchOnlineSquad, finishOnlineTraining, saveOnlineIdentity, startOnlineTraining } from './services/onlineApi'
+import { buildOnline, buyArena, buyOnlineTrainEnergy, convertOnlineCoins, fetchArenas, fetchOnlineClub, fetchOnlineFinance, fetchOnlineSquad, finishOnlineTraining, saveOnlineIdentity, startOnlineTraining } from './services/onlineApi'
 import { CREST_PATTERNS, CREST_SHAPES, cardTier, money, moneyShort } from './onlineUtils'
-import { STADIUMS, stadiumFor } from '../match3d/stadiumData'
+import { STADIUMS } from '../match3d/stadiumData'
 
 const BUILDINGS = [
   { id: 'stadium', label: 'Estádio', Icon: Landmark, effect: (n) => `Bilheteria ${moneyShort(15000 + 10000 * n)} por jogo` },
@@ -369,6 +369,91 @@ function ArenaThumb({ st }) {
   )
 }
 
+// ESTÁDIO (modo pixel das partidas em casa): o Campo do Interior é grátis; os outros modelos são comprados uma vez
+// com diamantes e ficam na conta. Comprar já coloca no clube; trocar entre os comprados é grátis.
+function ArenaShop({ notify }) {
+  const [data, setData] = useState(null)
+  const [confirm, setConfirm] = useState(null)
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState('')
+  useEffect(() => {
+    let alive = true
+    fetchArenas().then((d) => alive && setData(d)).catch((e) => alive && setError(e.message))
+    return () => {
+      alive = false
+    }
+  }, [])
+  const use = (id) => {
+    if (busy) return
+    setBusy(true)
+    setError('')
+    saveOnlineIdentity({ arena: id })
+      .then(() => {
+        setData((d) => ({ ...d, current: id }))
+        notify?.('Estádio do clube trocado', 'success')
+      })
+      .catch((e) => setError(e.message))
+      .finally(() => setBusy(false))
+  }
+  const buy = () => {
+    if (busy || !confirm) return
+    setBusy(true)
+    setError('')
+    buyArena(confirm.id)
+      .then((d) => {
+        setData(d)
+        notify?.(`${confirm.name} comprado! Já é o estádio do seu clube.`, 'success')
+        setConfirm(null)
+      })
+      .catch((e) => setError(e.message))
+      .finally(() => setBusy(false))
+  }
+  if (!data) return error ? <Notice kind="error">{error}</Notice> : <Skeleton rows={3} />
+  const info = Object.fromEntries((data.arenas || []).map((a) => [a.id, a]))
+  const list = [...STADIUMS].sort((x, y) => (info[x.id]?.price ?? 0) - (info[y.id]?.price ?? 0))
+  return (
+    <section className="on-id-row on-arena-shop">
+      <h3 className="on-h"><Landmark size={13} /> Estádio do clube <span className="on-arena-gems"><Gem size={12} /> {Number(data.diamonds || 0).toLocaleString('pt-BR')}</span></h3>
+      <p className="on-arena-hint">Aparece nas partidas em casa, no visual em pixel. Compre uma vez e use quando quiser.</p>
+      {error && <Notice kind="error" onClose={() => setError('')}>{error}</Notice>}
+      <div className="on-arenas">
+        {list.map((st) => {
+          const a = info[st.id] || { price: 0, owned: false }
+          const current = data.current === st.id
+          return (
+            <div key={st.id} className={`on-arena ${current ? 'is-on' : ''}`}>
+              <ArenaThumb st={st} />
+              <b>{st.name}</b>
+              <small>{st.capacity} lugares</small>
+              {current ? (
+                <span className="on-arena-tag"><Check size={12} /> No seu clube</span>
+              ) : a.owned ? (
+                <button type="button" className="on-arena-btn" disabled={busy} onClick={() => use(st.id)}>Usar</button>
+              ) : (
+                <button type="button" className="on-arena-btn is-buy" disabled={busy} onClick={() => setConfirm({ ...st, price: a.price })}><Gem size={12} /> {a.price.toLocaleString('pt-BR')}</button>
+              )}
+            </div>
+          )
+        })}
+      </div>
+      {confirm && (
+        <div className="on-arena-confirm" role="dialog" aria-modal="true" aria-label={`Comprar ${confirm.name}`}>
+          <div>
+            <ArenaThumb st={confirm} />
+            <strong>{confirm.name}</strong>
+            <p>Comprar por <b><Gem size={13} /> {confirm.price.toLocaleString('pt-BR')} diamantes</b>? Ele vira o estádio do seu clube na hora e fica na sua conta para sempre.</p>
+            {Number(data.diamonds || 0) < confirm.price && <p className="on-arena-low">Você tem {Number(data.diamonds || 0).toLocaleString('pt-BR')} diamantes. Compre mais na Loja.</p>}
+            <footer>
+              <button type="button" className="gx-btn-ghost" onClick={() => setConfirm(null)}>Cancelar</button>
+              <button type="button" className="gx-btn" disabled={busy || Number(data.diamonds || 0) < confirm.price} onClick={buy}>{busy ? 'Comprando…' : 'Comprar'}</button>
+            </footer>
+          </div>
+        </div>
+      )}
+    </section>
+  )
+}
+
 // Identidade: nome, sigla, estádio, cores, desenho e formato do escudo, com prévia ao vivo.
 function Identity({ status, notify, onStatus }) {
   const saved = status.club
@@ -380,13 +465,12 @@ function Identity({ status, notify, onStatus }) {
     b: saved.colors?.b || '#ffffff',
     pattern: saved.colors?.pattern || 'stripes',
     shape: saved.colors?.shape || 'shield',
-    arena: saved.colors?.arena || stadiumFor(saved.id).id,
   }))
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }))
   const preview = { id: saved.id, name: form.name, short: form.short.toUpperCase() || '?', colors: { a: form.a, b: form.b, pattern: form.pattern, shape: form.shape } }
-  const base = { name: saved.name, short: saved.short, stadium: saved.colors?.stadium, a: saved.colors?.a, b: saved.colors?.b, pattern: saved.colors?.pattern || 'stripes', shape: saved.colors?.shape || 'shield', arena: saved.colors?.arena || stadiumFor(saved.id).id }
+  const base = { name: saved.name, short: saved.short, stadium: saved.colors?.stadium, a: saved.colors?.a, b: saved.colors?.b, pattern: saved.colors?.pattern || 'stripes', shape: saved.colors?.shape || 'shield' }
   const changes = Object.fromEntries(Object.entries(form).filter(([k, v]) => v !== base[k]))
   const dirty = Object.keys(changes).length > 0
   const save = (e) => {
@@ -438,19 +522,6 @@ function Identity({ status, notify, onStatus }) {
           {CREST_SHAPES.map((sh) => <button key={sh} type="button" className={form.shape === sh ? 'is-on' : ''} onClick={() => set('shape', sh)}>{SHAPE_LABEL[sh]}</button>)}
         </div>
       </div>
-      <div className="on-id-row">
-        <h3 className="on-h"><Landmark size={13} /> Modelo do estádio</h3>
-        <p className="on-arena-hint">É o estádio que aparece nas partidas em casa, no visual em pixel.</p>
-        <div className="on-arenas" role="radiogroup" aria-label="Modelo do estádio">
-          {STADIUMS.map((st) => (
-            <button key={st.id} type="button" role="radio" aria-checked={form.arena === st.id} className={form.arena === st.id ? 'is-on' : ''} onClick={() => set('arena', st.id)}>
-              <ArenaThumb st={st} />
-              <b>{st.name}</b>
-              <small>{st.capacity} lugares</small>
-            </button>
-          ))}
-        </div>
-      </div>
       <button type="submit" className="gx-btn on-id-save" disabled={!dirty || busy}><Save size={16} /> {busy ? 'Salvando…' : 'Salvar'}</button>
     </form>
   )
@@ -487,6 +558,7 @@ export default function OnlineClub({ notify, onChanged, onStatus, status, initia
       {view === 'build' && <Structure club={club} notify={notify} onChanged={changed} />}
       {view === 'money' && <Finance club={club} notify={notify} onChanged={changed} />}
       {view === 'identity' && status?.club && <Identity status={status} notify={notify} onStatus={onStatus} />}
+      {view === 'identity' && status?.club && <ArenaShop notify={notify} />}
     </section>
   )
 }

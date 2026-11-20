@@ -512,12 +512,25 @@ begin
  raise notice 'PASS tipos de carta, mercado por série e reinício (%)',r;
 end $$;
 
--- fase 45: o técnico escolhe o modelo do estádio
+-- fases 45 e 46: o técnico compra e escolhe o modelo do estádio
 do $$
-declare c public.on_clubs;
+declare c public.on_clubs;r jsonb;k uuid;
 begin
  select * into c from public.on_clubs where user_id is not null and season_id=(select id from public.on_seasons where status='live') order by id limit 1;
  perform set_config('request.jwt.claim.sub',c.user_id::text,true);
+ k:=public.on_career_of(c.user_id);
+ update public.careers set diamonds=900 where id=k;
+ r:=public.online_arenas();
+ if r->>'current'<>'interior' or jsonb_array_length(r->'arenas')<>6 then raise exception 'vitrine de estádios: %',r;end if;
+ begin perform public.on_club_identity('{"arena":"praia"}');raise exception 'usou estádio sem comprar';
+ exception when others then if sqlerrm not like 'Compre esse estádio%' then raise;end if;end;
+ begin perform public.online_arena_buy('arena');raise exception 'comprou sem diamantes';
+ exception when others then if sqlerrm not like 'Diamantes insuficientes%' then raise;end if;end;
+ r:=public.online_arena_buy('praia');
+ if (select diamonds from public.careers where id=k)<>100 or r->>'current'<>'praia' then raise exception 'compra do estádio: %',r;end if;
+ begin perform public.online_arena_buy('praia');raise exception 'comprou duas vezes';
+ exception when others then if sqlerrm not like 'Esse estádio já é seu%' then raise;end if;end;
+ perform public.on_club_identity('{"arena":"interior"}');
  perform public.on_club_identity('{"arena":"praia"}');
  if (select colors->>'arena' from public.on_clubs where id=c.id)<>'praia' then raise exception 'estádio não salvo';end if;
  begin perform public.on_club_identity('{"arena":"maracana"}');raise exception 'estádio inválido aceito';
