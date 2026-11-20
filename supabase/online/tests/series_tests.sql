@@ -511,3 +511,16 @@ begin
  update public.on_clubs set div=null where id in(c.id,b.id);
  raise notice 'PASS tipos de carta, mercado por série e reinício (%)',r;
 end $$;
+
+-- fase 45: o técnico escolhe o modelo do estádio
+do $$
+declare c public.on_clubs;
+begin
+ select * into c from public.on_clubs where user_id is not null and season_id=(select id from public.on_seasons where status='live') order by id limit 1;
+ perform set_config('request.jwt.claim.sub',c.user_id::text,true);
+ perform public.on_club_identity('{"arena":"praia"}');
+ if (select colors->>'arena' from public.on_clubs where id=c.id)<>'praia' then raise exception 'estádio não salvo';end if;
+ begin perform public.on_club_identity('{"arena":"maracana"}');raise exception 'estádio inválido aceito';
+ exception when others then if sqlerrm not like 'Estádio inválido%' then raise;end if;end;
+ raise notice 'PASS estádio do clube';
+end $$;

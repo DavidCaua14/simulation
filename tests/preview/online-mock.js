@@ -290,7 +290,7 @@ const RPC = {
   on_club_identity: ({ p }) => {
     if (p.name) state.name = p.name
     if (p.short) clubs[0].short = p.short
-    clubs[0].colors = { ...clubs[0].colors, ...Object.fromEntries(Object.entries(p).filter(([k]) => ['a', 'b', 'pattern', 'shape', 'stadium'].includes(k))) }
+    clubs[0].colors = { ...clubs[0].colors, ...Object.fromEntries(Object.entries(p).filter(([k]) => ['a', 'b', 'pattern', 'shape', 'stadium', 'arena'].includes(k))) }
     return status()
   },
   on_scout: () => { prepState.scout = true; const next = fixtures.find((f) => f.status !== 'done' && (f.home === 1 || f.away === 1)); return { fixture: next.id, prep: status().prep, me: { position: 3, formation: '4-3-3', stars: players.slice().sort((a, b) => b.ovr - a.ovr).slice(0, 3) }, opp: { ...clubs[3], position: 4, formation: '4-4-2', style: 'attacking', form: ['W', 'L', 'W'], stars: [0, 1, 2].map((i) => ({ id: `st${i}`, name: person(90 + i), pos: ['ATA', 'MC', 'ZAG'][i], nat: 'ARG', ovr: 80 - i * 2, age: 26, star: i === 0, card: cardOf(['ATA', 'MC', 'ZAG'][i], 80 - i * 2, i) })) }, sectors: { me: { GK: 60, DEF: 68.2, MID: 70.4, ATT: 66 }, opp: { GK: 64, DEF: 66, MID: 67.5, ATT: 71.2 } } } },

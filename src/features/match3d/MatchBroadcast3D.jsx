@@ -7,7 +7,7 @@ import { eventText } from '../seasons/utils/managerUtils'
 import { THREE, colorDist, createAthlete, createKitMaterials, createScene, poseAthlete, toWorld } from './scene3d'
 import { createPlayerRig, loadPlayerAssets, poseKayPlayer } from './players3d'
 import { createBallTrail, createKickRing, createSpriteFactory, pixelPitchTexture } from './pixel3d'
-import { stadiumById, stadiumFor } from './stadiums'
+import { stadiumById, stadiumFor } from './stadiumData'
 import './match3d.css'
 
 // Transmissão 3D (protótipo). Mesmas props do campo 2D (MatchTactical2D): o diretor é o mesmo,
@@ -81,7 +81,10 @@ function Broadcast({ data, catalog, clock, events, paused, speed = 1, minute, sc
   const kits = useMemo(() => kitsFor(hc ? hc.split(',') : [], ac ? ac.split(',') : []), [hc, ac])
   const names = useMemo(() => ({ h: home?.short || home?.name || 'Casa', a: away?.short || away?.name || 'Visitante' }), [home?.short, home?.name, away?.short, away?.name])
   // estádio do modo pixel: o pedido (id) ou o do mandante (sempre o mesmo para o mesmo clube)
-  const stadiumDef = useMemo(() => (stadium ? stadiumById(stadium) : stadiumFor(data.home)), [stadium, data.home])
+  // (no Online o clube escolhe o modelo: clubs.home.arena; o nome é o que o técnico deu ao estádio)
+  const arenaId = stadium || clubs?.home?.arena || null
+  const stadiumDef = useMemo(() => (arenaId ? stadiumById(arenaId) : stadiumFor(data.home)), [arenaId, data.home])
+  const stadiumName = clubs?.home?.stadiumName || stadiumDef.name
   const view = useRef({ userSide })
   useEffect(() => {
     view.current = { userSide }
@@ -612,7 +615,7 @@ function Broadcast({ data, catalog, clock, events, paused, speed = 1, minute, sc
         {pixel && fly && (
           <div className="m3d-stadium" aria-live="polite">
             <small>Estádio</small>
-            <b>{stadiumDef.name}</b>
+            <b>{stadiumName}</b>
             <span>{stadiumDef.capacity} lugares</span>
           </div>
         )}

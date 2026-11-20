@@ -7,6 +7,7 @@ import OnlineCrest from './components/OnlineCrest'
 import { PlayerFace } from './components/PlayerFut'
 import { buildOnline, buyOnlineTrainEnergy, convertOnlineCoins, fetchOnlineClub, fetchOnlineFinance, fetchOnlineSquad, finishOnlineTraining, saveOnlineIdentity, startOnlineTraining } from './services/onlineApi'
 import { CREST_PATTERNS, CREST_SHAPES, cardTier, money, moneyShort } from './onlineUtils'
+import { STADIUMS, stadiumFor } from '../match3d/stadiumData'
 
 const BUILDINGS = [
   { id: 'stadium', label: 'Estádio', Icon: Landmark, effect: (n) => `Bilheteria ${moneyShort(15000 + 10000 * n)} por jogo` },
@@ -348,6 +349,26 @@ function Finance({ club, notify, onChanged }) {
   )
 }
 
+// Miniatura do modelo de estádio: céu, arquibancada nas cores das cadeiras, cobertura e o padrão do gramado.
+const GRASS_BG = {
+  stripes: (a, b) => `repeating-linear-gradient(90deg, ${a} 0 10px, ${b} 10px 20px)`,
+  diagonal: (a, b) => `repeating-linear-gradient(60deg, ${a} 0 8px, ${b} 8px 16px)`,
+  checker: (a, b) => `repeating-conic-gradient(${a} 0 25%, ${b} 0 50%) 0 0 / 16px 16px`,
+  circles: (a, b) => `repeating-radial-gradient(circle at 50% 60%, ${a} 0 5px, ${b} 5px 10px)`,
+  plain: (a) => a,
+}
+function ArenaThumb({ st }) {
+  const [a, b] = st.grass.colors
+  const seats = st.tiers.flatMap((t) => t.seats)
+  return (
+    <span className="on-arena-thumb" style={{ background: st.sky }} aria-hidden="true">
+      {st.roof !== 'none' && <i className="on-arena-roof" style={{ background: st.roofColor }} />}
+      <i className="on-arena-stand" style={{ background: `repeating-linear-gradient(180deg, ${seats[0]} 0 3px, ${seats[1] || seats[0]} 3px 6px)` }} />
+      <i className="on-arena-grass" style={{ background: (GRASS_BG[st.grass.pattern] || GRASS_BG.plain)(a, b) }} />
+    </span>
+  )
+}
+
 // Identidade: nome, sigla, estádio, cores, desenho e formato do escudo, com prévia ao vivo.
 function Identity({ status, notify, onStatus }) {
   const saved = status.club
@@ -359,12 +380,13 @@ function Identity({ status, notify, onStatus }) {
     b: saved.colors?.b || '#ffffff',
     pattern: saved.colors?.pattern || 'stripes',
     shape: saved.colors?.shape || 'shield',
+    arena: saved.colors?.arena || stadiumFor(saved.id).id,
   }))
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }))
   const preview = { id: saved.id, name: form.name, short: form.short.toUpperCase() || '?', colors: { a: form.a, b: form.b, pattern: form.pattern, shape: form.shape } }
-  const base = { name: saved.name, short: saved.short, stadium: saved.colors?.stadium, a: saved.colors?.a, b: saved.colors?.b, pattern: saved.colors?.pattern || 'stripes', shape: saved.colors?.shape || 'shield' }
+  const base = { name: saved.name, short: saved.short, stadium: saved.colors?.stadium, a: saved.colors?.a, b: saved.colors?.b, pattern: saved.colors?.pattern || 'stripes', shape: saved.colors?.shape || 'shield', arena: saved.colors?.arena || stadiumFor(saved.id).id }
   const changes = Object.fromEntries(Object.entries(form).filter(([k, v]) => v !== base[k]))
   const dirty = Object.keys(changes).length > 0
   const save = (e) => {
@@ -414,6 +436,19 @@ function Identity({ status, notify, onStatus }) {
         </div>
         <div className="on-seg on-seg-3" role="group" aria-label="Formato">
           {CREST_SHAPES.map((sh) => <button key={sh} type="button" className={form.shape === sh ? 'is-on' : ''} onClick={() => set('shape', sh)}>{SHAPE_LABEL[sh]}</button>)}
+        </div>
+      </div>
+      <div className="on-id-row">
+        <h3 className="on-h"><Landmark size={13} /> Modelo do estádio</h3>
+        <p className="on-arena-hint">É o estádio que aparece nas partidas em casa, no visual em pixel.</p>
+        <div className="on-arenas" role="radiogroup" aria-label="Modelo do estádio">
+          {STADIUMS.map((st) => (
+            <button key={st.id} type="button" role="radio" aria-checked={form.arena === st.id} className={form.arena === st.id ? 'is-on' : ''} onClick={() => set('arena', st.id)}>
+              <ArenaThumb st={st} />
+              <b>{st.name}</b>
+              <small>{st.capacity} lugares</small>
+            </button>
+          ))}
         </div>
       </div>
       <button type="submit" className="gx-btn on-id-save" disabled={!dirty || busy}><Save size={16} /> {busy ? 'Salvando…' : 'Salvar'}</button>

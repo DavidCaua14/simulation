@@ -1258,3 +1258,16 @@ button.fut:disabled { cursor: default; }
 .on-lotsheet-head strong { font: 900 1.1rem/1.15 var(--font-heading); text-transform: uppercase; overflow-wrap: break-word; }
 .on-lotsheet-head span { color: #93a3c4; font-size: .78rem; }
 .on-lotsheet-x { width: 34px; height: 34px; display: grid; place-items: center; border-radius: 50%; border: 0; background: rgba(255, 255, 255, .08); color: #fff; cursor: pointer; align-self: flex-start; }
+
+/* Modelo do estádio (modo pixel) */
+.on-arena-hint { margin: -4px 0 0; font: 500 .78rem/1.35 var(--font-body); color: #93a3c4; }
+.on-arenas { display: grid; grid-template-columns: repeat(auto-fill, minmax(132px, 1fr)); gap: 8px; }
+.on-arenas button { display: grid; gap: 3px; padding: 6px 6px 8px; border-radius: 12px; border: 1px solid rgba(148, 186, 255, .14); background: rgba(255, 255, 255, .04); color: #e2e8f0; text-align: left; cursor: pointer; }
+.on-arenas button.is-on { border-color: #22d3ee; background: rgba(34, 211, 238, .16); }
+.on-arenas b { font: 800 .8rem var(--font-body); }
+.on-arenas small { font: 600 .7rem var(--font-body); color: #93a3c4; }
+.on-arena-thumb { position: relative; display: block; height: 62px; overflow: hidden; border-radius: 8px; image-rendering: pixelated; }
+.on-arena-thumb i { position: absolute; left: 0; right: 0; }
+.on-arena-roof { top: 6px; height: 5px; }
+.on-arena-stand { top: 11px; height: 20px; }
+.on-arena-grass { top: 31px; bottom: 0; }

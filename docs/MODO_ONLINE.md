@@ -640,3 +640,10 @@ transferências fechado". Ligada em 20/11/2026; os 17 leilões abertos (sem lanc
 - Em 20/11/2026: Online fechado de novo para todos menos o administrador (`public_open=false`, aba travada no app), aviso
   "O modo Online foi liberado!" encerrado e os 4 clubes de técnicos reiniciados (caixas de $ 1,7 mi, $ 7,6 mi, $ 2,3 mi e
   $ 4,9 mi transferidos para o modo Temporadas).
+
+## Fase 45 — Estádio escolhido pelo clube
+
+`supabase/online/49_club_arena.sql` (migração `20261120230000`). Na aba Clube → Identidade, o técnico escolhe o modelo do
+estádio (os 6 de `src/features/match3d/stadiumData.js`); fica em `on_clubs.colors.arena` e o `on_club_identity` só aceita
+os ids de `on_arenas()`. Nas partidas em casa, o modo pixel monta esse estádio e o sobrevoo mostra o nome que o técnico deu
+(`colors.stadium`). Clube sem escolha (bots) recebe um modelo fixo sorteado pelo id.
