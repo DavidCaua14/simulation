@@ -202,3 +202,5 @@
 .m3d-stadium b { font-size: 18px; letter-spacing: .06em; }
 .m3d-stadium span { font-size: 11px; color: #cbd5e1; }
 @keyframes m3d-stadium { 0% { opacity: 0; } 10%, 85% { opacity: 1; } 100% { opacity: 0; } }
+.m3d-switch-wrap { position: relative; }
+.m3d-switch { position: absolute; top: 8px; right: 8px; z-index: 8; padding: 4px 10px; border: 0; border-radius: 6px; background: rgba(11, 16, 32, .78); color: #fff; font: 800 12px ui-monospace, Menlo, Consolas, monospace; cursor: pointer; }
