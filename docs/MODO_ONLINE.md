@@ -614,3 +614,10 @@ python3 scripts/build-lower-squads.py          # gera supabase/online/41_lower_s
   cada caixa (giros e diamantes). Editar a carta atualiza as cópias entregues, mantendo o treino feito.
 - **Loja**: aba principal "Big Time" com o banner (cartas em leque e contador), conteúdo da caixa (Big Time, cartas base e
   itens, sem quantidades) e a revelação animada do prêmio.
+
+## Fase 43 — Mercado de transferências fechado
+
+`supabase/online/47_market_off.sql` (migração `20261120120000`). Chave `on_config.market_off`: ligada, o mercado fica
+fechado para todos (inclusive o administrador): nenhum leilão abre, sem lances nem anúncios, e o app mostra "Mercado de
+transferências fechado". Ligada em 20/11/2026; os 17 leilões abertos (sem lances) foram cancelados. Para reabrir:
+`update on_config set market_off=false` (volta o horário normal).
