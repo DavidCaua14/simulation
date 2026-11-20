@@ -6,4 +6,4 @@ export const ARROWS = {
   4: { label: 'Boa', color: '#3ddc4a', rot: -45, effect: 'Rende acima do normal' },
   5: { label: 'Excelente', color: '#2fd6e0', rot: -90, effect: 'Rende muito acima do normal' },
 }
-export const FORM_LABEL = { A: 'Muito regular', B: 'Regular (lenda): só seta amarela ou melhor', C: 'Variável: qualquer seta', D: 'Irregular', E: 'Muito irregular' }
+export const FORM_LABEL = { A: 'Muito regular', B: 'Regular (épica e Big Time): só seta amarela ou melhor', C: 'Variável: qualquer seta', D: 'Irregular', E: 'Muito irregular' }

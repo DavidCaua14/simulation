@@ -6,6 +6,8 @@ insert into public.careers(user_id,nickname) values
  ('00000000-0000-0000-0000-000000000003','brunomartins'),('00000000-0000-0000-0000-000000000004','davidcaua'),
  ('00000000-0000-0000-0000-000000000005','Dennis'),('00000000-0000-0000-0000-000000000009','novato');
 
+-- fase 44 desliga o rascunho dos craques; os testes das fases anteriores ainda usam
+update public.on_config set draft_on=true;
 -- a entrada na hora (Fase 10) fica desligada nos testes das fases anteriores e é ligada no teste dela
 update public.on_config set join_instant=false,prep_bonus=.03,win_coins=0,draw_coins=0,train_energy_cost=40,league_coins=array[300,200,150,100,80,60,50,40,30,20,10,10],cup_coin_prizes=array[100,0,0];
 
@@ -862,21 +864,25 @@ do $$ begin perform public.on_advance(current_setting('test.fx')::bigint,now()+i
 -- ═════════════════════════════════════════════════════════════════════════════
 insert into public.careers(user_id,nickname) values('00000000-0000-0000-0000-0000000000a1','Chegou Agora') on conflict do nothing;
 update public.on_config set join_instant=true;
+update public.on_config set draft_on=false;
 set request.jwt.claim.sub='00000000-0000-0000-0000-0000000000a1';
 set role authenticated;
 do $$
 declare j jsonb;
 begin
  j:=public.on_join_queue();
- if j->>'access'<>'playing' or (j->'club'->>'draft_step')::int<>0 or j->'club'->>'name'<>'FC Chegou Agora' or (j->'club'->>'roster')::int<>19
-  or (j->'club'->>'cash')::bigint<>150000 or j->'next'->>'id' is null then raise exception 'entrada na hora: %',j;end if;
- if jsonb_array_length(public.on_draft_read()->'options')<>3 then raise exception 'novo técnico sem craques para escolher';end if;
+ if j->>'access'<>'playing' or (j->'club'->>'draft_step')::int<>3 or j->'club'->>'name'<>'FC Chegou Agora' or (j->'club'->>'roster')::int<>19
+  or (j->'club'->>'cash')::bigint<>1000000 or j->'next'->>'id' is null then raise exception 'entrada na hora: %',j;end if;
+
  if public.on_join_queue()->'club'->>'id'<>j->'club'->>'id' then raise exception 'entrou duas vezes';end if;
  raise notice 'PASS fase 10';
 end $$;
 reset role;
 do $$ begin
  if (select count(*) from public.on_clubs where user_id='00000000-0000-0000-0000-0000000000a1')<>1 then raise exception 'clube duplicado';end if;
+ -- fase 44: elenco só de cartas base, sem rascunho de craques
+ if exists(select 1 from public.on_players p join public.on_clubs k on k.id=p.club_id where k.user_id='00000000-0000-0000-0000-0000000000a1' and p.tier<>'base')
+  then raise exception 'novo clube com carta que não é base';end if;
  -- o teste da virada de temporada conta com os clubes de antes: o novo técnico devolve o clube ao bot
  update public.on_clubs set user_id=null,draft_step=3 where user_id='00000000-0000-0000-0000-0000000000a1';
  delete from public.on_players where hold is not null and hold in(select id from public.on_clubs where user_id is null);
@@ -942,7 +948,7 @@ begin
  select hh.* into h from public.on_history hh join public.on_clubs k on k.id=hh.club_id where hh.season_id=s.id and k.user_id='00000000-0000-0000-0000-000000000009';
  if h.club_id is null then raise exception 'fila não entrou';end if;
  if h.user_id is not null or h.pos<>(select max(x.pos) from public.on_history x where x.season_id=s.id and x.user_id is null) then raise exception 'não ficou com o pior bot';end if;
- if (select draft_step from public.on_clubs where id=h.club_id)<>0 or (select count(*) from public.on_players where club_id=h.club_id)<>19 then raise exception 'elenco novo';end if;
+ if (select draft_step from public.on_clubs where id=h.club_id)<>3 or (select count(*) from public.on_players where club_id=h.club_id)<>19 then raise exception 'elenco novo';end if;
  if (select state from public.on_access where user_id='00000000-0000-0000-0000-000000000009')<>'allowed' then raise exception 'acesso';end if;
  if exists(select 1 from public.on_match_events e join public.on_fixtures x on x.id=e.fixture_id where x.season_id=s.id) then raise exception 'eventos antigos';end if;
  if exists(select 1 from public.on_players p join public.on_clubs k on k.id=p.club_id and k.season_id=v_new where p.contract_end<=s.id) then raise exception 'contrato vencido ficou';end if;
@@ -956,7 +962,7 @@ set role authenticated;
 do $$ declare j jsonb;
 begin
  j:=public.on_status();
- if j->>'access'<>'playing' or (j->'club'->>'draft_step')::int<>0 then raise exception 'novo técnico: %',j;end if;
+ if j->>'access'<>'playing' or (j->'club'->>'draft_step')::int<>3 then raise exception 'novo técnico: %',j;end if;
  j:=public.on_cup();
  if jsonb_array_length(j->'history')<1 then raise exception 'histórico na copa';end if;
 end $$;
@@ -1078,10 +1084,10 @@ begin
  if exists(select 1 from public.on_legends where pot is null or pot<=rating) then raise exception 'lenda sem margem de evolução';end if;
  -- lenda contratada guarda o pot acima de 95 e treina
  pid:=public.on_real_insert('lg-lionel-messi',null,null,9);
- if (select pot from public.on_players where id=pid)<>107 then raise exception 'pot da lenda cortado: %',(select pot from public.on_players where id=pid);end if;
+ if (select pot from public.on_players where id=pid)<>104 then raise exception 'pot da lenda (épica, teto 104 na fase 44): %',(select pot from public.on_players where id=pid);end if;
  if public.on_train_gain(1,30,98,107,0)<=0 then raise exception 'lenda não evolui';end if;
  if public.on_ovr(98,107,'{6,4,0,0}')<>103 then raise exception 'overall acima de 100';end if;
- if public.on_start_price((select p from public.on_players p where p.id=pid))<>8000000 then raise exception 'preço do Messi';end if;
+ if public.on_start_price((select p from public.on_players p where p.id=pid))<>6500000 then raise exception 'preço do Messi (pot 104)';end if;
  update public.on_players set pot=89,level=85 where id=pid;
  if public.on_start_price((select p from public.on_players p where p.id=pid))<>2500000 then raise exception 'preço da lenda comum (fase 30)';end if;
  delete from public.on_players where id=pid;

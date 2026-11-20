@@ -402,7 +402,10 @@ begin
  -- loja
  r:=public.online_packs();
  if not (r->>'enabled')::boolean or jsonb_array_length(r->'packs')<1 then raise exception 'loja: %',r;end if;
- if r::text like '%"balls": 2%' or (r->'packs'->0->>'total') is not null then raise exception 'loja mostra quantidades';end if;
+ -- o técnico vê quantos itens existem (energia, moedas...), mas não o total da caixa nem as chances das cartas
+ if (r->'packs'->0->>'total') is not null or r::text not like '%"balls": 2%'
+  or exists(select 1 from jsonb_array_elements(r->'packs'->0->'items') x where x->>'kind' in('bigtime','player') and x->>'balls' is not null)
+  then raise exception 'loja mostra quantidades: %',r;end if;
  d0:=(select diamonds from public.careers where user_id=u order by created_at desc limit 1);
  for n in 1..6 loop r:=public.online_pack_draw((pk->>'id')::bigint);end loop; -- elenco com 30+: sem limite
  if (select diamonds from public.careers where user_id=u order by created_at desc limit 1)<>d0-600 then raise exception 'diamantes cobrados errado';end if;
@@ -464,4 +467,47 @@ begin
  insert into public.on_lots(season_id,player_id,start_price,opens_at,ends_at,hard_end) values(s.id,pid,500,now(),now()+interval '1 hour',now()+interval '2 hours') returning * into l;
  perform public.on_bid_as(c.id,l.id,500,now());
  raise notice 'PASS elenco sem limite (% jogadores)',(select count(*) from public.on_players where club_id=c.id);
+end $$;
+
+-- fase 44: tipo fixo da carta, teto por tipo, mercado por série e reinício do clube do técnico
+do $$
+declare s public.on_seasons;c public.on_clubs;b public.on_clubs;l public.on_lots;pid text;r jsonb;
+begin
+ select * into s from public.on_seasons where status='live';
+ select * into c from public.on_clubs where season_id=s.id and user_id is not null order by id limit 1;
+ select * into b from public.on_clubs where season_id=s.id and user_id is null order by id limit 1;
+ -- base: promessa com potencial 92 fica em 84 e continua base mesmo treinada
+ insert into public.on_players(club_id,name,pos,age,level,pot,ovr,wage,contract_end) values(c.id,'Promessa T44','MC',19,70,92,70,10,s.id+1) returning id into pid;
+ if (select tier from public.on_players where id=pid)<>'base' or (select pot from public.on_players where id=pid)<>84 then raise exception 'teto da base';end if;
+ update public.on_players set level=88,ovr=90 where id=pid;
+ if (select ovr from public.on_players where id=pid)<>84 or (select tier from public.on_players where id=pid)<>'base' then raise exception 'base virou outra carta';end if;
+ insert into public.on_players(club_id,name,pos,age,level,pot,ovr,wage,contract_end,star) values(null,'Destaque T44','MC',24,82,99,82,10,s.id+1,true) returning id into pid;
+ if (select tier from public.on_players where id=pid)<>'destaque' or (select pot from public.on_players where id=pid)<>94 then raise exception 'teto do destaque';end if;
+ -- mercado: Série D não contrata destaque; o leilão mostra o motivo
+ update public.on_clubs set div='D',cash=100000000,reserved=0,debt=0 where id=c.id;
+ insert into public.on_lots(season_id,player_id,start_price,opens_at,ends_at,hard_end) values(s.id,pid,500,now(),now()+interval '1 hour',now()+interval '2 hours') returning * into l;
+ begin perform public.on_bid_as(c.id,l.id,500,now());raise exception 'Série D contratou destaque';
+ exception when others then if sqlerrm not like 'Na Série D só cartas base%' then raise;end if;end;
+ if public.on_lot_json(l,c.id)->>'locked' is null or public.on_lot_json(l,c.id)->'player'->>'tier'<>'destaque' then raise exception 'leilão sem o motivo do bloqueio';end if;
+ update public.on_clubs set div='D',cash=100000000,reserved=0,debt=0 where id=b.id;
+ if public.on_bot_limit(b.id,l.id,pid)<>0 then raise exception 'bot da Série D quer destaque';end if;
+ -- Série B contrata destaque, mas não épica
+ update public.on_clubs set div='B' where id=c.id;
+ perform public.on_bid_as(c.id,l.id,500,now());
+ insert into public.on_players(club_id,name,pos,age,level,pot,ovr,wage,contract_end,legend) values(null,'Épica T44','MC',30,92,110,92,10,s.id+1,true) returning id into pid;
+ if (select tier from public.on_players where id=pid)<>'epica' or (select pot from public.on_players where id=pid)<>104 then raise exception 'teto da épica';end if;
+ insert into public.on_lots(season_id,player_id,start_price,opens_at,ends_at,hard_end) values(s.id,pid,500,now(),now()+interval '1 hour',now()+interval '2 hours') returning * into l;
+ begin perform public.on_bid_as(c.id,l.id,500,now());raise exception 'Série B contratou épica';
+ exception when others then if sqlerrm not like 'Cartas Épicas só%' then raise;end if;end;
+ update public.on_clubs set div='A' where id=c.id;
+ perform public.on_bid_as(c.id,l.id,500,now());
+ -- reinício: elenco base da Série D, $ 1 milhão, lances desfeitos
+ r:=public.on_restart_club(c.id,'t44');
+ if (select cash from public.on_clubs where id=c.id)<>1000000 or (select reserved from public.on_clubs where id=c.id)<>0 then raise exception 'caixa do reinício: %',r;end if;
+ if (r->>'players')::int<18 or exists(select 1 from public.on_players where club_id=c.id and (tier not in('base','bigtime') or name like '%T44' or name like 'Sem limite%')) then raise exception 'elenco do reinício: %',r;end if;
+ if (r->>'kept')::int<>(select count(*) from public.on_pack_draws d where d.club_id=c.id and d.player_id is not null) then raise exception 'cartas da caixa sumiram: %',r;end if;
+ if (select avg(ovr) from(select ovr from public.on_players where club_id=c.id and tier='base' and id not in(select player_id from public.on_pack_draws where player_id is not null) order by ovr desc limit 11) x) not between 54 and 66 then raise exception 'elenco fora do nível da Série D: %',r;end if;
+ if exists(select 1 from public.on_lots where status='open' and best_club=c.id) then raise exception 'lance ficou depois do reinício';end if;
+ update public.on_clubs set div=null where id in(c.id,b.id);
+ raise notice 'PASS tipos de carta, mercado por série e reinício (%)',r;
 end $$;

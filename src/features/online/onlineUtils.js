@@ -77,9 +77,16 @@ export function asSeasonPlayer(p, posFit) {
   }
 }
 
-// Tipo da carta: normal (até 80), especial (81 ou mais) ou lenda. Cada tipo tem uma cor própria.
-export const cardTier = (p) => (p?.tier === 'bigtime' || p?.bt ? 'bigtime' : p?.legend ? 'legend' : Number(p?.ovr) >= 80.5 ? 'special' : 'normal')
-export const TIER_LABEL = { normal: 'Normal', special: 'Especial', legend: 'Lenda', bigtime: 'Big Time' }
+// Tipo da carta, gravado no banco e fixo (a nota não muda o tipo): base < destaque < épica < Big Time.
+// As classes de cor continuam t-normal, t-special, t-legend e t-bigtime.
+export function cardTier(p) {
+  const t = p?.tier
+  if (t === 'bigtime' || p?.bt) return 'bigtime'
+  if (t === 'epica' || p?.legend) return 'legend'
+  if (t === 'destaque' || (!t && p?.star)) return 'special'
+  return 'normal'
+}
+export const TIER_LABEL = { normal: 'Base', special: 'Destaque', legend: 'Épica', bigtime: 'Big Time' }
 // "$ 150 mil", "$ 1,2 mi" (para espaços curtos)
 export function moneyShort(n) {
   const v = Math.round(Number(n || 0))

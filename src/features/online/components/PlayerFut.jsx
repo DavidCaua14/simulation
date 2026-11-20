@@ -75,7 +75,7 @@ export function FutCard({ p, club, size = 'md', onClick, selected = false, disab
           ))}
         </span>
       )}
-      <span className="fut-meta">{tier === 'bigtime' && p.bt ? <>{p.bt.year} · × {p.bt.opponent}</> : tier === 'legend' ? <>Lenda{p.pot != null && <> · POT <b>{p.pot}</b></>}</> : <>{p.age} anos{p.pot != null && <> · POT <b>{p.pot}</b></>}</>}</span>
+      <span className="fut-meta">{tier === 'bigtime' && p.bt ? <>{p.bt.year} · × {p.bt.opponent}</> : tier === 'legend' ? <>Épica{p.pot != null && <> · POT <b>{p.pot}</b></>}</> : <>{p.age} anos{p.pot != null && <> · POT <b>{p.pot}</b></>}</>}</span>
       {footer}
     </Tag>
   )

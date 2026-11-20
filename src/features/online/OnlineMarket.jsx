@@ -16,11 +16,11 @@ const STEPS = [
   [0.5, '+50%'],
 ]
 const round100 = (n) => Math.ceil(n / 100) * 100
-const KIND_LABEL = (lot) => (lot.featured >= 8 ? (lot.player.legend ? 'Lenda' : 'Destaque') : null)
+const KIND_LABEL = (lot) => (lot.featured >= 8 ? (lot.player.legend ? 'Épica' : 'Destaque') : null)
 const isProspect = (lot) => !lot.featured && !lot.seller && lot.player.age <= 23 && lot.player.pot - lot.player.ovr >= 6
-const metaLine = (p, long = false) => [long ? POS_NAME[p.pos] || p.pos : p.pos, p.legend ? 'Lenda' : `${p.age} anos`, p.pot != null ? `POT ${p.pot}` : null].filter(Boolean).join(' · ')
+const metaLine = (p, long = false) => [long ? POS_NAME[p.pos] || p.pos : p.pos, p.legend ? 'Épica' : `${p.age} anos`, p.pot != null ? `POT ${p.pot}` : null].filter(Boolean).join(' · ')
 
-// Carta quadrada do mercado: nota, posição e rosto, com a cor do tipo (normal, especial, lenda).
+// Carta quadrada do mercado: nota, posição e rosto, com a cor do tipo (base, destaque, épica).
 function MarketTile({ p, club, size = 64 }) {
   return (
     <span className={`omk-tile t-${cardTier(p)}`} style={{ '--mk': `${size}px` }}>
@@ -86,7 +86,8 @@ function Auction({ lot, now, busy, wallet, coins, closed, onBid, onCancel, onShe
       )}
       {!lot.mine && !locked && closed && <p className="omk-note"><DoorClosed size={12} /> Mercado fechado</p>}
       {!lot.mine && !locked && !closed && lot.owned && <p className="omk-note"><UserCheck size={12} /> Você já tem esse jogador no elenco</p>}
-      {!lot.mine && !locked && !closed && !lot.owned && (
+      {!lot.mine && !locked && !closed && !lot.owned && lot.locked && <p className="omk-note is-tier"><Lock size={12} /> {lot.locked}</p>}
+      {!lot.mine && !locked && !closed && !lot.owned && !lot.locked && (
         <div className="omk-act">
           <div className="omk-steps" role="group" aria-label="Valor do lance">
             {STEPS.map(([v, label]) => <button key={v} type="button" className={step === v ? 'is-on' : ''} onClick={() => setStep(v)}>{label}</button>)}
@@ -111,7 +112,7 @@ function PlayerFacts({ p }) {
   return (
     <dl className="omk-facts">
       <div><dt>Posições</dt><dd>{positions}</dd></div>
-      <div><dt>Idade</dt><dd>{p.legend ? 'Lenda' : `${p.age} anos`}</dd></div>
+      <div><dt>Idade</dt><dd>{p.legend ? 'Carta Épica' : `${p.age} anos`}</dd></div>
       <div><dt>Nota / potencial</dt><dd>{Math.round(p.ovr)}{p.pot != null ? ` / ${p.pot}` : ''}</dd></div>
       <div><dt>Valor de mercado</dt><dd>{money(p.value)}</dd></div>
       <div><dt>Salário</dt><dd>{money(p.wage)}/dia</dd></div>
@@ -201,10 +202,11 @@ function BidConfirm({ ask, wallet, coins, busy, onCancel, onConfirm }) {
 }
 
 // MERCADO: leilões iguais para todos, só no horário de funcionamento (data.hours). Sem lance, saem na virada da hora;
-// cada lance põe o relógio em 5 minutos. Toda hora entram cartas base, destaques e lendas; técnicos também leiloam seus jogadores.
+// cada lance põe o relógio em 5 minutos. Toda hora entram cartas base, destaques e épicas; técnicos também leiloam seus jogadores.
+// A série do clube limita o tipo: C e D só base, B até destaque, A tudo (lot.locked traz o motivo).
 const KINDS = [
   ['all', 'Todos', () => true],
-  ['legend', 'Lendas', (l) => l.featured >= 8 && l.player.legend],
+  ['legend', 'Épicas', (l) => l.featured >= 8 && l.player.legend],
   ['star', 'Destaques', (l) => l.featured >= 8 && !l.player.legend],
   ['flash', 'Relâmpago', (l) => l.flash],
   ['base', 'Base', (l) => l.featured < 8 && !l.flash],

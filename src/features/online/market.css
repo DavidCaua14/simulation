@@ -73,6 +73,7 @@
 .omk-bid { justify-content: center; display: inline-flex; align-items: center; gap: 6px; font-variant-numeric: tabular-nums; }
 .omk-bid em { display: inline-flex; align-items: center; gap: 3px; padding: 1px 7px; border-radius: 999px; background: rgba(0, 0, 0, .3); color: #fde68a; font: 800 .7rem var(--font-body); font-style: normal; }
 .omk-note { margin: 0; display: inline-flex; align-items: center; gap: 6px; color: #93a3c4; font: 700 .76rem var(--font-body); }
+.omk-note.is-tier { color: #fbbf24; line-height: 1.35; }
 .omk-warn { color: #fda4af; font-size: .72rem; }
 
 /* ficha e confirmação: janela com corpo que rola e rodapé fixo */

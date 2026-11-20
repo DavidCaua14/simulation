@@ -621,3 +621,22 @@ python3 scripts/build-lower-squads.py          # gera supabase/online/41_lower_s
 fechado para todos (inclusive o administrador): nenhum leilão abre, sem lances nem anúncios, e o app mostra "Mercado de
 transferências fechado". Ligada em 20/11/2026; os 17 leilões abertos (sem lances) foram cancelados. Para reabrir:
 `update on_config set market_off=false` (volta o horário normal).
+
+## Fase 44 — Tipo de carta fixo, mercado por série e reinício dos clubes
+
+`supabase/online/48_card_tiers_restart.sql` (migração `20261120130000`).
+
+- **Tipo da carta gravado** em `on_players.tier`: `base` < `destaque` < `epica` < `bigtime`. A nota nunca muda o tipo (o
+  app deixou de pintar de azul a carta base com 81 ou mais). As antigas lendas são as cartas **Épicas**.
+- **Teto de overall por tipo** (gatilho `on_players_tier`): base 84, destaque 94, épica 104; Big Time passa de 105. Vale
+  para nota, nível e potencial, inclusive de promessas.
+- **Mercado por série** (`on_tier_lock`): Séries C e D só cartas base, Série B base e destaque, Série A tudo. Vale para
+  lances de técnicos e bots; o leilão bloqueado mostra o motivo (`locked`).
+- **Clube novo**: elenco base real do catálogo no nível da Série D (`series_level.D + 3`), sem o rascunho dos três
+  craques (`on_config.draft_on=false`) e caixa inicial de `on_config.start_cash` ($ 1 milhão).
+- **Reinício** (`on_restart_club`, só pelo banco): o caixa do clube Online (menos a dívida) vai para o clube do técnico no
+  modo Temporadas (`cw_cash`, em milhares; tipo `online_transfer`), o elenco é apagado (ficam as cartas tiradas na caixa
+  da Loja), os lances abertos são desfeitos e o clube recebe o elenco base da Série D com $ 1 milhão.
+- Em 20/11/2026: Online fechado de novo para todos menos o administrador (`public_open=false`, aba travada no app), aviso
+  "O modo Online foi liberado!" encerrado e os 4 clubes de técnicos reiniciados (caixas de $ 1,7 mi, $ 7,6 mi, $ 2,3 mi e
+  $ 4,9 mi transferidos para o modo Temporadas).
