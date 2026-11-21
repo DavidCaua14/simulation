@@ -80,7 +80,7 @@ export function MiniCard({ p, club, size = 62, name = false }) {
         {/* nota e posição numa faixa própria: a foto/rosto fica livre, como na carta grande */}
         <span className="pxm-head"><b>{Math.round(p.ovr)}</b><small>{p.pos}</small></span>
         <span className="pxm-art">
-          {p.bt?.photo ? <BtPhoto bt={p.bt} className="is-tile" /> : <PlayerFace seed={p.name} colors={club?.colors} size={Math.round(size * 1.3)} />}
+          {p.bt?.photo ? <BtPhoto bt={p.bt} className="is-tile" /> : <PlayerFace seed={p.name} colors={club?.colors} size={Math.round(size * 1.12)} />}
         </span>
         {name && <span className="pxm-name">{shortName(p.name)}</span>}
       </span>
