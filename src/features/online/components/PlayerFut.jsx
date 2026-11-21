@@ -69,6 +69,25 @@ export function FutCard({ p, club, size = 'md', onClick, selected = false, disab
   )
 }
 
+// Miniatura da carta (mercado, leilão encerrado): moldura do tipo, nota e posição no topo e o rosto inteiro
+// embaixo (Big Time: a foto real). size = largura em pixels; name mostra a faixa do nome.
+export function MiniCard({ p, club, size = 62, name = false }) {
+  if (!p) return null
+  const tier = cardTier(p)
+  return (
+    <span className={`px-mini t-${tier}`}>
+      <span className="pxm" style={{ '--pw': `${size}px` }}>
+        <span className="pxm-art">
+          {p.bt?.photo ? <BtPhoto bt={p.bt} className="is-tile" /> : <PlayerFace seed={p.name} colors={club?.colors} size={Math.round(size * 1.3)} />}
+          <b className="pxm-ovr">{Math.round(p.ovr)}</b>
+          <small className="pxm-pos">{p.pos}</small>
+        </span>
+        {name && <span className="pxm-name">{shortName(p.name)}</span>}
+      </span>
+    </span>
+  )
+}
+
 // Selo pequeno de nota e posição (listas).
 export function OvrBadge({ p, small = false }) {
   return (

@@ -83,3 +83,10 @@ button.pxc:disabled { cursor: default; opacity: .6; }
 /* fora da posição de origem (Online e Temporadas): carta laranja, de qualquer tipo, e a posição certa embaixo */
 .fut-pitch.is-off > .pxm, .ef-tile.is-off > .pxm { --f: #f97316; --fd: #7c2d12; --fl: #fed7aa; --art: #9a3412; --ovr: #fed7aa; --ovr-ink: #1f0a02; --name: #fff; }
 .px-natpos { position: relative; z-index: 2; display: inline-block; margin-top: 3px; padding: 3px 5px 2px; background: #f97316; color: #1f0a02; font: 700 9px/1 'Silkscreen', monospace; letter-spacing: .03em; white-space: nowrap; box-shadow: 0 0 0 2px #05070d; }
+
+/* miniatura avulsa (mercado, leilão encerrado) */
+.px-mini { display: inline-block; flex: none; line-height: 0; }
+.px-mini .pxm { line-height: normal; }
+.omk-tile-btn .px-mini .pxm { transition: transform .12s ease; }
+.omk-tile-btn:active .px-mini .pxm { transform: translateY(1px); }
+.omk-card.is-locked .px-mini { filter: saturate(.75) brightness(.9); }

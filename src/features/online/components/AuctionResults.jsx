@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Gavel, X } from 'lucide-react'
 import OnlineCrest from './OnlineCrest'
-import { OvrBadge, PlayerFace } from './PlayerFut'
+import { MiniCard } from './PlayerFut'
 import { money } from '../onlineUtils'
 
 // Resultado dos leilões que o técnico disputou: aparece para o vencedor e para quem perdeu.
@@ -18,8 +18,7 @@ export default function AuctionResults({ results, onSeen }) {
         <small><Gavel size={13} /> Leilão encerrado{results.length > 1 ? ` · ${i + 1}/${results.length}` : ''}</small>
         <h3>{d.won ? 'Contratado!' : 'Você perdeu a disputa'}</h3>
         <div className="on-result-player">
-          <PlayerFace seed={d.player?.name} colors={d.winner?.colors} size={84} />
-          {d.player && <OvrBadge p={d.player} />}
+          <MiniCard p={d.player} club={d.winner} size={80} />
           <strong>{d.player?.name}</strong>
         </div>
         <div className="on-result-winner">

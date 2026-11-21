@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Banknote, Coins, Crown, DoorClosed, FileText, Flame, Gavel, Hourglass, Lock, Sprout, TrendingUp, Undo2, UserCheck, Users, X, Zap } from 'lucide-react'
 import { EmptyState, Notice, Skeleton } from '../../components/ui/feedback'
 import OnlineCrest from './components/OnlineCrest'
-import { OvrBadge, PlayerFace } from './components/PlayerFut'
+import { MiniCard, OvrBadge } from './components/PlayerFut'
 import PlayerDetails from './components/PlayerDetails'
 import { POS_NAME } from '../seasons/utils/managerUtils'
 import { bidOnline, cancelOnlineLot, fetchOnlineMarket } from './services/onlineApi'
@@ -20,14 +20,9 @@ const KIND_LABEL = (lot) => (lot.featured >= 8 ? (lot.player.legend ? 'Épica' :
 const isProspect = (lot) => !lot.featured && !lot.seller && lot.player.age <= 23 && lot.player.pot - lot.player.ovr >= 6
 const metaLine = (p, long = false) => [long ? POS_NAME[p.pos] || p.pos : p.pos, p.legend ? 'Épica' : `${p.age} anos`, p.pot != null ? `POT ${p.pot}` : null].filter(Boolean).join(' · ')
 
-// Carta quadrada do mercado: nota, posição e rosto, com a cor do tipo (base, destaque, épica).
+// Carta do mercado: a miniatura em pixel art, com a cor do tipo (base, destaque, épica, Big Time).
 function MarketTile({ p, club, size = 64 }) {
-  return (
-    <span className={`omk-tile t-${cardTier(p)}`} style={{ '--mk': `${size}px` }}>
-      <span className="omk-tile-ovr"><b>{Math.round(p.ovr)}</b><small>{p.pos}</small></span>
-      <PlayerFace seed={p.name} colors={club?.colors} size={Math.round(size * 0.86)} />
-    </span>
-  )
+  return <MiniCard p={p} club={club} size={size - 4} />
 }
 
 function Auction({ lot, now, busy, wallet, coins, closed, onBid, onCancel, onSheet }) {
