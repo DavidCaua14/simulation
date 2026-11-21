@@ -121,8 +121,10 @@
 .mt-team.is-home { justify-content: flex-end; text-align: right; }
 .mt-team b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: .8rem; font-weight: 700; }
 .mt-team.is-lost b { color: #8fa1c4; font-weight: 600; }
-.mt-score { display: inline-flex; flex-direction: column; align-items: center; min-width: 54px; padding: 3px 6px; border-radius: 7px; background: #000; color: #fff; font: 900 1rem var(--font-display); font-variant-numeric: tabular-nums; }
-.mt-score small { font: 700 .55rem var(--font-body); color: #8fa1c4; }
+/* placar na mesma linha (1 × 2), caixa de largura fixa: todos os placares da rodada ficam alinhados; pênaltis embaixo */
+.mt-score { display: inline-grid; grid-template-columns: 1fr auto 1fr; align-items: center; justify-items: center; width: 64px; padding: 5px 6px; border-radius: 7px; background: #000; color: #fff; font: 900 1.05rem/1 var(--font-display); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.mt-score i { margin: 0 3px; font-size: .8em; }
+.mt-score small { grid-column: 1 / -1; margin-top: 3px; font: 700 .55rem var(--font-body); color: #8fa1c4; }
 .mt-time { min-width: 54px; padding: 4px 6px; border-radius: 7px; background: rgba(0, 0, 0, .45); color: #ffd23f; text-align: center; font: 900 .86rem var(--font-display); font-variant-numeric: tabular-nums; }
 .mt-live { display: inline-flex; align-items: center; gap: 4px; min-width: 54px; justify-content: center; padding: 3px 6px; border-radius: 7px; background: #b91c1c; color: #fff; font: 900 .7rem var(--font-display); font-style: normal; }
 .mt-live b { margin-left: 2px; }
