@@ -70,7 +70,6 @@ button.pxc:disabled { cursor: default; opacity: .6; }
 /* carta do campo (fut-pitch) e do elenco (ef-tile) com a miniatura */
 .fut-pitch > .pxm { --pw: 58px; }
 .fut-pitch.is-sel > .pxm { transform: translateY(-3px) scale(1.06); filter: drop-shadow(0 0 8px #22d3ee); }
-.fut-pitch .fut-pitch-natpos { margin-top: 1px; border-radius: 0; font-family: 'Silkscreen', monospace; box-shadow: 0 0 0 1px #05070d; }
 .ef-tile > .pxm { --pw: var(--ef, 62px); }
 .ef-tile.is-sel > .pxm { transform: translateY(-2px) scale(1.05); filter: drop-shadow(0 0 8px #22d3ee); }
 .ef-tile.is-dim > .pxm { opacity: .45; }
@@ -81,5 +80,6 @@ button.pxc:disabled { cursor: default; opacity: .6; }
 .pxm-cond.warn i { background: repeating-linear-gradient(90deg, #f59e0b 0 5px, #b45309 5px 6px); }
 .pxm-cond.bad i { background: repeating-linear-gradient(90deg, #ef4444 0 5px, #991b1b 5px 6px); }
 .pxm-cond em { position: relative; display: block; font: 400 calc(var(--pw) * .1)/calc(var(--pw) * .17) 'Press Start 2P', monospace; font-style: normal; text-align: center; color: #fff; text-shadow: 1px 1px 0 #05070d; }
-/* fora da posição de origem: carta amarela */
-.fut-pitch.is-off > .pxm { --f: #facc15; --fd: #a16207; --fl: #fef9c3; }
+/* fora da posição de origem (Online e Temporadas): carta laranja, de qualquer tipo, e a posição certa embaixo */
+.fut-pitch.is-off > .pxm, .ef-tile.is-off > .pxm { --f: #f97316; --fd: #7c2d12; --fl: #fed7aa; --art: #9a3412; --ovr: #fed7aa; --ovr-ink: #1f0a02; --name: #fff; }
+.px-natpos { position: relative; z-index: 2; display: inline-block; margin-top: 3px; padding: 3px 5px 2px; background: #f97316; color: #1f0a02; font: 700 9px/1 'Silkscreen', monospace; letter-spacing: .03em; white-space: nowrap; box-shadow: 0 0 0 2px #05070d; }

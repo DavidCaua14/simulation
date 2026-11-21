@@ -126,7 +126,7 @@ export function PitchCard({ player, pos, colors, selected, live, onClick, label,
           </span>
         )}
       </span>
-      {off && <span className="fut-pitch-natpos" title={`Posição de origem: ${player.position}`}>{player.position}</span>}
+      {off && <span className="px-natpos" title={`Fora da posição: a posição de origem é ${player.position}`}>É {player.position}</span>}
     </Tag>
   )
 }

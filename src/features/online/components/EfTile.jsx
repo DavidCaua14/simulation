@@ -45,6 +45,7 @@ export default function EfTile({ player, pos, colors, selected, onClick, label, 
         </span>
         <span className="pxm-name">{shortName(name)}</span>
       </span>
+      {off && <span className="px-natpos" title={`Fora da posição: a posição de origem é ${player.position}`}>É {player.position}</span>}
       {cond != null && (
         <span className={`ef-tile-cond ${tone}`} title={`Físico ${Math.round(cond)}%`} aria-label={`Físico ${Math.round(cond)}%`}>
           <i style={{ width: `${Math.max(4, Math.min(100, cond))}%` }} />
