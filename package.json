@@ -13,6 +13,9 @@
   "dependencies": {
     "@dicebear/collection": "^9.4.2",
     "@dicebear/core": "^9.4.3",
+    "@fontsource/pixelify-sans": "5.3.0",
+    "@fontsource/press-start-2p": "5.3.0",
+    "@fontsource/silkscreen": "5.3.0",
     "@supabase/supabase-js": "^2.118.0",
     "lucide-react": "^1.48.0",
     "react": "^19.2.8",

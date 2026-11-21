@@ -13,10 +13,11 @@
 .pk-fan { position: relative; z-index: 1; display: grid; place-items: center; width: 150px; height: 170px; }
 .pk-fan > span { position: absolute; transform: translateX(calc(var(--k) * 24px)) rotate(calc(var(--k) * 8deg)); transform-origin: 50% 110%; }
 .pk-fan .btc.is-sm { --w: 86px; }
+.pk-fan .pxc.is-sm { --max: 92px; }
 .pk-empty { display: grid; justify-items: center; gap: 6px; padding: 28px 16px; border-radius: 16px; text-align: center; color: #fecaca; background: linear-gradient(180deg, rgba(143, 10, 23, .35), rgba(143, 10, 23, .1)); box-shadow: inset 0 0 0 1px rgba(248, 113, 113, .3); }
 .pk-empty b { color: #fff; font: 900 1rem var(--font-heading); }
 .pk-empty small { color: #fde2e2; }
-@media (max-width: 380px) { .pk-fan { width: 116px; } .pk-fan > span { transform: translateX(calc(var(--k) * 16px)) rotate(calc(var(--k) * 8deg)); } .pk-fan .btc.is-sm { --w: 72px; } .pk-banner-txt strong { font-size: 1.1rem; } }
+@media (max-width: 380px) { .pk-fan { width: 116px; } .pk-fan > span { transform: translateX(calc(var(--k) * 16px)) rotate(calc(var(--k) * 8deg)); } .pk-fan .btc.is-sm { --w: 72px; } .pk-fan .pxc.is-sm { --max: 78px; } .pk-banner-txt strong { font-size: 1.1rem; } }
 
 /* detalhe */
 .pk-sheet { position: fixed; inset: 0; z-index: 80; display: flex; align-items: flex-end; justify-content: center; background: rgba(5, 2, 3, .72); backdrop-filter: blur(3px); }
@@ -34,7 +35,8 @@
 .pk-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 12px; justify-items: center; }
 .pk-cardslot { position: relative; display: grid; justify-items: center; }
 .pk-cardslot .btc.is-sm { --w: 104px; }
-.pk-cardslot.is-out .btc { filter: grayscale(.9) brightness(.5); }
+.pk-cardslot .pxc.is-sm { --max: 110px; }
+.pk-cardslot.is-out .btc, .pk-cardslot.is-out .pxc { filter: grayscale(.9) brightness(.5); }
 .pk-cardslot em { position: absolute; top: 44%; padding: 4px 9px; border-radius: 999px; background: #0d0102; font: 900 .66rem var(--font-heading); font-style: normal; text-transform: uppercase; letter-spacing: .06em; box-shadow: 0 0 0 1px #ff4d4d; }
 .pk-others { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
 .pk-others li { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 10px; background: rgba(255, 255, 255, .05); font: 700 .82rem var(--font-body); }

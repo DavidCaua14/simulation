@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { CircleAlert, Check, ChevronLeft, ChevronRight, ClipboardList, Dumbbell, FileClock, Flag, Frown, Sparkles, TriangleAlert, Users } from 'lucide-react'
+import FormationPicker from '../components/FormationPicker'
+import { CircleAlert, Check, ChevronLeft, ClipboardList, Dumbbell, FileClock, Flag, Frown, Sparkles, TriangleAlert, Users } from 'lucide-react'
 import Pitch from '../components/Pitch'
 import SeasonPitchCard from '../components/SeasonPitchCard'
 import { renderSeasonPitchCard } from '../components/renderSeasonPitchCard'
@@ -198,7 +199,6 @@ export default function TeamTab({ hub, onSaved, notify, focusPlayerId = null, in
   if (error || catErr) return <ErrorState message={error || catErr} onRetry={load} />
   if (!squad || !draft || !catalog) return <LoadingState />
 
-  const formIdx = Math.max(0, catalog.formations.findIndex((f) => f.id === draft.formation))
   const fam = familiarity && draft.formation in familiarity ? Math.round(familiarity[draft.formation]) : null
   // Funções (batedores de pênalti, falta e escanteio) ficam no treino da gestão do clube.
   const openRoles = () => {
@@ -325,14 +325,8 @@ export default function TeamTab({ hub, onSaved, notify, focusPlayerId = null, in
 
       {view === 'lineup' && (
         <>
-          <div className="tt-formstep" aria-label="Formação">
-            <button type="button" aria-label="Formação anterior" onClick={() => changeFormation(catalog.formations[(formIdx - 1 + catalog.formations.length) % catalog.formations.length].id)}>
-              <ChevronLeft size={20} />
-            </button>
-            <b>{formation?.name || draft.formation}</b>
-            <button type="button" aria-label="Próxima formação" onClick={() => changeFormation(catalog.formations[(formIdx + 1) % catalog.formations.length].id)}>
-              <ChevronRight size={20} />
-            </button>
+          <div className="tt-formpick">
+            <FormationPicker formations={catalog.formations} value={draft.formation} onChange={changeFormation} />
           </div>
           {fam != null && (
             <div className="tt-fam" title="Entrosamento do elenco com esta formação. Cada jogo ou treino livre nela aumenta; formações esquecidas perdem um pouco por mês.">

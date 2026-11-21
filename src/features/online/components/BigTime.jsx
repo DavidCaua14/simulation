@@ -2,6 +2,7 @@ import { Flame } from 'lucide-react'
 import { POS_NAME } from '../../seasons/utils/managerUtils'
 import { btDate, btMatch } from './bigtimeUtils'
 import './bigtime.css'
+import './pixel-card.css'
 
 // CARTAS BIG TIME (vermelhas): atuação real de um jogador num dia específico. A foto vem do painel do administrador
 // (Storage, bucket bigtime) com o enquadramento salvo em photo_pos {x, y, zoom}.
@@ -23,27 +24,33 @@ export function BtPhoto({ bt, className = '', alt = '' }) {
   )
 }
 
-// Carta grande (loja, revelação da caixa, ficha). size: sm | md | lg.
+// Carta grande (loja, revelação da caixa, ficha) no layout em pixel art das outras cartas, com a foto real do
+// jogador sem alteração. size: sm | md | lg.
 export default function BigTimeCard({ bt, ovr, pos, size = 'md', onClick, delay = 0, footer = null }) {
   if (!bt) return null
   const Tag = onClick ? 'button' : 'div'
   const rating = Math.round(ovr ?? bt.rating)
   const at = pos || bt.pos
   return (
-    <Tag type={onClick ? 'button' : undefined} className={`btc is-${size}`} onClick={onClick} style={{ animationDelay: `${delay}ms` }}
+    <Tag type={onClick ? 'button' : undefined} className={`pxc t-bigtime is-${size}`} onClick={onClick} style={{ animationDelay: `${delay}ms` }}
       aria-label={`Big Time ${bt.name}, ${at} ${rating}, ${btMatch(bt)} em ${btDate(bt.match_date)}`}>
-      <span className="btc-frame">
-        <BtPhoto bt={bt} className="btc-photo" />
-        <span className="btc-rays" aria-hidden="true" />
-        <span className="btc-shine" aria-hidden="true" />
-        <span className="btc-ovr"><b>{rating}</b><small>{at}</small></span>
-        <span className="btc-foot">
-          <i className="btc-label">Big Time</i>
-          <strong>{bt.name}</strong>
-          <small>{bt.year} · {bt.team ? `× ${bt.opponent}` : `contra ${bt.opponent}`}</small>
+      <span className="pxc-frame">
+        <i className="pxc-cn bl" aria-hidden="true" /><i className="pxc-cn br" aria-hidden="true" />
+        <span className="pxc-in">
+          <span className="pxc-head">
+            <span className="pxc-pos">{at}</span>
+            <span className="pxc-chip">Big Time</span>
+            <span className="pxc-ovr">{rating}</span>
+          </span>
+          <span className="pxc-art">
+            <BtPhoto bt={bt} className="is-fut" />
+            {bt.nat && <span className="pxc-nat">{bt.nat}</span>}
+          </span>
+          <strong className={`pxc-name ${(bt.name || '').length > 16 ? 'is-long' : ''}`}>{bt.name}</strong>
+          <span className="pxc-strip"><b><i>{bt.year}</i></b><b>{bt.team ? `× ${bt.opponent}` : `vs ${bt.opponent}`}</b></span>
         </span>
       </span>
-      {footer}
+      {footer && <span className="pxc-foot">{footer}</span>}
     </Tag>
   )
 }

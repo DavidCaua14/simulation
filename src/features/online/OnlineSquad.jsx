@@ -15,6 +15,7 @@ import useCatalog from '../seasons/hooks/useCatalog'
 import { POS_NAME, condTone, posFit } from '../seasons/utils/managerUtils'
 import { applyOnlineItem, autoOnlineLineup, createOnlineLot, fetchOnlineItems, fetchOnlineMarket, fetchOnlineSquad, fetchPlanFit, sellOnlinePlayer, renewOnlinePlayer, saveOnlineLineup, saveOnlineRoles } from './services/onlineApi'
 import PlayerSheet from './components/PlayerSheet'
+import FormationPicker from '../seasons/components/FormationPicker'
 import { asSeasonPlayer, cardTier, clubColors, money } from './onlineUtils'
 import '../seasons/seasons.css'
 import '../seasons/manager.css'
@@ -345,12 +346,7 @@ export default function OnlineSquad({ onOpenMatch, notify, seasonId }) {
       {view === 'team' && (
         <div className="ef-board">
           <div className="ef-top">
-            <label className="ef-form">
-              <span className="sr-only">Formação</span>
-              <select value={draft.formation} disabled={busy} onChange={(e) => changeFormation(e.target.value)}>
-                {catalog.formations.map((f) => <option key={f.id} value={f.id}>{f.name}</option>)}
-              </select>
-            </label>
+            <FormationPicker formations={catalog.formations} value={draft.formation} onChange={changeFormation} disabled={busy} compact />
             <button type="button" className="ef-plan" onClick={() => setView('tactics')}>{planShort(planOf(draft.tactics))}</button>
             <span className="ef-power" title={`Média ${squadStrength ? squadStrength.toFixed(1) : '–'} com as reservas`}>
               <small>Força coletiva</small><b>{Math.round(xiOvr.reduce((a, b) => a + b, 0))}</b>

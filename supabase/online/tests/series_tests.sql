@@ -537,3 +537,27 @@ begin
  exception when others then if sqlerrm not like 'Estádio inválido%' then raise;end if;end;
  raise notice 'PASS estádio do clube';
 end $$;
+
+-- formações novas: todas jogam uma partida inteira no motor do Online
+do $$
+declare s public.on_seasons;f public.on_fixtures;fm text;n int:=0;i int;
+begin
+ select * into s from public.on_seasons where status='live';
+ for fm in select id from public.sim_formations where sort>8 order by sort loop
+  select * into f from public.on_fixtures where season_id=s.id and status='sched' order by kickoff,id limit 1;
+  exit when f.id is null;
+  perform public.on_auto_lineup(f.home,fm);
+  perform public.on_auto_lineup(f.away,fm);
+  if (select formation from public.on_lineups where club_id=f.home)<>fm then raise exception 'escalação não ficou na %',fm;end if;
+  perform public.on_match_open(f);
+  for i in 1..4 loop
+   exit when (select status from public.on_fixtures where id=f.id)='done';
+   perform public.on_advance(f.id,f.kickoff+interval '1 day',null);
+  end loop;
+  if (select status from public.on_fixtures where id=f.id)<>'done' then raise exception 'partida na % não terminou: %',fm,(select status from public.on_fixtures where id=f.id);end if;
+  if (select count(*) from public.on_match_players where fixture_id=f.id and club_id=f.home and slot is not null)<10 then raise exception 'vagas da % não entraram',fm;end if;
+  n:=n+1;
+ end loop;
+ if n<8 then raise exception 'só % formações novas jogaram',n;end if;
+ raise notice 'PASS formações novas (%)',n;
+end $$;

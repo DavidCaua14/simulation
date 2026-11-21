@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState } from 'react'
+import FormationPicker from './FormationPicker'
 import { ArrowDown, ArrowUp, RotateCcw } from 'lucide-react'
 import PositionFilter from './PositionFilter'
 import Pitch, { PlayerToken } from './Pitch'
@@ -222,12 +223,8 @@ export default function MatchLineupEditor({
                 )}
               </div>
 
-              <div className="tt-forms" role="radiogroup" aria-label="Formação">
-                {(catalog?.formations || []).map((f) => (
-                  <button key={f.id} type="button" role="radio" aria-checked={draft.formation === f.id} className={draft.formation === f.id ? 'is-on' : ''} onClick={() => changeFormation(f.id)}>
-                    {f.name}
-                  </button>
-                ))}
+              <div className="tt-formpick">
+                <FormationPicker formations={catalog?.formations || []} value={draft.formation} onChange={changeFormation} compact />
               </div>
 
               {sel && (() => {
