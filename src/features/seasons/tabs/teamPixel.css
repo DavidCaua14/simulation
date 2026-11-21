@@ -36,9 +36,9 @@
 
 /* campo: largura toda, mais alto, gramado e linhas em pixel */
 .tt.tt-px .on-pitch-wrap { margin: 0 -6px; border-radius: 0; box-shadow: 0 0 0 2px var(--ink), 0 10px 24px rgba(0, 0, 0, .45); overflow: visible; }
-.tt.tt-px div.pt.is-wide { aspect-ratio: 100 / 172; border-radius: 0; background: repeating-linear-gradient(180deg, #1f7a3a 0 6.25%, #1b6e34 6.25% 12.5%); box-shadow: inset 0 0 0 3px rgba(255, 255, 255, .28); overflow: visible; }
+.tt.tt-px div.pt.is-wide { aspect-ratio: 100 / 182; border-radius: 0; background: repeating-linear-gradient(180deg, #1f7a3a 0 6.25%, #1b6e34 6.25% 12.5%); box-shadow: inset 0 0 0 3px rgba(255, 255, 255, .28); overflow: visible; }
 .tt.tt-px div.pt.is-wide .pt-lines * { stroke: rgba(255, 255, 255, .38); stroke-width: .7; vector-effect: none; shape-rendering: crispEdges; }
-.tt.tt-px .fut-pitch > .pxm { --pw: 62px; }
+.tt.tt-px .fut-pitch > .pxm { --pw: clamp(46px, 14.6vw, 58px); }
 .tt.tt-px .fut-pitch.is-sel > .pxm { box-shadow: 0 0 0 2px var(--ink), inset 0 0 0 1px var(--fl), 0 0 0 4px #22d3ee, 0 0 14px rgba(34, 211, 238, .6); filter: none; }
 
 /* atalhos */
@@ -75,3 +75,9 @@
 /* cabeçalho do modo Temporadas: título sem cortar e escudo pixelado */
 .sh .sh-crest canvas.crest { image-rendering: pixelated; }
 .tt.tt-px .on-bench-cards { padding: 0; border: 0; border-radius: 0; background: none; box-shadow: none; }
+/* celulares estreitos: campo mais alto e cartas um pouco menores (nenhuma carta encosta na outra) */
+@media (max-width: 360px) {
+  .tt.tt-px div.pt.is-wide { aspect-ratio: 100 / 205; }
+  .tt.tt-px .fut-pitch > .pxm { --pw: clamp(42px, 13.6vw, 58px); }
+}
+@media (max-width: 340px) { .tt.tt-px div.pt.is-wide { aspect-ratio: 100 / 222; } }
