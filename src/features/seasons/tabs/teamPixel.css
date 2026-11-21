@@ -1,0 +1,77 @@
+/* ESCALAÇÃO DO MODO TEMPORADAS em pixel art (mesmo padrão das cartas): painéis com contorno preto e losangos nos
+   cantos, fontes de pixel, botões com sombra dura e campo maior (largura toda, mais alto). */
+.tt.tt-px { --ink: #05070d; --pxl: #22406f; gap: 12px; }
+.tt.tt-px .tt-club { position: relative; padding: 9px 10px; background: #121c38; box-shadow: 0 0 0 2px var(--ink), inset 0 0 0 2px var(--pxl); border-radius: 0; }
+.tt.tt-px .tt-club::before, .tt.tt-px .tt-club::after,
+.tt.tt-px .tt-lines::before, .tt.tt-px .tt-lines::after,
+.tt.tt-px .sn-sec::before, .tt.tt-px .sn-sec::after { content: ''; position: absolute; top: -5px; width: 10px; height: 10px; transform: rotate(45deg); background: conic-gradient(from 45deg, #8fb3ff 0 25%, #16213c 0 50%, #8fb3ff 0 75%, #16213c 0); box-shadow: 0 0 0 1px var(--ink); }
+.tt.tt-px .tt-club::before, .tt.tt-px .tt-lines::before, .tt.tt-px .sn-sec::before { left: -5px; }
+.tt.tt-px .tt-club::after, .tt.tt-px .tt-lines::after, .tt.tt-px .sn-sec::after { right: -5px; }
+.tt.tt-px .tt-club b { font: 400 11px/1.3 'Press Start 2P', monospace; color: #fff; }
+.tt.tt-px .tt-club small { font: 500 12px 'Pixelify Sans', monospace; color: #8aa0c6; }
+.tt.tt-px .tt-squad small { font: 700 8px 'Silkscreen', monospace; letter-spacing: .06em; color: #8fb3ff; text-transform: uppercase; }
+.tt.tt-px .tt-squad b { font: 400 10px 'Press Start 2P', monospace; color: #fff; }
+.tt.tt-px .tt-ovr { padding: 6px 8px 5px; border-radius: 0; box-shadow: 0 0 0 2px var(--ink), inset 0 -3px 0 rgba(0, 0, 0, .25); }
+.tt.tt-px .tt-ovr small { font: 700 7px 'Silkscreen', monospace; }
+.tt.tt-px .tt-ovr b { font: 400 13px/1 'Press Start 2P', monospace; margin-top: 3px; }
+
+/* abas */
+.tt.tt-px > .sn-seg { gap: 6px; padding: 0; background: none; border: 0; box-shadow: none; }
+.tt.tt-px > .sn-seg button { flex: 1; padding: 10px 2px 8px; border: 0; border-radius: 0; background: #16213c; color: #a8b8d8; font: 700 10px 'Silkscreen', monospace; letter-spacing: .04em; box-shadow: 0 0 0 2px var(--ink); text-transform: uppercase; }
+.tt.tt-px > .sn-seg button.is-on { background: #5ccf3a; color: #0a2a06; box-shadow: 0 0 0 2px var(--ink), inset 0 -3px 0 rgba(0, 0, 0, .25), inset 0 2px 0 rgba(255, 255, 255, .3); }
+
+/* formação + entrosamento na mesma linha */
+.tt.tt-px .tt-fprow { display: flex; gap: 8px; align-items: stretch; }
+.tt.tt-px .tt-fprow .tt-formpick { margin: 0; flex: none; }
+.tt.tt-px .tt-fprow .fp-trigger { height: 100%; }
+.tt.tt-px .tt-fam { flex: 1; min-width: 0; display: grid; grid-template-columns: 1fr auto; grid-template-rows: auto auto auto; gap: 5px 8px; align-items: center; margin: 0; padding: 7px 9px; border: 0; border-radius: 0; background: #121c38; box-shadow: 0 0 0 2px var(--ink), inset 0 0 0 2px var(--pxl); }
+.tt.tt-px .tt-fam small { grid-column: 1; font: 700 8px 'Silkscreen', monospace; letter-spacing: .08em; color: #8fb3ff; text-transform: uppercase; }
+.tt.tt-px .tt-fam b { grid-column: 2; grid-row: 1; font: 400 9px 'Press Start 2P', monospace; color: #facc15; }
+.tt.tt-px .tt-fam i { grid-column: 1 / -1; display: block; height: 12px; border-radius: 0; background: #1b2a4a; box-shadow: 0 0 0 2px var(--ink); overflow: hidden; }
+.tt.tt-px .tt-fam i em { display: block; height: 100%; border-radius: 0; background: repeating-linear-gradient(90deg, #5ccf3a 0 8px, #05070d 8px 10px); }
+.tt.tt-px .tt-fam i em.mid { background: repeating-linear-gradient(90deg, #facc15 0 8px, #05070d 8px 10px); }
+.tt.tt-px .tt-fam i em.low { background: repeating-linear-gradient(90deg, #ef4444 0 8px, #05070d 8px 10px); }
+.tt.tt-px .tt-train { grid-column: 1 / -1; justify-content: center; padding: 7px 6px 5px; border: 0; border-radius: 0; background: #5ccf3a; color: #0a2a06; font: 400 8px 'Press Start 2P', monospace; text-transform: uppercase; box-shadow: 0 0 0 2px var(--ink), inset 0 -3px 0 rgba(0, 0, 0, .25), inset 0 2px 0 rgba(255, 255, 255, .3); }
+.tt.tt-px .tt-train:disabled { opacity: .55; }
+
+/* campo: largura toda, mais alto, gramado e linhas em pixel */
+.tt.tt-px .on-pitch-wrap { margin: 0 -6px; border-radius: 0; box-shadow: 0 0 0 2px var(--ink), 0 10px 24px rgba(0, 0, 0, .45); overflow: visible; }
+.tt.tt-px div.pt.is-wide { aspect-ratio: 100 / 172; border-radius: 0; background: repeating-linear-gradient(180deg, #1f7a3a 0 6.25%, #1b6e34 6.25% 12.5%); box-shadow: inset 0 0 0 3px rgba(255, 255, 255, .28); overflow: visible; }
+.tt.tt-px div.pt.is-wide .pt-lines * { stroke: rgba(255, 255, 255, .38); stroke-width: .7; vector-effect: none; shape-rendering: crispEdges; }
+.tt.tt-px .fut-pitch > .pxm { --pw: 62px; }
+.tt.tt-px .fut-pitch.is-sel > .pxm { box-shadow: 0 0 0 2px var(--ink), inset 0 0 0 1px var(--fl), 0 0 0 4px #22d3ee, 0 0 14px rgba(34, 211, 238, .6); filter: none; }
+
+/* atalhos */
+.tt.tt-px .tt-cmrow { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.tt.tt-px .tt-cmrow .gx-btn-ghost { justify-content: center; gap: 5px; min-height: 0; padding: 10px 4px 8px; border: 0; border-radius: 0; background: #1b2a4a; color: #fff; font: 400 7px/1.4 'Press Start 2P', monospace; text-transform: uppercase; box-shadow: 0 0 0 2px var(--ink), inset 0 -3px 0 rgba(0, 0, 0, .3), inset 0 2px 0 rgba(255, 255, 255, .12); }
+.tt.tt-px .tt-cmrow .gx-btn-ghost.is-auto { background: #22d3ee; color: #04222b; }
+.tt.tt-px .tt-cmrow .gx-btn-ghost svg { width: 13px; height: 13px; flex: none; }
+
+/* força por setor: barras em blocos com a cor de cada linha */
+.tt.tt-px .tt-lines { position: relative; grid-template-columns: 1fr; gap: 8px; padding: 10px; background: #121c38; box-shadow: 0 0 0 2px var(--ink), inset 0 0 0 2px var(--pxl); }
+.tt.tt-px .tt-lines span { display: grid; grid-template-columns: 64px 1fr 26px; align-items: center; gap: 8px; padding: 0; border: 0; border-radius: 0; background: none; }
+.tt.tt-px .tt-lines small { font: 700 9px 'Silkscreen', monospace; color: #cbd5e1; }
+.tt.tt-px .tt-lines i { height: 12px; border-radius: 0; background: #1b2a4a; box-shadow: 0 0 0 2px var(--ink); }
+.tt.tt-px .tt-lines i em { border-radius: 0; background: repeating-linear-gradient(90deg, var(--line-c, #5ccf3a) 0 9px, #05070d 9px 11px); }
+.tt.tt-px .tt-lines span:nth-child(1) { --line-c: #f87171; } .tt.tt-px .tt-lines span:nth-child(2) { --line-c: #4ade80; }
+.tt.tt-px .tt-lines span:nth-child(3) { --line-c: #38bdf8; } .tt.tt-px .tt-lines span:nth-child(4) { --line-c: #facc15; }
+.tt.tt-px .tt-lines b { font: 400 9px 'Press Start 2P', monospace; color: #fff; text-align: right; }
+
+/* reservas e não relacionados */
+.tt.tt-px .sn-sec { position: relative; padding: 10px; background: #121c38; box-shadow: 0 0 0 2px var(--ink), inset 0 0 0 2px var(--pxl); border-radius: 0; }
+.tt.tt-px .sn-sec .gx-title { display: flex; align-items: center; margin: 0 0 10px; font: 700 11px 'Silkscreen', monospace; letter-spacing: .08em; color: #f5c542; text-transform: uppercase; }
+.tt.tt-px .sn-sec .gx-title small { margin-left: auto; font: 400 9px 'Press Start 2P', monospace; color: #fff; }
+.tt.tt-px .on-bench-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(64px, 1fr)); gap: 12px 6px; justify-items: center; }
+.tt.tt-px .on-bench-hint, .tt.tt-px .tt-out-empty { font: 500 12px 'Pixelify Sans', monospace; color: #8aa0c6; }
+.tt.tt-px .tt-bslot { border-radius: 0; }
+
+/* avisos e confirmação */
+.tt.tt-px .tt-issues li { border: 0; border-radius: 0; font: 500 13px/1.35 'Pixelify Sans', monospace; box-shadow: 0 0 0 2px var(--ink), inset 0 0 0 2px color-mix(in srgb, var(--c) 70%, #000); background: color-mix(in srgb, var(--c) 12%, #0a1124); }
+.tt.tt-px .tt-ready { font: 700 10px 'Silkscreen', monospace; letter-spacing: .04em; text-transform: uppercase; color: #5ccf3a; }
+.tt.tt-px .tt-confirm, .tt.tt-px .tt-cancel { border: 0; border-radius: 0; font: 400 11px 'Press Start 2P', monospace; text-transform: uppercase; box-shadow: 0 0 0 2px var(--ink), inset 0 -4px 0 rgba(0, 0, 0, .25), inset 0 3px 0 rgba(255, 255, 255, .3); }
+.tt.tt-px .tt-confirm { background: #5ccf3a; color: #0a2a06; }
+.tt.tt-px .tt-cancel { background: #1b2a4a; color: #fff; }
+
+/* cabeçalho do modo Temporadas: título sem cortar e escudo pixelado */
+.sh .sh-crest canvas.crest { image-rendering: pixelated; }
+.tt.tt-px .on-bench-cards { padding: 0; border: 0; border-radius: 0; background: none; box-shadow: none; }

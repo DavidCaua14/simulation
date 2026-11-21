@@ -23,7 +23,7 @@ export default function SeasonHeader({ title, career, season, remaining, onBack,
 
       {(clubId || career) && (
         <span className={`sh-crest ${clubId ? '' : 'is-solo'}`}>
-          {clubId && <ClubCrest clubId={clubId} size={34} />}
+          {clubId && <ClubCrest clubId={clubId} size={34} pixel />}
           {career && (
             <b className="sh-lvl" title={`Nível ${career.level}`} aria-label={`Nível ${career.level}`}>
               <small>NV</small>

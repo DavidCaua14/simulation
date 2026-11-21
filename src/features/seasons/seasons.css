@@ -971,3 +971,14 @@ button.mr:active { transform: scale(0.99); }
 .wl-clubs li { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 10px; border: 1px solid var(--gx-line); background: var(--gx-panel); }
 .wl-clubs li span { flex: 1; }
 .wl-clubs li small { opacity: 0.7; }
+
+/* celular: o título do cabeçalho não pode virar "T…" — indicadores menores e título um pouco menor */
+@media (max-width: 440px) {
+  .sh { gap: 7px; }
+  .sh-res { gap: 4px; }
+  .sh-pill { height: 26px; padding: 0 6px; gap: 3px; font-size: .74rem; }
+  .sh-pill small { display: none; }
+  .sh-title { min-width: 64px; }
+  .sh-title small { letter-spacing: .08em; font-size: .56rem; }
+  .sh-title h1 { font-size: 1.12rem; }
+}

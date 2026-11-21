@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import FormationPicker from '../components/FormationPicker'
+import './teamPixel.css'
 import { CircleAlert, Check, ChevronLeft, ClipboardList, Dumbbell, FileClock, Flag, Frown, Sparkles, TriangleAlert, Users } from 'lucide-react'
 import Pitch from '../components/Pitch'
 import SeasonPitchCard from '../components/SeasonPitchCard'
@@ -286,10 +287,10 @@ export default function TeamTab({ hub, onSaved, notify, focusPlayerId = null, in
   const groups = LINES.map((line) => ({ line, players: squad.players.filter((p) => POS_LINE[p.position] === line && (!positionFilter || p.position === positionFilter)).sort((a, b) => POS_ORDER.indexOf(a.position) - POS_ORDER.indexOf(b.position) || b.overall - a.overall) }))
 
   return (
-    <div className="sn-page tt">
+    <div className="sn-page tt tt-px">
       {!flow && <button type="button" className="sn-link" disabled={saving} onClick={() => load(true)}>Atualizar elenco</button>}
       {!flow && <div className="tt-club">
-        <ClubCrest clubId={clubId} size={34} />
+        <ClubCrest clubId={clubId} size={36} pixel />
         <div>
           <b>{club?.name}</b>
           <small>
@@ -325,6 +326,7 @@ export default function TeamTab({ hub, onSaved, notify, focusPlayerId = null, in
 
       {view === 'lineup' && (
         <>
+          <div className="tt-fprow">
           <div className="tt-formpick">
             <FormationPicker formations={catalog.formations} value={draft.formation} onChange={changeFormation} />
           </div>
@@ -342,6 +344,7 @@ export default function TeamTab({ hub, onSaved, notify, focusPlayerId = null, in
               )}
             </div>
           )}
+          </div>
 
           <PitchTokenContext.Provider value={renderSeasonPitchCard}>
           <div className="on-pitch-wrap">
@@ -352,6 +355,7 @@ export default function TeamTab({ hub, onSaved, notify, focusPlayerId = null, in
               colors={club?.colors}
               selected={sel?.startsWith('slot:') ? sel.slice(5) : null}
               onSlot={(s) => tapKey(`slot:${s.slot}`)}
+              wide
               bind={bind}
               drag={drag}
             />
@@ -365,7 +369,7 @@ export default function TeamTab({ hub, onSaved, notify, focusPlayerId = null, in
             <button type="button" className="gx-btn-ghost" onClick={openRoles}>
               <Flag size={16} /> Funções
             </button>
-            <button type="button" className="gx-btn-ghost" onClick={handleAuto} disabled={saving}>
+            <button type="button" className="gx-btn-ghost is-auto" onClick={handleAuto} disabled={saving}>
               <Sparkles size={16} /> Seleção automática
             </button>
           </div>

@@ -119,14 +119,14 @@ export function PitchCard({ player, pos, colors, selected, live, onClick, label,
           )}
         </span>
         <span className="pxm-name">{shortName(name)}</span>
+        {cond != null && (
+          <span className={`pxm-cond ${tone}`} title={`Condição física ${Math.round(cond)}%`}>
+            <i style={{ width: `${Math.max(4, Math.min(100, cond))}%` }} />
+            <em>{Math.round(cond)}%</em>
+          </span>
+        )}
       </span>
       {off && <span className="fut-pitch-natpos" title={`Posição de origem: ${player.position}`}>{player.position}</span>}
-      {cond != null && (
-        <span className={`fut-pitch-cond ${tone}`} title={`Condição física ${Math.round(cond)}%`}>
-          <i style={{ width: `${Math.max(4, Math.min(100, cond))}%` }} />
-          <em>{Math.round(cond)}%</em>
-        </span>
-      )}
     </Tag>
   )
 }

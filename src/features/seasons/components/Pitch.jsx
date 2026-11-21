@@ -118,11 +118,12 @@ export function PlayerToken({ player, pos, colors, selected, live, onClick, labe
 // Vertical: usa o campo inteiro (atacante perto do topo, goleiro perto do fundo) para separar as linhas.
 const slotTop = (y, compact) => (compact ? y * 0.94 + 2 : 7 + ((Math.min(95, Math.max(10, y)) - 10) / 85) * 86)
 
-export default function Pitch({ formation, slots, playersById, colors, selected, onSlot, live = false, compact = false, bind, drag }) {
+// wide: as vagas ficam entre 8% e 92% da largura (cartas das laterais não encostam na borda)
+export default function Pitch({ formation, slots, playersById, colors, selected, onSlot, live = false, compact = false, wide = false, bind, drag }) {
   const cards = useContext(PitchTokenContext) != null
   if (!formation) return <div className="pt pt-empty" />
   return (
-    <div className={`pt ${compact ? 'is-compact' : ''} ${cards ? 'has-cards' : ''}`}>
+    <div className={`pt ${compact ? 'is-compact' : ''} ${cards ? 'has-cards' : ''} ${wide ? 'is-wide' : ''}`}>
       <PitchLines />
       {formation.slots.map((s) => {
         const pid = slots?.[s.slot]
@@ -131,7 +132,7 @@ export default function Pitch({ formation, slots, playersById, colors, selected,
           <div
             key={s.slot}
             className={`pt-slot ${drag?.over === `slot:${s.slot}` ? 'is-drop' : ''} ${drag?.from === `slot:${s.slot}` ? 'is-dragging' : ''}`}
-            style={{ left: `${s.x}%`, top: `${slotTop(s.y, compact)}%` }}
+            style={{ left: `${wide ? 9 + s.x * 0.82 : s.x}%`, top: `${slotTop(s.y, compact)}%` }}
             {...(bind ? bind(`slot:${s.slot}`, pid) : {})}
           >
             <PlayerToken
