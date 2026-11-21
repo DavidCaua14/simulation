@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Banknote, Coins, Crown, DoorClosed, FileText, Flame, Gavel, Hourglass, Lock, Sprout, TrendingUp, Undo2, UserCheck, Users, X, Zap } from 'lucide-react'
 import { EmptyState, Notice, Skeleton } from '../../components/ui/feedback'
 import OnlineCrest from './components/OnlineCrest'
@@ -217,9 +217,35 @@ export default function OnlineMarket({ notify, onChanged }) {
   const [ask, setAsk] = useState(null) // lance esperando confirmação: { lot, amount, coinCost }
   const [sheetLot, setSheetLot] = useState(null) // ficha completa aberta (toque na carta)
 
+  // lances que eu liderava: se outro clube cobrir, avisa que o valor voltou para o caixa livre (o banco devolve na hora)
+  const leadRef = useRef(null)
+  const notifyRef = useRef(notify)
+  const changedRef = useRef(onChanged)
+  useEffect(() => {
+    notifyRef.current = notify
+    changedRef.current = onChanged
+  }, [notify, onChanged])
   const apply = useCallback((d) => {
     setOffset(new Date(d.server_now).getTime() - Date.now())
     setData(d)
+    const lots = d.lots || []
+    const prev = leadRef.current
+    if (prev) {
+      let back = 0
+      const names = []
+      for (const l of lots) {
+        const was = prev.get(l.id)
+        if (was && !l.leading) {
+          back += was.bid
+          names.push(was.name)
+        }
+      }
+      if (back > 0) {
+        notifyRef.current?.(`Lance superado${names.length === 1 ? ` em ${names[0]}` : ''}: ${money(back)} voltou para o seu caixa livre.`, 'info')
+        changedRef.current?.()
+      }
+    }
+    leadRef.current = new Map(lots.filter((l) => l.leading).map((l) => [l.id, { bid: l.best_bid, name: l.player?.name }]))
   }, [])
   const load = useCallback(() => fetchOnlineMarket().then(apply).catch((e) => setError(e.message)), [apply])
   useEffect(() => {
@@ -232,10 +258,11 @@ export default function OnlineMarket({ notify, onChanged }) {
   const serverNow = now + offset
   const open = useMemo(() => (data?.lots || []).filter((l) => l.featured >= 8 || new Date(l.opens_at).getTime() <= serverNow), [data, serverNow])
   const active = open.some((l) => l.bidding || l.mine || new Date(l.ends_at).getTime() - serverNow < 120000)
+  const leadingAny = open.some((l) => l.leading)
   useEffect(() => {
-    const id = setInterval(load, active ? 5000 : 15000)
+    const id = setInterval(load, leadingAny ? 4000 : active ? 5000 : 15000)
     return () => clearInterval(id)
-  }, [load, active])
+  }, [load, active, leadingAny])
 
   const run = (job, ok) => {
     setBusy(true)
