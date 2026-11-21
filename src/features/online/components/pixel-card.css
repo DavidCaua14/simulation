@@ -90,3 +90,9 @@ button.pxc:disabled { cursor: default; opacity: .6; }
 .omk-tile-btn .px-mini .pxm { transition: transform .12s ease; }
 .omk-tile-btn:active .px-mini .pxm { transform: translateY(1px); }
 .omk-card.is-locked .px-mini { filter: saturate(.75) brightness(.9); }
+
+/* miniatura com faixa de nota/posição acima da foto (mercado, leilão encerrado) */
+.pxm.is-stack .pxm-head { display: flex; align-items: center; justify-content: space-between; gap: 2px; margin-bottom: 2px; padding: 3px 3px 2px; background: var(--head, #1b2436); box-shadow: 0 0 0 1px #05070d; }
+.pxm.is-stack .pxm-head b { padding: 2px 3px 1px; background: var(--ovr); color: var(--ovr-ink); font: 400 calc(var(--pw) * .15)/1 'Press Start 2P', monospace; box-shadow: 0 0 0 1px #05070d; }
+.pxm.is-stack .pxm-head small { font: 700 calc(var(--pw) * .15)/1 'Silkscreen', monospace; color: var(--fl); text-shadow: 1px 1px 0 #05070d; }
+.pxm.is-stack .pxm-art { height: calc(var(--pw) * .9); }
