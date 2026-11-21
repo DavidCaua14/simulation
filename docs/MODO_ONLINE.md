@@ -656,3 +656,11 @@ Povo 300, Municipal 500, Orla 800, Arena Central 1.200, Arena Neon 1.500), e fic
 temporadas). `online_arenas()` devolve a vitrine (preço, comprado, atual e saldo); `online_arena_buy(p_arena)` cobra pelo
 `econ_apply` (motivo `online_arena`) e já coloca o estádio no clube. Trocar entre estádios comprados é grátis
 (`on_club_identity` recusa modelo não comprado). Tela: Clube → Identidade → Estádio do clube.
+
+## Fase 47 — Aviso do caixa transferido no reinício
+
+`supabase/online/51_online_cash_notice.sql` (migração `20261121090000`). O caixa transferido no reinício (fase 44) entrava
+sem aviso e no clube em que o técnico estava naquele momento. Agora `on_restart_club` chama `on_cash_notice`: notícia
+"Caixa do Online chegou ao clube" no modo Temporadas e aviso "Seu caixa do Online foi transferido" no jogo. Correção de
+21/11/2026: o técnico do F&E Futebol tinha trocado do Náutico para o Athletic depois do reinício; os R$ 1.705.000 saíram
+do Náutico (`online_transfer_move`) e entraram no Athletic, e os 4 técnicos receberam a notícia e o aviso com o valor.
