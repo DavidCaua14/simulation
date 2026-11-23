@@ -681,3 +681,17 @@ do Náutico (`online_transfer_move`) e entraram no Athletic, e os 4 técnicos re
   (pênaltis) atrasa só a fila daquele campeonato. A ordem segue o turno anterior (quem jogou cedo joga cedo), e o
   descanso entre turnos fica perto de 3h30 para todos. Duração de um turno: Série D 1h31, A e B 1h05, copa grande 3h15.
 - **Recuperação física**: `on_recovery_rate` = 10 por hora + 1,5 por nível do departamento médico (antes 6).
+
+## Fase 49 — Quatro jogos de liga por dia para todos e copa às 20:30
+
+`supabase/online/53_league_run_cup_night.sql` (migração `20261123210000`). Substitui o mapa de turnos da fase 48.
+
+- **Liga em sequência por série**: slot = rodada − 1 + `on_seasons.cal->>série` (0 nas temporadas novas). Turno do slot
+  `s`: dia = início + `s/4`, horário (08:00, 11:30, 15:00, 18:40)`[s % 4]`. Nenhuma série fica com turno vazio; o
+  único dia com menos de 4 jogos é o da folga da Série D (um clube por grupo em cada rodada).
+- **Copa às 20:30** (quinto jogo do dia para quem está nela): slot = 100 + fase, dia = fase − 1 + `cal->>'K'`.
+  Duas partidas por vez; as fases de 30 e 32 jogos terminam por volta das 23:57.
+- **Fila** (`on_plan_group`): duas partidas por vez por campeonato, 13 min por jogo, ordem pelo último jogo de cada
+  clube antes do turno. `on_chain_hook` faz a fila andar no fim de cada partida (só no layout 2).
+- **Temporada 9**: passou para o layout 2 com `cal = {A:7, B:7, C:8, D:7, K:2, min_slot:12}`. Jogos a partir de 24/11
+  remarcados (os de 23/11 não mudaram; `on_turns` da fase 48 apagado). Copa: 2ª fase em 24/11 20:30, final em 03/12.
