@@ -27,6 +27,8 @@ export const LINEUPS_NEWS_RELEASE = '2026-11-escalacoes'
 export const NEW_ERA_NEWS_RELEASE = '2026-11-nova-era-2'
 // Online para todos, Big Time, caixas, mercado com cópias e relâmpago (20/11/2026)
 export const BIGTIME_NEWS_RELEASE = '2026-11-big-time'
+// Novo calendário do Online (4 jogos por dia, fila por campeonato, copa às 20:30) e Reserva do clube (24/11/2026)
+export const CALENDAR_NEWS_RELEASE = '2026-11-calendario-online'
 
 // Novidades dos eventos (sem presente): o banco guarda se esta carreira já viu a versão.
 export async function fetchNewsStatus(release) {

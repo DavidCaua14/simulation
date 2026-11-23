@@ -26,16 +26,18 @@ const OnlineScreen = lazy(() => import('./features/online/OnlineScreen')) // car
 const OnlineKickoffAlerts = lazy(() => import('./features/online/OnlineKickoffAlerts')) // só para quem tem acesso ao modo online
 import MaintenanceGate from './features/maintenance/MaintenanceGate'
 import { isMaintenanceAdmin as isOwner } from './features/maintenance/policy'
-import { BIGTIME_NEWS_RELEASE, COMPETITIONS_NEWS_RELEASE, EVENTS_NEWS_RELEASE, LINEUPS_NEWS_RELEASE, NEW_ERA_NEWS_RELEASE, ONLINE_NEWS_RELEASE, claimReleaseGift, fetchNewsStatus, markNewsSeen, markReleaseSeen } from './features/update/updateApi'
+import { BIGTIME_NEWS_RELEASE, CALENDAR_NEWS_RELEASE, COMPETITIONS_NEWS_RELEASE, EVENTS_NEWS_RELEASE, LINEUPS_NEWS_RELEASE, NEW_ERA_NEWS_RELEASE, ONLINE_NEWS_RELEASE, claimReleaseGift, fetchNewsStatus, markNewsSeen, markReleaseSeen } from './features/update/updateApi'
 import EventsNews from './features/update/EventsNews'
 import CompetitionsNews from './features/update/CompetitionsNews'
 import LineupsNews from './features/update/LineupsNews'
 import NewEraNews from './features/update/NewEraNews'
 import OnlineNews from './features/update/OnlineNews'
 import BigTimeNews from './features/update/BigTimeNews'
+import CalendarNews from './features/update/CalendarNews'
 
 // Telas de novidades, da mais nova para a mais antiga. Cada uma aparece uma vez por carreira (release_news).
 const NEWS = [
+  { id: CALENDAR_NEWS_RELEASE, Screen: CalendarNews, target: 'online' },
   { id: BIGTIME_NEWS_RELEASE, Screen: BigTimeNews, target: 'store' },
   { id: LINEUPS_NEWS_RELEASE, Screen: LineupsNews, target: 'online' },
   { id: NEW_ERA_NEWS_RELEASE, Screen: NewEraNews, target: 'seasons' },
