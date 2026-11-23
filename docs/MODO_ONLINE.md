@@ -664,3 +664,20 @@ sem aviso e no clube em que o técnico estava naquele momento. Agora `on_restart
 "Caixa do Online chegou ao clube" no modo Temporadas e aviso "Seu caixa do Online foi transferido" no jogo. Correção de
 21/11/2026: o técnico do F&E Futebol tinha trocado do Náutico para o Athletic depois do reinício; os R$ 1.705.000 saíram
 do Náutico (`online_transfer_move`) e entraram no Athletic, e os 4 técnicos receberam a notícia e o aviso com o valor.
+
+## Fase 48 — Quatro turnos por dia e fila de jogos por campeonato
+
+`supabase/online/52_four_turns.sql` (migração `20261123190000`).
+
+- **Quatro turnos**: 08:00, 11:30, 15:00 e 18:40. Não há jogo entre 17:30 e 18:40 nem de madrugada. A temporada passa de
+  ~26 para ~13 dias. Temporadas novas (`on_seasons.layout = 2`): turno = `slot % 4`, dia = início + `slot / 4`. As duas
+  primeiras fases da copa (30 e 32 jogos) ficam nos slots 3 e 7, que caem no turno da noite (`on_round_slot(season,…)`).
+- **Temporada 9 (em andamento, layout 1)**: do slot 6 em diante (24/11), o início de cada turno fica em `on_turns`.
+  A 2ª fase da copa (slot 8) vai para a noite de 24/11; os outros slots seguem em sequência e a temporada acaba em
+  05/12. Os jogos até o slot 5 (23/11) ficaram como estavam.
+- **Fila por campeonato** (`on_plan_group`): dentro de um turno, cada série (ou a copa) joga no máximo duas partidas
+  ao mesmo tempo, todas da mesma rodada. Cada jogo ocupa a vaga por 13 min (12 de jogo + 1). No fim de cada partida,
+  `on_chain_hook` (em `finish_hooks`) refaz a fila: o próximo jogo começa no minuto seguinte, e um jogo que demorou
+  (pênaltis) atrasa só a fila daquele campeonato. A ordem segue o turno anterior (quem jogou cedo joga cedo), e o
+  descanso entre turnos fica perto de 3h30 para todos. Duração de um turno: Série D 1h31, A e B 1h05, copa grande 3h15.
+- **Recuperação física**: `on_recovery_rate` = 10 por hora + 1,5 por nível do departamento médico (antes 6).

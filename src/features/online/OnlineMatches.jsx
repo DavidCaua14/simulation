@@ -65,7 +65,7 @@ function MatchRow({ f, now, me, onOpenMatch }) {
   )
 }
 
-// ── CALENDÁRIO: mês com os jogos do técnico (dois por dia: manhã e tarde) ──
+// ── CALENDÁRIO: mês com os jogos do técnico (até quatro por dia: 08:00, 11:30, 15:00 e 18:40) ──
 function CalendarView({ now, onOpenMatch }) {
   const { data, error } = useLoad(fetchOnlineCalendar, [])
   const [month, setMonth] = useState(null)
