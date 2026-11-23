@@ -271,6 +271,12 @@
 .on-wallet { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
 .on-wallet span { display: flex; flex-direction: column; padding: 10px 12px; border-radius: 14px; background: linear-gradient(180deg, #13203b, #0b1426); border: 1px solid var(--gx-line); min-width: 0; }
 .on-wallet small { color: var(--gx-ink-2); font-size: .66rem; text-transform: uppercase; letter-spacing: .06em; }
+.on-reserve { display: grid; gap: 8px; margin-top: 8px; padding: 12px; border-radius: 14px; background: linear-gradient(180deg, #13203b, #0b1426); border: 1px solid var(--gx-line); }
+.on-reserve header { display: flex; gap: 10px; align-items: center; color: #facc15; }
+.on-reserve header b { display: block; color: #fff; }
+.on-reserve header small, .on-reserve > small { color: var(--gx-ink-2); font-size: .72rem; }
+.on-reserve i { display: block; height: 10px; border-radius: 6px; background: #1b2a4a; overflow: hidden; }
+.on-reserve i em { display: block; height: 100%; background: linear-gradient(90deg, #facc15, #22c55e); }
 .on-wallet b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 900 1rem var(--font-display); color: var(--gx-gold); font-variant-numeric: tabular-nums; }
 .on-lots { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 10px; }
 .on-lot { --tier: #a16207; --tier-hi: #f59e0b; position: relative; display: flex; flex-direction: column; gap: 10px; padding: 12px; border-radius: 18px; border: 1px solid color-mix(in srgb, var(--tier-hi) 40%, var(--gx-line));

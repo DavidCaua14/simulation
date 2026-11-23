@@ -355,7 +355,7 @@ const RPC = {
   online_train_energy_buy: ({ p_pack }) => { club.extra += { coin: 1, d5: 5, d20: 20, d50: 50 }[p_pack || 'coin']; return clubState() },
   on_sell: ({ p_player }) => { players.splice(players.findIndex((x) => x.id === p_player), 1); return squad() },
   online_coins_convert: ({ p_coins }) => { club.conv += p_coins; return clubState() },
-  on_finance: () => ({ cash: 150000, reserved: 12000, debt: 0, wages: players.reduce((a, p) => a + p.wage, 0), ledger: [{ kind: 'gate', amount: 8200, note: 'Bilheteria', at: new Date().toISOString() }, { kind: 'wage', amount: -5400, note: 'Salários do dia', at: new Date().toISOString() }], news: [{ kind: 'market', text: 'Rafael Santos foi vendido por $ 6.500.', at: new Date().toISOString() }] }),
+  on_finance: () => ({ cash: 150000, reserved: 12000, debt: 0, reserve: { total: 4911189, released: 491119, per_day: 491119, left: 4420070, days_left: 9 }, wages: players.reduce((a, p) => a + p.wage, 0), ledger: [{ kind: 'gate', amount: 8200, note: 'Bilheteria', at: new Date().toISOString() }, { kind: 'wage', amount: -5400, note: 'Salários do dia', at: new Date().toISOString() }], news: [{ kind: 'market', text: 'Rafael Santos foi vendido por $ 6.500.', at: new Date().toISOString() }] }),
   on_match_act: act,
   on_roles_save: ({ p_roles }) => { lineup = { ...lineup, roles: p_roles }; return squad() },
   online_items: () => ({ enabled: true, diamonds: itemState.diamonds, items: { golden_whistle: { qty: itemState.qty, price: 300, max: 3 } } }),

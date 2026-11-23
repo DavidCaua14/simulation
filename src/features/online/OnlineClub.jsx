@@ -288,6 +288,16 @@ function Finance({ club, notify, onChanged }) {
         <span><small>Salários/dia</small><b>{moneyShort(club.wages)}</b></span>
         <span className={club.debt > 0 ? 'is-bad' : ''}><small>Dívida</small><b>{moneyShort(club.debt)}</b></span>
       </div>
+      {data?.reserve && (
+        <div className="on-reserve">
+          <header>
+            <Landmark size={20} />
+            <div><b>Reserva do clube</b><small>{moneyShort(data.reserve.per_day)} entram no caixa todo dia, à meia-noite</small></div>
+          </header>
+          <i><em style={{ width: `${Math.round((100 * data.reserve.released) / data.reserve.total)}%` }} /></i>
+          <small>{moneyShort(data.reserve.released)} de {moneyShort(data.reserve.total)} liberados · faltam {moneyShort(data.reserve.left)} ({data.reserve.days_left} {data.reserve.days_left === 1 ? 'dia' : 'dias'})</small>
+        </div>
+      )}
       <div className="on-invest">
         <header>
           <Coins size={22} />

@@ -695,3 +695,12 @@ do Náutico (`online_transfer_move`) e entraram no Athletic, e os 4 técnicos re
   clube antes do turno. `on_chain_hook` faz a fila andar no fim de cada partida (só no layout 2).
 - **Temporada 9**: passou para o layout 2 com `cal = {A:7, B:7, C:8, D:7, K:2, min_slot:12}`. Jogos a partir de 24/11
   remarcados (os de 23/11 não mudaram; `on_turns` da fase 48 apagado). Copa: 2ª fase em 24/11 20:30, final em 03/12.
+
+## Fase 50 — Reserva do clube (caixa do reinício de volta ao Online)
+
+`supabase/online/54_cash_reserve.sql` (migração `20261123230000`). O caixa que foi para o modo Temporadas no reinício de
+20/11/2026 voltou para o Online como **Reserva do clube** (`on_reserves`): 10% do total entram no caixa a cada dia
+(`on_reserve_tick`, em `tick_hooks`, à meia-noite do fuso da temporada), com linha no extrato (`reserve`) e notícia.
+A primeira parte entrou em 23/11; a última entra em 02/12. O mesmo valor saiu do clube do técnico no modo Temporadas
+(`cw_finance.kind = 'online_transfer_back'`), com notícia e aviso. Valores: FC Jeff $ 7.567.087, David Caua
+$ 4.911.189, Bruno FC $ 2.346.421 e F&E Futebol $ 1.705.321. A tela de Finanças mostra a barra da reserva (`on_finance.reserve`).
