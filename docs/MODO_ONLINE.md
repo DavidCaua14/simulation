@@ -713,3 +713,9 @@ próximo, dentro das janelas 08:00–17:30 e 18:40–00:00) e as filas foram ref
 disputado mudou. Copa: volta das oitavas em 27/11 21:55, quartas e semis no sábado e domingo, final (volta) em 29/11
 às 21:10. Série A termina em 29/11 19:05; mata-mata de acesso da B em 29/11 20:20 e 20:45. Descanso mediano entre dois
 jogos de um clube: 1h52 (mínimo 56 min).
+
+## Fase 52 — Recuperação dobrada até o fim da temporada 9
+
+`supabase/online/56_season9_recovery_boost.sql` (migração `20261127150000`). Com o calendário acelerado da fase 51,
+`on_recovery_rate` dá +20 por hora (+1,5 por nível do médico) enquanto a temporada 9 está em andamento e volta sozinho
+para +10 quando ela termina.
