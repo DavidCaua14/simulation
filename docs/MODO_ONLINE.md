@@ -704,3 +704,12 @@ do Náutico (`online_transfer_move`) e entraram no Athletic, e os 4 técnicos re
 A primeira parte entrou em 23/11; a última entra em 02/12. O mesmo valor saiu do clube do técnico no modo Temporadas
 (`cw_finance.kind = 'online_transfer_back'`), com notícia e aviso. Valores: FC Jeff $ 7.567.087, David Caua
 $ 4.911.189, Bruno FC $ 2.346.421 e F&E Futebol $ 1.705.321. A tela de Finanças mostra a barra da reserva (`on_finance.reserve`).
+
+## Fase 51 — Temporada 9 encerrada no domingo 29/11 até as 22:00
+
+`supabase/online/55_season9_finish_sunday.sql` (migração `20261127143000`; só dados da temporada 9). As rodadas que
+faltavam ganharam novos horários em `on_turns` (turnos mais próximos: ~10 min entre o fim de um turno e o começo do
+próximo, dentro das janelas 08:00–17:30 e 18:40–00:00) e as filas foram refeitas por `on_plan_group`. Nenhum jogo
+disputado mudou. Copa: volta das oitavas em 27/11 21:55, quartas e semis no sábado e domingo, final (volta) em 29/11
+às 21:10. Série A termina em 29/11 19:05; mata-mata de acesso da B em 29/11 20:20 e 20:45. Descanso mediano entre dois
+jogos de um clube: 1h52 (mínimo 56 min).
